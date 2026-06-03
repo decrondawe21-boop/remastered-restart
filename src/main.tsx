@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   FileText,
+  Heart,
   Info,
   KeyRound,
   LockKeyhole,
@@ -768,6 +769,7 @@ function NewsDiscussionPanel({
   }, new Map<string, ApiNewsComment[]>());
   const commentWord =
     comments.length === 1 ? 'komentář' : comments.length > 1 && comments.length < 5 ? 'komentáře' : 'komentářů';
+  const likeWord = like.count === 1 ? 'lajk' : like.count > 1 && like.count < 5 ? 'lajky' : 'lajků';
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -881,7 +883,7 @@ function NewsDiscussionPanel({
           aria-pressed={like.likedByMe}
           onClick={() => (requireAccount() ? onToggleLike(item.id) : undefined)}
         >
-          {like.count}x &lt;3
+          <Heart size={17} fill={like.likedByMe ? 'currentColor' : 'none'} /> {like.count} {likeWord}
         </button>
       </div>
 

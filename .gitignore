@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+tmp-*.png
+output-*.png
+public/images/crops/**/contact-sheet*.jpg
+public/images/crops/**/crop-map.csv

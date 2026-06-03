@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
   AlertCircle,
+  ChevronLeft,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -693,13 +694,60 @@ function NewsGrid({ news }: { news: NewsItem[] }) {
 function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const visibleSlides = slides.filter((slide) => slide.isActive).sort((left, right) => left.sortOrder - right.sortOrder);
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const manualPauseUntil = React.useRef(0);
+  const swipeStartX = React.useRef<number | null>(null);
   const activeSlide = visibleSlides[activeIndex] ?? visibleSlides[0] ?? starterSlides[0];
   const activeSlideHasDesignedText = /^\/images\/\d{2}\.png$/i.test(activeSlide.imageUrl);
-  const goNext = () => setActiveIndex((current) => (current + 1) % Math.max(visibleSlides.length, 1));
+  const slideCount = visibleSlides.length;
+  const wrapIndex = (index: number) => {
+    if (!slideCount) return 0;
+    return (index + slideCount) % slideCount;
+  };
+  const markManualInteraction = () => {
+    manualPauseUntil.current = Date.now() + 9000;
+  };
+  const goToSlide = (index: number, manual = false) => {
+    if (manual) markManualInteraction();
+    setActiveIndex(wrapIndex(index));
+  };
+  const goNext = (manual = false) => {
+    if (manual) markManualInteraction();
+    setActiveIndex((current) => wrapIndex(current + 1));
+  };
+  const goPrev = (manual = false) => {
+    if (manual) markManualInteraction();
+    setActiveIndex((current) => wrapIndex(current - 1));
+  };
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    swipeStartX.current = event.clientX;
+  };
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (swipeStartX.current === null || slideCount < 2) return;
+    const delta = event.clientX - swipeStartX.current;
+    swipeStartX.current = null;
+    if (Math.abs(delta) < 52) return;
+    if (delta > 0) {
+      goPrev(true);
+    } else {
+      goNext(true);
+    }
+  };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (slideCount < 2) return;
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goPrev(true);
+    }
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      goNext(true);
+    }
+  };
 
   React.useEffect(() => {
     if (visibleSlides.length < 2) return;
     const timer = window.setInterval(() => {
+      if (Date.now() < manualPauseUntil.current) return;
       setActiveIndex((current) => (current + 1) % visibleSlides.length);
     }, 6500);
     return () => window.clearInterval(timer);
@@ -710,10 +758,23 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   }, [activeIndex, visibleSlides.length]);
 
   return (
-    <section className="hero slideshow-hero" aria-label="Hlavní sdělení">
-      <div className="hero-banner">
+    <section
+      className="hero slideshow-hero"
+      aria-label="Hlavní sdělení"
+      aria-roledescription="carousel"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
+      <div
+        className="hero-banner"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={() => {
+          swipeStartX.current = null;
+        }}
+      >
         <img src={activeSlide.imageUrl} alt="" />
-        <div className={`hero-banner-overlay${activeSlideHasDesignedText ? ' visually-hidden' : ''}`}>
+        <div className={`hero-banner-overlay${activeSlideHasDesignedText ? ' visually-hidden' : ''}`} aria-live="polite">
           <p className="quiet-label">Projekt druhých šancí</p>
           <h1>{activeSlide.title}</h1>
           <p className="hero-text">{activeSlide.subtitle}</p>
@@ -729,9 +790,19 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
           </div>
         </div>
         {visibleSlides.length > 1 && (
-          <button className="slide-next" type="button" aria-label="Další slide" onClick={goNext}>
+          <button className="slide-arrow slide-prev" type="button" aria-label="Předchozí slide" onClick={() => goPrev(true)}>
+            <ChevronLeft size={26} />
+          </button>
+        )}
+        {visibleSlides.length > 1 && (
+          <button className="slide-arrow slide-next" type="button" aria-label="Další slide" onClick={() => goNext(true)}>
             <ArrowRight size={24} />
           </button>
+        )}
+        {visibleSlides.length > 1 && (
+          <span className="slide-counter" aria-label={`Slide ${activeIndex + 1} z ${visibleSlides.length}`}>
+            {activeIndex + 1} / {visibleSlides.length}
+          </span>
         )}
       </div>
       {visibleSlides.length > 1 && (
@@ -742,7 +813,7 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
               type="button"
               className={index === activeIndex ? 'active' : ''}
               aria-label={`Zobrazit slide ${index + 1}`}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => goToSlide(index, true)}
             />
           ))}
         </div>

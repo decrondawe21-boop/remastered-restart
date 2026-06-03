@@ -995,6 +995,143 @@ h3 {
   color: var(--muted);
 }
 
+.news-discussion {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.news-actions,
+.comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.news-actions span,
+.heart-button,
+.mini-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.heart-button,
+.mini-action {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.heart-button:hover,
+.heart-button.active,
+.mini-action:hover {
+  border-color: rgba(43, 128, 78, 0.32);
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.mini-action.ghost {
+  background: transparent;
+}
+
+.mini-action.danger {
+  color: #9d2e2e;
+}
+
+.mini-action.danger:hover {
+  border-color: rgba(157, 46, 46, 0.25);
+  background: #fff3f0;
+  color: #7d2222;
+}
+
+.comment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.comment-thread {
+  display: grid;
+  gap: 10px;
+}
+
+.comment-replies {
+  display: grid;
+  gap: 10px;
+  margin-left: 22px;
+  padding-left: 14px;
+  border-left: 2px solid var(--green-soft);
+}
+
+.comment-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-soft);
+}
+
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.comment-meta strong {
+  color: var(--text);
+}
+
+.comment-card p,
+.comment-empty {
+  margin: 0;
+}
+
+.comment-form,
+.comment-edit {
+  display: grid;
+  gap: 10px;
+}
+
+.comment-form label,
+.comment-edit label {
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+  font-weight: var(--weight-medium);
+}
+
+.comment-form textarea,
+.comment-edit textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text);
+  font: inherit;
+}
+
+.reply-form {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
 .partner-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

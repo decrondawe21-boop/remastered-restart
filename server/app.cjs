@@ -200,6 +200,217 @@ async function saveNews(request, response) {
   sendJson(response, 200, { news: rows[0] });
 }
 
+function publicComment(row, user) {
+  const authorId = row.authorId || row.author_id;
+  return {
+    id: row.id,
+    newsId: row.newsId || row.news_id,
+    parentId: row.parentId || row.parent_id || null,
+    authorId,
+    authorName: row.authorName || row.author_name || 'Uživatel',
+    authorRole: row.authorRole || row.author_role || 'client',
+    body: row.body,
+    createdAt: row.createdAt || row.created_at,
+    updatedAt: row.updatedAt || row.updated_at,
+    canEdit: Boolean(user && (user.role === 'admin' || user.id === authorId)),
+    canDelete: Boolean(user && (user.role === 'admin' || user.id === authorId))
+  };
+}
+
+async function listNewsDiscussion(request, response) {
+  const user = await currentUser(request);
+  const likeRows = await query(
+    `SELECT
+       news_id AS newsId,
+       COUNT(*) AS count,
+       SUM(CASE WHEN user_id = ? THEN 1 ELSE 0 END) AS likedByMe
+     FROM news_likes
+     GROUP BY news_id`,
+    [user?.id || '']
+  );
+  const commentRows = await query(
+    `SELECT
+       comments.id,
+       comments.news_id AS newsId,
+       comments.parent_id AS parentId,
+       comments.author_id AS authorId,
+       users.name AS authorName,
+       users.role AS authorRole,
+       comments.body,
+       comments.created_at AS createdAt,
+       comments.updated_at AS updatedAt
+     FROM news_comments comments
+     JOIN users ON users.id = comments.author_id
+     JOIN news ON news.id = comments.news_id
+     WHERE news.status = 'published'
+     ORDER BY comments.created_at ASC`
+  );
+  sendJson(response, 200, {
+    likes: likeRows.map((row) => ({
+      newsId: row.newsId,
+      count: Number(row.count || 0),
+      likedByMe: Boolean(Number(row.likedByMe || 0))
+    })),
+    comments: commentRows.map((row) => publicComment(row, user))
+  });
+}
+
+async function toggleNewsLike(request, response, newsId) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const newsRows = await query('SELECT id FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
+  if (newsRows.length === 0) {
+    sendJson(response, 404, { error: 'News item not found.' });
+    return;
+  }
+  const existing = await query('SELECT news_id FROM news_likes WHERE news_id = ? AND user_id = ? LIMIT 1', [newsId, user.id]);
+  if (existing.length > 0) {
+    await query('DELETE FROM news_likes WHERE news_id = ? AND user_id = ?', [newsId, user.id]);
+  } else {
+    await query('INSERT INTO news_likes (news_id, user_id) VALUES (?, ?)', [newsId, user.id]);
+  }
+  const rows = await query(
+    `SELECT
+       COUNT(*) AS count,
+       SUM(CASE WHEN user_id = ? THEN 1 ELSE 0 END) AS likedByMe
+     FROM news_likes
+     WHERE news_id = ?`,
+    [user.id, newsId]
+  );
+  sendJson(response, 200, {
+    like: {
+      newsId,
+      count: Number(rows[0]?.count || 0),
+      likedByMe: Boolean(Number(rows[0]?.likedByMe || 0))
+    }
+  });
+}
+
+async function addNewsComment(request, response, newsId) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const body = await readBody(request);
+  const text = String(body.body || '').trim();
+  if (!text) {
+    sendJson(response, 400, { error: 'Comment body is required.' });
+    return;
+  }
+  if (text.length > 3000) {
+    sendJson(response, 400, { error: 'Comment is too long.' });
+    return;
+  }
+  const newsRows = await query('SELECT id FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
+  if (newsRows.length === 0) {
+    sendJson(response, 404, { error: 'News item not found.' });
+    return;
+  }
+  const parentId = String(body.parentId || '').trim() || null;
+  if (parentId) {
+    const parentRows = await query('SELECT id FROM news_comments WHERE id = ? AND news_id = ? LIMIT 1', [parentId, newsId]);
+    if (parentRows.length === 0) {
+      sendJson(response, 400, { error: 'Parent comment not found.' });
+      return;
+    }
+  }
+  const id = randomId();
+  await query('INSERT INTO news_comments (id, news_id, parent_id, author_id, body) VALUES (?, ?, ?, ?, ?)', [
+    id,
+    newsId,
+    parentId,
+    user.id,
+    text
+  ]);
+  const rows = await query(
+    `SELECT
+       comments.id,
+       comments.news_id AS newsId,
+       comments.parent_id AS parentId,
+       comments.author_id AS authorId,
+       users.name AS authorName,
+       users.role AS authorRole,
+       comments.body,
+       comments.created_at AS createdAt,
+       comments.updated_at AS updatedAt
+     FROM news_comments comments
+     JOIN users ON users.id = comments.author_id
+     WHERE comments.id = ?
+     LIMIT 1`,
+    [id]
+  );
+  sendJson(response, 201, { comment: publicComment(rows[0], user) });
+}
+
+async function updateNewsComment(request, response, commentId) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const body = await readBody(request);
+  const text = String(body.body || '').trim();
+  if (!text) {
+    sendJson(response, 400, { error: 'Comment body is required.' });
+    return;
+  }
+  if (text.length > 3000) {
+    sendJson(response, 400, { error: 'Comment is too long.' });
+    return;
+  }
+  const existing = await query('SELECT id, author_id FROM news_comments WHERE id = ? LIMIT 1', [commentId]);
+  if (existing.length === 0) {
+    sendJson(response, 404, { error: 'Comment not found.' });
+    return;
+  }
+  if (user.role !== 'admin' && existing[0].author_id !== user.id) {
+    sendJson(response, 403, { error: 'You can edit only your own comment.' });
+    return;
+  }
+  await query('UPDATE news_comments SET body = ? WHERE id = ?', [text, commentId]);
+  const rows = await query(
+    `SELECT
+       comments.id,
+       comments.news_id AS newsId,
+       comments.parent_id AS parentId,
+       comments.author_id AS authorId,
+       users.name AS authorName,
+       users.role AS authorRole,
+       comments.body,
+       comments.created_at AS createdAt,
+       comments.updated_at AS updatedAt
+     FROM news_comments comments
+     JOIN users ON users.id = comments.author_id
+     WHERE comments.id = ?
+     LIMIT 1`,
+    [commentId]
+  );
+  sendJson(response, 200, { comment: publicComment(rows[0], user) });
+}
+
+async function deleteNewsComment(request, response, commentId) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const existing = await query('SELECT id, author_id FROM news_comments WHERE id = ? LIMIT 1', [commentId]);
+  if (existing.length === 0) {
+    sendJson(response, 404, { error: 'Comment not found.' });
+    return;
+  }
+  if (user.role !== 'admin' && existing[0].author_id !== user.id) {
+    sendJson(response, 403, { error: 'You can delete only your own comment.' });
+    return;
+  }
+  await query('DELETE FROM news_comments WHERE id = ?', [commentId]);
+  sendJson(response, 200, { ok: true, id: commentId });
+}
+
 function publicSlide(row) {
   return {
     id: row.id,
@@ -392,6 +603,14 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/auth/reset') return resetPassword(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news') return listNews(request, response);
     if (request.method === 'POST' && url.pathname === '/api/news') return saveNews(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/news/discussion') return listNewsDiscussion(request, response);
+    const newsLikeMatch = url.pathname.match(/^\/api\/news\/([^/]+)\/like$/);
+    if (request.method === 'POST' && newsLikeMatch) return toggleNewsLike(request, response, newsLikeMatch[1]);
+    const newsCommentMatch = url.pathname.match(/^\/api\/news\/([^/]+)\/comments$/);
+    if (request.method === 'POST' && newsCommentMatch) return addNewsComment(request, response, newsCommentMatch[1]);
+    const commentMatch = url.pathname.match(/^\/api\/comments\/([^/]+)$/);
+    if (request.method === 'PATCH' && commentMatch) return updateNewsComment(request, response, commentMatch[1]);
+    if (request.method === 'DELETE' && commentMatch) return deleteNewsComment(request, response, commentMatch[1]);
     if (request.method === 'GET' && url.pathname === '/api/slides') return listSlides(request, response);
     if (request.method === 'POST' && url.pathname === '/api/slides') return saveSlide(request, response);
     if (request.method === 'GET' && url.pathname === '/api/clients') return listClients(request, response);

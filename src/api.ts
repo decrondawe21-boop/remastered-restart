@@ -16,6 +16,26 @@ export type ApiNewsItem = {
   excerpt: string;
 };
 
+export type ApiNewsLike = {
+  newsId: string;
+  count: number;
+  likedByMe: boolean;
+};
+
+export type ApiNewsComment = {
+  id: string;
+  newsId: string;
+  parentId: string | null;
+  authorId: string;
+  authorName: string;
+  authorRole: ApiRole;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+  canEdit: boolean;
+  canDelete: boolean;
+};
+
 export type ApiHomeSlide = {
   id: string;
   title: string;
@@ -102,6 +122,39 @@ export async function saveNews(news: ApiNewsItem) {
     body: JSON.stringify(news)
   });
   return body.news;
+}
+
+export async function listNewsDiscussion() {
+  return request<{ likes: ApiNewsLike[]; comments: ApiNewsComment[] }>('/api/news/discussion');
+}
+
+export async function toggleNewsLike(newsId: string) {
+  const body = await request<{ like: ApiNewsLike }>(`/api/news/${encodeURIComponent(newsId)}/like`, {
+    method: 'POST'
+  });
+  return body.like;
+}
+
+export async function addNewsComment(newsId: string, text: string, parentId?: string | null) {
+  const body = await request<{ comment: ApiNewsComment }>(`/api/news/${encodeURIComponent(newsId)}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ body: text, parentId: parentId || null })
+  });
+  return body.comment;
+}
+
+export async function updateNewsComment(commentId: string, text: string) {
+  const body = await request<{ comment: ApiNewsComment }>(`/api/comments/${encodeURIComponent(commentId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ body: text })
+  });
+  return body.comment;
+}
+
+export async function deleteNewsComment(commentId: string) {
+  await request<{ ok: boolean; id: string }>(`/api/comments/${encodeURIComponent(commentId)}`, {
+    method: 'DELETE'
+  });
 }
 
 export async function listSlides() {

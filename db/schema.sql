@@ -92,6 +92,32 @@ CREATE TABLE IF NOT EXISTS news (
   KEY news_status_published_idx (status, published_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS news_likes (
+  news_id CHAR(36) NOT NULL,
+  user_id CHAR(36) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (news_id, user_id),
+  CONSTRAINT news_likes_news_fk FOREIGN KEY (news_id) REFERENCES news (id) ON DELETE CASCADE,
+  CONSTRAINT news_likes_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  KEY news_likes_user_idx (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS news_comments (
+  id CHAR(36) PRIMARY KEY,
+  news_id CHAR(36) NOT NULL,
+  parent_id CHAR(36) NULL,
+  author_id CHAR(36) NOT NULL,
+  body TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT news_comments_news_fk FOREIGN KEY (news_id) REFERENCES news (id) ON DELETE CASCADE,
+  CONSTRAINT news_comments_parent_fk FOREIGN KEY (parent_id) REFERENCES news_comments (id) ON DELETE CASCADE,
+  CONSTRAINT news_comments_author_fk FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
+  KEY news_comments_news_created_idx (news_id, created_at),
+  KEY news_comments_parent_idx (parent_id),
+  KEY news_comments_author_idx (author_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS home_slides (
   id CHAR(36) PRIMARY KEY,
   title VARCHAR(220) NOT NULL,

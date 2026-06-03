@@ -109,10 +109,68 @@ async function request(path, options = {}) {
     if (!login.response.ok || login.body.user.email !== email) {
       throw new Error(`Client login failed: ${JSON.stringify(login.body)}`);
     }
+    const loginCookie = login.response.headers.get('set-cookie');
+    if (!loginCookie || !loginCookie.includes('restart_session=')) {
+      throw new Error('Login should set an HttpOnly session cookie.');
+    }
 
     const news = await request('/api/news');
     if (!news.response.ok || !Array.isArray(news.body.news)) {
       throw new Error(`News endpoint failed: ${JSON.stringify(news.body)}`);
+    }
+    const firstNews = news.body.news[0];
+    if (!firstNews?.id) {
+      throw new Error('News endpoint should return at least one item for interaction tests.');
+    }
+
+    const discussion = await request('/api/news/discussion', {
+      headers: { cookie: loginCookie }
+    });
+    if (!discussion.response.ok || !Array.isArray(discussion.body.likes) || !Array.isArray(discussion.body.comments)) {
+      throw new Error(`News discussion endpoint failed: ${JSON.stringify(discussion.body)}`);
+    }
+
+    const liked = await request(`/api/news/${encodeURIComponent(firstNews.id)}/like`, {
+      method: 'POST',
+      headers: { cookie: loginCookie }
+    });
+    if (!liked.response.ok || liked.body.like.newsId !== firstNews.id || liked.body.like.likedByMe !== true) {
+      throw new Error(`News like failed: ${JSON.stringify(liked.body)}`);
+    }
+
+    const comment = await request(`/api/news/${encodeURIComponent(firstNews.id)}/comments`, {
+      method: 'POST',
+      headers: { cookie: loginCookie },
+      body: JSON.stringify({ body: 'Testovací komentář' })
+    });
+    if (!comment.response.ok || comment.body.comment.body !== 'Testovací komentář' || !comment.body.comment.canEdit) {
+      throw new Error(`Comment creation failed: ${JSON.stringify(comment.body)}`);
+    }
+
+    const reply = await request(`/api/news/${encodeURIComponent(firstNews.id)}/comments`, {
+      method: 'POST',
+      headers: { cookie: loginCookie },
+      body: JSON.stringify({ body: 'Testovací odpověď', parentId: comment.body.comment.id })
+    });
+    if (!reply.response.ok || reply.body.comment.parentId !== comment.body.comment.id) {
+      throw new Error(`Reply creation failed: ${JSON.stringify(reply.body)}`);
+    }
+
+    const updated = await request(`/api/comments/${encodeURIComponent(comment.body.comment.id)}`, {
+      method: 'PATCH',
+      headers: { cookie: loginCookie },
+      body: JSON.stringify({ body: 'Upravený testovací komentář' })
+    });
+    if (!updated.response.ok || updated.body.comment.body !== 'Upravený testovací komentář') {
+      throw new Error(`Comment update failed: ${JSON.stringify(updated.body)}`);
+    }
+
+    const deleted = await request(`/api/comments/${encodeURIComponent(comment.body.comment.id)}`, {
+      method: 'DELETE',
+      headers: { cookie: loginCookie }
+    });
+    if (!deleted.response.ok || deleted.body.ok !== true) {
+      throw new Error(`Comment delete failed: ${JSON.stringify(deleted.body)}`);
     }
 
     console.log('API validation passed.');

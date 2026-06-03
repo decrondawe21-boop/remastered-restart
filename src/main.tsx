@@ -8,16 +8,20 @@ import {
   Eye,
   EyeOff,
   FileText,
+  Heart,
   Info,
   KeyRound,
   LockKeyhole,
   LogOut,
   Mail,
+  MessageCircle,
   Menu,
   Phone,
   Plus,
   Printer,
+  Reply,
   Save,
+  Trash2,
   Upload,
   UserRound,
   X
@@ -34,8 +38,11 @@ import {
 } from './content';
 import {
   getSession,
+  addNewsComment,
+  deleteNewsComment,
   listClients,
   listNews,
+  listNewsDiscussion,
   listSlides,
   loginUser,
   logoutUser,
@@ -44,7 +51,11 @@ import {
   saveClient as saveClientRecord,
   saveNews as saveNewsRecord,
   saveSlide as saveSlideRecord,
+  toggleNewsLike,
+  updateNewsComment,
   type ApiClientRecord,
+  type ApiNewsComment,
+  type ApiNewsLike,
   type ApiHomeSlide,
   type ApiRole,
   type ApiUser
@@ -97,6 +108,11 @@ type NewsItem = {
   title: string;
   date: string;
   excerpt: string;
+};
+
+type NewsDiscussion = {
+  likes: Record<string, ApiNewsLike>;
+  comments: ApiNewsComment[];
 };
 
 type HomeSlide = ApiHomeSlide;
@@ -677,7 +693,25 @@ function ProgramsList() {
   );
 }
 
-function NewsGrid({ news }: { news: NewsItem[] }) {
+function NewsGrid({
+  news,
+  discussion,
+  account,
+  onToggleLike,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  onNotify
+}: {
+  news: NewsItem[];
+  discussion: NewsDiscussion;
+  account: AuthAccount | null;
+  onToggleLike: (newsId: string) => Promise<void>;
+  onAddComment: (newsId: string, text: string, parentId?: string | null) => Promise<boolean>;
+  onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
+  onDeleteComment: (commentId: string) => Promise<void>;
+  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+}) {
   return (
     <div className="news-grid">
       {news.map((item) => (
@@ -685,8 +719,196 @@ function NewsGrid({ news }: { news: NewsItem[] }) {
           <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
           <h3>{item.title}</h3>
           <p>{item.excerpt}</p>
+          <NewsDiscussionPanel
+            item={item}
+            discussion={discussion}
+            account={account}
+            onToggleLike={onToggleLike}
+            onAddComment={onAddComment}
+            onUpdateComment={onUpdateComment}
+            onDeleteComment={onDeleteComment}
+            onNotify={onNotify}
+          />
         </article>
       ))}
+    </div>
+  );
+}
+
+function NewsDiscussionPanel({
+  item,
+  discussion,
+  account,
+  onToggleLike,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  onNotify
+}: {
+  item: NewsItem;
+  discussion: NewsDiscussion;
+  account: AuthAccount | null;
+  onToggleLike: (newsId: string) => Promise<void>;
+  onAddComment: (newsId: string, text: string, parentId?: string | null) => Promise<boolean>;
+  onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
+  onDeleteComment: (commentId: string) => Promise<void>;
+  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+}) {
+  const [draft, setDraft] = React.useState('');
+  const [replyTo, setReplyTo] = React.useState<ApiNewsComment | null>(null);
+  const [replyDraft, setReplyDraft] = React.useState('');
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [editDraft, setEditDraft] = React.useState('');
+  const like = discussion.likes[item.id] ?? { newsId: item.id, count: 0, likedByMe: false };
+  const comments = discussion.comments.filter((comment) => comment.newsId === item.id);
+  const commentsByParent = comments.reduce((groups, comment) => {
+    const key = comment.parentId || 'root';
+    groups.set(key, [...(groups.get(key) || []), comment]);
+    return groups;
+  }, new Map<string, ApiNewsComment[]>());
+
+  const requireAccount = () => {
+    if (account) return true;
+    onNotify('warning', 'Přihlášení je potřeba', 'Komentovat a dávat srdíčka mohou registrovaní uživatelé.');
+    return false;
+  };
+
+  const submitComment = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!requireAccount()) return;
+    const text = draft.trim();
+    if (!text) return;
+    const saved = await onAddComment(item.id, text);
+    if (saved) setDraft('');
+  };
+
+  const submitReply = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!replyTo || !requireAccount()) return;
+    const text = replyDraft.trim();
+    if (!text) return;
+    const saved = await onAddComment(item.id, text, replyTo.id);
+    if (saved) {
+      setReplyTo(null);
+      setReplyDraft('');
+    }
+  };
+
+  const saveEdit = async (commentId: string) => {
+    const text = editDraft.trim();
+    if (!text) return;
+    const saved = await onUpdateComment(commentId, text);
+    if (saved) {
+      setEditingId(null);
+      setEditDraft('');
+    }
+  };
+
+  const renderComment = (comment: ApiNewsComment, depth = 0): React.ReactNode => {
+    const replies = commentsByParent.get(comment.id) || [];
+    const canManage = account && (account.role === 'admin' || account.id === comment.authorId);
+    return (
+      <div className="comment-thread" data-depth={depth} key={comment.id}>
+        <article className="comment-card">
+          <div className="comment-meta">
+            <strong>{comment.authorName}</strong>
+            <span>{new Date(comment.createdAt).toLocaleString('cs-CZ')}</span>
+          </div>
+          {editingId === comment.id ? (
+            <div className="comment-edit">
+              <textarea value={editDraft} onChange={(event) => setEditDraft(event.target.value)} rows={3} />
+              <div className="comment-actions">
+                <button className="mini-action" type="button" onClick={() => saveEdit(comment.id)}>
+                  <Save size={15} /> Uložit
+                </button>
+                <button className="mini-action ghost" type="button" onClick={() => setEditingId(null)}>
+                  <X size={15} /> Zrušit
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p>{comment.body}</p>
+          )}
+          <div className="comment-actions">
+            <button className="mini-action ghost" type="button" onClick={() => (requireAccount() ? setReplyTo(comment) : undefined)}>
+              <Reply size={15} /> Odpovědět
+            </button>
+            {canManage && (
+              <>
+                <button
+                  className="mini-action ghost"
+                  type="button"
+                  onClick={() => {
+                    setEditingId(comment.id);
+                    setEditDraft(comment.body);
+                  }}
+                >
+                  Upravit
+                </button>
+                <button className="mini-action danger" type="button" onClick={() => onDeleteComment(comment.id)}>
+                  <Trash2 size={15} /> Smazat
+                </button>
+              </>
+            )}
+          </div>
+        </article>
+        {replies.length > 0 && <div className="comment-replies">{replies.map((reply) => renderComment(reply, depth + 1))}</div>}
+      </div>
+    );
+  };
+
+  return (
+    <div className="news-discussion">
+      <div className="news-actions">
+        <button
+          className={`heart-button${like.likedByMe ? ' active' : ''}`}
+          type="button"
+          aria-pressed={like.likedByMe}
+          onClick={() => (requireAccount() ? onToggleLike(item.id) : undefined)}
+        >
+          <Heart size={18} fill={like.likedByMe ? 'currentColor' : 'none'} /> {like.count}
+        </button>
+        <span>
+          <MessageCircle size={18} /> {comments.length}
+        </span>
+      </div>
+
+      <div className="comment-list">
+        {(commentsByParent.get('root') || []).map((comment) => renderComment(comment))}
+        {comments.length === 0 && <p className="comment-empty">Zatím bez komentářů.</p>}
+      </div>
+
+      {replyTo && (
+        <form className="comment-form reply-form" onSubmit={submitReply}>
+          <label>
+            Odpověď pro {replyTo.authorName}
+            <textarea value={replyDraft} onChange={(event) => setReplyDraft(event.target.value)} rows={3} />
+          </label>
+          <div className="comment-actions">
+            <button className="mini-action" type="submit">
+              <Reply size={15} /> Odeslat odpověď
+            </button>
+            <button className="mini-action ghost" type="button" onClick={() => setReplyTo(null)}>
+              <X size={15} /> Zrušit
+            </button>
+          </div>
+        </form>
+      )}
+
+      <form className="comment-form" onSubmit={submitComment}>
+        <label>
+          Přidat komentář
+          <textarea
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            rows={3}
+            placeholder={account ? 'Napište komentář...' : 'Pro komentář se nejdřív přihlaste.'}
+          />
+        </label>
+        <button className="mini-action" type="submit">
+          <MessageCircle size={15} /> Komentovat
+        </button>
+      </form>
     </div>
   );
 }
@@ -822,7 +1044,27 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   );
 }
 
-function HomePage({ news, slides }: { news: NewsItem[]; slides: HomeSlide[] }) {
+function HomePage({
+  news,
+  slides,
+  discussion,
+  account,
+  onToggleLike,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  onNotify
+}: {
+  news: NewsItem[];
+  slides: HomeSlide[];
+  discussion: NewsDiscussion;
+  account: AuthAccount | null;
+  onToggleLike: (newsId: string) => Promise<void>;
+  onAddComment: (newsId: string, text: string, parentId?: string | null) => Promise<boolean>;
+  onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
+  onDeleteComment: (commentId: string) => Promise<void>;
+  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+}) {
   return (
     <>
       <HomeSlideshow slides={slides} />
@@ -873,7 +1115,16 @@ function HomePage({ news, slides }: { news: NewsItem[]; slides: HomeSlide[] }) {
           title="Poslední zprávy"
           text="Krátký přehled dění. Další aktuality najdete na samostatné stránce Aktuality."
         />
-        <NewsGrid news={news.slice(0, 2)} />
+        <NewsGrid
+          news={news.slice(0, 2)}
+          discussion={discussion}
+          account={account}
+          onToggleLike={onToggleLike}
+          onAddComment={onAddComment}
+          onUpdateComment={onUpdateComment}
+          onDeleteComment={onDeleteComment}
+          onNotify={onNotify}
+        />
       </section>
     </>
   );
@@ -944,7 +1195,25 @@ function ProgramsPage() {
   );
 }
 
-function NewsPage({ news }: { news: NewsItem[] }) {
+function NewsPage({
+  news,
+  discussion,
+  account,
+  onToggleLike,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  onNotify
+}: {
+  news: NewsItem[];
+  discussion: NewsDiscussion;
+  account: AuthAccount | null;
+  onToggleLike: (newsId: string) => Promise<void>;
+  onAddComment: (newsId: string, text: string, parentId?: string | null) => Promise<boolean>;
+  onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
+  onDeleteComment: (commentId: string) => Promise<void>;
+  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+}) {
   return (
     <>
       <PageHeader
@@ -953,7 +1222,16 @@ function NewsPage({ news }: { news: NewsItem[] }) {
         text="Krátké zprávy z příprav, programu a spolupráce. Aktuality se dají doplňovat přímo v administraci."
       />
       <section className="content-section">
-        <NewsGrid news={news} />
+        <NewsGrid
+          news={news}
+          discussion={discussion}
+          account={account}
+          onToggleLike={onToggleLike}
+          onAddComment={onAddComment}
+          onUpdateComment={onUpdateComment}
+          onDeleteComment={onDeleteComment}
+          onNotify={onNotify}
+        />
       </section>
     </>
   );
@@ -1707,6 +1985,7 @@ function ClientProfile({
 function App() {
   const [clients, setClients] = useStoredState<ClientRecord[]>('restart-admin-clients', []);
   const [news, setNews] = useStoredState<NewsItem[]>('restart-public-news', starterNews);
+  const [newsDiscussion, setNewsDiscussion] = React.useState<NewsDiscussion>({ likes: {}, comments: [] });
   const [slides, setSlides] = useStoredState<HomeSlide[]>('restart-home-slides', starterSlides);
   const [accounts, setAccounts] = useStoredState<AuthAccount[]>('restart-auth-accounts', starterAccounts);
   const [sessionId, setSessionId] = useStoredState<string | null>('restart-auth-session', null);
@@ -1724,6 +2003,14 @@ function App() {
     }, tone === 'error' ? 7000 : 4800);
   }, []);
 
+  const refreshNewsDiscussion = React.useCallback(async () => {
+    const discussion = await listNewsDiscussion();
+    setNewsDiscussion({
+      likes: Object.fromEntries(discussion.likes.map((like) => [like.newsId, like])),
+      comments: discussion.comments
+    });
+  }, []);
+
   React.useEffect(() => {
     getSession()
       .then((user) => setApiAccount(user ? fromApiUser(user) : null))
@@ -1739,6 +2026,10 @@ function App() {
       })
       .catch(() => undefined);
   }, [setNews, setSlides]);
+
+  React.useEffect(() => {
+    refreshNewsDiscussion().catch(() => undefined);
+  }, [currentAccount?.id, refreshNewsDiscussion]);
 
   React.useEffect(() => {
     if (currentAccount?.role !== 'admin') return;
@@ -1778,6 +2069,58 @@ function App() {
   };
   const saveNewsViaApi = (item: NewsItem) => saveNewsRecord(item);
   const saveSlideViaApi = (item: HomeSlide) => saveSlideRecord(item);
+  const toggleLikeViaApi = async (newsId: string) => {
+    try {
+      const like = await toggleNewsLike(newsId);
+      setNewsDiscussion((current) => ({
+        ...current,
+        likes: { ...current.likes, [newsId]: like }
+      }));
+      notify(like.likedByMe ? 'success' : 'info', like.likedByMe ? 'Srdíčko přidáno' : 'Srdíčko odebráno');
+    } catch (error) {
+      notify('error', 'Srdíčko se nepodařilo uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+  const addCommentViaApi = async (newsId: string, text: string, parentId?: string | null) => {
+    try {
+      const comment = await addNewsComment(newsId, text, parentId);
+      setNewsDiscussion((current) => ({
+        ...current,
+        comments: [...current.comments, comment]
+      }));
+      notify('success', parentId ? 'Odpověď uložena' : 'Komentář uložen', 'Příspěvek je veřejně zobrazený u aktuality.');
+      return true;
+    } catch (error) {
+      notify('error', 'Komentář se nepodařilo uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+      return false;
+    }
+  };
+  const updateCommentViaApi = async (commentId: string, text: string) => {
+    try {
+      const comment = await updateNewsComment(commentId, text);
+      setNewsDiscussion((current) => ({
+        ...current,
+        comments: current.comments.map((item) => (item.id === comment.id ? comment : item))
+      }));
+      notify('success', 'Komentář upraven', 'Změna je uložená.');
+      return true;
+    } catch (error) {
+      notify('error', 'Komentář se nepodařilo upravit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+      return false;
+    }
+  };
+  const deleteCommentViaApi = async (commentId: string) => {
+    try {
+      await deleteNewsComment(commentId);
+      setNewsDiscussion((current) => ({
+        ...current,
+        comments: current.comments.filter((comment) => comment.id !== commentId && comment.parentId !== commentId)
+      }));
+      notify('info', 'Komentář smazán', 'Příspěvek byl odstraněn.');
+    } catch (error) {
+      notify('error', 'Komentář se nepodařilo smazat', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
 
   const page =
     currentPath === '/co-delame' ? (
@@ -1785,7 +2128,16 @@ function App() {
     ) : currentPath === '/programy' ? (
       <ProgramsPage />
     ) : currentPath === '/aktuality' ? (
-      <NewsPage news={news} />
+      <NewsPage
+        news={news}
+        discussion={newsDiscussion}
+        account={currentAccount}
+        onToggleLike={toggleLikeViaApi}
+        onAddComment={addCommentViaApi}
+        onUpdateComment={updateCommentViaApi}
+        onDeleteComment={deleteCommentViaApi}
+        onNotify={notify}
+      />
     ) : currentPath === '/zapojeni' ? (
       <SupportPage />
     ) : currentPath === '/kontakt' ? (
@@ -1838,7 +2190,17 @@ function App() {
         />
       )
     ) : (
-      <HomePage news={news} slides={slides} />
+      <HomePage
+        news={news}
+        slides={slides}
+        discussion={newsDiscussion}
+        account={currentAccount}
+        onToggleLike={toggleLikeViaApi}
+        onAddComment={addCommentViaApi}
+        onUpdateComment={updateCommentViaApi}
+        onDeleteComment={deleteCommentViaApi}
+        onNotify={notify}
+      />
     );
 
   return (

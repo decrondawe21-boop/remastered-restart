@@ -8,7 +8,6 @@ import {
   Eye,
   EyeOff,
   FileText,
-  Heart,
   Info,
   KeyRound,
   LockKeyhole,
@@ -754,6 +753,7 @@ function NewsDiscussionPanel({
   onDeleteComment: (commentId: string) => Promise<void>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
+  const [isOpen, setIsOpen] = React.useState(false);
   const [draft, setDraft] = React.useState('');
   const [replyTo, setReplyTo] = React.useState<ApiNewsComment | null>(null);
   const [replyDraft, setReplyDraft] = React.useState('');
@@ -766,6 +766,15 @@ function NewsDiscussionPanel({
     groups.set(key, [...(groups.get(key) || []), comment]);
     return groups;
   }, new Map<string, ApiNewsComment[]>());
+  const commentWord =
+    comments.length === 1 ? 'komentář' : comments.length > 1 && comments.length < 5 ? 'komentáře' : 'komentářů';
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      setReplyTo(null);
+      setEditingId(null);
+    }
+  }, [isOpen]);
 
   const requireAccount = () => {
     if (account) return true;
@@ -859,56 +868,69 @@ function NewsDiscussionPanel({
 
   return (
     <div className="news-discussion">
-      <div className="news-actions">
+      <div className="discussion-summary">
+        <button className="comments-toggle" type="button" aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
+          <MessageCircle size={17} /> {isOpen ? 'Skrýt komentáře' : 'Zobrazit komentáře'}
+        </button>
+        <span className="summary-separator" aria-hidden="true">|</span>
+        <span>{comments.length} {commentWord}</span>
+        <span className="summary-separator" aria-hidden="true">|</span>
         <button
           className={`heart-button${like.likedByMe ? ' active' : ''}`}
           type="button"
           aria-pressed={like.likedByMe}
           onClick={() => (requireAccount() ? onToggleLike(item.id) : undefined)}
         >
-          <Heart size={18} fill={like.likedByMe ? 'currentColor' : 'none'} /> {like.count}
+          {like.count}x &lt;3
         </button>
-        <span>
-          <MessageCircle size={18} /> {comments.length}
-        </span>
       </div>
 
-      <div className="comment-list">
-        {(commentsByParent.get('root') || []).map((comment) => renderComment(comment))}
-        {comments.length === 0 && <p className="comment-empty">Zatím bez komentářů.</p>}
-      </div>
-
-      {replyTo && (
-        <form className="comment-form reply-form" onSubmit={submitReply}>
-          <label>
-            Odpověď pro {replyTo.authorName}
-            <textarea value={replyDraft} onChange={(event) => setReplyDraft(event.target.value)} rows={3} />
-          </label>
-          <div className="comment-actions">
-            <button className="mini-action" type="submit">
-              <Reply size={15} /> Odeslat odpověď
-            </button>
-            <button className="mini-action ghost" type="button" onClick={() => setReplyTo(null)}>
-              <X size={15} /> Zrušit
-            </button>
+      {isOpen && (
+        <div className="comment-panel">
+          <div className="comment-list">
+            {(commentsByParent.get('root') || []).map((comment) => renderComment(comment))}
+            {comments.length === 0 && <p className="comment-empty">Zatím bez komentářů.</p>}
           </div>
-        </form>
-      )}
 
-      <form className="comment-form" onSubmit={submitComment}>
-        <label>
-          Přidat komentář
-          <textarea
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            rows={3}
-            placeholder={account ? 'Napište komentář...' : 'Pro komentář se nejdřív přihlaste.'}
-          />
-        </label>
-        <button className="mini-action" type="submit">
-          <MessageCircle size={15} /> Komentovat
-        </button>
-      </form>
+          {replyTo && (
+            <form className="comment-form reply-form" onSubmit={submitReply}>
+              <label>
+                Odpověď pro {replyTo.authorName}
+                <textarea value={replyDraft} onChange={(event) => setReplyDraft(event.target.value)} rows={3} />
+              </label>
+              <div className="comment-actions">
+                <button className="mini-action" type="submit">
+                  <Reply size={15} /> Odeslat odpověď
+                </button>
+                <button className="mini-action ghost" type="button" onClick={() => setReplyTo(null)}>
+                  <X size={15} /> Zrušit
+                </button>
+              </div>
+            </form>
+          )}
+
+          {account ? (
+            <form className="comment-form" onSubmit={submitComment}>
+              <label>
+                Přidat komentář
+                <textarea
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  rows={3}
+                  placeholder="Napište komentář..."
+                />
+              </label>
+              <button className="mini-action" type="submit">
+                <MessageCircle size={15} /> Komentovat
+              </button>
+            </form>
+          ) : (
+            <p className="comment-login-note">
+              Pro komentování nebo lajkování se prosím <a href="#/klient">přihlaste do klientské zóny</a>.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

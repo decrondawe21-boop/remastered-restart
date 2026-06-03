@@ -11,6 +11,8 @@
   --green-soft: #e4f2e7;
   --gold: #b8933a;
   --shadow: 0 18px 45px rgba(26, 51, 36, 0.08);
+  --page-max: 1640px;
+  --page-gutter: clamp(22px, 3.6vw, 58px);
   --font-sans:
     "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --weight-regular: 400;
@@ -167,7 +169,7 @@ img {
   gap: 28px;
   align-items: center;
   min-height: 78px;
-  padding: 12px clamp(20px, 5vw, 72px);
+  padding: 12px max(var(--page-gutter), calc((100vw - var(--page-max)) / 2));
   border-bottom: 1px solid rgba(220, 230, 221, 0.78);
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(18px);
@@ -454,13 +456,15 @@ img {
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.68fr);
   gap: clamp(32px, 6vw, 84px);
   align-items: center;
-  padding: clamp(58px, 8vw, 104px) clamp(20px, 5vw, 72px) 40px;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding: clamp(58px, 8vw, 104px) var(--page-gutter) 40px;
 }
 
 .slideshow-hero {
   grid-template-columns: 1fr;
   gap: 16px;
-  max-width: 1290px;
+  max-width: var(--page-max);
   min-height: 0;
   margin: 0 auto;
   padding-block: clamp(32px, 4vw, 54px);
@@ -469,7 +473,9 @@ img {
 }
 
 .page-header {
-  padding: clamp(58px, 7vw, 86px) clamp(20px, 5vw, 72px);
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding: clamp(58px, 7vw, 86px) var(--page-gutter);
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.84);
 }
@@ -740,7 +746,8 @@ h3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  margin: 16px clamp(20px, 5vw, 72px) 0;
+  max-width: calc(var(--page-max) - (var(--page-gutter) * 2));
+  margin: 16px auto 0;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -769,7 +776,8 @@ h3 {
   gap: 24px;
   align-items: center;
   justify-content: space-between;
-  margin: clamp(38px, 5vw, 64px) clamp(20px, 5vw, 72px);
+  max-width: calc(var(--page-max) - (var(--page-gutter) * 2));
+  margin: clamp(38px, 5vw, 64px) auto;
   padding: clamp(26px, 4vw, 40px);
   border-radius: 8px;
   background: var(--green);
@@ -793,7 +801,9 @@ h3 {
 .muted-section,
 .split-section,
 .contact-section {
-  padding: clamp(70px, 9vw, 118px) clamp(20px, 5vw, 72px);
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding: clamp(70px, 9vw, 118px) var(--page-gutter);
 }
 
 .muted-section {
@@ -997,13 +1007,13 @@ h3 {
 
 .news-discussion {
   display: grid;
-  gap: 16px;
+  gap: 12px;
   margin-top: 24px;
   padding-top: 18px;
   border-top: 1px solid var(--line);
 }
 
-.news-actions,
+.discussion-summary,
 .comment-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1011,7 +1021,22 @@ h3 {
   gap: 8px;
 }
 
-.news-actions span,
+.discussion-summary {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.discussion-summary span {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+}
+
+.discussion-summary .summary-separator {
+  color: #b8c7ba;
+}
+
+.comments-toggle,
 .heart-button,
 .mini-action {
   display: inline-flex;
@@ -1019,6 +1044,7 @@ h3 {
   gap: 7px;
 }
 
+.comments-toggle,
 .heart-button,
 .mini-action {
   min-height: 36px;
@@ -1032,12 +1058,19 @@ h3 {
   cursor: pointer;
 }
 
+.comments-toggle:hover,
 .heart-button:hover,
 .heart-button.active,
 .mini-action:hover {
   border-color: rgba(43, 128, 78, 0.32);
   background: var(--green-soft);
   color: var(--green-dark);
+}
+
+.comment-panel {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
 }
 
 .mini-action.ghost {
@@ -1130,6 +1163,22 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
+}
+
+.comment-login-note {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--muted);
+}
+
+.comment-login-note a {
+  color: var(--green-dark);
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .partner-strip {

@@ -539,19 +539,19 @@ const starterAccounts: AuthAccount[] = [
 const starterSlides: HomeSlide[] = [
   {
     id: 'slide-vstup',
-    title: 'Cesta k novému začátku',
-    subtitle: 'Bezpečný první krok, konkrétní plán a doprovázení zpět do běžného života.',
-    imageUrl: '/images/crops/new-photos/foto-175300-mid.jpg',
-    ctaLabel: 'Potřebuji pomoc',
-    ctaHref: '#/kontakt',
+    title: 'Zázemí, které roste krok za krokem',
+    subtitle: 'To, co začíná jako malé semínko, může časem vytvořit bezpečný průchod.',
+    imageUrl: '/images/crops/streetwise/streetwise-klenba.jpg',
+    ctaLabel: 'STREETWISE',
+    ctaHref: '#/programy',
     sortOrder: 10,
     isActive: true
   },
   {
     id: 'slide-zazemi',
-    title: 'Zázemí, které roste krok za krokem',
-    subtitle: 'Zázemí, mentoring a praktická podpora pro lidi, kteří potřebují stabilitu.',
-    imageUrl: '/images/crops/new-photos/foto-175346-mid.jpg',
+    title: 'Z odepsaného vzniká zázemí',
+    subtitle: 'Z nalezeného dřeva a materiálu stavíme prostor, který může sloužit dál.',
+    imageUrl: '/images/crops/streetwise/streetwise-zelena-stena.jpg',
     ctaLabel: 'Jak pracujeme',
     ctaHref: '#/co-delame',
     sortOrder: 20,
@@ -559,12 +559,32 @@ const starterSlides: HomeSlide[] = [
   },
   {
     id: 'slide-detail',
-    title: 'Malé kroky mají smysl',
-    subtitle: 'Každý viditelný posun začíná konkrétní péčí, řádem a lidskou podporou.',
-    imageUrl: '/images/crops/new-photos/foto-175413-mid.jpg',
+    title: 'Trpělivá péče má smysl',
+    subtitle: 'Růže, zázemí i lidská změna rostou tehdy, když dostanou čas a oporu.',
+    imageUrl: '/images/crops/streetwise/streetwise-ruze-detail.jpg',
     ctaLabel: 'Zapojit se',
     ctaHref: '#/zapojeni',
     sortOrder: 30,
+    isActive: true
+  },
+  {
+    id: 'slide-streetwise-cesta',
+    title: 'Střecha pro první krok',
+    subtitle: 'STREETWISE buduje bezpečné místo pro kontakt, podporu a první stabilní krok.',
+    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.jpg',
+    ctaLabel: 'Potřebuji pomoc',
+    ctaHref: '#/kontakt',
+    sortOrder: 40,
+    isActive: true
+  },
+  {
+    id: 'slide-streetwise-bouda',
+    title: 'Stavíme z toho, co ještě může sloužit',
+    subtitle: 'Dřevo z demolic, ruce, trpělivost a víra v druhou šanci. Pro věci i pro lidi.',
+    imageUrl: '/images/crops/streetwise/streetwise-bouda-stavba.jpg',
+    ctaLabel: 'Druhá šance v praxi',
+    ctaHref: '#/co-delame',
+    sortOrder: 50,
     isActive: true
   },
   {
@@ -1411,6 +1431,27 @@ function HomePage({
   return (
     <>
       <HomeSlideshow slides={slides} />
+
+      <section className="streetwise-feature">
+        <div className="streetwise-copy">
+          <p className="section-label">STREETWISE</p>
+          <h2>Z věcí, které měly skončit, stavíme nové zázemí.</h2>
+          <p>
+            REST||ART Integrace vzniká stejně jako naše bouda: z nalezeného materiálu, práce, trpělivosti a víry, že
+            i to, co bylo odepsané, může znovu sloužit.
+          </p>
+          <p>
+            STREETWISE bude zázemí a střecha pro lidi bez domova. Praktický prostor pro první kontakt, bezpečí a další
+            krok zpět ke stabilitě.
+          </p>
+          <a className="button primary" href="#/programy">
+            Zobrazit STREETWISE <ArrowRight size={18} />
+          </a>
+        </div>
+        <figure className="streetwise-photo">
+          <img src="/images/crops/streetwise/streetwise-bouda-stavba.jpg" alt="" />
+        </figure>
+      </section>
 
       <section className="stats-band" aria-label="Základní čísla">
         {stats.map((item) => (
@@ -3282,6 +3323,10 @@ function App() {
         <div>
           <p>REST||ART Integrace</p>
           <span>Druhá šance v praxi. Mentoring, práce, bydlení, stabilizace.</span>
+        </div>
+        <div className="codex-credit" aria-label="Technická spolupráce">
+          <span>Design a vývoj ve spolupráci s</span>
+          <strong>OpenAI Codex</strong>
         </div>
         <button className="footer-cookie-button" type="button" onClick={() => setCookieSettingsOpen(true)}>
           Nastavení cookies

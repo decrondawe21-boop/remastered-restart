@@ -290,19 +290,19 @@ INSERT INTO home_slides (id, title, subtitle, image_url, cta_label, cta_href, so
 VALUES
   (
     'slide-vstup',
-    'Cesta k novému začátku',
-    'Bezpečný první krok, konkrétní plán a doprovázení zpět do běžného života.',
-    '/images/crops/new-photos/foto-175300-mid.jpg',
-    'Potřebuji pomoc',
-    '#/kontakt',
+    'Zázemí, které roste krok za krokem',
+    'To, co začíná jako malé semínko, může časem vytvořit bezpečný průchod.',
+    '/images/crops/streetwise/streetwise-klenba.jpg',
+    'STREETWISE',
+    '#/programy',
     10,
     1
   ),
   (
     'slide-zazemi',
-    'Zázemí, které roste krok za krokem',
-    'Zázemí, mentoring a praktická podpora pro lidi, kteří potřebují stabilitu.',
-    '/images/crops/new-photos/foto-175346-mid.jpg',
+    'Z odepsaného vzniká zázemí',
+    'Z nalezeného dřeva a materiálu stavíme prostor, který může sloužit dál.',
+    '/images/crops/streetwise/streetwise-zelena-stena.jpg',
     'Jak pracujeme',
     '#/co-delame',
     20,
@@ -310,12 +310,32 @@ VALUES
   ),
   (
     'slide-detail',
-    'Malé kroky mají smysl',
-    'Každý viditelný posun začíná konkrétní péčí, řádem a lidskou podporou.',
-    '/images/crops/new-photos/foto-175413-mid.jpg',
+    'Trpělivá péče má smysl',
+    'Růže, zázemí i lidská změna rostou tehdy, když dostanou čas a oporu.',
+    '/images/crops/streetwise/streetwise-ruze-detail.jpg',
     'Zapojit se',
     '#/zapojeni',
     30,
+    1
+  ),
+  (
+    'slide-streetwise-cesta',
+    'Střecha pro první krok',
+    'STREETWISE buduje bezpečné místo pro kontakt, podporu a první stabilní krok.',
+    '/images/crops/streetwise/streetwise-cesta-branka.jpg',
+    'Potřebuji pomoc',
+    '#/kontakt',
+    40,
+    1
+  ),
+  (
+    'slide-streetwise-bouda',
+    'Stavíme z toho, co ještě může sloužit',
+    'Dřevo z demolic, ruce, trpělivost a víra v druhou šanci. Pro věci i pro lidi.',
+    '/images/crops/streetwise/streetwise-bouda-stavba.jpg',
+    'Druhá šance v praxi',
+    '#/co-delame',
+    50,
     1
   ),
   (

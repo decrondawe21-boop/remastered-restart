@@ -7,6 +7,10 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
   const page = await browser.newPage({ viewport: { width: 1280, height: 920 } });
 
   await page.goto(`${baseUrl}/#/admin`, { waitUntil: 'networkidle' });
+  const cookieButton = page.getByRole('button', { name: 'Pouze nezbytné' });
+  if ((await cookieButton.count()) > 0) {
+    await cookieButton.click();
+  }
   if (!(await page.getByRole('heading', { name: 'Přihlášení do administrace' }).isVisible())) {
     throw new Error('Admin route should show a protected login screen.');
   }
@@ -33,24 +37,32 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
   await page.getByRole('button', { name: 'Rozumím' }).click();
 
   await page.goto(`${baseUrl}/#/klient`, { waitUntil: 'networkidle' });
+  const testEmail = `jan-${Date.now()}@example.test`;
   if (!(await page.getByRole('heading', { name: 'Klientský profil' }).isVisible())) {
     throw new Error('Client route should show client profile authentication.');
   }
   await page.getByRole('button', { name: 'Registrace klienta' }).click();
   await page.getByLabel('Jméno a příjmení').fill('Jan Novak');
-  await page.getByLabel('E-mail').fill('jan@example.test');
+  await page.getByLabel('E-mail').fill(testEmail);
   await page.getByLabel('Telefon').fill('+420 777 111 222');
   await page.getByLabel('Heslo', { exact: true }).fill('tajneheslo');
   await page.getByRole('button', { name: 'Vytvořit profil' }).click();
+  if (!(await page.getByText('Souhlas chybí').isVisible())) {
+    throw new Error('Registration should require consent checkbox.');
+  }
+  await page.getByLabel('Souhlasím se zpracováním údajů').click();
+  await page.getByRole('button', { name: 'Vytvořit profil' }).click();
 
-  await page.getByText('Jan Novak').waitFor({ state: 'visible', timeout: 5000 });
-  if (!(await page.getByText('Jan Novak').isVisible())) {
+  await page.getByRole('heading', { name: 'Jan Novak', level: 1 }).waitFor({ state: 'visible', timeout: 5000 });
+  if (!(await page.getByRole('heading', { name: 'Jan Novak', level: 1 }).isVisible())) {
     throw new Error('Registered client should land in profile GUI.');
   }
-  if (!(await page.getByText('Upravit profil').isVisible())) {
+  await page.getByRole('button', { name: /Můj profil/ }).click();
+  if (!(await page.getByRole('heading', { name: 'Můj profil', level: 1 }).isVisible())) {
     throw new Error('Client profile should expose a profile GUI section.');
   }
-  if (!(await page.getByText('Profilová fotka').isVisible())) {
+  await page.getByRole('button', { name: /Avatar/ }).click();
+  if (!(await page.getByRole('heading', { name: 'Avatar editor' }).isVisible())) {
     throw new Error('Client profile should expose the avatar editor.');
   }
 

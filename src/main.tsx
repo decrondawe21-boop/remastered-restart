@@ -3,27 +3,40 @@ import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
   AlertCircle,
+  Bell,
   ChevronLeft,
   CheckCircle2,
+  ClipboardList,
   Eye,
   EyeOff,
+  FileStack,
   FileText,
+  FolderOpen,
   Heart,
+  Image as ImageIcon,
   Info,
   KeyRound,
+  LayoutDashboard,
   LockKeyhole,
   LogOut,
   Mail,
   MessageCircle,
   Menu,
+  Newspaper,
   Phone,
   Plus,
   Printer,
   Reply,
+  RotateCcw,
   Save,
+  Settings,
+  ShieldCheck,
   Trash2,
+  Undo2,
   Upload,
+  UserCog,
   UserRound,
+  Users,
   X
 } from 'lucide-react';
 import {
@@ -39,8 +52,10 @@ import {
 import {
   getSession,
   addNewsComment,
+  confirmPasswordReset,
   deleteNewsComment,
   listClients,
+  listFormTemplates,
   listNews,
   listNewsDiscussion,
   listSlides,
@@ -53,10 +68,13 @@ import {
   saveSlide as saveSlideRecord,
   toggleNewsLike,
   updateNewsComment,
+  ApiRequestError,
   type ApiClientRecord,
+  type ApiFormTemplate,
   type ApiNewsComment,
   type ApiNewsLike,
   type ApiHomeSlide,
+  type ApiPasswordResetRequest,
   type ApiRole,
   type ApiUser
 } from './api';
@@ -124,9 +142,13 @@ type FormTemplate = {
   title: string;
   description: string;
   fields: Array<{ key: string; label: string; rows?: number }>;
+  fileUrl?: string;
+  folder?: string;
+  sourceNote?: string;
+  sizeBytes?: number;
 };
 
-type AuthRole = 'admin' | 'client';
+type AuthRole = ApiRole;
 
 type AuthAccount = {
   id: string;
@@ -138,7 +160,7 @@ type AuthAccount = {
   createdAt: string;
 };
 
-type AuthMode = 'login' | 'register' | 'reset';
+type AuthMode = 'login' | 'register' | 'reset' | 'reset-confirm';
 
 type ClientProfileDraft = {
   name: string;
@@ -166,6 +188,11 @@ type RegisterRequest = {
   password: string;
 };
 
+type ResetConfirmRequest = {
+  token: string;
+  password: string;
+};
+
 type FeedbackTone = 'success' | 'error' | 'warning' | 'info';
 
 type ToastMessage = {
@@ -175,11 +202,273 @@ type ToastMessage = {
   text?: string;
 };
 
+type NotifyFn = (tone: FeedbackTone, title: string, text?: string) => void;
+
 type ModalState = {
   title: string;
   text: string;
   tone: FeedbackTone;
 } | null;
+
+type LayoutConfig = {
+  pageMax: string;
+  pageGutter: string;
+  breakpoints: {
+    s: number;
+    m: number;
+    l: number;
+  };
+};
+
+type IconConfig = {
+  size: number;
+  strokeWidth: number;
+};
+
+type ToastContextValue = {
+  notify: NotifyFn;
+  dismissToast: (id: string) => void;
+  messages: ToastMessage[];
+};
+
+type CookieCategory = 'necessary' | 'statistics' | 'marketing';
+
+type CookiePreferences = {
+  necessary: true;
+  statistics: boolean;
+  marketing: boolean;
+  decidedAt: string;
+  version: string;
+};
+
+type CookieCatalogItem = {
+  name: string;
+  service: string;
+  category: CookieCategory;
+  duration: string;
+  owner: string;
+  policyUrl?: string;
+};
+
+type AdminSection =
+  | 'dashboard'
+  | 'news'
+  | 'content'
+  | 'clients'
+  | 'forms'
+  | 'media'
+  | 'users'
+  | 'notifications'
+  | 'settings';
+
+type ClientSection =
+  | 'dashboard'
+  | 'profile'
+  | 'avatar'
+  | 'documents'
+  | 'activity'
+  | 'notifications'
+  | 'settings';
+
+type WorkspaceNavItem<T extends string> = {
+  id: T;
+  label: string;
+  text: string;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+};
+
+const layoutConfig: LayoutConfig = {
+  pageMax: '1640px',
+  pageGutter: 'clamp(22px, 3.6vw, 58px)',
+  breakpoints: {
+    s: 640,
+    m: 980,
+    l: 1200
+  }
+};
+
+const iconConfig: IconConfig = {
+  size: 18,
+  strokeWidth: 2
+};
+
+const LayoutContext = React.createContext<LayoutConfig>(layoutConfig);
+const IconContext = React.createContext<IconConfig>(iconConfig);
+const ToastContext = React.createContext<ToastContextValue | null>(null);
+
+const adminNavItems: Array<WorkspaceNavItem<AdminSection>> = [
+  { id: 'dashboard', label: 'Dashboard', text: 'Statistiky a rychlé akce', icon: LayoutDashboard },
+  { id: 'news', label: 'Aktuality', text: 'Publikace a archiv', icon: Newspaper },
+  { id: 'content', label: 'Příspěvky / obsah', text: 'Články, reporty, galerie', icon: FileStack },
+  { id: 'clients', label: 'Klienti', text: 'Seznam, detail, stav', icon: Users },
+  { id: 'forms', label: 'Tiskové formuláře', text: 'Šablony a exporty', icon: ClipboardList },
+  { id: 'media', label: 'Média', text: 'Obrázky a dokumenty', icon: ImageIcon },
+  { id: 'users', label: 'Uživatelé a role', text: 'Admin, editor, user', icon: UserCog },
+  { id: 'notifications', label: 'Notifikace', text: 'Zprávy a upozornění', icon: Bell },
+  { id: 'settings', label: 'Nastavení', text: 'Branding, SEO, bezpečnost', icon: Settings }
+];
+
+const clientNavItems: Array<WorkspaceNavItem<ClientSection>> = [
+  { id: 'dashboard', label: 'Dashboard', text: 'Stav účtu a přehled', icon: LayoutDashboard },
+  { id: 'profile', label: 'Můj profil', text: 'Jméno, kontakty, bio', icon: UserRound },
+  { id: 'avatar', label: 'Avatar / profilovka', text: 'Upload, ořez, náhled', icon: ImageIcon },
+  { id: 'documents', label: 'Moje dokumenty', text: 'Soubory a formuláře', icon: FolderOpen },
+  { id: 'activity', label: 'Moje aktivita', text: 'Historie změn', icon: ClipboardList },
+  { id: 'notifications', label: 'Notifikace', text: 'Zprávy a potvrzení', icon: Bell },
+  { id: 'settings', label: 'Nastavení účtu', text: 'Heslo, 2FA, soukromí', icon: ShieldCheck }
+];
+
+const cookieCatalog: CookieCatalogItem[] = [
+  {
+    name: 'restart-cookie-preferences',
+    service: 'REST||ART Integrace',
+    category: 'necessary',
+    duration: '1 rok',
+    owner: 'REST||ART Integrace'
+  },
+  {
+    name: 'restart-auth-session',
+    service: 'REST||ART Integrace',
+    category: 'necessary',
+    duration: 'Relace / lokální nastavení',
+    owner: 'REST||ART Integrace'
+  },
+  {
+    name: 'webSID',
+    service: 'Webová aplikace',
+    category: 'necessary',
+    duration: 'Relace',
+    owner: 'REST||ART Integrace'
+  },
+  {
+    name: '_ga',
+    service: 'Google Analytics',
+    category: 'statistics',
+    duration: '2 roky',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: '_ga_*',
+    service: 'Google Analytics',
+    category: 'statistics',
+    duration: '2 roky',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: '_gid',
+    service: 'Google Analytics',
+    category: 'statistics',
+    duration: '24 hodin',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: '_gat*',
+    service: 'Google Analytics',
+    category: 'statistics',
+    duration: 'Relace',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: '_pk_id*',
+    service: 'Matomo',
+    category: 'statistics',
+    duration: '1 rok',
+    owner: 'Matomo',
+    policyUrl: 'https://matomo.org/privacy-policy/'
+  },
+  {
+    name: '_pk_ses*',
+    service: 'Matomo',
+    category: 'statistics',
+    duration: 'Relace',
+    owner: 'Matomo',
+    policyUrl: 'https://matomo.org/privacy-policy/'
+  },
+  {
+    name: 'YSC',
+    service: 'YouTube / Google',
+    category: 'necessary',
+    duration: 'Relace',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: 'VISITOR_INFO1_LIVE',
+    service: 'YouTube / Google',
+    category: 'marketing',
+    duration: '6 měsíců',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: 'NID',
+    service: 'Google reCAPTCHA',
+    category: 'necessary',
+    duration: '6 měsíců',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: '_GRECAPTCHA',
+    service: 'Google reCAPTCHA',
+    category: 'necessary',
+    duration: '6 měsíců',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: '_fbp',
+    service: 'Meta Pixel',
+    category: 'marketing',
+    duration: '3 měsíce',
+    owner: 'Meta Platforms Ireland Ltd.',
+    policyUrl: 'https://www.facebook.com/privacy/policy/'
+  },
+  {
+    name: '_gcl_au',
+    service: 'Google Ads',
+    category: 'marketing',
+    duration: '3 měsíce',
+    owner: 'Google LLC',
+    policyUrl: 'https://policies.google.com/privacy'
+  },
+  {
+    name: '_uetsid',
+    service: 'Microsoft Ads',
+    category: 'marketing',
+    duration: '24 hodin',
+    owner: 'Microsoft',
+    policyUrl: 'https://privacy.microsoft.com/privacystatement'
+  },
+  {
+    name: '_uetvid',
+    service: 'Microsoft Ads',
+    category: 'marketing',
+    duration: '1 rok',
+    owner: 'Microsoft',
+    policyUrl: 'https://privacy.microsoft.com/privacystatement'
+  },
+  {
+    name: 'sp_t',
+    service: 'Spotify',
+    category: 'necessary',
+    duration: '68 let',
+    owner: 'Spotify',
+    policyUrl: 'https://www.spotify.com/legal/privacy-policy/'
+  },
+  {
+    name: 'sp_landing',
+    service: 'Spotify',
+    category: 'necessary',
+    duration: '24 hodin',
+    owner: 'Spotify',
+    policyUrl: 'https://www.spotify.com/legal/privacy-policy/'
+  }
+];
 
 const fromApiUser = (user: ApiUser): AuthAccount => ({
   id: user.id,
@@ -204,6 +493,17 @@ const fromApiClient = (client: ApiClientRecord): ClientRecord => ({
   status: client.status,
   notes: client.notes || '',
   createdAt: client.createdAt
+});
+
+const fromApiFormTemplate = (template: ApiFormTemplate): FormTemplate => ({
+  id: template.id,
+  title: template.title,
+  description: template.description,
+  fields: template.fields,
+  fileUrl: template.fileUrl,
+  folder: template.folder,
+  sourceNote: template.sourceNote,
+  sizeBytes: template.sizeBytes
 });
 
 const starterAccounts: AuthAccount[] = [
@@ -446,7 +746,7 @@ const emptyClient: ClientRecord = {
   createdAt: ''
 };
 
-const formTemplates: FormTemplate[] = [
+const fallbackFormTemplates: FormTemplate[] = [
   {
     id: 'intake',
     title: 'Vstupní karta klienta',
@@ -1397,14 +1697,144 @@ function PasswordField({
   );
 }
 
-function feedbackIcon(tone: FeedbackTone) {
-  if (tone === 'success') return <CheckCircle2 size={18} />;
-  if (tone === 'error') return <AlertCircle size={18} />;
-  return <Info size={18} />;
+function FeedbackIcon({ tone }: { tone: FeedbackTone }) {
+  const { size, strokeWidth } = React.useContext(IconContext);
+  const props = { size, strokeWidth };
+  if (tone === 'success') return <CheckCircle2 {...props} />;
+  if (tone === 'error') return <AlertCircle {...props} />;
+  return <Info {...props} />;
 }
 
 function Badge({ tone = 'info', children }: { tone?: FeedbackTone; children: React.ReactNode }) {
   return <span className={`ui-badge ${tone}`}>{children}</span>;
+}
+
+function AppCheckbox({
+  id,
+  checked,
+  onChange,
+  label,
+  description,
+  required = false,
+  disabled = false
+}: {
+  id: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: React.ReactNode;
+  description?: React.ReactNode;
+  required?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <label className={`app-checkbox${disabled ? ' disabled' : ''}`} htmlFor={id}>
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        aria-required={required}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span className="checkbox-control" aria-hidden="true">
+        {checked && <CheckCircle2 size={16} />}
+      </span>
+      <span className="checkbox-copy">
+        <span>{label}</span>
+        {description && <small>{description}</small>}
+      </span>
+    </label>
+  );
+}
+
+function LayoutProvider({ children }: { children: React.ReactNode }) {
+  const layoutStyle = {
+    '--page-max': layoutConfig.pageMax,
+    '--page-gutter': layoutConfig.pageGutter
+  } as React.CSSProperties;
+
+  return (
+    <LayoutContext.Provider value={layoutConfig}>
+      <div className="app-layout-provider" style={layoutStyle}>
+        {children}
+      </div>
+    </LayoutContext.Provider>
+  );
+}
+
+function IconProvider({ children }: { children: React.ReactNode }) {
+  return <IconContext.Provider value={iconConfig}>{children}</IconContext.Provider>;
+}
+
+function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [messages, setMessages] = React.useState<ToastMessage[]>([]);
+  const timeoutRefs = React.useRef<Record<string, number>>({});
+
+  const dismissToast = React.useCallback((id: string) => {
+    if (timeoutRefs.current[id]) {
+      window.clearTimeout(timeoutRefs.current[id]);
+      delete timeoutRefs.current[id];
+    }
+    setMessages((current) => current.filter((message) => message.id !== id));
+  }, []);
+
+  const notify = React.useCallback<NotifyFn>((tone, title, text) => {
+    const id = crypto.randomUUID();
+    setMessages((current) => [...current.slice(-3), { id, tone, title, text }]);
+    timeoutRefs.current[id] = window.setTimeout(() => {
+      dismissToast(id);
+    }, tone === 'error' ? 7000 : 4800);
+  }, [dismissToast]);
+
+  React.useEffect(() => {
+    return () => {
+      Object.values(timeoutRefs.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ notify, dismissToast, messages }}>
+      {children}
+      <ToastStack messages={messages} onDismiss={dismissToast} />
+    </ToastContext.Provider>
+  );
+}
+
+function useToast() {
+  const context = React.useContext(ToastContext);
+  if (!context) {
+    throw new Error('useToast must be used within ToastProvider');
+  }
+  return context;
+}
+
+function AppProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <LayoutProvider>
+      <IconProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </IconProvider>
+    </LayoutProvider>
+  );
+}
+
+function RevealFx({
+  children,
+  delay = 0,
+  className = '',
+  as: Component = 'div'
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+  as?: keyof React.JSX.IntrinsicElements;
+}) {
+  const style = { '--reveal-delay': `${delay}ms` } as React.CSSProperties;
+  return (
+    <Component className={`reveal-fx ${className}`.trim()} style={style}>
+      {children}
+    </Component>
+  );
 }
 
 function ToastStack({
@@ -1419,7 +1849,7 @@ function ToastStack({
     <div className="toast-stack" role="status" aria-live="polite" aria-atomic="false">
       {messages.map((message) => (
         <div className={`ui-toast ${message.tone}`} key={message.id}>
-          <div className="toast-icon">{feedbackIcon(message.tone)}</div>
+          <div className="toast-icon"><FeedbackIcon tone={message.tone} /></div>
           <div>
             <strong>{message.title}</strong>
             {message.text && <p>{message.text}</p>}
@@ -1444,7 +1874,7 @@ function AppModal({ modal, onClose }: { modal: ModalState; onClose: () => void }
         aria-labelledby="app-modal-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className="modal-icon">{feedbackIcon(modal.tone)}</div>
+        <div className="modal-icon"><FeedbackIcon tone={modal.tone} /></div>
         <div>
           <h2 id="app-modal-title">{modal.title}</h2>
           <p>{modal.text}</p>
@@ -1461,14 +1891,34 @@ function AppModal({ modal, onClose }: { modal: ModalState; onClose: () => void }
 }
 
 const weatherLeaves = [
-  { left: '6%', size: 17, color: '#2f7d49', opacity: 0.16, duration: '24s', delay: '-4s', drift: '72px', rotate: '18deg' },
-  { left: '15%', size: 12, color: '#78a84f', opacity: 0.14, duration: '28s', delay: '-16s', drift: '-54px', rotate: '-24deg' },
-  { left: '27%', size: 20, color: '#b8933a', opacity: 0.11, duration: '31s', delay: '-9s', drift: '86px', rotate: '42deg' },
-  { left: '41%', size: 14, color: '#1f5f36', opacity: 0.12, duration: '26s', delay: '-22s', drift: '-68px', rotate: '-12deg' },
-  { left: '54%', size: 18, color: '#4f8f46', opacity: 0.13, duration: '30s', delay: '-2s', drift: '58px', rotate: '26deg' },
-  { left: '66%', size: 13, color: '#cfb15a', opacity: 0.1, duration: '34s', delay: '-20s', drift: '-92px', rotate: '-36deg' },
-  { left: '78%', size: 21, color: '#2f7d49', opacity: 0.12, duration: '29s', delay: '-12s', drift: '76px', rotate: '8deg' },
-  { left: '90%', size: 15, color: '#8fb85b', opacity: 0.13, duration: '33s', delay: '-26s', drift: '-62px', rotate: '34deg' }
+  { left: '3%', size: 16, color: '#7dff9a', accent: '#247b3d', glow: 'rgba(88, 255, 132, 0.42)', opacity: 0.24, duration: '18s', delay: '-2s', drift: '108px', rotate: '10deg' },
+  { left: '7%', size: 11, color: '#d4b64f', accent: '#826111', glow: 'rgba(255, 207, 73, 0.36)', opacity: 0.2, duration: '24s', delay: '-12s', drift: '-74px', rotate: '-18deg' },
+  { left: '11%', size: 22, color: '#31c966', accent: '#0f5f2d', glow: 'rgba(49, 255, 112, 0.35)', opacity: 0.22, duration: '21s', delay: '-7s', drift: '132px', rotate: '28deg' },
+  { left: '16%', size: 13, color: '#b6ff64', accent: '#4d8c25', glow: 'rgba(182, 255, 100, 0.36)', opacity: 0.21, duration: '27s', delay: '-18s', drift: '-92px', rotate: '-34deg' },
+  { left: '20%', size: 18, color: '#2f7d49', accent: '#9bd86f', glow: 'rgba(68, 224, 102, 0.32)', opacity: 0.2, duration: '23s', delay: '-4s', drift: '86px', rotate: '44deg' },
+  { left: '24%', size: 10, color: '#f0c75a', accent: '#a68121', glow: 'rgba(255, 213, 84, 0.42)', opacity: 0.19, duration: '29s', delay: '-21s', drift: '-118px', rotate: '-8deg' },
+  { left: '29%', size: 20, color: '#5fe08b', accent: '#1e7b40', glow: 'rgba(95, 255, 139, 0.34)', opacity: 0.22, duration: '20s', delay: '-15s', drift: '124px', rotate: '18deg' },
+  { left: '33%', size: 14, color: '#8fb85b', accent: '#2f6d32', glow: 'rgba(159, 221, 91, 0.3)', opacity: 0.18, duration: '26s', delay: '-10s', drift: '-78px', rotate: '-42deg' },
+  { left: '37%', size: 25, color: '#20b85a', accent: '#0b4d29', glow: 'rgba(32, 230, 95, 0.36)', opacity: 0.18, duration: '31s', delay: '-24s', drift: '146px', rotate: '36deg' },
+  { left: '41%', size: 12, color: '#e7d47a', accent: '#8d7327', glow: 'rgba(255, 230, 119, 0.34)', opacity: 0.2, duration: '22s', delay: '-5s', drift: '-104px', rotate: '-24deg' },
+  { left: '45%', size: 17, color: '#a4ff8b', accent: '#2a9144', glow: 'rgba(164, 255, 139, 0.36)', opacity: 0.21, duration: '25s', delay: '-19s', drift: '96px', rotate: '12deg' },
+  { left: '49%', size: 9, color: '#1f5f36', accent: '#64d982', glow: 'rgba(77, 255, 119, 0.28)', opacity: 0.18, duration: '33s', delay: '-11s', drift: '-64px', rotate: '52deg' },
+  { left: '52%', size: 21, color: '#48d76f', accent: '#d7bf55', glow: 'rgba(72, 247, 111, 0.33)', opacity: 0.22, duration: '19s', delay: '-14s', drift: '118px', rotate: '-16deg' },
+  { left: '56%', size: 15, color: '#cfb15a', accent: '#4f8f46', glow: 'rgba(255, 207, 80, 0.34)', opacity: 0.19, duration: '28s', delay: '-23s', drift: '-132px', rotate: '30deg' },
+  { left: '60%', size: 24, color: '#0ea64b', accent: '#8dff79', glow: 'rgba(36, 255, 105, 0.38)', opacity: 0.2, duration: '22s', delay: '-8s', drift: '154px', rotate: '-30deg' },
+  { left: '64%', size: 12, color: '#b4db65', accent: '#2f7d49', glow: 'rgba(185, 232, 105, 0.3)', opacity: 0.2, duration: '30s', delay: '-17s', drift: '-88px', rotate: '22deg' },
+  { left: '68%', size: 19, color: '#78ffad', accent: '#146a39', glow: 'rgba(120, 255, 173, 0.38)', opacity: 0.2, duration: '24s', delay: '-3s', drift: '112px', rotate: '-46deg' },
+  { left: '72%', size: 10, color: '#f5d36b', accent: '#a77d19', glow: 'rgba(255, 218, 102, 0.42)', opacity: 0.2, duration: '34s', delay: '-27s', drift: '-120px', rotate: '8deg' },
+  { left: '75%', size: 16, color: '#2ed56c', accent: '#0d5d31', glow: 'rgba(46, 255, 112, 0.34)', opacity: 0.21, duration: '20s', delay: '-13s', drift: '136px', rotate: '40deg' },
+  { left: '79%', size: 23, color: '#a5c94e', accent: '#2e6f37', glow: 'rgba(175, 222, 75, 0.3)', opacity: 0.17, duration: '32s', delay: '-20s', drift: '-142px', rotate: '-20deg' },
+  { left: '82%', size: 13, color: '#56f08f', accent: '#1d773f', glow: 'rgba(86, 255, 143, 0.35)', opacity: 0.22, duration: '23s', delay: '-9s', drift: '92px', rotate: '16deg' },
+  { left: '85%', size: 18, color: '#b8933a', accent: '#f2df8a', glow: 'rgba(255, 216, 88, 0.32)', opacity: 0.18, duration: '29s', delay: '-26s', drift: '-106px', rotate: '-38deg' },
+  { left: '88%', size: 11, color: '#2fef77', accent: '#0c6f35', glow: 'rgba(47, 255, 119, 0.4)', opacity: 0.23, duration: '21s', delay: '-6s', drift: '126px', rotate: '46deg' },
+  { left: '91%', size: 26, color: '#67b747', accent: '#d7c25b', glow: 'rgba(143, 255, 88, 0.3)', opacity: 0.17, duration: '35s', delay: '-30s', drift: '-154px', rotate: '-12deg' },
+  { left: '94%', size: 14, color: '#e1bd43', accent: '#5cae50', glow: 'rgba(255, 205, 66, 0.36)', opacity: 0.19, duration: '26s', delay: '-16s', drift: '104px', rotate: '26deg' },
+  { left: '97%', size: 19, color: '#49c76b', accent: '#112f1d', glow: 'rgba(73, 235, 107, 0.3)', opacity: 0.18, duration: '31s', delay: '-22s', drift: '-130px', rotate: '-28deg' },
+  { left: '13%', size: 8, color: '#cbff8a', accent: '#319044', glow: 'rgba(203, 255, 138, 0.32)', opacity: 0.2, duration: '17s', delay: '-1s', drift: '80px', rotate: '58deg' },
+  { left: '58%', size: 8, color: '#fff0a4', accent: '#b8933a', glow: 'rgba(255, 234, 132, 0.38)', opacity: 0.18, duration: '18s', delay: '-6s', drift: '-82px', rotate: '-54deg' }
 ];
 
 function WeatherLeaves() {
@@ -1482,6 +1932,8 @@ function WeatherLeaves() {
               '--leaf-left': leaf.left,
               '--leaf-size': `${leaf.size}px`,
               '--leaf-color': leaf.color,
+              '--leaf-accent': leaf.accent,
+              '--leaf-glow': leaf.glow,
               '--leaf-opacity': leaf.opacity,
               '--leaf-duration': leaf.duration,
               '--leaf-delay': leaf.delay,
@@ -1495,6 +1947,307 @@ function WeatherLeaves() {
   );
 }
 
+const categoryLabels: Record<CookieCategory, string> = {
+  necessary: 'Technické',
+  statistics: 'Statistické',
+  marketing: 'Marketingové'
+};
+
+function CookieConsent({ forceOpen = false, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
+  const [legacyAccepted, setLegacyAccepted] = useStoredState('restart-cookie-consent', false);
+  const [preferences, setPreferences] = useStoredState<CookiePreferences | null>('restart-cookie-preferences', null);
+  const [manageOpen, setManageOpen] = React.useState(false);
+  const [statistics, setStatistics] = React.useState(false);
+  const [marketing, setMarketing] = React.useState(false);
+  const { notify } = useToast();
+  const shouldShowBanner = !preferences && !forceOpen;
+  const shouldShowManager = forceOpen || manageOpen;
+
+  React.useEffect(() => {
+    if (preferences || !legacyAccepted) return;
+    setPreferences({
+      necessary: true,
+      statistics: true,
+      marketing: true,
+      decidedAt: new Date().toISOString(),
+      version: '2026-06'
+    });
+  }, [legacyAccepted, preferences, setPreferences]);
+
+  React.useEffect(() => {
+    if (!preferences) return;
+    setStatistics(preferences.statistics);
+    setMarketing(preferences.marketing);
+  }, [preferences, forceOpen]);
+
+  if (!shouldShowBanner && !shouldShowManager) return null;
+
+  const closeManager = () => {
+    setManageOpen(false);
+    onClose?.();
+  };
+
+  const savePreferences = (nextStatistics = statistics, nextMarketing = marketing) => {
+    setPreferences({
+      necessary: true,
+      statistics: nextStatistics,
+      marketing: nextMarketing,
+      decidedAt: new Date().toISOString(),
+      version: '2026-06'
+    });
+    setLegacyAccepted(true);
+    setStatistics(nextStatistics);
+    setMarketing(nextMarketing);
+    notify('success', 'Nastavení cookies uloženo', 'Volby můžete kdykoliv změnit v patičce webu.');
+    closeManager();
+  };
+
+  const openManager = () => {
+    setStatistics(preferences?.statistics ?? false);
+    setMarketing(preferences?.marketing ?? false);
+    setManageOpen(true);
+  };
+
+  if (shouldShowManager) {
+    return (
+      <div className="cookie-manager-backdrop" role="presentation" onMouseDown={closeManager}>
+        <section
+          className="cookie-manager reveal-fx"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cookie-manager-title"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <button className="modal-close" type="button" aria-label="Zavřít nastavení cookies" onClick={closeManager}>
+            <X size={18} />
+          </button>
+          <div className="cookie-manager-head">
+            <p className="section-label">Správa cookies</p>
+            <h2 id="cookie-manager-title">Nastavení souhlasu</h2>
+            <p>
+              Technické cookies jsou potřebné pro přihlášení, bezpečnost a uložení voleb. Statistické a marketingové
+              služby zapneme jen podle vašeho souhlasu.
+            </p>
+          </div>
+
+          <div className="cookie-options">
+            <AppCheckbox
+              id="cookies-necessary"
+              checked
+              disabled
+              onChange={() => undefined}
+              label="Technické cookies"
+              description="Nezbytné pro základní fungování webu, přihlášení a bezpečnost formulářů."
+            />
+            <AppCheckbox
+              id="cookies-statistics"
+              checked={statistics}
+              onChange={setStatistics}
+              label="Statistické cookies"
+              description="Pomáhají zjistit, které části webu lidé používají. Slouží k anonymnímu zlepšování obsahu."
+            />
+            <AppCheckbox
+              id="cookies-marketing"
+              checked={marketing}
+              onChange={setMarketing}
+              label="Marketingové cookies"
+              description="Používají se pro vložený obsah, kampaně a měření externích služeb, pokud je zapojíme."
+            />
+          </div>
+
+          <div className="cookie-table-wrap" aria-label="Seznam cookies">
+            <table className="cookie-table">
+              <thead>
+                <tr>
+                  <th>Název</th>
+                  <th>Služba</th>
+                  <th>Kategorie účelu</th>
+                  <th>Doba uložení</th>
+                  <th>Správce dat</th>
+                  <th>Zásady</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cookieCatalog.map((item) => (
+                  <tr key={`${item.name}-${item.service}`}>
+                    <td><code>{item.name}</code></td>
+                    <td>{item.service}</td>
+                    <td><Badge tone={item.category === 'necessary' ? 'info' : item.category === 'statistics' ? 'success' : 'warning'}>{categoryLabels[item.category]}</Badge></td>
+                    <td>{item.duration}</td>
+                    <td>{item.owner}</td>
+                    <td>
+                      {item.policyUrl ? (
+                        <a href={item.policyUrl} target="_blank" rel="noreferrer">Zásady</a>
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="cookie-manager-actions">
+            <button className="button secondary" type="button" onClick={() => savePreferences(false, false)}>
+              Pouze nezbytné
+            </button>
+            <button className="button secondary" type="button" onClick={() => savePreferences(true, true)}>
+              Povolit vše
+            </button>
+            <button className="button primary" type="button" onClick={() => savePreferences()}>
+              Uložit nastavení
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <section className="cookie-consent reveal-fx" aria-labelledby="cookie-consent-title">
+      <div>
+        <p className="section-label" id="cookie-consent-title">Cookies</p>
+        <p>
+          Používáme nezbytné cookies pro přihlášení, bezpečnost formulářů a uložení základního nastavení webu.
+        </p>
+      </div>
+      <div className="cookie-consent-actions">
+        <button className="button secondary" type="button" onClick={() => savePreferences(false, false)}>
+          Pouze nezbytné
+        </button>
+        <button className="button secondary" type="button" onClick={openManager}>
+          Spravovat
+        </button>
+        <button className="button primary" type="button" onClick={() => savePreferences(true, true)}>
+          Přijmout vše
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function WorkspaceSidebar<T extends string>({
+  title,
+  items,
+  active,
+  onSelect
+}: {
+  title: string;
+  items: Array<WorkspaceNavItem<T>>;
+  active: T;
+  onSelect: (id: T) => void;
+}) {
+  return (
+    <aside className="workspace-sidebar" aria-label={title}>
+      <p className="section-label">{title}</p>
+      <nav>
+        {items.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button key={item.id} className={active === item.id ? 'active' : ''} type="button" onClick={() => onSelect(item.id)}>
+              <Icon size={18} />
+              <span>
+                <strong>{item.label}</strong>
+                <small>{item.text}</small>
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </aside>
+  );
+}
+
+function WorkspaceBottomNav<T extends string>({
+  items,
+  active,
+  onSelect
+}: {
+  items: Array<WorkspaceNavItem<T>>;
+  active: T;
+  onSelect: (id: T) => void;
+}) {
+  const visibleItems = items.slice(0, 5);
+
+  return (
+    <nav className="workspace-bottom-nav" aria-label="Rychlá navigace">
+      {visibleItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <button key={item.id} className={active === item.id ? 'active' : ''} type="button" onClick={() => onSelect(item.id)}>
+            <Icon size={18} />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+function WorkspaceTopbar({
+  title,
+  text,
+  account,
+  badge,
+  onLogout,
+  quickAction
+}: {
+  title: string;
+  text: string;
+  account: AuthAccount;
+  badge: string;
+  onLogout: () => void;
+  quickAction?: React.ReactNode;
+}) {
+  return (
+    <div className="workspace-topbar">
+      <div>
+        <p className="section-label">{badge}</p>
+        <h1>{title}</h1>
+        <p>{text}</p>
+      </div>
+      <div className="workspace-actions">
+        {quickAction}
+        <button className="icon-action" type="button" aria-label="Notifikace">
+          <Bell size={18} />
+          <span>2</span>
+        </button>
+        <div className="session-chip">
+          <UserRound size={16} />
+          <span>{account.name}</span>
+        </div>
+        <button className="button secondary" type="button" onClick={onLogout}>
+          <LogOut size={18} /> Odhlásit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function WorkspacePlaceholder({
+  title,
+  text,
+  items
+}: {
+  title: string;
+  text: string;
+  items: string[];
+}) {
+  return (
+    <article className="admin-card workspace-placeholder">
+      <h3>{title}</h3>
+      <p>{text}</p>
+      <div className="placeholder-list">
+        {items.map((item) => (
+          <span key={item}>{item}</span>
+        ))}
+      </div>
+      <Badge tone="info">Připraveno pro napojení na backend</Badge>
+    </article>
+  );
+}
+
 function AuthScreen({
   role,
   title,
@@ -1505,6 +2258,7 @@ function AuthScreen({
   onLoginRequest,
   onRegisterRequest,
   onResetRequest,
+  onResetConfirmRequest,
   onNotify,
   onOpenModal
 }: {
@@ -1516,7 +2270,8 @@ function AuthScreen({
   onRegister?: (account: AuthAccount) => void;
   onLoginRequest?: (credentials: LoginRequest) => Promise<AuthAccount | null>;
   onRegisterRequest?: (payload: RegisterRequest) => Promise<AuthAccount | null>;
-  onResetRequest?: (email: string) => Promise<string | null>;
+  onResetRequest?: (email: string) => Promise<ApiPasswordResetRequest | null>;
+  onResetConfirmRequest?: (payload: ResetConfirmRequest) => Promise<string>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
   onOpenModal: (modal: Exclude<ModalState, null>) => void;
 }) {
@@ -1528,6 +2283,10 @@ function AuthScreen({
   const [message, setMessage] = React.useState('');
   const [messageTone, setMessageTone] = React.useState<FeedbackTone>('info');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [loginConsent, setLoginConsent] = React.useState(false);
+  const [registrationConsent, setRegistrationConsent] = React.useState(false);
+  const [resetToken, setResetToken] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
 
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
@@ -1535,13 +2294,20 @@ function AuthScreen({
     const labels: Record<AuthMode, string> = {
       login: 'Přihlášení',
       register: 'Registrace klienta',
-      reset: 'Obnova hesla'
+      reset: 'Obnova hesla',
+      'reset-confirm': 'Nové heslo'
     };
     onNotify('info', 'Režim změněn', labels[nextMode]);
   };
 
   const submitLogin = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!loginConsent) {
+      setMessageTone('warning');
+      setMessage('Před přihlášením potvrďte vstup do chráněné zóny.');
+      onNotify('warning', 'Potvrzení chybí', 'Zaškrtněte potvrzení u přihlašovacího formuláře.');
+      return;
+    }
     setIsSubmitting(true);
     setMessageTone('info');
     setMessage('Ověřuji přihlašovací údaje...');
@@ -1555,6 +2321,21 @@ function AuthScreen({
           return;
         }
       } catch (error) {
+        if (error instanceof ApiRequestError && [400, 401, 403].includes(error.status)) {
+          setIsSubmitting(false);
+          setMessageTone('error');
+          setMessage(
+            role === 'client'
+              ? 'Přihlášení se nepodařilo. Zkontrolujte e-mail, heslo a zda nejste v klientské zóně s admin účtem.'
+              : 'Přihlášení se nepodařilo. Zkontrolujte e-mail, heslo a oprávnění administrace.'
+          );
+          onNotify(
+            'error',
+            'Přihlášení se nepodařilo',
+            role === 'client' ? 'Pro admin účet použijte vstup do administrace.' : 'Účet nemá odpovídající administrátorský přístup.'
+          );
+          return;
+        }
         setMessageTone('warning');
         setMessage(error instanceof Error ? error.message : 'Backend ověření není dostupné, zkouším lokální účet.');
         onNotify('warning', 'Backend ověření selhalo', 'Zkouším ještě lokální prototypový účet.');
@@ -1580,6 +2361,12 @@ function AuthScreen({
   const submitRegistration = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!onRegister) return;
+    if (!registrationConsent) {
+      setMessageTone('warning');
+      setMessage('Pro vytvoření profilu je potřeba potvrdit souhlas se zpracováním údajů.');
+      onNotify('warning', 'Souhlas chybí', 'Zaškrtněte souhlas v registračním formuláři.');
+      return;
+    }
     setIsSubmitting(true);
     setMessageTone('info');
     setMessage('Zakládám klientský profil...');
@@ -1630,11 +2417,19 @@ function AuthScreen({
     setIsSubmitting(true);
     setMessageTone('info');
     setMessage('Připravuji obnovu hesla...');
-    let resetMessage = 'Instrukce pro obnovu hesla jsou připravené.';
+    let resetMessage = 'Pokud účet existuje, je připravený odkaz pro obnovu hesla.';
     if (onResetRequest) {
       try {
-        const apiMessage = await onResetRequest(email);
-        if (apiMessage) resetMessage = apiMessage;
+        const reset = await onResetRequest(email);
+        if (reset?.message) resetMessage = reset.message;
+        if (reset?.resetToken) {
+          setResetToken(reset.resetToken);
+          setMode('reset-confirm');
+          setMessageTone('success');
+          setMessage('Reset token je připravený. Zadejte nové heslo.');
+          onNotify('success', 'Reset token připraven', 'Teď nastavte nové heslo.');
+          return;
+        }
       } catch {
         // Use the same public confirmation text even when the mail backend is not connected yet.
       }
@@ -1650,13 +2445,45 @@ function AuthScreen({
     });
   };
 
+  const submitResetConfirm = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!onResetConfirmRequest) return;
+    setIsSubmitting(true);
+    setMessageTone('info');
+    setMessage('Nastavuji nové heslo...');
+    try {
+      const resetMessage = await onResetConfirmRequest({ token: resetToken, password: newPassword });
+      setMessageTone('success');
+      setMessage(resetMessage);
+      setPassword('');
+      setNewPassword('');
+      setResetToken('');
+      setMode('login');
+      onNotify('success', 'Heslo změněno', resetMessage);
+    } catch (error) {
+      setMessageTone('error');
+      setMessage(error instanceof Error ? error.message : 'Heslo se nepodařilo změnit.');
+      onNotify('error', 'Reset hesla selhal', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section className="auth-section">
       <div className="auth-card">
           <div className="auth-intro">
             <div className="auth-icon">{role === 'admin' ? <LockKeyhole size={28} /> : <UserRound size={28} />}</div>
             <p className="section-label">{role === 'admin' ? 'Administrace' : 'Klientská zóna'}</p>
-            <Badge tone="info">{mode === 'login' ? 'Připraveno k přihlášení' : mode === 'register' ? 'Registrace klienta' : 'Obnova hesla'}</Badge>
+            <Badge tone="info">
+              {mode === 'login'
+                ? 'Připraveno k přihlášení'
+                : mode === 'register'
+                  ? 'Registrace klienta'
+                  : mode === 'reset-confirm'
+                    ? 'Nové heslo'
+                    : 'Obnova hesla'}
+            </Badge>
             <h1>{title}</h1>
             <p>{text}</p>
           </div>
@@ -1687,6 +2514,14 @@ function AuthScreen({
               {role === 'admin' && (
                 <p className="auth-note">Dočasný prototypový vstup: admin@restart.local / restart2026</p>
               )}
+              <AppCheckbox
+                id={`${role}-login-consent`}
+                checked={loginConsent}
+                onChange={setLoginConsent}
+                required
+                label="Potvrzuji vstup do chráněné zóny"
+                description="Přihlašovací údaje jsou určeny pouze pro klienta nebo oprávněného pracovníka."
+              />
               <div className="form-actions">
                 <button className="button primary" type="submit" disabled={isSubmitting}>
                   <KeyRound size={18} /> {isSubmitting ? 'Ověřuji...' : 'Přihlásit'}
@@ -1723,6 +2558,14 @@ function AuthScreen({
                 onChange={setPassword}
                 autoComplete="new-password"
               />
+              <AppCheckbox
+                id="client-register-consent"
+                checked={registrationConsent}
+                onChange={setRegistrationConsent}
+                required
+                label="Souhlasím se zpracováním údajů"
+                description="Údaje slouží k registraci klientského profilu a komunikaci v rámci projektu REST||ART Integrace."
+              />
               <button className="button primary" type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Zakládám profil...' : 'Vytvořit profil'}
               </button>
@@ -1738,6 +2581,30 @@ function AuthScreen({
               <div className="form-actions">
                 <button className="button primary" type="submit" disabled={isSubmitting}>
                   {isSubmitting ? 'Odesílám...' : 'Odeslat obnovu'}
+                </button>
+                <button className="button secondary" type="button" onClick={() => switchMode('login')}>
+                  Zpět na přihlášení
+                </button>
+              </div>
+            </form>
+          )}
+
+          {mode === 'reset-confirm' && (
+            <form className="auth-form" onSubmit={submitResetConfirm}>
+              <label>
+                Reset token
+                <input value={resetToken} onChange={(event) => setResetToken(event.target.value)} required />
+              </label>
+              <PasswordField
+                id={`${role}-reset-new-password`}
+                label="Nové heslo"
+                value={newPassword}
+                onChange={setNewPassword}
+                autoComplete="new-password"
+              />
+              <div className="form-actions">
+                <button className="button primary" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Ukládám...' : 'Nastavit nové heslo'}
                 </button>
                 <button className="button secondary" type="button" onClick={() => switchMode('login')}>
                   Zpět na přihlášení
@@ -1783,12 +2650,33 @@ function ClientProfile({
     filter: 'natural'
   });
   const [profileMessage, setProfileMessage] = React.useState('');
+  const [activeSection, setActiveSection] = React.useState<ClientSection>('dashboard');
+  const [previousAvatarDraft, setPreviousAvatarDraft] = React.useState<Pick<
+    ClientProfileDraft,
+    'source' | 'avatar' | 'zoom' | 'offsetX' | 'offsetY' | 'rotation' | 'filter'
+  > | null>(null);
   const displayName = profile.name.trim() || account.name;
   const displayPhone = profile.phone.trim() || account.phone;
 
   const updateProfile = <K extends keyof ClientProfileDraft>(key: K, value: ClientProfileDraft[K]) => {
     setProfile((current) => ({ ...current, [key]: value }));
     setProfileMessage('');
+  };
+
+  const updateAvatarField = <K extends 'zoom' | 'offsetX' | 'offsetY' | 'rotation' | 'filter'>(
+    key: K,
+    value: ClientProfileDraft[K]
+  ) => {
+    setPreviousAvatarDraft({
+      source: profile.source,
+      avatar: profile.avatar,
+      zoom: profile.zoom,
+      offsetX: profile.offsetX,
+      offsetY: profile.offsetY,
+      rotation: profile.rotation,
+      filter: profile.filter
+    });
+    updateProfile(key, value);
   };
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1810,6 +2698,37 @@ function ClientProfile({
       onNotify('info', 'Fotka je nahraná', 'Teď můžete upravit ořez, zoom, rotaci a filtr.');
     };
     reader.readAsDataURL(file);
+  };
+
+  const resetAvatar = () => {
+    setPreviousAvatarDraft({
+      source: profile.source,
+      avatar: profile.avatar,
+      zoom: profile.zoom,
+      offsetX: profile.offsetX,
+      offsetY: profile.offsetY,
+      rotation: profile.rotation,
+      filter: profile.filter
+    });
+    setProfile((current) => ({
+      ...current,
+      zoom: 1,
+      offsetX: 0,
+      offsetY: 0,
+      rotation: 0,
+      filter: 'natural'
+    }));
+    onNotify('info', 'Úpravy avataru resetovány', 'Ořez, zoom, rotace a filtr jsou zpět na výchozí hodnotě.');
+  };
+
+  const undoAvatar = () => {
+    if (!previousAvatarDraft) {
+      onNotify('warning', 'Není co vrátit', 'Nejdřív proveďte úpravu avataru.');
+      return;
+    }
+    setProfile((current) => ({ ...current, ...previousAvatarDraft }));
+    setPreviousAvatarDraft(null);
+    onNotify('info', 'Úprava vrácena', 'Avatar je zpět v předchozím stavu.');
   };
 
   const saveAvatar = () => {
@@ -1844,163 +2763,244 @@ function ClientProfile({
     onNotify('success', 'Profil je uložený', 'Profilové údaje jsou uložené v prohlížeči.');
   };
 
+  const currentClientNav = clientNavItems.find((item) => item.id === activeSection) ?? clientNavItems[0];
+  const avatarEditor = (
+    <article className="avatar-editor">
+      <h2>Avatar editor</h2>
+      <label className="upload-drop">
+        <Upload size={20} />
+        <span>Nahrát fotku</span>
+        <input type="file" accept="image/*" onChange={handleAvatarUpload} />
+      </label>
+      <div className="avatar-preview">
+        {profile.source ? (
+          <img
+            src={profile.source}
+            alt=""
+            style={{
+              filter: avatarFilter(profile.filter),
+              transform: `translate(${profile.offsetX}px, ${profile.offsetY}px) rotate(${profile.rotation}deg) scale(${profile.zoom})`
+            }}
+          />
+        ) : profile.avatar ? (
+          <img src={profile.avatar} alt="" />
+        ) : (
+          <UserRound size={54} />
+        )}
+      </div>
+      <div className="avatar-controls">
+        <label>
+          Crop / zoom
+          <input
+            type="range"
+            min="1"
+            max="2.4"
+            step="0.05"
+            value={profile.zoom}
+            onChange={(event) => updateAvatarField('zoom', Number(event.target.value))}
+          />
+        </label>
+        <label>
+          Crop X
+          <input
+            type="range"
+            min="-90"
+            max="90"
+            value={profile.offsetX}
+            onChange={(event) => updateAvatarField('offsetX', Number(event.target.value))}
+          />
+        </label>
+        <label>
+          Crop Y
+          <input
+            type="range"
+            min="-90"
+            max="90"
+            value={profile.offsetY}
+            onChange={(event) => updateAvatarField('offsetY', Number(event.target.value))}
+          />
+        </label>
+        <label>
+          Rotace
+          <input
+            type="range"
+            min="-30"
+            max="30"
+            value={profile.rotation}
+            onChange={(event) => updateAvatarField('rotation', Number(event.target.value))}
+          />
+        </label>
+        <label>
+          Filtr
+          <select value={profile.filter} onChange={(event) => updateAvatarField('filter', event.target.value)}>
+            <option value="natural">Natural</option>
+            <option value="soft">Soft</option>
+            <option value="crisp">Crisp</option>
+            <option value="warm">Warm</option>
+            <option value="mono">Mono</option>
+          </select>
+        </label>
+      </div>
+      <div className="form-actions">
+        <button className="button secondary" type="button" onClick={undoAvatar}>
+          <Undo2 size={18} /> Undo
+        </button>
+        <button className="button secondary" type="button" onClick={resetAvatar}>
+          <RotateCcw size={18} /> Reset
+        </button>
+        <button className="button primary" type="button" onClick={saveAvatar} disabled={!profile.source}>
+          <Save size={18} /> Uložit avatar
+        </button>
+      </div>
+    </article>
+  );
+
   return (
     <section className="client-section">
-      <div className="client-shell">
-        <div className="client-hero">
-          <div className="client-avatar" aria-label="Avatar klienta">
-            {profile.avatar || profile.source ? (
-              <img src={profile.avatar || profile.source} alt="" />
-            ) : (
-              <UserRound size={42} />
-            )}
-          </div>
-          <div>
-            <p className="section-label">Klientský profil</p>
-            <Badge tone="success">Přihlášený klient</Badge>
-            <h1>{displayName}</h1>
-            <p>
-              Soukromý přehled kontaktů, programu, domluvených kroků a dokumentů. Profilové úpravy jsou zatím uložené
-              lokálně v prohlížeči pro prototyp GUI.
-            </p>
-          </div>
-          <button className="button secondary" type="button" onClick={onLogout}>
-            <LogOut size={18} /> Odhlásit
-          </button>
+      <div className="workspace-layout client-workspace">
+        <WorkspaceSidebar title="Uživatelské menu" items={clientNavItems} active={activeSection} onSelect={setActiveSection} />
+        <div className="workspace-main">
+          <WorkspaceTopbar
+            title={activeSection === 'dashboard' ? displayName : currentClientNav.label}
+            text={currentClientNav.text}
+            account={account}
+            badge="Klientská zóna"
+            onLogout={onLogout}
+            quickAction={<Badge tone="success">Přihlášený klient</Badge>}
+          />
+
+          {activeSection === 'dashboard' && (
+            <div className="client-dashboard">
+              <article className="client-summary-card">
+                <div className="client-avatar" aria-label="Avatar klienta">
+                  {profile.avatar || profile.source ? <img src={profile.avatar || profile.source} alt="" /> : <UserRound size={42} />}
+                </div>
+                <h2>{displayName}</h2>
+                <p>{account.email}</p>
+                <div className="status-line">
+                  <span>Stav účtu</span>
+                  <strong><Badge tone="warning">Čeká na ověření</Badge></strong>
+                </div>
+              </article>
+              <article>
+                <h2>Přehled účtu</h2>
+                <p>Soukromý přehled kontaktů, programu, domluvených kroků a dokumentů.</p>
+                <dl>
+                  <div>
+                    <dt>Telefon</dt>
+                    <dd>{displayPhone || '-'}</dd>
+                  </div>
+                  <div>
+                    <dt>Profil vytvořen</dt>
+                    <dd>{new Date(account.createdAt).toLocaleDateString('cs-CZ')}</dd>
+                  </div>
+                </dl>
+              </article>
+              <WorkspacePlaceholder
+                title="Notifikace"
+                text="Tady budou nové zprávy, potvrzení schůzek a systémová upozornění."
+                items={['Nová zpráva od pracovníka', 'Dokument čeká na podpis', 'Profil čeká na ověření']}
+              />
+              <article>
+                <h2>Rychlé akce</h2>
+                <div className="quick-action-grid">
+                  <button type="button" onClick={() => setActiveSection('profile')}>Upravit profil</button>
+                  <button type="button" onClick={() => setActiveSection('avatar')}>Změnit avatar</button>
+                  <button type="button" onClick={() => setActiveSection('documents')}>Moje dokumenty</button>
+                </div>
+              </article>
+            </div>
+          )}
+
+          {activeSection === 'profile' && (
+            <div className="client-dashboard">
+              <article className="profile-editor">
+                <h2>Můj profil</h2>
+                <label>
+                  Zobrazované jméno
+                  <input value={profile.name} onChange={(event) => updateProfile('name', event.target.value)} />
+                </label>
+                <label>
+                  Telefon
+                  <input value={profile.phone} onChange={(event) => updateProfile('phone', event.target.value)} />
+                </label>
+                <label>
+                  Bio / poznámka pro pracovníka
+                  <textarea rows={4} value={profile.note} onChange={(event) => updateProfile('note', event.target.value)} />
+                </label>
+                <button className="button primary" type="button" onClick={saveProfile}>
+                  <Save size={18} /> Uložit profil
+                </button>
+                {profileMessage && <p className="auth-message">{profileMessage}</p>}
+              </article>
+              <article>
+                <h2>Kontakty</h2>
+                <dl>
+                  <div>
+                    <dt>E-mail</dt>
+                    <dd>{account.email}</dd>
+                  </div>
+                  <div>
+                    <dt>Telefon</dt>
+                    <dd>{displayPhone || '-'}</dd>
+                  </div>
+                  <div>
+                    <dt>Profil vytvořen</dt>
+                    <dd>{new Date(account.createdAt).toLocaleDateString('cs-CZ')}</dd>
+                  </div>
+                </dl>
+              </article>
+            </div>
+          )}
+
+          {activeSection === 'avatar' && <div className="client-dashboard">{avatarEditor}</div>}
+
+          {activeSection === 'documents' && (
+            <div className="client-dashboard">
+              <WorkspacePlaceholder
+                title="Moje dokumenty"
+                text="Přehled uložených souborů, formulářů a historie podpisů."
+                items={['Vstupní karta', 'Souhlas se zapojením', 'Stabilizační plán']}
+              />
+              <article>
+                <h2>Dokumenty k podpisu</h2>
+                <p>Dokumenty budou připravené k tisku, stažení a potvrzení po napojení na databázi.</p>
+                <a className="button secondary" href="#/kontakt">Kontaktovat pracovníka</a>
+              </article>
+            </div>
+          )}
+
+          {activeSection === 'activity' && (
+            <div className="client-dashboard">
+              <WorkspacePlaceholder
+                title="Moje aktivita"
+                text="Historie odeslaných formulářů, změn profilu a potvrzení."
+                items={['Profil vytvořen', 'Avatar připraven k úpravě', 'Čeká na ověření pracovníkem']}
+              />
+            </div>
+          )}
+
+          {activeSection === 'notifications' && (
+            <div className="client-dashboard">
+              <WorkspacePlaceholder
+                title="Notifikace"
+                text="Nové zprávy, potvrzení, připomínky a upozornění."
+                items={['Zprávy', 'Potvrzení', 'Upozornění']}
+              />
+            </div>
+          )}
+
+          {activeSection === 'settings' && (
+            <div className="client-dashboard">
+              <WorkspacePlaceholder
+                title="Nastavení účtu"
+                text="Heslo, soukromí a dvoufázové ověření."
+                items={['Změna hesla', 'Soukromí profilu', '2FA']}
+              />
+            </div>
+          )}
         </div>
-
-        <div className="client-dashboard">
-          <article className="profile-editor">
-            <h2>Upravit profil</h2>
-            <label>
-              Zobrazované jméno
-              <input value={profile.name} onChange={(event) => updateProfile('name', event.target.value)} />
-            </label>
-            <label>
-              Telefon
-              <input value={profile.phone} onChange={(event) => updateProfile('phone', event.target.value)} />
-            </label>
-            <label>
-              Poznámka pro pracovníka
-              <textarea rows={4} value={profile.note} onChange={(event) => updateProfile('note', event.target.value)} />
-            </label>
-            <button className="button primary" type="button" onClick={saveProfile}>
-              <Save size={18} /> Uložit profil
-            </button>
-            {profileMessage && <p className="auth-message">{profileMessage}</p>}
-            <dl>
-              <div>
-                <dt>E-mail</dt>
-                <dd>{account.email}</dd>
-              </div>
-              <div>
-                <dt>Telefon</dt>
-                <dd>{displayPhone || '-'}</dd>
-              </div>
-              <div>
-                <dt>Profil vytvořen</dt>
-                <dd>{new Date(account.createdAt).toLocaleDateString('cs-CZ')}</dd>
-              </div>
-            </dl>
-          </article>
-
-          <article className="avatar-editor">
-            <h2>Profilová fotka</h2>
-            <label className="upload-drop">
-              <Upload size={20} />
-              <span>Nahrát fotku</span>
-              <input type="file" accept="image/*" onChange={handleAvatarUpload} />
-            </label>
-            <div className="avatar-preview">
-              {profile.source ? (
-                <img
-                  src={profile.source}
-                  alt=""
-                  style={{
-                    filter: avatarFilter(profile.filter),
-                    transform: `translate(${profile.offsetX}px, ${profile.offsetY}px) rotate(${profile.rotation}deg) scale(${profile.zoom})`
-                  }}
-                />
-              ) : profile.avatar ? (
-                <img src={profile.avatar} alt="" />
-              ) : (
-                <UserRound size={54} />
-              )}
-            </div>
-            <div className="avatar-controls">
-              <label>
-                Zoom
-                <input
-                  type="range"
-                  min="1"
-                  max="2.4"
-                  step="0.05"
-                  value={profile.zoom}
-                  onChange={(event) => updateProfile('zoom', Number(event.target.value))}
-                />
-              </label>
-              <label>
-                Posun X
-                <input
-                  type="range"
-                  min="-90"
-                  max="90"
-                  value={profile.offsetX}
-                  onChange={(event) => updateProfile('offsetX', Number(event.target.value))}
-                />
-              </label>
-              <label>
-                Posun Y
-                <input
-                  type="range"
-                  min="-90"
-                  max="90"
-                  value={profile.offsetY}
-                  onChange={(event) => updateProfile('offsetY', Number(event.target.value))}
-                />
-              </label>
-              <label>
-                Rotace
-                <input
-                  type="range"
-                  min="-30"
-                  max="30"
-                  value={profile.rotation}
-                  onChange={(event) => updateProfile('rotation', Number(event.target.value))}
-                />
-              </label>
-              <label>
-                Filtr
-                <select value={profile.filter} onChange={(event) => updateProfile('filter', event.target.value)}>
-                  <option value="natural">Natural</option>
-                  <option value="soft">Soft</option>
-                  <option value="crisp">Crisp</option>
-                  <option value="warm">Warm</option>
-                  <option value="mono">Mono</option>
-                </select>
-              </label>
-            </div>
-            <button className="button secondary" type="button" onClick={saveAvatar} disabled={!profile.source}>
-              <Save size={18} /> Uložit avatar
-            </button>
-          </article>
-
-          <article>
-            <h2>Program a plán</h2>
-            <p>Po ověření pracovníkem se zde zobrazí zařazený program, další schůzka a společně domluvené kroky.</p>
-            <div className="status-line">
-              <span>Stav profilu</span>
-              <strong><Badge tone="warning">Čeká na ověření</Badge></strong>
-            </div>
-          </article>
-          <article>
-            <h2>Dokumenty k podpisu</h2>
-            <p>Prostor pro vstupní kartu, souhlas se zapojením a stabilizační plán. Dokumenty budou připravené k tisku.</p>
-            <a className="button secondary" href="#/kontakt">
-              Kontaktovat pracovníka
-            </a>
-          </article>
-        </div>
+        <WorkspaceBottomNav items={clientNavItems} active={activeSection} onSelect={setActiveSection} />
       </div>
     </section>
   );
@@ -2011,21 +3011,15 @@ function App() {
   const [news, setNews] = useStoredState<NewsItem[]>('restart-public-news', starterNews);
   const [newsDiscussion, setNewsDiscussion] = React.useState<NewsDiscussion>({ likes: {}, comments: [] });
   const [slides, setSlides] = useStoredState<HomeSlide[]>('restart-home-slides', starterSlides);
+  const [formTemplates, setFormTemplates] = useStoredState<FormTemplate[]>('restart-form-templates', fallbackFormTemplates);
   const [accounts, setAccounts] = useStoredState<AuthAccount[]>('restart-auth-accounts', starterAccounts);
   const [sessionId, setSessionId] = useStoredState<string | null>('restart-auth-session', null);
   const [apiAccount, setApiAccount] = React.useState<AuthAccount | null>(null);
-  const [toasts, setToasts] = React.useState<ToastMessage[]>([]);
   const [modal, setModal] = React.useState<ModalState>(null);
+  const [cookieSettingsOpen, setCookieSettingsOpen] = React.useState(false);
+  const { notify } = useToast();
   const currentPath = useHashPath();
   const currentAccount = apiAccount ?? accounts.find((account) => account.id === sessionId) ?? null;
-
-  const notify = React.useCallback((tone: FeedbackTone, title: string, text?: string) => {
-    const id = crypto.randomUUID();
-    setToasts((current) => [...current.slice(-3), { id, tone, title, text }]);
-    window.setTimeout(() => {
-      setToasts((current) => current.filter((message) => message.id !== id));
-    }, tone === 'error' ? 7000 : 4800);
-  }, []);
 
   const refreshNewsDiscussion = React.useCallback(async () => {
     const discussion = await listNewsDiscussion();
@@ -2060,7 +3054,13 @@ function App() {
     listClients()
       .then((items) => setClients(items.map(fromApiClient)))
       .catch(() => undefined);
-  }, [currentAccount?.id, currentAccount?.role, setClients]);
+    listFormTemplates()
+      .then((items) => {
+        const mapped = items.map(fromApiFormTemplate).filter((template) => template.fields.length > 0);
+        if (mapped.length > 0) setFormTemplates(mapped);
+      })
+      .catch(() => undefined);
+  }, [currentAccount?.id, currentAccount?.role, setClients, setFormTemplates]);
 
   const login = (account: AuthAccount) => {
     if (account.password) {
@@ -2087,6 +3087,7 @@ function App() {
     return fromApiUser(user);
   };
   const resetViaApi = (email: string) => requestPasswordReset(email);
+  const confirmResetViaApi = ({ token, password }: ResetConfirmRequest) => confirmPasswordReset(token, password);
   const saveClientViaApi = async (client: ClientRecord) => {
     const saved = await saveClientRecord(client);
     return fromApiClient(saved);
@@ -2180,6 +3181,7 @@ function App() {
           onLoginRequest={loginViaApi}
           onRegisterRequest={registerViaApi}
           onResetRequest={resetViaApi}
+          onResetConfirmRequest={confirmResetViaApi}
           onNotify={notify}
           onOpenModal={setModal}
         />
@@ -2190,6 +3192,7 @@ function App() {
           clients={clients}
           news={news}
           slides={slides}
+          formTemplates={formTemplates}
           onClientsChange={setClients}
           onNewsChange={setNews}
           onSlidesChange={setSlides}
@@ -2209,6 +3212,7 @@ function App() {
           onLogin={login}
           onLoginRequest={loginViaApi}
           onResetRequest={resetViaApi}
+          onResetConfirmRequest={confirmResetViaApi}
           onNotify={notify}
           onOpenModal={setModal}
         />
@@ -2233,13 +3237,20 @@ function App() {
       <Header currentPath={currentPath} account={currentAccount} />
       <Breadcrumb path={currentPath} />
       <main id="top">
-        {page}
+        <RevealFx key={currentPath} className="page-reveal" delay={70}>
+          {page}
+        </RevealFx>
       </main>
-      <ToastStack messages={toasts} onDismiss={(id) => setToasts((current) => current.filter((message) => message.id !== id))} />
       <AppModal modal={modal} onClose={() => setModal(null)} />
+      <CookieConsent forceOpen={cookieSettingsOpen} onClose={() => setCookieSettingsOpen(false)} />
       <footer className="site-footer">
-        <p>REST||ART Integrace</p>
-        <span>Druhá šance v praxi. Mentoring, práce, bydlení, stabilizace.</span>
+        <div>
+          <p>REST||ART Integrace</p>
+          <span>Druhá šance v praxi. Mentoring, práce, bydlení, stabilizace.</span>
+        </div>
+        <button className="footer-cookie-button" type="button" onClick={() => setCookieSettingsOpen(true)}>
+          Nastavení cookies
+        </button>
       </footer>
     </>
   );
@@ -2249,6 +3260,7 @@ function AdminWorkspace({
   clients,
   news,
   slides,
+  formTemplates,
   onClientsChange,
   onNewsChange,
   onSlidesChange,
@@ -2262,6 +3274,7 @@ function AdminWorkspace({
   clients: ClientRecord[];
   news: NewsItem[];
   slides: HomeSlide[];
+  formTemplates: FormTemplate[];
   onClientsChange: React.Dispatch<React.SetStateAction<ClientRecord[]>>;
   onNewsChange: React.Dispatch<React.SetStateAction<NewsItem[]>>;
   onSlidesChange: React.Dispatch<React.SetStateAction<HomeSlide[]>>;
@@ -2272,10 +3285,10 @@ function AdminWorkspace({
   onLogout: () => void;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
-  const [activeTab, setActiveTab] = React.useState<'clients' | 'forms' | 'news' | 'slides'>('clients');
+  const [activeTab, setActiveTab] = React.useState<AdminSection>('dashboard');
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
   const [selectedClientId, setSelectedClientId] = React.useState('');
-  const [selectedTemplateId, setSelectedTemplateId] = React.useState(formTemplates[0].id);
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState(formTemplates[0]?.id ?? '');
   const [draft, setDraft] = React.useState<FormDraft>({});
   const [newsForm, setNewsForm] = React.useState<NewsItem>({
     id: '',
@@ -2297,11 +3310,18 @@ function AdminWorkspace({
   const [adminMessageTone, setAdminMessageTone] = React.useState<FeedbackTone>('info');
 
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
-  const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0];
+  const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
 
   React.useEffect(() => {
     if (!selectedClientId && clients[0]) setSelectedClientId(clients[0].id);
   }, [clients, selectedClientId]);
+
+  React.useEffect(() => {
+    if (!formTemplates.length) return;
+    if (!selectedTemplateId || !formTemplates.some((template) => template.id === selectedTemplateId)) {
+      setSelectedTemplateId(formTemplates[0].id);
+    }
+  }, [formTemplates, selectedTemplateId]);
 
   const saveClient = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -2437,13 +3457,18 @@ function AdminWorkspace({
     window.print();
   };
 
-  const selectAdminTab = (tab: typeof activeTab) => {
+  const selectAdminTab = (tab: AdminSection) => {
     setActiveTab(tab);
-    const labels: Record<typeof activeTab, string> = {
+    const labels: Record<AdminSection, string> = {
+      dashboard: 'Dashboard',
+      content: 'Příspěvky / obsah',
       clients: 'Klienti',
       forms: 'Formuláře',
       news: 'Aktuality',
-      slides: 'Slideshow'
+      media: 'Média',
+      users: 'Uživatelé a role',
+      notifications: 'Notifikace',
+      settings: 'Nastavení'
     };
     onNotify('info', 'Sekce otevřena', labels[tab]);
   };
@@ -2470,44 +3495,65 @@ function AdminWorkspace({
     onNotify('info', 'Slide načten k úpravě', item.title);
   };
 
+  const currentAdminNav = adminNavItems.find((item) => item.id === activeTab) ?? adminNavItems[0];
+
   return (
     <section className="admin-section" id="admin">
-      <div className="admin-shell">
-        <div className="admin-head">
-          <div>
-            <p className="section-label">Administrace</p>
-            <h2>Klienti, formuláře a aktuality</h2>
-            <p>
-              Pracovní základ pro registraci klientů, přípravu tiskových formulářů k podpisu a správu veřejných
-              aktualit.
-            </p>
+      <div className="workspace-layout admin-workspace">
+        <WorkspaceSidebar title="Admin menu" items={adminNavItems} active={activeTab} onSelect={selectAdminTab} />
+        <div className="workspace-main">
+          <WorkspaceTopbar
+            title={currentAdminNav.label}
+            text={currentAdminNav.text}
+            account={account}
+            badge="Administrace"
+            onLogout={onLogout}
+            quickAction={<button className="button primary" type="button" onClick={() => selectAdminTab('clients')}><Plus size={18} /> Nový klient</button>}
+          />
+          {adminMessage && <p className={`admin-message ${adminMessageTone}`}>{adminMessage}</p>}
+
+        {activeTab === 'dashboard' && (
+          <div className="admin-grid dashboard-grid">
+            <article className="admin-card metric-card">
+              <span>Klienti</span>
+              <strong>{clients.length}</strong>
+              <p>aktivních záznamů v registru</p>
+            </article>
+            <article className="admin-card metric-card">
+              <span>Aktuality</span>
+              <strong>{news.length}</strong>
+              <p>publikovaných nebo připravených zpráv</p>
+            </article>
+            <article className="admin-card metric-card">
+              <span>Slideshow</span>
+              <strong>{slides.filter((slide) => slide.isActive).length}</strong>
+              <p>aktivních bannerů na homepage</p>
+            </article>
+            <article className="admin-card metric-card">
+              <span>Formuláře</span>
+              <strong>{formTemplates.length}</strong>
+              <p>šablon připravených k tisku</p>
+            </article>
+            <article className="admin-card">
+              <h3>Poslední změny</h3>
+              <div className="activity-list">
+                {[...clients.slice(0, 3).map((client) => `Klient: ${client.firstName} ${client.lastName}`), ...news.slice(0, 3).map((item) => `Aktualita: ${item.title}`)].slice(0, 5).map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
+                {clients.length === 0 && news.length === 0 && <p className="empty-note">Zatím nejsou uložené žádné změny.</p>}
+              </div>
+            </article>
+            <article className="admin-card">
+              <h3>Rychlé akce</h3>
+              <div className="quick-action-grid">
+                <button type="button" onClick={() => selectAdminTab('clients')}>Registrovat klienta</button>
+                <button type="button" onClick={() => selectAdminTab('news')}>Vytvořit aktualitu</button>
+                <button type="button" onClick={() => selectAdminTab('forms')}>Tiskový formulář</button>
+                <button type="button" onClick={() => selectAdminTab('content')}>Správa obsahu</button>
+              </div>
+            </article>
           </div>
-          <div className="admin-controls">
-            <div className="session-chip">
-              <UserRound size={16} />
-              <span>{account.name}</span>
-            </div>
-            <Badge tone="success">Administrátor přihlášen</Badge>
-            <button className="button secondary" type="button" onClick={onLogout}>
-              <LogOut size={18} /> Odhlásit
-            </button>
-            <div className="admin-tabs" role="tablist" aria-label="Administrace">
-              <button type="button" className={activeTab === 'clients' ? 'active' : ''} onClick={() => selectAdminTab('clients')}>
-                Klienti
-              </button>
-              <button type="button" className={activeTab === 'forms' ? 'active' : ''} onClick={() => selectAdminTab('forms')}>
-                Formuláře
-              </button>
-              <button type="button" className={activeTab === 'news' ? 'active' : ''} onClick={() => selectAdminTab('news')}>
-                Aktuality
-              </button>
-              <button type="button" className={activeTab === 'slides' ? 'active' : ''} onClick={() => selectAdminTab('slides')}>
-                Slideshow
-              </button>
-            </div>
-          </div>
-        </div>
-        {adminMessage && <p className={`admin-message ${adminMessageTone}`}>{adminMessage}</p>}
+        )}
 
         {activeTab === 'clients' && (
           <div className="admin-grid">
@@ -2624,6 +3670,17 @@ function AdminWorkspace({
                 </select>
               </label>
               <p className="form-help">{selectedTemplate.description}</p>
+              {(selectedTemplate.folder || selectedTemplate.fileUrl || selectedTemplate.sourceNote) && (
+                <div className="template-meta">
+                  {selectedTemplate.folder && <span>{selectedTemplate.folder}</span>}
+                  {selectedTemplate.sourceNote && <span>{selectedTemplate.sourceNote}</span>}
+                  {selectedTemplate.fileUrl && (
+                    <a href={selectedTemplate.fileUrl} target="_blank" rel="noreferrer">
+                      Otevřít PDF
+                    </a>
+                  )}
+                </div>
+              )}
               {selectedTemplate.fields.map((field) => (
                 <label key={field.key}>
                   {field.label}
@@ -2677,10 +3734,10 @@ function AdminWorkspace({
           </div>
         )}
 
-        {activeTab === 'slides' && (
+        {activeTab === 'content' && (
           <div className="admin-grid">
             <form className="admin-card" onSubmit={saveSlide}>
-              <h3>{slideForm.id ? 'Upravit slide' : 'Přidat slide'}</h3>
+              <h3>{slideForm.id ? 'Upravit pinned obsah' : 'Přidat pinned obsah'}</h3>
               <label>
                 Nadpis
                 <input value={slideForm.title} onChange={(event) => setSlideForm((current) => ({ ...current, title: event.target.value }))} required />
@@ -2729,7 +3786,7 @@ function AdminWorkspace({
               </button>
             </form>
             <div className="admin-card">
-              <h3>Slidy na homepage</h3>
+              <h3>Pinned obsah a bannery</h3>
               <div className="client-list slide-list">
                 {slides.map((item) => (
                   <button key={item.id} type="button" onClick={() => editSlide(item)}>
@@ -2744,6 +3801,76 @@ function AdminWorkspace({
             </div>
           </div>
         )}
+
+        {activeTab === 'media' && (
+          <div className="admin-grid">
+            <WorkspacePlaceholder
+              title="Knihovna souborů"
+              text="Obrázky, PDF, dokumenty a soubory pro aktuality, formuláře i veřejné stránky."
+              items={['Obrázky', 'Dokumenty', 'Soubory ke stažení', 'Galerie']}
+            />
+            <article className="admin-card">
+              <h3>Aktuální vizuály</h3>
+              <div className="client-list slide-list">
+                {slides.slice(0, 6).map((item) => (
+                  <button key={item.id} type="button" onClick={() => editSlide(item)}>
+                    <img src={item.imageUrl} alt="" />
+                    <strong>{item.title}</strong>
+                    <span>{item.imageUrl}</span>
+                  </button>
+                ))}
+              </div>
+            </article>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="admin-grid">
+            <WorkspacePlaceholder
+              title="Uživatelé a role"
+              text="Správa administrátorů, editorů, klientů a oprávnění pro jednotlivé části systému."
+              items={['Admin', 'Editor', 'User', 'Oprávnění modulů']}
+            />
+            <article className="admin-card">
+              <h3>Role</h3>
+              <div className="table-lite">
+                <div><strong>Admin</strong><span>plný přístup</span></div>
+                <div><strong>Editor</strong><span>obsah a média</span></div>
+                <div><strong>User</strong><span>klientská zóna</span></div>
+              </div>
+            </article>
+          </div>
+        )}
+
+        {activeTab === 'notifications' && (
+          <div className="admin-grid">
+            <WorkspacePlaceholder
+              title="Notifikace"
+              text="Zprávy, žádosti klientů a systémová upozornění."
+              items={['Nové registrace', 'Žádosti o reset hesla', 'Komentáře k aktualitám', 'Systémové chyby']}
+            />
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="admin-grid">
+            <WorkspacePlaceholder
+              title="Profil organizace"
+              text="Branding, jazyk, SEO metadata, vzhled a bezpečnostní nastavení."
+              items={['Logo a barvy', 'SEO metadata', 'Jazyk webu', 'Bezpečnost', 'Cookies']}
+            />
+            <article className="admin-card">
+              <h3>Bezpečnost</h3>
+              <div className="table-lite">
+                <div><strong>Login</strong><span>aktivní</span></div>
+                <div><strong>Role</strong><span>připraveno k rozšíření</span></div>
+                <div><strong>2FA</strong><span>plánovaný modul</span></div>
+              </div>
+            </article>
+          </div>
+        )}
+        </div>
+        <WorkspaceBottomNav items={adminNavItems} active={activeTab} onSelect={selectAdminTab} />
       </div>
     </section>
   );
@@ -2823,6 +3950,8 @@ const appRoot =
 
 appRoot.render(
   <React.StrictMode>
-    <App />
+    <AppProviders>
+      <App />
+    </AppProviders>
   </React.StrictMode>
 );

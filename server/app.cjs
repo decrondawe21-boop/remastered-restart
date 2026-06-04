@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const { query } = require('./db.cjs');
 const {
   clearSessionCookie,
@@ -53,6 +54,8 @@ function publicUser(row) {
     name: row.name,
     email: row.email,
     phone: row.phone || '',
+    isActive: row.is_active === undefined ? true : Boolean(row.is_active),
+    lastLoginAt: row.last_login_at || null,
     createdAt: row.created_at
   };
 }
@@ -75,6 +78,15 @@ function requireFields(body, fields) {
     }
   }
   return null;
+}
+
+async function requireAdmin(request, response) {
+  const user = await currentUser(request);
+  if (!user || user.role !== 'admin') {
+    sendJson(response, 403, { error: 'Admin access required.' });
+    return null;
+  }
+  return user;
 }
 
 async function registerClient(request, response) {
@@ -150,7 +162,69 @@ async function resetPassword(request, response) {
     sendJson(response, 400, { error: 'email is required.' });
     return;
   }
-  sendJson(response, 200, { ok: true, message: 'Instrukce pro obnovu hesla jsou připravené.' });
+  const email = String(body.email).trim().toLowerCase();
+  const rows = await query('SELECT id, email FROM users WHERE email = ? AND is_active = 1 LIMIT 1', [email]);
+  const message = 'Pokud účet existuje, je připravený odkaz pro obnovu hesla.';
+  if (rows.length === 0) {
+    sendJson(response, 200, { ok: true, message });
+    return;
+  }
+  const token = crypto.randomBytes(32).toString('base64url');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  await query('DELETE FROM password_resets WHERE user_id = ? OR expires_at < NOW() OR used_at IS NOT NULL', [rows[0].id]);
+  await query(
+    `INSERT INTO password_resets (id, user_id, token_hash, expires_at)
+     VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))`,
+    [randomId(), rows[0].id, tokenHash]
+  );
+  const bodyResponse = {
+    ok: true,
+    message,
+    expiresInMinutes: 60
+  };
+  if (process.env.NODE_ENV !== 'production' || process.env.RESET_TOKEN_IN_RESPONSE === '1') {
+    bodyResponse.resetToken = token;
+    bodyResponse.resetUrl = `#/reset-hesla?token=${encodeURIComponent(token)}`;
+  }
+  sendJson(response, 200, bodyResponse);
+}
+
+async function confirmPasswordReset(request, response) {
+  const body = await readBody(request);
+  const token = String(body.token || '').trim();
+  const password = String(body.password || '');
+  if (!token) {
+    sendJson(response, 400, { error: 'token is required.' });
+    return;
+  }
+  if (password.length < 8) {
+    sendJson(response, 400, { error: 'Password must be at least 8 characters.' });
+    return;
+  }
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const rows = await query(
+    `SELECT resets.id, resets.user_id
+     FROM password_resets resets
+     JOIN users ON users.id = resets.user_id
+     WHERE resets.token_hash = ?
+       AND resets.used_at IS NULL
+       AND resets.expires_at > NOW()
+       AND users.is_active = 1
+     LIMIT 1`,
+    [tokenHash]
+  );
+  if (rows.length === 0) {
+    sendJson(response, 400, { error: 'Reset token is invalid or expired.' });
+    return;
+  }
+  await query(
+    `UPDATE users
+     SET password_hash = ?, password_algo = 'scrypt', password_reset_required = 0
+     WHERE id = ?`,
+    [hashPassword(password), rows[0].user_id]
+  );
+  await query('UPDATE password_resets SET used_at = NOW() WHERE id = ?', [rows[0].id]);
+  sendJson(response, 200, { ok: true, message: 'Heslo bylo úspěšně změněno. Můžete se přihlásit.' });
 }
 
 async function listNews(_request, response) {
@@ -589,6 +663,475 @@ async function createClient(request, response) {
   sendJson(response, 200, { client: rows[0] });
 }
 
+function parseJsonValue(value, fallback) {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
+  }
+  return value;
+}
+
+function publicFormTemplate(row) {
+  const schema = parseJsonValue(row.schemaJson || row.schema_json, []);
+  const fields = Array.isArray(schema) ? schema : Array.isArray(schema.fields) ? schema.fields : [];
+  const meta = Array.isArray(schema) ? {} : schema;
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description || '',
+    fields: fields
+      .filter((field) => field && field.key && field.label)
+      .map((field) => ({
+        key: String(field.key),
+        label: String(field.label),
+        rows: Number.isFinite(Number(field.rows)) ? Number(field.rows) : undefined
+      })),
+    fileUrl: meta.fileUrl || meta.file_url || '',
+    folder: meta.folder || '',
+    sourceNote: meta.sourceNote || meta.source_note || '',
+    sizeBytes: Number(meta.sizeBytes || meta.size_bytes || 0),
+    isActive: Boolean(row.isActive ?? row.is_active)
+  };
+}
+
+async function listFormTemplates(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  try {
+    const documentRows = await query(
+      `SELECT
+         id,
+         category_code AS categoryCode,
+         category_title AS categoryTitle,
+         document_code AS documentCode,
+         title,
+         version,
+         file_name AS fileName,
+         file_path AS filePath,
+         sensitivity,
+         notes,
+         sort_order AS sortOrder
+       FROM rest_art_document_files
+       WHERE status = 'active' AND file_type = 'pdf'
+       ORDER BY category_code ASC, sort_order ASC, title ASC
+       LIMIT 300`
+    );
+    if (documentRows.length > 0) {
+      sendJson(response, 200, {
+        templates: documentRows.map((row) => ({
+          id: `rest-art-doc-${row.id}`,
+          title: row.documentCode ? `${row.documentCode} - ${row.title}` : row.title,
+          description: `${row.categoryTitle || row.categoryCode || 'Formulář'}${row.version ? `, ${row.version}` : ''}. ${row.notes || ''}`.trim(),
+          fields: [
+            { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+            { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+          ],
+          fileUrl: row.filePath || '',
+          folder: row.categoryCode || '',
+          sourceNote: [row.fileName, row.sensitivity ? `citlivost: ${row.sensitivity}` : ''].filter(Boolean).join(' | '),
+          sizeBytes: 0,
+          isActive: true
+        }))
+      });
+      return;
+    }
+  } catch (error) {
+    if (!String(error.message || '').includes("rest_art_document_files")) {
+      throw error;
+    }
+  }
+  const rows = await query(
+    `SELECT
+       id,
+       title,
+       description,
+       schema_json AS schemaJson,
+       is_active AS isActive
+     FROM form_templates
+     WHERE is_active = 1
+     ORDER BY title ASC`
+  );
+  sendJson(response, 200, { templates: rows.map(publicFormTemplate) });
+}
+
+function publicManagedUser(row) {
+  return {
+    id: row.id,
+    role: row.role,
+    name: row.name,
+    email: row.email,
+    phone: row.phone || '',
+    isActive: Boolean(row.isActive ?? row.is_active),
+    lastLoginAt: row.lastLoginAt || row.last_login_at || null,
+    createdAt: row.createdAt || row.created_at
+  };
+}
+
+async function listUsers(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const rows = await query(
+    `SELECT
+       id,
+       role,
+       name,
+       email,
+       phone,
+       is_active AS isActive,
+       last_login_at AS lastLoginAt,
+       created_at AS createdAt
+     FROM users
+     ORDER BY created_at DESC
+     LIMIT 300`
+  );
+  sendJson(response, 200, { users: rows.map(publicManagedUser) });
+}
+
+async function updateUser(request, response, userId) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const body = await readBody(request);
+  const allowedRoles = new Set(['admin', 'editor', 'client', 'user']);
+  const role = allowedRoles.has(body.role) ? body.role : null;
+  const isActive = body.isActive === false ? 0 : 1;
+  if (!role) {
+    sendJson(response, 400, { error: 'Valid role is required.' });
+    return;
+  }
+  await query('UPDATE users SET role = ?, is_active = ? WHERE id = ?', [role, isActive, userId]);
+  const rows = await query(
+    `SELECT
+       id,
+       role,
+       name,
+       email,
+       phone,
+       is_active AS isActive,
+       last_login_at AS lastLoginAt,
+       created_at AS createdAt
+     FROM users
+     WHERE id = ?
+     LIMIT 1`,
+    [userId]
+  );
+  if (rows.length === 0) {
+    sendJson(response, 404, { error: 'User not found.' });
+    return;
+  }
+  sendJson(response, 200, { user: publicManagedUser(rows[0]) });
+}
+
+function publicMedia(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    fileName: row.fileName || row.file_name,
+    fileUrl: row.fileUrl || row.file_url,
+    mimeType: row.mimeType || row.mime_type || '',
+    fileSize: Number(row.fileSize || row.file_size || 0),
+    category: row.category,
+    altText: row.altText || row.alt_text || '',
+    uploadedBy: row.uploadedBy || row.uploaded_by || null,
+    createdAt: row.createdAt || row.created_at
+  };
+}
+
+async function listMedia(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const rows = await query(
+    `SELECT
+       id,
+       title,
+       file_name AS fileName,
+       file_url AS fileUrl,
+       mime_type AS mimeType,
+       file_size AS fileSize,
+       category,
+       alt_text AS altText,
+       uploaded_by AS uploadedBy,
+       created_at AS createdAt
+     FROM media_files
+     ORDER BY created_at DESC
+     LIMIT 300`
+  );
+  sendJson(response, 200, { media: rows.map(publicMedia) });
+}
+
+async function saveMedia(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const body = await readBody(request);
+  const missing = requireFields(body, ['title', 'fileUrl']);
+  if (missing) {
+    sendJson(response, 400, { error: missing });
+    return;
+  }
+  const id = body.id || randomId();
+  const fileUrl = String(body.fileUrl).trim();
+  const fileName = String(body.fileName || fileUrl.split('/').pop() || body.title).trim();
+  await query(
+    `INSERT INTO media_files (id, title, file_name, file_url, mime_type, file_size, category, alt_text, uploaded_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       title = VALUES(title),
+       file_name = VALUES(file_name),
+       file_url = VALUES(file_url),
+       mime_type = VALUES(mime_type),
+       file_size = VALUES(file_size),
+       category = VALUES(category),
+       alt_text = VALUES(alt_text),
+       uploaded_by = VALUES(uploaded_by)`,
+    [
+      id,
+      String(body.title).trim(),
+      fileName,
+      fileUrl,
+      String(body.mimeType || '').trim() || null,
+      Number.isFinite(Number(body.fileSize)) ? Number(body.fileSize) : null,
+      String(body.category || 'image').trim(),
+      String(body.altText || '').trim(),
+      user.id
+    ]
+  );
+  const rows = await query(
+    `SELECT
+       id,
+       title,
+       file_name AS fileName,
+       file_url AS fileUrl,
+       mime_type AS mimeType,
+       file_size AS fileSize,
+       category,
+       alt_text AS altText,
+       uploaded_by AS uploadedBy,
+       created_at AS createdAt
+     FROM media_files
+     WHERE id = ?
+     LIMIT 1`,
+    [id]
+  );
+  sendJson(response, 200, { media: publicMedia(rows[0]) });
+}
+
+function publicDocument(row) {
+  return {
+    id: row.id,
+    clientId: row.clientId || row.client_id || null,
+    userId: row.userId || row.user_id || null,
+    mediaId: row.mediaId || row.media_id || null,
+    title: row.title,
+    documentType: row.documentType || row.document_type,
+    status: row.status,
+    fileUrl: row.fileUrl || row.file_url || '',
+    notes: row.notes || '',
+    signedAt: row.signedAt || row.signed_at || null,
+    createdAt: row.createdAt || row.created_at
+  };
+}
+
+async function listDocuments(request, response) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const isAdmin = user.role === 'admin';
+  const rows = await query(
+    `SELECT
+       id,
+       client_id AS clientId,
+       user_id AS userId,
+       media_id AS mediaId,
+       title,
+       document_type AS documentType,
+       status,
+       file_url AS fileUrl,
+       notes,
+       signed_at AS signedAt,
+       created_at AS createdAt
+     FROM client_documents
+     ${isAdmin ? '' : 'WHERE user_id = ?'}
+     ORDER BY created_at DESC
+     LIMIT 300`,
+    isAdmin ? [] : [user.id]
+  );
+  sendJson(response, 200, { documents: rows.map(publicDocument) });
+}
+
+async function saveDocument(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const body = await readBody(request);
+  const missing = requireFields(body, ['title']);
+  if (missing) {
+    sendJson(response, 400, { error: missing });
+    return;
+  }
+  const id = body.id || randomId();
+  await query(
+    `INSERT INTO client_documents
+       (id, client_id, user_id, media_id, title, document_type, status, file_url, notes, created_by, signed_at)
+     VALUES (?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), ?, ?, ?, NULLIF(?, ''), ?, ?, NULLIF(?, ''))
+     ON DUPLICATE KEY UPDATE
+       client_id = VALUES(client_id),
+       user_id = VALUES(user_id),
+       media_id = VALUES(media_id),
+       title = VALUES(title),
+       document_type = VALUES(document_type),
+       status = VALUES(status),
+       file_url = VALUES(file_url),
+       notes = VALUES(notes),
+       signed_at = VALUES(signed_at)`,
+    [
+      id,
+      body.clientId || '',
+      body.userId || '',
+      body.mediaId || '',
+      String(body.title).trim(),
+      String(body.documentType || 'form').trim(),
+      String(body.status || 'draft').trim(),
+      String(body.fileUrl || '').trim(),
+      String(body.notes || '').trim(),
+      user.id,
+      body.signedAt || ''
+    ]
+  );
+  const rows = await query(
+    `SELECT
+       id,
+       client_id AS clientId,
+       user_id AS userId,
+       media_id AS mediaId,
+       title,
+       document_type AS documentType,
+       status,
+       file_url AS fileUrl,
+       notes,
+       signed_at AS signedAt,
+       created_at AS createdAt
+     FROM client_documents
+     WHERE id = ?
+     LIMIT 1`,
+    [id]
+  );
+  sendJson(response, 200, { document: publicDocument(rows[0]) });
+}
+
+function publicNotification(row) {
+  return {
+    id: row.id,
+    recipientId: row.recipientId || row.recipient_id || null,
+    title: row.title,
+    body: row.body,
+    tone: row.tone,
+    category: row.category,
+    linkHref: row.linkHref || row.link_href || '',
+    readAt: row.readAt || row.read_at || null,
+    createdAt: row.createdAt || row.created_at
+  };
+}
+
+async function listNotifications(request, response) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const isAdmin = user.role === 'admin';
+  const rows = await query(
+    `SELECT
+       id,
+       recipient_id AS recipientId,
+       title,
+       body,
+       tone,
+       category,
+       link_href AS linkHref,
+       read_at AS readAt,
+       created_at AS createdAt
+     FROM notifications
+     WHERE ${isAdmin ? 'recipient_id IS NULL OR recipient_id = ?' : 'recipient_id = ?'}
+     ORDER BY created_at DESC
+     LIMIT 100`,
+    [user.id]
+  );
+  sendJson(response, 200, { notifications: rows.map(publicNotification) });
+}
+
+async function saveNotification(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const body = await readBody(request);
+  const missing = requireFields(body, ['title', 'body']);
+  if (missing) {
+    sendJson(response, 400, { error: missing });
+    return;
+  }
+  const id = body.id || randomId();
+  await query(
+    `INSERT INTO notifications (id, recipient_id, title, body, tone, category, link_href, created_by)
+     VALUES (?, NULLIF(?, ''), ?, ?, ?, ?, NULLIF(?, ''), ?)
+     ON DUPLICATE KEY UPDATE
+       recipient_id = VALUES(recipient_id),
+       title = VALUES(title),
+       body = VALUES(body),
+       tone = VALUES(tone),
+       category = VALUES(category),
+       link_href = VALUES(link_href)`,
+    [
+      id,
+      body.recipientId || '',
+      String(body.title).trim(),
+      String(body.body).trim(),
+      String(body.tone || 'info').trim(),
+      String(body.category || 'system').trim(),
+      String(body.linkHref || '').trim(),
+      user.id
+    ]
+  );
+  const rows = await query(
+    `SELECT
+       id,
+       recipient_id AS recipientId,
+       title,
+       body,
+       tone,
+       category,
+       link_href AS linkHref,
+       read_at AS readAt,
+       created_at AS createdAt
+     FROM notifications
+     WHERE id = ?
+     LIMIT 1`,
+    [id]
+  );
+  sendJson(response, 200, { notification: publicNotification(rows[0]) });
+}
+
+async function markNotificationRead(request, response, notificationId) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const params = user.role === 'admin' ? [notificationId] : [notificationId, user.id];
+  const existing = await query(
+    `SELECT id FROM notifications WHERE id = ? ${user.role === 'admin' ? '' : 'AND recipient_id = ?'} LIMIT 1`,
+    params
+  );
+  if (existing.length === 0) {
+    sendJson(response, 404, { error: 'Notification not found.' });
+    return;
+  }
+  await query('UPDATE notifications SET read_at = NOW() WHERE id = ?', [notificationId]);
+  sendJson(response, 200, { ok: true, id: notificationId });
+}
+
 async function createApp(request, response) {
   try {
     const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
@@ -601,6 +1144,7 @@ async function createApp(request, response) {
     if (request.method === 'GET' && url.pathname === '/api/auth/me') return me(request, response);
     if (request.method === 'POST' && url.pathname === '/api/auth/logout') return logout(request, response);
     if (request.method === 'POST' && url.pathname === '/api/auth/reset') return resetPassword(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/auth/reset/confirm') return confirmPasswordReset(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news') return listNews(request, response);
     if (request.method === 'POST' && url.pathname === '/api/news') return saveNews(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news/discussion') return listNewsDiscussion(request, response);
@@ -615,6 +1159,18 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/slides') return saveSlide(request, response);
     if (request.method === 'GET' && url.pathname === '/api/clients') return listClients(request, response);
     if (request.method === 'POST' && url.pathname === '/api/clients') return createClient(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/forms/templates') return listFormTemplates(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/admin/users') return listUsers(request, response);
+    const userMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)$/);
+    if (request.method === 'PATCH' && userMatch) return updateUser(request, response, userMatch[1]);
+    if (request.method === 'GET' && url.pathname === '/api/media') return listMedia(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/media') return saveMedia(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/documents') return listDocuments(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/documents') return saveDocument(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/notifications') return listNotifications(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/notifications') return saveNotification(request, response);
+    const notificationMatch = url.pathname.match(/^\/api\/notifications\/([^/]+)\/read$/);
+    if (request.method === 'PATCH' && notificationMatch) return markNotificationRead(request, response, notificationMatch[1]);
     sendJson(response, 404, { error: 'Not found.' });
   } catch (error) {
     sendJson(response, 500, { error: error.message || 'Server error.' });

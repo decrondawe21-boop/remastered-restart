@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
   id CHAR(36) PRIMARY KEY,
-  role ENUM('admin', 'client') NOT NULL,
+  role ENUM('admin', 'editor', 'client', 'user') NOT NULL,
   name VARCHAR(180) NOT NULL,
   email VARCHAR(190) NOT NULL,
   phone VARCHAR(50) NULL,
@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS users (
   KEY users_role_idx (role),
   KEY users_active_idx (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE users
+  MODIFY role ENUM('admin', 'editor', 'client', 'user') NOT NULL;
 
 CREATE TABLE IF NOT EXISTS clients (
   id CHAR(36) PRIMARY KEY,
@@ -130,6 +133,63 @@ CREATE TABLE IF NOT EXISTS home_slides (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY home_slides_active_order_idx (is_active, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS media_files (
+  id CHAR(36) PRIMARY KEY,
+  title VARCHAR(220) NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  file_url VARCHAR(500) NOT NULL,
+  mime_type VARCHAR(120) NULL,
+  file_size INT NULL,
+  category VARCHAR(80) NOT NULL DEFAULT 'image',
+  alt_text VARCHAR(255) NULL,
+  uploaded_by CHAR(36) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT media_files_uploaded_by_fk FOREIGN KEY (uploaded_by) REFERENCES users (id) ON DELETE SET NULL,
+  KEY media_files_category_idx (category),
+  KEY media_files_created_idx (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS client_documents (
+  id CHAR(36) PRIMARY KEY,
+  client_id CHAR(36) NULL,
+  user_id CHAR(36) NULL,
+  media_id CHAR(36) NULL,
+  title VARCHAR(220) NOT NULL,
+  document_type VARCHAR(90) NOT NULL DEFAULT 'form',
+  status VARCHAR(70) NOT NULL DEFAULT 'draft',
+  file_url VARCHAR(500) NULL,
+  notes TEXT NULL,
+  created_by CHAR(36) NULL,
+  signed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT client_documents_client_fk FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
+  CONSTRAINT client_documents_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT client_documents_media_fk FOREIGN KEY (media_id) REFERENCES media_files (id) ON DELETE SET NULL,
+  CONSTRAINT client_documents_created_by_fk FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL,
+  KEY client_documents_client_idx (client_id, created_at),
+  KEY client_documents_user_idx (user_id, created_at),
+  KEY client_documents_status_idx (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id CHAR(36) PRIMARY KEY,
+  recipient_id CHAR(36) NULL,
+  title VARCHAR(220) NOT NULL,
+  body TEXT NOT NULL,
+  tone VARCHAR(40) NOT NULL DEFAULT 'info',
+  category VARCHAR(80) NOT NULL DEFAULT 'system',
+  link_href VARCHAR(255) NULL,
+  read_at DATETIME NULL,
+  created_by CHAR(36) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT notifications_recipient_fk FOREIGN KEY (recipient_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT notifications_created_by_fk FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL,
+  KEY notifications_recipient_read_idx (recipient_id, read_at, created_at),
+  KEY notifications_category_idx (category)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS password_resets (

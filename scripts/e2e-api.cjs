@@ -1,4 +1,8 @@
 const { spawn } = require('node:child_process');
+const { loadDotEnv } = require('../server/env.cjs');
+const { query, getPool } = require('../server/db.cjs');
+
+loadDotEnv();
 
 const required = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'AUTH_SECRET'];
 const missing = required.filter((key) => !process.env[key]);
@@ -47,22 +51,28 @@ function waitForServer() {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${baseUrl}${path}`, {
-    ...options,
-    headers: {
-      'content-type': 'application/json',
-      ...(options.headers || {})
-    }
-  });
+  let response;
+  try {
+    response = await fetch(`${baseUrl}${path}`, {
+      ...options,
+      headers: {
+        'content-type': 'application/json',
+        ...(options.headers || {})
+      }
+    });
+  } catch (error) {
+    throw new Error(`Request ${path} failed: ${error.message}\n${output}`);
+  }
   const text = await response.text();
   const body = text ? JSON.parse(text) : null;
   return { response, body };
 }
 
 (async () => {
+  let email = '';
   try {
     await waitForServer();
-    const email = `client.${Date.now()}@example.test`;
+    email = `client.${Date.now()}@example.test`;
     const password = 'tajneheslo';
 
     const anonymous = await request('/api/auth/me');
@@ -112,6 +122,29 @@ async function request(path, options = {}) {
     const loginCookie = login.response.headers.get('set-cookie');
     if (!loginCookie || !loginCookie.includes('restart_session=')) {
       throw new Error('Login should set an HttpOnly session cookie.');
+    }
+
+    const reset = await request('/api/auth/reset', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+    if (!reset.response.ok || !reset.body.resetToken) {
+      throw new Error(`Password reset should return a development token: ${JSON.stringify(reset.body)}`);
+    }
+    const newPassword = 'noveTajneHeslo123';
+    const confirmedReset = await request('/api/auth/reset/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ token: reset.body.resetToken, password: newPassword })
+    });
+    if (!confirmedReset.response.ok || confirmedReset.body.ok !== true) {
+      throw new Error(`Password reset confirmation failed: ${JSON.stringify(confirmedReset.body)}`);
+    }
+    const relogin = await request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password: newPassword, role: 'client' })
+    });
+    if (!relogin.response.ok || relogin.body.user.email !== email) {
+      throw new Error(`Login with reset password failed: ${JSON.stringify(relogin.body)}`);
     }
 
     const news = await request('/api/news');
@@ -176,6 +209,10 @@ async function request(path, options = {}) {
     console.log('API validation passed.');
   } finally {
     server.kill();
+    if (email) {
+      await query('DELETE FROM users WHERE email = ?', [email]).catch(() => undefined);
+      await getPool().end().catch(() => undefined);
+    }
   }
 })().catch((error) => {
   server.kill();

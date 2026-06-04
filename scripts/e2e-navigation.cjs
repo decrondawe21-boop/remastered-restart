@@ -47,9 +47,15 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
   if (!bodyText.includes('Nacházíte se:')) {
     throw new Error('Breadcrumb label is missing.');
   }
-  const breadcrumbText = await page.locator('.breadcrumb-bar').innerText();
+  await page.waitForFunction(() => {
+    const items = Array.from(document.querySelectorAll('.breadcrumb-bar a, .breadcrumb-bar strong')).map((element) =>
+      element.textContent?.trim()
+    );
+    return ['Domů', 'Kontakt', 'Formulář'].every((item) => items.includes(item));
+  });
+  const breadcrumbItems = await page.locator('.breadcrumb-bar a, .breadcrumb-bar strong').allInnerTexts();
   for (const item of ['Domů', 'Kontakt', 'Formulář']) {
-    if (!breadcrumbText.includes(item)) {
+    if (!breadcrumbItems.includes(item)) {
       throw new Error(`Kontakt breadcrumb is missing ${item}.`);
     }
   }

@@ -14,7 +14,8 @@
     "test:admin-api": "node scripts/e2e-admin-api.cjs",
     "api:dev": "node server/index.cjs",
     "db:seed-admin": "node scripts/seed-admin.cjs",
-    "db:migrate": "node scripts/migrate-db.cjs"
+    "db:migrate": "node scripts/migrate-db.cjs",
+    "db:cleanup-test-data": "node scripts/cleanup-test-data.cjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.7.0",

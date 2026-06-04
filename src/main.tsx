@@ -3066,10 +3066,16 @@ function App() {
     if (account.password) {
       setSessionId(account.id);
       setApiAccount(null);
+      if (account.role === 'admin' && currentPath !== '/admin') {
+        window.location.hash = '#/admin';
+      }
       return;
     }
     setApiAccount(account);
     setSessionId(null);
+    if (account.role === 'admin' && currentPath !== '/admin') {
+      window.location.hash = '#/admin';
+    }
   };
   const logout = () => {
     logoutUser().catch(() => undefined);
@@ -3079,8 +3085,16 @@ function App() {
   };
   const registerClient = (account: AuthAccount) => setAccounts((current) => [account, ...current]);
   const loginViaApi = async ({ email, password, role }: LoginRequest) => {
-    const user = await loginUser(email, password, role as ApiRole);
-    return fromApiUser(user);
+    try {
+      const user = await loginUser(email, password, role as ApiRole);
+      return fromApiUser(user);
+    } catch (error) {
+      if (role === 'client' && error instanceof ApiRequestError && [400, 401, 403].includes(error.status)) {
+        const user = await loginUser(email, password, 'admin');
+        return fromApiUser(user);
+      }
+      throw error;
+    }
   };
   const registerViaApi = async ({ name, email, phone, password }: RegisterRequest) => {
     const user = await registerClientAccount(name, email, phone, password);

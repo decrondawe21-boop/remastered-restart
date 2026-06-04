@@ -70,6 +70,9 @@ async function request(path, options = {}) {
 
 (async () => {
   let email = '';
+  let commentId = '';
+  let replyId = '';
+  let likedNewsId = '';
   try {
     await waitForServer();
     email = `client.${Date.now()}@example.test`;
@@ -170,6 +173,7 @@ async function request(path, options = {}) {
     if (!liked.response.ok || liked.body.like.newsId !== firstNews.id || liked.body.like.likedByMe !== true) {
       throw new Error(`News like failed: ${JSON.stringify(liked.body)}`);
     }
+    likedNewsId = firstNews.id;
 
     const comment = await request(`/api/news/${encodeURIComponent(firstNews.id)}/comments`, {
       method: 'POST',
@@ -179,6 +183,7 @@ async function request(path, options = {}) {
     if (!comment.response.ok || comment.body.comment.body !== 'Testovací komentář' || !comment.body.comment.canEdit) {
       throw new Error(`Comment creation failed: ${JSON.stringify(comment.body)}`);
     }
+    commentId = comment.body.comment.id;
 
     const reply = await request(`/api/news/${encodeURIComponent(firstNews.id)}/comments`, {
       method: 'POST',
@@ -188,6 +193,7 @@ async function request(path, options = {}) {
     if (!reply.response.ok || reply.body.comment.parentId !== comment.body.comment.id) {
       throw new Error(`Reply creation failed: ${JSON.stringify(reply.body)}`);
     }
+    replyId = reply.body.comment.id;
 
     const updated = await request(`/api/comments/${encodeURIComponent(comment.body.comment.id)}`, {
       method: 'PATCH',
@@ -210,6 +216,14 @@ async function request(path, options = {}) {
   } finally {
     server.kill();
     if (email) {
+      if (replyId) await query('DELETE FROM news_comments WHERE id = ?', [replyId]).catch(() => undefined);
+      if (commentId) await query('DELETE FROM news_comments WHERE id = ?', [commentId]).catch(() => undefined);
+      if (likedNewsId) {
+        await query(
+          'DELETE news_likes FROM news_likes JOIN users ON users.id = news_likes.user_id WHERE news_likes.news_id = ? AND users.email = ?',
+          [likedNewsId, email]
+        ).catch(() => undefined);
+      }
       await query('DELETE FROM users WHERE email = ?', [email]).catch(() => undefined);
       await getPool().end().catch(() => undefined);
     }

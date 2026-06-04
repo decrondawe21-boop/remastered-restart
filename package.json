@@ -15,6 +15,7 @@
     "api:dev": "node server/index.cjs",
     "db:seed-admin": "node scripts/seed-admin.cjs",
     "db:migrate": "node scripts/migrate-db.cjs",
+    "db:import-forms": "node scripts/import-form-package.cjs",
     "db:cleanup-test-data": "node scripts/cleanup-test-data.cjs"
   },
   "dependencies": {

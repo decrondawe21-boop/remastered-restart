@@ -15,6 +15,15 @@ $env:DB_PASSWORD='...'
 npm run db:migrate
 ```
 
+Import provozního balíčku PDF formulářů:
+
+```powershell
+npm run db:import-forms -- "I:\dkozak\REST_ART_PROVOZNI_TEST_BALICEK_FINAL_FORMULARE_v1_0.zip"
+```
+
+Skript z manifestu vytvoří záznamy v `rest_art_document_files` a zkopíruje PDF do
+`public/documents/forms/...`, odkud je umí admin sekce nabídnout k otevření nebo tisku.
+
 Seed the first administrator account:
 
 ```powershell
@@ -41,6 +50,7 @@ If migration returns `Access denied`, check these items in Webglobe Admin:
 - `clients`: client register for social work.
 - `client_notes`: worker notes and history.
 - `form_templates`: printable/signable form definitions.
+- `rest_art_document_files`: imported PDF form package shown in the admin form picker.
 - `form_submissions`: filled forms for clients.
 - `news`: public news/CMS entries.
 - `password_resets`: password reset tokens.

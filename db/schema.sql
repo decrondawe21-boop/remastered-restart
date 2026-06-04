@@ -64,6 +64,33 @@ CREATE TABLE IF NOT EXISTS form_templates (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS rest_art_document_files (
+  id VARCHAR(120) PRIMARY KEY,
+  category_code VARCHAR(80) NOT NULL,
+  category_title VARCHAR(180) NOT NULL,
+  document_code VARCHAR(80) NULL,
+  title VARCHAR(220) NOT NULL,
+  version VARCHAR(40) NULL,
+  file_type VARCHAR(30) NOT NULL DEFAULT 'pdf',
+  file_name VARCHAR(255) NOT NULL,
+  file_path VARCHAR(500) NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'active',
+  sensitivity VARCHAR(80) NULL,
+  notes TEXT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  size_bytes INT NULL,
+  source_note VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY rest_art_document_files_path_unique (file_path),
+  KEY rest_art_document_files_category_idx (category_code, sort_order),
+  KEY rest_art_document_files_status_idx (status, file_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE rest_art_document_files
+  ADD COLUMN IF NOT EXISTS size_bytes INT NULL,
+  ADD COLUMN IF NOT EXISTS source_note VARCHAR(255) NULL;
+
 CREATE TABLE IF NOT EXISTS form_submissions (
   id CHAR(36) PRIMARY KEY,
   template_id VARCHAR(80) NOT NULL,

@@ -136,10 +136,11 @@ async function request(path, options = {}) {
       body: JSON.stringify({
         title: newsTitle,
         date: '2026-06-03',
-        excerpt: 'Aktualita založená přes admin API test.'
+        excerpt: 'Aktualita založená přes admin API test.',
+        body: '<p>Testovací tělo aktuality.</p>'
       })
     });
-    if (!createdNews.response.ok || createdNews.body.news.title !== newsTitle) {
+    if (!createdNews.response.ok || createdNews.body.news.title !== newsTitle || !createdNews.body.news.body.includes('Testovací tělo')) {
       throw new Error(`News creation failed: ${JSON.stringify(createdNews.body)}`);
     }
     createdNewsId = createdNews.body.news.id;
@@ -148,6 +149,15 @@ async function request(path, options = {}) {
     if (!publicNews.response.ok || !publicNews.body.news.some((item) => item.id === createdNews.body.news.id)) {
       throw new Error(`Created news is missing from public news list: ${JSON.stringify(publicNews.body)}`);
     }
+
+    const deletedNews = await request(`/api/news/${encodeURIComponent(createdNewsId)}`, {
+      method: 'DELETE',
+      headers: { cookie }
+    });
+    if (!deletedNews.response.ok || deletedNews.body.id !== createdNewsId) {
+      throw new Error(`News deletion failed: ${JSON.stringify(deletedNews.body)}`);
+    }
+    createdNewsId = null;
 
     const createdMedia = await request('/api/media', {
       method: 'POST',

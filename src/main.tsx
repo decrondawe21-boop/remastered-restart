@@ -4,9 +4,11 @@ import {
   ArrowRight,
   AlertCircle,
   Bell,
+  Bold,
   ChevronLeft,
   CheckCircle2,
   ClipboardList,
+  Heading1,
   Eye,
   EyeOff,
   FileStack,
@@ -14,9 +16,13 @@ import {
   FolderOpen,
   Heart,
   Image as ImageIcon,
+  ImagePlus,
   Info,
+  Italic,
   KeyRound,
   LayoutDashboard,
+  Link,
+  List,
   LockKeyhole,
   LogOut,
   Mail,
@@ -32,11 +38,13 @@ import {
   Settings,
   ShieldCheck,
   Trash2,
+  Underline,
   Undo2,
   Upload,
   UserCog,
   UserRound,
   Users,
+  Video,
   X
 } from 'lucide-react';
 import {
@@ -54,6 +62,7 @@ import {
   addNewsComment,
   confirmPasswordReset,
   deleteNewsComment,
+  deleteNews as deleteNewsRecord,
   listClients,
   listFormTemplates,
   listNews,
@@ -126,6 +135,7 @@ type NewsItem = {
   title: string;
   date: string;
   excerpt: string;
+  body?: string;
 };
 
 type NewsDiscussion = {
@@ -494,6 +504,14 @@ const fromApiClient = (client: ApiClientRecord): ClientRecord => ({
   notes: client.notes || '',
   createdAt: client.createdAt
 });
+
+function cleanNewsHtml(value = '') {
+  return value
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/\son\w+="[^"]*"/gi, '')
+    .replace(/\son\w+='[^']*'/gi, '')
+    .replace(/javascript:/gi, '');
+}
 
 const fromApiFormTemplate = (template: ApiFormTemplate): FormTemplate => ({
   id: template.id,
@@ -1019,6 +1037,7 @@ function NewsGrid({
           <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
           <h3>{item.title}</h3>
           <p>{item.excerpt}</p>
+          {item.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body) }} />}
           <NewsDiscussionPanel
             item={item}
             discussion={discussion}
@@ -3107,6 +3126,7 @@ function App() {
     return fromApiClient(saved);
   };
   const saveNewsViaApi = (item: NewsItem) => saveNewsRecord(item);
+  const deleteNewsViaApi = (id: string) => deleteNewsRecord(id);
   const saveSlideViaApi = (item: HomeSlide) => saveSlideRecord(item);
   const toggleLikeViaApi = async (newsId: string) => {
     try {
@@ -3212,6 +3232,7 @@ function App() {
           onSlidesChange={setSlides}
           onClientSaveRequest={saveClientViaApi}
           onNewsSaveRequest={saveNewsViaApi}
+          onNewsDeleteRequest={deleteNewsViaApi}
           onSlideSaveRequest={saveSlideViaApi}
           account={currentAccount}
           onLogout={logout}
@@ -3280,6 +3301,7 @@ function AdminWorkspace({
   onSlidesChange,
   onClientSaveRequest,
   onNewsSaveRequest,
+  onNewsDeleteRequest,
   onSlideSaveRequest,
   account,
   onLogout,
@@ -3294,6 +3316,7 @@ function AdminWorkspace({
   onSlidesChange: React.Dispatch<React.SetStateAction<HomeSlide[]>>;
   onClientSaveRequest?: (client: ClientRecord) => Promise<ClientRecord>;
   onNewsSaveRequest?: (item: NewsItem) => Promise<NewsItem>;
+  onNewsDeleteRequest?: (id: string) => Promise<void>;
   onSlideSaveRequest?: (item: HomeSlide) => Promise<HomeSlide>;
   account: AuthAccount;
   onLogout: () => void;
@@ -3308,8 +3331,12 @@ function AdminWorkspace({
     id: '',
     title: '',
     date: todayIso(),
-    excerpt: ''
+    excerpt: '',
+    body: ''
   });
+  const [isNewsDialogOpen, setIsNewsDialogOpen] = React.useState(false);
+  const [newsUndoStack, setNewsUndoStack] = React.useState<string[]>([]);
+  const newsBodyRef = React.useRef<HTMLTextAreaElement | null>(null);
   const [slideForm, setSlideForm] = React.useState<HomeSlide>({
     id: '',
     title: '',
@@ -3385,14 +3412,81 @@ function AdminWorkspace({
     onNotify('info', 'Formulář klienta vyčištěn', 'Můžete zadat nový kontakt.');
   };
 
+  const openNewsDialog = (item?: NewsItem) => {
+    setNewsForm(
+      item ?? {
+        id: '',
+        title: '',
+        date: todayIso(),
+        excerpt: '',
+        body: ''
+      }
+    );
+    setIsNewsDialogOpen(true);
+    onNotify('info', item ? 'Aktualita načtena k úpravě' : 'Nová aktualita', item?.title ?? 'Editor je připravený.');
+  };
+
+  const closeNewsDialog = () => {
+    setIsNewsDialogOpen(false);
+    setNewsForm({ id: '', title: '', date: todayIso(), excerpt: '', body: '' });
+    setNewsUndoStack([]);
+  };
+
+  const insertNewsBody = (before: string, after = '', placeholder = '') => {
+    const textarea = newsBodyRef.current;
+    setNewsForm((current) => {
+      const body = current.body || '';
+      setNewsUndoStack((stack) => [...stack.slice(-14), body]);
+      const start = textarea?.selectionStart ?? body.length;
+      const end = textarea?.selectionEnd ?? body.length;
+      const selected = body.slice(start, end) || placeholder;
+      const nextBody = `${body.slice(0, start)}${before}${selected}${after}${body.slice(end)}`;
+      window.requestAnimationFrame(() => {
+        textarea?.focus();
+        const cursor = start + before.length + selected.length + after.length;
+        textarea?.setSelectionRange(cursor, cursor);
+      });
+      return { ...current, body: nextBody };
+    });
+  };
+
+  const undoNewsBodyInsert = () => {
+    setNewsUndoStack((stack) => {
+      const previous = stack[stack.length - 1];
+      if (previous === undefined) return stack;
+      setNewsForm((current) => ({ ...current, body: previous }));
+      return stack.slice(0, -1);
+    });
+    window.requestAnimationFrame(() => newsBodyRef.current?.focus());
+  };
+
+  const insertNewsMedia = (type: 'image' | 'video' | 'link') => {
+    const url = window.prompt(type === 'image' ? 'URL obrázku' : type === 'video' ? 'URL videa nebo embed iframe' : 'URL odkazu');
+    if (!url) return;
+    const trimmed = url.trim();
+    if (type === 'image') {
+      insertNewsBody(`<figure><img src="${trimmed}" alt="" /><figcaption>Popisek obrázku</figcaption></figure>`);
+      return;
+    }
+    if (type === 'video') {
+      const embed = trimmed.startsWith('<iframe')
+        ? trimmed
+        : `<iframe src="${trimmed}" title="Video" loading="lazy" allowfullscreen></iframe>`;
+      insertNewsBody(`<div class="news-video">${embed}</div>`);
+      return;
+    }
+    insertNewsBody(`<a href="${trimmed}" target="_blank" rel="noreferrer">`, '</a>', 'Text odkazu');
+  };
+
   const saveNews = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!newsForm.title.trim()) return;
     const id = newsForm.id || crypto.randomUUID();
-    let nextItem = { ...newsForm, id, date: newsForm.date || todayIso() };
+    let nextItem: NewsItem = { ...newsForm, id, date: newsForm.date || todayIso(), body: cleanNewsHtml(newsForm.body || '') };
     if (onNewsSaveRequest) {
       try {
-        nextItem = await onNewsSaveRequest(nextItem);
+        const savedItem = await onNewsSaveRequest(nextItem);
+        nextItem = { ...savedItem, body: savedItem.body || '' };
         setAdminMessageTone('success');
         setAdminMessage('Aktualita je uložená v databázi.');
         onNotify('success', 'Aktualita uložena', nextItem.title);
@@ -3409,12 +3503,31 @@ function AdminWorkspace({
         : [nextItem, ...current];
       return updated.sort((left, right) => right.date.localeCompare(left.date));
     });
-    setNewsForm({ id: '', title: '', date: todayIso(), excerpt: '' });
+    closeNewsDialog();
     if (!onNewsSaveRequest) {
       setAdminMessageTone('success');
       setAdminMessage('Aktualita je uložená lokálně v prohlížeči.');
       onNotify('success', 'Aktualita uložena', 'Záznam je uložený lokálně v prohlížeči.');
     }
+  };
+
+  const deleteNews = async (item: NewsItem) => {
+    if (!window.confirm(`Smazat aktualitu "${item.title}"?`)) return;
+    if (onNewsDeleteRequest) {
+      try {
+        await onNewsDeleteRequest(item.id);
+        setAdminMessageTone('success');
+        setAdminMessage('Aktualita byla smazána z databáze.');
+        onNotify('info', 'Aktualita smazána', item.title);
+      } catch {
+        setAdminMessageTone('error');
+        setAdminMessage('Aktualitu se nepodařilo smazat přes API.');
+        onNotify('error', 'Mazání selhalo', 'Zkuste to prosím znovu.');
+        return;
+      }
+    }
+    onNewsChange((current) => current.filter((newsItem) => newsItem.id !== item.id));
+    if (newsForm.id === item.id) closeNewsDialog();
   };
 
   const saveSlide = async (event: React.FormEvent) => {
@@ -3500,8 +3613,7 @@ function AdminWorkspace({
   };
 
   const editNews = (item: NewsItem) => {
-    setNewsForm(item);
-    onNotify('info', 'Aktualita načtena k úpravě', item.title);
+    openNewsDialog(item);
   };
 
   const editSlide = (item: HomeSlide) => {
@@ -3715,36 +3827,151 @@ function AdminWorkspace({
         )}
 
         {activeTab === 'news' && (
-          <div className="admin-grid">
-            <form className="admin-card" onSubmit={saveNews}>
-              <h3>{newsForm.id ? 'Upravit aktualitu' : 'Přidat aktualitu'}</h3>
-              <label>
-                Nadpis
-                <input value={newsForm.title} onChange={(event) => setNewsForm((current) => ({ ...current, title: event.target.value }))} required />
-              </label>
-              <label>
-                Datum
-                <input type="date" value={newsForm.date} onChange={(event) => setNewsForm((current) => ({ ...current, date: event.target.value }))} />
-              </label>
-              <label>
-                Krátký text
-                <textarea rows={6} value={newsForm.excerpt} onChange={(event) => setNewsForm((current) => ({ ...current, excerpt: event.target.value }))} />
-              </label>
-              <button className="button primary" type="submit">
-                <Plus size={18} /> Uložit aktualitu
-              </button>
-            </form>
-            <div className="admin-card">
-              <h3>Veřejné aktuality</h3>
-              <div className="client-list">
+          <div className="admin-grid news-admin-layout">
+            <div className="admin-card news-admin-card">
+              <div className="admin-card-header">
+                <div>
+                  <h3>Aktuality</h3>
+                  <p className="form-help">Editor publikovaných zpráv, médií a vložených videí.</p>
+                </div>
+                <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Nová aktualita" aria-label="Nová aktualita" onClick={() => openNewsDialog()}>
+                  <Plus size={18} />
+                </button>
+              </div>
+              <div className="news-admin-list">
+                {news.length === 0 && <p className="empty-note">Zatím není uložená žádná aktualita.</p>}
                 {news.map((item) => (
-                  <button key={item.id} type="button" onClick={() => editNews(item)}>
-                    <strong>{item.title}</strong>
-                    <span>{new Date(item.date).toLocaleDateString('cs-CZ')}</span>
-                  </button>
+                  <article key={item.id} className="news-admin-row">
+                    <button className="news-admin-main" type="button" onClick={() => editNews(item)}>
+                      <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+                      <strong>{item.title}</strong>
+                      <span>{item.excerpt}</span>
+                    </button>
+                    <div className="news-row-actions" aria-label={`Akce pro aktualitu ${item.title}`}>
+                      <button className="icon-tool tooltip-link" type="button" data-tooltip="Upravit" aria-label="Upravit aktualitu" onClick={() => editNews(item)}>
+                        <FileText size={17} />
+                      </button>
+                      <button className="icon-tool tooltip-link danger" type="button" data-tooltip="Smazat" aria-label="Smazat aktualitu" onClick={() => deleteNews(item)}>
+                        <Trash2 size={17} />
+                      </button>
+                    </div>
+                  </article>
                 ))}
               </div>
             </div>
+
+            <div className="admin-card">
+              <h3>Náhled poslední aktuality</h3>
+              {news[0] ? (
+                <article className="news-preview-card">
+                  <time dateTime={news[0].date}>{new Date(news[0].date).toLocaleDateString('cs-CZ')}</time>
+                  <h4>{news[0].title}</h4>
+                  <p>{news[0].excerpt}</p>
+                  {news[0].body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(news[0].body) }} />}
+                </article>
+              ) : (
+                <p className="empty-note">Po vytvoření aktuality se tady ukáže rychlý náhled.</p>
+              )}
+            </div>
+
+            {isNewsDialogOpen && (
+              <div className="editor-backdrop" role="presentation" onMouseDown={closeNewsDialog}>
+                <form className="news-editor-dialog" role="dialog" aria-modal="true" aria-label="Editor aktuality" onSubmit={saveNews} onMouseDown={(event) => event.stopPropagation()}>
+                  <div className="editor-titlebar">
+                    <div>
+                      <h3>{newsForm.id ? 'Upravit aktualitu' : 'Nová aktualita'}</h3>
+                      <p>Mini editor obsahu pro webové aktuality.</p>
+                    </div>
+                    <div className="editor-title-actions">
+                      {newsForm.id && (
+                        <button className="icon-tool tooltip-link danger" type="button" data-tooltip="Smazat" aria-label="Smazat aktualitu" onClick={() => deleteNews(newsForm)}>
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                      <button className="icon-tool tooltip-link" type="button" data-tooltip="Zavřít" aria-label="Zavřít editor" onClick={closeNewsDialog}>
+                        <X size={18} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="editor-fields">
+                    <label>
+                      Nadpis
+                      <input value={newsForm.title} onChange={(event) => setNewsForm((current) => ({ ...current, title: event.target.value }))} required />
+                    </label>
+                    <label>
+                      Datum
+                      <input type="date" value={newsForm.date} onChange={(event) => setNewsForm((current) => ({ ...current, date: event.target.value }))} />
+                    </label>
+                    <label className="editor-full">
+                      Krátký text
+                      <textarea rows={3} value={newsForm.excerpt} onChange={(event) => setNewsForm((current) => ({ ...current, excerpt: event.target.value }))} required />
+                    </label>
+                  </div>
+
+                  <div className="mini-word-toolbar" aria-label="Nástroje editoru">
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Nadpis" aria-label="Vložit nadpis" onClick={() => insertNewsBody('<h2>', '</h2>', 'Nadpis sekce')}>
+                      <Heading1 size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Tučně" aria-label="Tučný text" onClick={() => insertNewsBody('<strong>', '</strong>', 'tučný text')}>
+                      <Bold size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Kurzíva" aria-label="Kurzíva" onClick={() => insertNewsBody('<em>', '</em>', 'kurzíva')}>
+                      <Italic size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Podtrhnout" aria-label="Podtrhnout" onClick={() => insertNewsBody('<u>', '</u>', 'podtržený text')}>
+                      <Underline size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Seznam" aria-label="Vložit seznam" onClick={() => insertNewsBody('<ul><li>', '</li></ul>', 'Položka seznamu')}>
+                      <List size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Odkaz" aria-label="Vložit odkaz" onClick={() => insertNewsMedia('link')}>
+                      <Link size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Obrázek" aria-label="Vložit obrázek" onClick={() => insertNewsMedia('image')}>
+                      <ImagePlus size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Video" aria-label="Vložit video" onClick={() => insertNewsMedia('video')}>
+                      <Video size={17} />
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Zpět" aria-label="Vrátit poslední vložení" onClick={undoNewsBodyInsert} disabled={newsUndoStack.length === 0}>
+                      <Undo2 size={17} />
+                    </button>
+                  </div>
+
+                  <div className="editor-body-grid">
+                    <label>
+                      Obsah
+                      <textarea
+                        ref={newsBodyRef}
+                        className="news-body-source"
+                        rows={12}
+                        value={newsForm.body || ''}
+                        onChange={(event) => setNewsForm((current) => ({ ...current, body: event.target.value }))}
+                        placeholder="<p>Text aktuality...</p>"
+                      />
+                    </label>
+                    <div className="news-editor-preview">
+                      <span>Náhled</span>
+                      <h4>{newsForm.title || 'Nadpis aktuality'}</h4>
+                      <p>{newsForm.excerpt || 'Krátký text aktuality.'}</p>
+                      <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(newsForm.body || '') }} />
+                    </div>
+                  </div>
+
+                  <div className="editor-actions">
+                    <button className="icon-tool tooltip-link primary wide" type="submit" data-tooltip="Uložit" aria-label="Uložit aktualitu">
+                      <Save size={18} />
+                      <span>Uložit</span>
+                    </button>
+                    <button className="icon-tool tooltip-link wide" type="button" data-tooltip="Zavřít bez uložení" aria-label="Zavřít bez uložení" onClick={closeNewsDialog}>
+                      <X size={18} />
+                      <span>Zavřít</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         )}
 

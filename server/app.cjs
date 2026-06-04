@@ -229,7 +229,7 @@ async function confirmPasswordReset(request, response) {
 
 async function listNews(_request, response) {
   const rows = await query(
-    `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt
+    `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
      FROM news
      WHERE status = 'published'
      ORDER BY published_at DESC, created_at DESC
@@ -265,13 +265,28 @@ async function saveNews(request, response) {
     [id, body.title.trim(), body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
   );
   const rows = await query(
-    `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt
+    `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
      FROM news
      WHERE id = ?
      LIMIT 1`,
     [id]
   );
   sendJson(response, 200, { news: rows[0] });
+}
+
+async function deleteNews(request, response, newsId) {
+  const user = await currentUser(request);
+  if (!user || user.role !== 'admin') {
+    sendJson(response, 403, { error: 'Admin access required.' });
+    return;
+  }
+  const existing = await query('SELECT id FROM news WHERE id = ? LIMIT 1', [newsId]);
+  if (existing.length === 0) {
+    sendJson(response, 404, { error: 'News item not found.' });
+    return;
+  }
+  await query('DELETE FROM news WHERE id = ?', [newsId]);
+  sendJson(response, 200, { ok: true, id: newsId });
 }
 
 function publicComment(row, user) {
@@ -1148,6 +1163,8 @@ async function createApp(request, response) {
     if (request.method === 'GET' && url.pathname === '/api/news') return listNews(request, response);
     if (request.method === 'POST' && url.pathname === '/api/news') return saveNews(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news/discussion') return listNewsDiscussion(request, response);
+    const newsItemMatch = url.pathname.match(/^\/api\/news\/([^/]+)$/);
+    if (request.method === 'DELETE' && newsItemMatch) return deleteNews(request, response, newsItemMatch[1]);
     const newsLikeMatch = url.pathname.match(/^\/api\/news\/([^/]+)\/like$/);
     if (request.method === 'POST' && newsLikeMatch) return toggleNewsLike(request, response, newsLikeMatch[1]);
     const newsCommentMatch = url.pathname.match(/^\/api\/news\/([^/]+)\/comments$/);

@@ -16,6 +16,7 @@ export type ApiNewsItem = {
   title: string;
   date: string;
   excerpt: string;
+  body?: string;
 };
 
 export type ApiNewsLike = {
@@ -211,6 +212,12 @@ export async function saveNews(news: ApiNewsItem) {
     body: JSON.stringify(news)
   });
   return body.news;
+}
+
+export async function deleteNews(newsId: string) {
+  await request<{ ok: boolean; id: string }>(`/api/news/${encodeURIComponent(newsId)}`, {
+    method: 'DELETE'
+  });
 }
 
 export async function listNewsDiscussion() {

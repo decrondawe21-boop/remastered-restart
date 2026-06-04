@@ -28,7 +28,7 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
   await page.getByLabel('E-mail pro obnovu').fill('admin@restart.test');
   await page.getByRole('button', { name: 'Odeslat obnovu' }).click();
   await page.getByRole('dialog', { name: 'Obnova hesla' }).waitFor({ state: 'visible', timeout: 5000 });
-  if ((await page.getByText('Instrukce pro obnovu hesla jsou připravené.').count()) === 0) {
+  if ((await page.getByText(/Pokud účet existuje|Instrukce pro obnovu hesla/).count()) === 0) {
     throw new Error('Password reset confirmation is missing.');
   }
   if (!(await page.getByRole('dialog', { name: 'Obnova hesla' }).isVisible())) {

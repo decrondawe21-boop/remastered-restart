@@ -928,7 +928,7 @@ function useHashPath() {
 
 function Header({ currentPath, account }: { currentPath: string; account: AuthAccount | null }) {
   const [open, setOpen] = React.useState(false);
-  const visibleNavItems = navItems.filter((item) => item.href !== '#/klient' || account?.role === 'client');
+  const visibleNavItems = navItems.filter((item) => item.href !== '#/klient' || account?.role === 'client' || account?.role === 'admin');
 
   return (
     <>
@@ -2469,6 +2469,13 @@ function AuthScreen({
         setMessageTone('warning');
         setMessage(error instanceof Error ? error.message : 'Backend ověření není dostupné, zkouším lokální účet.');
         onNotify('warning', 'Backend ověření selhalo', 'Zkouším ještě lokální prototypový účet.');
+        if (role === 'admin') {
+          setIsSubmitting(false);
+          setMessageTone('error');
+          setMessage(error instanceof Error ? error.message : 'Backend ověření administrace není dostupné.');
+          onNotify('error', 'Přihlášení administrace selhalo', 'Lokální prototypový admin fallback je vypnutý.');
+          return;
+        }
         // Keep the local prototype fallback available while backend accounts are being seeded.
       }
     }
@@ -2787,6 +2794,9 @@ function ClientProfile({
   > | null>(null);
   const displayName = profile.name.trim() || account.name;
   const displayPhone = profile.phone.trim() || account.phone;
+  const isAdminProfile = account.role === 'admin';
+  const workspaceBadge = isAdminProfile ? 'Admin profil' : 'Klientská zóna';
+  const workspaceTitle = isAdminProfile ? 'Profil administrátora' : 'Přihlášený klient';
 
   const updateProfile = <K extends keyof ClientProfileDraft>(key: K, value: ClientProfileDraft[K]) => {
     setProfile((current) => ({ ...current, [key]: value }));
@@ -2883,7 +2893,7 @@ function ClientProfile({
       context.drawImage(image, (-image.width * scale) / 2, (-image.height * scale) / 2, image.width * scale, image.height * scale);
       setProfile((current) => ({ ...current, avatar: canvas.toDataURL('image/png') }));
       setProfileMessage('Avatar je uložený v profilu.');
-      onNotify('success', 'Avatar je uložený', 'Profilová fotka se uložila v klientském profilu.');
+      onNotify('success', 'Avatar je uložený', 'Profilová fotka se uložila v uživatelském profilu.');
     };
     image.src = profile.source;
   };
@@ -2994,9 +3004,9 @@ function ClientProfile({
             title={activeSection === 'dashboard' ? displayName : currentClientNav.label}
             text={currentClientNav.text}
             account={account}
-            badge="Klientská zóna"
+            badge={workspaceBadge}
             onLogout={onLogout}
-            quickAction={<Badge tone="success">Přihlášený klient</Badge>}
+            quickAction={<Badge tone="success">{workspaceTitle}</Badge>}
           />
 
           {activeSection === 'dashboard' && (
@@ -3313,7 +3323,7 @@ function App() {
     ) : currentPath === '/kontakt' ? (
       <ContactPage onNotify={notify} />
     ) : currentPath === '/klient' ? (
-      currentAccount?.role === 'client' ? (
+      currentAccount?.role === 'client' || currentAccount?.role === 'admin' ? (
         <ClientProfile account={currentAccount} onLogout={logout} onNotify={notify} />
       ) : (
         <AuthScreen

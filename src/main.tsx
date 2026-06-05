@@ -74,11 +74,14 @@ import {
   listUsers,
   loginUser,
   logoutUser,
+  markNotificationRead as markNotificationReadRecord,
   registerClient as registerClientAccount,
   requestPasswordReset,
   saveClient as saveClientRecord,
   saveDocument as saveDocumentRecord,
+  saveMedia as saveMediaRecord,
   saveNews as saveNewsRecord,
+  saveNotification as saveNotificationRecord,
   saveSlide as saveSlideRecord,
   toggleNewsLike,
   updateNewsComment,
@@ -257,6 +260,25 @@ type ModalState = {
   text: string;
   tone: FeedbackTone;
 } | null;
+
+type AdminDialogState =
+  | { type: 'template'; template: FormTemplate }
+  | { type: 'media'; media: MediaFile }
+  | { type: 'user'; user: ManagedUser }
+  | { type: 'notification'; notification: NotificationItem }
+  | { type: 'settings'; section: 'organization' | 'security' };
+
+type AdminSettingsDraft = {
+  organizationName: string;
+  primaryColor: string;
+  seoTitle: string;
+  seoDescription: string;
+  cookiesMode: string;
+  loginMode: string;
+  rolesMode: string;
+  passwordResetMode: string;
+  twoFactorMode: string;
+};
 
 type LayoutConfig = {
   pageMax: string;
@@ -643,6 +665,63 @@ const formCategoryTitle = (folder?: string) => {
   if (!folder) return 'Bez kategorie';
   const withoutPrefix = folder.replace(/^\d+_/, '').replace(/_/g, ' ').toLowerCase();
   return withoutPrefix.charAt(0).toUpperCase() + withoutPrefix.slice(1);
+};
+
+const formFolderByPrefix: Record<string, string> = {
+  GDPR: '01_GDPR_A_SOUHLASY',
+  KLI: '02_KLIENTSKA_SLOZKA',
+  KRI: '04_KRIZOVY_REZIM',
+  EVA: '05_EVALUACE_A_FOLLOW_UP',
+  REG: '06_REGISTRY',
+  ETY: '07_ETIKA_A_TYM',
+  DOP: '08_DOPLNKOVE_LISTY',
+  AIO: '99_ALL_IN_ONE_VOLITELNE'
+};
+
+const formFolderHints: Array<[RegExp, string]> = [
+  [/GDPR/i, formFolderByPrefix.GDPR],
+  [/INTAKE|EXIT|KNIHA_KLIENTA/i, formFolderByPrefix.KLI],
+  [/KRIZOV/i, formFolderByPrefix.KRI],
+  [/FOLLOW_UP|STABILIZACNI/i, formFolderByPrefix.EVA],
+  [/REGISTR|EVIDENCE_KOMUNITNICH/i, formFolderByPrefix.REG],
+  [/MLCENLIVOST|ETICKY/i, formFolderByPrefix.ETY],
+  [/LIST_INCIDENTU|LIST_HRANIC/i, formFolderByPrefix.DOP],
+  [/ALL_IN_ONE|DOPLNKOVE_LISTY_INCIDENTY|GDPR_BALICEK|REGISTRY_FILLABLE/i, formFolderByPrefix.AIO]
+];
+
+const fileNameFromPath = (value?: string) => {
+  if (!value) return '';
+  const firstPart = value.split('|')[0].trim();
+  const withoutQuery = firstPart.split(/[?#]/)[0];
+  return decodeURIComponent(withoutQuery.split('/').pop() || '');
+};
+
+const templatePrefix = (template?: Pick<FormTemplate, 'title' | 'folder' | 'sourceNote'>) => {
+  if (!template) return '';
+  const source = `${template.title || ''} ${template.folder || ''} ${template.sourceNote || ''}`;
+  const match = source.match(/\b(GDPR|KLI|KRI|EVA|REG|ETY|DOP|AIO)[-\s]/i);
+  return match?.[1]?.toUpperCase() || '';
+};
+
+const publicFormFolder = (template?: Pick<FormTemplate, 'title' | 'folder' | 'sourceNote'>, fileName = '') => {
+  if (template?.folder && /^\d+_/.test(template.folder)) return template.folder;
+  const prefix = templatePrefix(template);
+  if (prefix && formFolderByPrefix[prefix]) return formFolderByPrefix[prefix];
+  const source = `${fileName} ${template?.title || ''} ${template?.folder || ''} ${template?.sourceNote || ''}`;
+  return formFolderHints.find(([pattern]) => pattern.test(source))?.[1] || '';
+};
+
+const resolvePublicFileUrl = (value?: string, template?: Pick<FormTemplate, 'title' | 'folder' | 'sourceNote'>) => {
+  const trimmed = value?.trim() || '';
+  if (!trimmed) return '';
+  if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('/documents/') || trimmed.startsWith('/images/')) return trimmed;
+
+  const fileName = fileNameFromPath(trimmed) || fileNameFromPath(template?.sourceNote);
+  if (!fileName || !/\.pdf$/i.test(fileName)) return trimmed;
+
+  const folder = publicFormFolder(template, fileName);
+  return folder ? `/documents/forms/${folder}/${fileName}` : trimmed;
 };
 
 const formSensitivity = (template: FormTemplate) => {
@@ -3406,6 +3485,27 @@ function App() {
     });
     return saved;
   };
+  const saveMediaViaApi = async (media: Omit<MediaFile, 'createdAt' | 'uploadedBy'> & { createdAt?: string; uploadedBy?: string | null }) => {
+    const saved = await saveMediaRecord(media);
+    setMediaFiles((current) => {
+      const exists = current.some((item) => item.id === saved.id);
+      return exists ? current.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...current];
+    });
+    return saved;
+  };
+  const saveNotificationViaApi = async (notification: Omit<NotificationItem, 'createdAt' | 'readAt'> & { createdAt?: string; readAt?: string | null }) => {
+    const saved = await saveNotificationRecord(notification);
+    setNotifications((current) => {
+      const exists = current.some((item) => item.id === saved.id);
+      return exists ? current.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...current];
+    });
+    return saved;
+  };
+  const markNotificationReadViaApi = async (notificationId: string) => {
+    await markNotificationReadRecord(notificationId);
+    const readAt = new Date().toISOString();
+    setNotifications((current) => current.map((item) => (item.id === notificationId ? { ...item, readAt } : item)));
+  };
   const updateManagedUserViaApi = async (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => {
     const saved = await updateUserRecord(user);
     setManagedUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
@@ -3526,6 +3626,9 @@ function App() {
           onNewsDeleteRequest={deleteNewsViaApi}
           onSlideSaveRequest={saveSlideViaApi}
           onDocumentSaveRequest={saveDocumentViaApi}
+          onMediaSaveRequest={saveMediaViaApi}
+          onNotificationSaveRequest={saveNotificationViaApi}
+          onNotificationReadRequest={markNotificationReadViaApi}
           onUserUpdateRequest={updateManagedUserViaApi}
           account={currentAccount}
           onLogout={logout}
@@ -3605,6 +3708,9 @@ function AdminWorkspace({
   onNewsDeleteRequest,
   onSlideSaveRequest,
   onDocumentSaveRequest,
+  onMediaSaveRequest,
+  onNotificationSaveRequest,
+  onNotificationReadRequest,
   onUserUpdateRequest,
   account,
   onLogout,
@@ -3626,6 +3732,11 @@ function AdminWorkspace({
   onNewsDeleteRequest?: (id: string) => Promise<void>;
   onSlideSaveRequest?: (item: HomeSlide) => Promise<HomeSlide>;
   onDocumentSaveRequest?: (document: Omit<ClientDocument, 'createdAt'> & { createdAt?: string }) => Promise<ClientDocument>;
+  onMediaSaveRequest?: (media: Omit<MediaFile, 'createdAt' | 'uploadedBy'> & { createdAt?: string; uploadedBy?: string | null }) => Promise<MediaFile>;
+  onNotificationSaveRequest?: (
+    notification: Omit<NotificationItem, 'createdAt' | 'readAt'> & { createdAt?: string; readAt?: string | null }
+  ) => Promise<NotificationItem>;
+  onNotificationReadRequest?: (notificationId: string) => Promise<void>;
   onUserUpdateRequest?: (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => Promise<ManagedUser>;
   account: AuthAccount;
   onLogout: () => void;
@@ -3660,9 +3771,55 @@ function AdminWorkspace({
   });
   const [adminMessage, setAdminMessage] = React.useState('');
   const [adminMessageTone, setAdminMessageTone] = React.useState<FeedbackTone>('info');
+  const [adminDialog, setAdminDialog] = React.useState<AdminDialogState | null>(null);
+  const [mediaForm, setMediaForm] = React.useState<MediaFile>({
+    id: '',
+    title: '',
+    fileName: '',
+    fileUrl: '',
+    mimeType: 'image/jpeg',
+    fileSize: 0,
+    category: 'visual',
+    altText: '',
+    uploadedBy: account.id,
+    createdAt: todayIso()
+  });
+  const [managedUserForm, setManagedUserForm] = React.useState<ManagedUser>({
+    id: '',
+    role: 'client',
+    name: '',
+    email: '',
+    phone: '',
+    createdAt: todayIso(),
+    isActive: true,
+    lastLoginAt: null
+  });
+  const [notificationForm, setNotificationForm] = React.useState<NotificationItem>({
+    id: '',
+    recipientId: null,
+    title: '',
+    body: '',
+    tone: 'info',
+    category: 'Systém',
+    linkHref: '',
+    readAt: null,
+    createdAt: new Date().toISOString()
+  });
+  const [settingsDraft, setSettingsDraft] = useStoredState<AdminSettingsDraft>('restart-admin-settings', {
+    organizationName: 'REST||ART Integrace',
+    primaryColor: 'zelený akcent webu',
+    seoTitle: 'REST||ART Integrace - neziskový projekt druhých šancí',
+    seoDescription: 'Mentoring, práce, bydlení, STREETWISE a stabilizace pro lidi na okraji společnosti.',
+    cookiesMode: 'lišta a správa kategorií aktivní',
+    loginMode: 'aktivní',
+    rolesMode: 'admin, editor, client',
+    passwordResetMode: 'tokenový reset přes API',
+    twoFactorMode: 'další bezpečnostní modul'
+  });
 
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
   const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
+  const selectedTemplateFileUrl = resolvePublicFileUrl(selectedTemplate.fileUrl || selectedTemplate.sourceNote, selectedTemplate);
   const templateCategories = Array.from(new Set(formTemplates.map((template) => template.folder || 'bez-kategorie'))).sort((left, right) =>
     formCategoryTitle(left).localeCompare(formCategoryTitle(right), 'cs')
   );
@@ -3925,7 +4082,7 @@ function AdminWorkspace({
       title: `${selectedTemplate.title} - ${selectedClient.firstName} ${selectedClient.lastName}`,
       documentType: 'form',
       status: 'prepared',
-      fileUrl: selectedTemplate.fileUrl || '',
+      fileUrl: selectedTemplateFileUrl,
       notes: [
         `Program: ${selectedClient.program}`,
         draft.handoverNote ? `Předání: ${draft.handoverNote}` : '',
@@ -3958,6 +4115,148 @@ function AdminWorkspace({
     } catch (error) {
       onNotify('error', 'Uživatel se nepodařil upravit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
     }
+  };
+
+  const openTemplateDialog = (template: FormTemplate) => {
+    selectTemplateForForm(template.id);
+    setAdminDialog({ type: 'template', template });
+  };
+
+  const openMediaDialog = (file?: MediaFile) => {
+    const nextMedia =
+      file ?? {
+        id: '',
+        title: '',
+        fileName: '',
+        fileUrl: '',
+        mimeType: 'image/jpeg',
+        fileSize: 0,
+        category: 'visual',
+        altText: '',
+        uploadedBy: account.id,
+        createdAt: todayIso()
+      };
+    setMediaForm(nextMedia);
+    setAdminDialog({ type: 'media', media: nextMedia });
+    onNotify('info', file ? 'Médium načteno k úpravě' : 'Nové médium', file?.title ?? 'Vyplňte přesná data souboru.');
+  };
+
+  const saveMediaDialog = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const fileName = mediaForm.fileName.trim() || mediaForm.fileUrl.split('/').pop() || mediaForm.title.trim();
+    const nextMedia: MediaFile = {
+      ...mediaForm,
+      id: mediaForm.id || crypto.randomUUID(),
+      title: mediaForm.title.trim(),
+      fileName,
+      fileUrl: mediaForm.fileUrl.trim(),
+      mimeType: mediaForm.mimeType.trim() || 'application/octet-stream',
+      fileSize: Number(mediaForm.fileSize) || 0,
+      category: mediaForm.category.trim() || 'visual',
+      altText: mediaForm.altText.trim(),
+      uploadedBy: mediaForm.uploadedBy || account.id,
+      createdAt: mediaForm.createdAt || todayIso()
+    };
+    if (!nextMedia.title || !nextMedia.fileUrl) {
+      onNotify('warning', 'Médium nejde uložit', 'Vyplňte název a URL souboru.');
+      return;
+    }
+    if (!onMediaSaveRequest) {
+      onNotify('warning', 'Média nejsou napojená', 'Backend pro uložení médií není dostupný.');
+      return;
+    }
+    try {
+      const saved = await onMediaSaveRequest(nextMedia);
+      setMediaForm(saved);
+      setAdminDialog({ type: 'media', media: saved });
+      onNotify('success', 'Médium uloženo', saved.title);
+    } catch (error) {
+      onNotify('error', 'Médium se nepodařilo uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const openUserDialog = (user: ManagedUser) => {
+    setManagedUserForm(user);
+    setAdminDialog({ type: 'user', user });
+    onNotify('info', 'Uživatel načten', user.email);
+  };
+
+  const saveUserDialog = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const source = managedUsers.find((user) => user.id === managedUserForm.id) ?? managedUserForm;
+    await updateManagedUser(source, { role: managedUserForm.role, isActive: managedUserForm.isActive });
+    setAdminDialog((current) => (current?.type === 'user' ? { type: 'user', user: { ...source, role: managedUserForm.role, isActive: managedUserForm.isActive } } : current));
+  };
+
+  const openNotificationDialog = (notification?: NotificationItem) => {
+    const nextNotification =
+      notification ?? {
+        id: '',
+        recipientId: null,
+        title: '',
+        body: '',
+        tone: 'info',
+        category: 'Systém',
+        linkHref: '',
+        readAt: null,
+        createdAt: new Date().toISOString()
+      };
+    setNotificationForm(nextNotification);
+    setAdminDialog({ type: 'notification', notification: nextNotification });
+    onNotify('info', notification ? 'Notifikace načtena' : 'Nová notifikace', notification?.title ?? 'Vyplňte zprávu a kategorii.');
+  };
+
+  const saveNotificationDialog = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const nextNotification: NotificationItem = {
+      ...notificationForm,
+      id: notificationForm.id || crypto.randomUUID(),
+      title: notificationForm.title.trim(),
+      body: notificationForm.body.trim(),
+      tone: notificationForm.tone || 'info',
+      category: notificationForm.category.trim() || 'Systém',
+      linkHref: notificationForm.linkHref.trim(),
+      createdAt: notificationForm.createdAt || new Date().toISOString()
+    };
+    if (!nextNotification.title || !nextNotification.body) {
+      onNotify('warning', 'Notifikace nejde uložit', 'Vyplňte nadpis a text zprávy.');
+      return;
+    }
+    if (!onNotificationSaveRequest) {
+      onNotify('warning', 'Notifikace nejsou napojené', 'Backend pro uložení notifikací není dostupný.');
+      return;
+    }
+    try {
+      const saved = await onNotificationSaveRequest(nextNotification);
+      setNotificationForm(saved);
+      setAdminDialog({ type: 'notification', notification: saved });
+      onNotify('success', 'Notifikace uložena', saved.title);
+    } catch (error) {
+      onNotify('error', 'Notifikace se nepodařila uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const markNotificationRead = async (notification: NotificationItem) => {
+    if (!onNotificationReadRequest) {
+      onNotify('warning', 'Stav notifikace není napojený', 'Backend pro označení přečtení není dostupný.');
+      return;
+    }
+    try {
+      await onNotificationReadRequest(notification.id);
+      const readAt = new Date().toISOString();
+      const nextNotification = { ...notification, readAt };
+      setNotificationForm(nextNotification);
+      setAdminDialog({ type: 'notification', notification: nextNotification });
+      onNotify('success', 'Notifikace označena', 'Upozornění je vedené jako přečtené.');
+    } catch (error) {
+      onNotify('error', 'Stav notifikace se nepodařilo uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const saveSettingsDialog = (event: React.FormEvent) => {
+    event.preventDefault();
+    setAdminDialog(null);
+    onNotify('success', 'Nastavení uloženo', 'Hodnoty administrace jsou uložené lokálně pro další napojení.');
   };
 
   const selectAdminTab = (tab: AdminSection) => {
@@ -4214,17 +4513,22 @@ function AdminWorkspace({
                   <strong>{selectedTemplate.title}</strong>
                   <p>{selectedTemplate.description || 'PDF šablona připravená k otevření, vyplnění a podpisu.'}</p>
                 </div>
-                <Badge tone={formSensitivity(selectedTemplate) === 'GDPR' || formSensitivity(selectedTemplate) === 'Citlivé' ? 'warning' : 'info'}>
-                  {formSensitivity(selectedTemplate)}
-                </Badge>
+                <div className="summary-actions">
+                  <Badge tone={formSensitivity(selectedTemplate) === 'GDPR' || formSensitivity(selectedTemplate) === 'Citlivé' ? 'warning' : 'info'}>
+                    {formSensitivity(selectedTemplate)}
+                  </Badge>
+                  <button className="icon-tool tooltip-link" type="button" data-tooltip="Detail šablony" aria-label="Detail šablony" onClick={() => openTemplateDialog(selectedTemplate)}>
+                    <FileText size={17} />
+                  </button>
+                </div>
               </div>
               {(selectedTemplate.folder || selectedTemplate.fileUrl || selectedTemplate.sourceNote) && (
                 <div className="template-meta">
                   {selectedTemplate.folder && <span>{formCategoryTitle(selectedTemplate.folder)}</span>}
                   <span>{readableBytes(selectedTemplate.sizeBytes)}</span>
                   {selectedTemplate.sourceNote && <span>{selectedTemplate.sourceNote}</span>}
-                  {selectedTemplate.fileUrl && (
-                    <a href={selectedTemplate.fileUrl} target="_blank" rel="noreferrer">
+                  {selectedTemplateFileUrl && (
+                    <a href={selectedTemplateFileUrl} target="_blank" rel="noreferrer">
                       Otevřít PDF
                     </a>
                   )}
@@ -4255,7 +4559,7 @@ function AdminWorkspace({
                     <p className="empty-note">Zatím není zapsaný žádný připravený formulář.</p>
                   ) : (
                     selectedClientDocuments.slice(0, 4).map((document) => (
-                      <a key={document.id} href={document.fileUrl || '#/admin'} target={document.fileUrl ? '_blank' : undefined} rel="noreferrer">
+                      <a key={document.id} href={resolvePublicFileUrl(document.fileUrl) || '#/admin'} target={document.fileUrl ? '_blank' : undefined} rel="noreferrer">
                         {document.title}
                       </a>
                     ))
@@ -4489,15 +4793,25 @@ function AdminWorkspace({
         {activeTab === 'media' && (
           <div className="admin-grid">
             <article className="admin-card">
-              <h3>Knihovna souborů</h3>
-              <p className="form-help">Obrázky, PDF a dokumenty dostupné z databáze i veřejné složky webu.</p>
+              <div className="admin-card-header">
+                <div>
+                  <h3>Knihovna souborů</h3>
+                  <p className="form-help">Obrázky, PDF a dokumenty dostupné z databáze i veřejné složky webu.</p>
+                </div>
+                <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Nové médium" aria-label="Nové médium" onClick={() => openMediaDialog()}>
+                  <Plus size={18} />
+                </button>
+              </div>
               <div className="table-lite media-table">
                 {mediaFiles.length === 0 && <p className="empty-note">V databázi zatím nejsou uložená média. Slideshow níže používá veřejné soubory z webu.</p>}
                 {mediaFiles.map((file) => (
                   <div key={file.id}>
                     <strong>{file.title}</strong>
                     <span>{file.category} - {readableBytes(file.fileSize)}</span>
-                    <a href={file.fileUrl} target="_blank" rel="noreferrer">Otevřít</a>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Detail média" aria-label="Detail média" onClick={() => openMediaDialog(file)}>
+                      <FileText size={16} />
+                    </button>
+                    <a href={resolvePublicFileUrl(file.fileUrl)} target="_blank" rel="noreferrer">Otevřít</a>
                   </div>
                 ))}
               </div>
@@ -4526,11 +4840,11 @@ function AdminWorkspace({
                 {managedUsers.length === 0 && <p className="empty-note">Seznam uživatelů není dostupný nebo je prázdný.</p>}
                 {managedUsers.map((user) => (
                   <article key={user.id} className="user-admin-row">
-                    <div>
+                    <button className="user-admin-main" type="button" onClick={() => openUserDialog(user)}>
                       <strong>{user.name}</strong>
                       <span>{user.email}</span>
                       <small>{user.lastLoginAt ? `poslední přihlášení ${new Date(user.lastLoginAt).toLocaleDateString('cs-CZ')}` : 'bez posledního přihlášení'}</small>
-                    </div>
+                    </button>
                     <select value={user.role} onChange={(event) => updateManagedUser(user, { role: event.target.value as ApiRole })}>
                       <option value="admin">admin</option>
                       <option value="editor">editor</option>
@@ -4540,6 +4854,9 @@ function AdminWorkspace({
                       <input type="checkbox" checked={user.isActive} onChange={(event) => updateManagedUser(user, { isActive: event.target.checked })} />
                       Aktivní
                     </label>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Detail uživatele" aria-label="Detail uživatele" onClick={() => openUserDialog(user)}>
+                      <UserCog size={16} />
+                    </button>
                   </article>
                 ))}
               </div>
@@ -4558,19 +4875,36 @@ function AdminWorkspace({
         {activeTab === 'notifications' && (
           <div className="admin-grid">
             <article className="admin-card">
-              <h3>Notifikace</h3>
-              <p className="form-help">{unreadNotifications.length} nepřečtených upozornění.</p>
+              <div className="admin-card-header">
+                <div>
+                  <h3>Notifikace</h3>
+                  <p className="form-help">{unreadNotifications.length} nepřečtených upozornění.</p>
+                </div>
+                <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Nová notifikace" aria-label="Nová notifikace" onClick={() => openNotificationDialog()}>
+                  <Plus size={18} />
+                </button>
+              </div>
               <div className="notification-admin-list">
                 {notifications.length === 0 && <p className="empty-note">Zatím nejsou uložená žádná upozornění.</p>}
                 {notifications.map((notification) => (
                   <article key={notification.id} className={notification.readAt ? 'read' : ''}>
                     <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
-                    <div>
+                    <button className="notification-admin-main" type="button" onClick={() => openNotificationDialog(notification)}>
                       <strong>{notification.title}</strong>
                       <p>{notification.body}</p>
                       <span>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</span>
+                    </button>
+                    <div className="notification-actions">
+                      <button className="icon-tool tooltip-link" type="button" data-tooltip="Detail notifikace" aria-label="Detail notifikace" onClick={() => openNotificationDialog(notification)}>
+                        <FileText size={16} />
+                      </button>
+                      {!notification.readAt && (
+                        <button className="icon-tool tooltip-link" type="button" data-tooltip="Označit přečtené" aria-label="Označit přečtené" onClick={() => markNotificationRead(notification)}>
+                          <CheckCircle2 size={16} />
+                        </button>
+                      )}
+                      {notification.linkHref && <a href={notification.linkHref}>Otevřít</a>}
                     </div>
-                    {notification.linkHref && <a href={notification.linkHref}>Otevřít</a>}
                   </article>
                 ))}
               </div>
@@ -4589,29 +4923,430 @@ function AdminWorkspace({
         {activeTab === 'settings' && (
           <div className="admin-grid">
             <article className="admin-card">
-              <h3>Profil organizace</h3>
+              <div className="admin-card-header">
+                <div>
+                  <h3>Profil organizace</h3>
+                  <p className="form-help">Veřejné údaje, SEO a cookie režim.</p>
+                </div>
+                <button className="icon-tool tooltip-link" type="button" data-tooltip="Upravit profil" aria-label="Upravit profil organizace" onClick={() => setAdminDialog({ type: 'settings', section: 'organization' })}>
+                  <Settings size={17} />
+                </button>
+              </div>
               <div className="table-lite">
-                <div><strong>Název</strong><span>REST||ART Integrace</span></div>
-                <div><strong>Primární barva</strong><span>zelený akcent webu</span></div>
-                <div><strong>SEO</strong><span>neziskový projekt druhých šancí</span></div>
-                <div><strong>Cookies</strong><span>lišta a správa kategorií aktivní</span></div>
+                <div><strong>Název</strong><span>{settingsDraft.organizationName}</span></div>
+                <div><strong>Primární barva</strong><span>{settingsDraft.primaryColor}</span></div>
+                <div><strong>SEO titulek</strong><span>{settingsDraft.seoTitle}</span></div>
+                <div><strong>Cookies</strong><span>{settingsDraft.cookiesMode}</span></div>
               </div>
             </article>
             <article className="admin-card">
-              <h3>Bezpečnost</h3>
+              <div className="admin-card-header">
+                <div>
+                  <h3>Bezpečnost</h3>
+                  <p className="form-help">Přístupy, role a ochrana účtů.</p>
+                </div>
+                <button className="icon-tool tooltip-link" type="button" data-tooltip="Upravit bezpečnost" aria-label="Upravit bezpečnost" onClick={() => setAdminDialog({ type: 'settings', section: 'security' })}>
+                  <ShieldCheck size={17} />
+                </button>
+              </div>
               <div className="table-lite">
-                <div><strong>Login</strong><span>aktivní</span></div>
-                <div><strong>Role</strong><span>admin, editor, client</span></div>
-                <div><strong>Reset hesla</strong><span>tokenový reset přes API</span></div>
-                <div><strong>2FA</strong><span>další bezpečnostní modul</span></div>
+                <div><strong>Login</strong><span>{settingsDraft.loginMode}</span></div>
+                <div><strong>Role</strong><span>{settingsDraft.rolesMode}</span></div>
+                <div><strong>Reset hesla</strong><span>{settingsDraft.passwordResetMode}</span></div>
+                <div><strong>2FA</strong><span>{settingsDraft.twoFactorMode}</span></div>
               </div>
             </article>
           </div>
         )}
         </div>
+        <AdminDetailDialog
+          dialog={adminDialog}
+          selectedClient={selectedClient}
+          draft={draft}
+          mediaForm={mediaForm}
+          setMediaForm={setMediaForm}
+          managedUserForm={managedUserForm}
+          setManagedUserForm={setManagedUserForm}
+          notificationForm={notificationForm}
+          setNotificationForm={setNotificationForm}
+          settingsDraft={settingsDraft}
+          setSettingsDraft={setSettingsDraft}
+          onClose={() => setAdminDialog(null)}
+          onSelectTemplate={selectTemplateForForm}
+          onPrintForm={printForm}
+          onRegisterDocument={registerPreparedDocument}
+          onSaveMedia={saveMediaDialog}
+          onSaveUser={saveUserDialog}
+          onSaveNotification={saveNotificationDialog}
+          onMarkNotificationRead={markNotificationRead}
+          onSaveSettings={saveSettingsDialog}
+        />
         <WorkspaceBottomNav items={adminNavItems} active={activeTab} onSelect={selectAdminTab} />
       </div>
     </section>
+  );
+}
+
+function AdminDetailDialog({
+  dialog,
+  selectedClient,
+  draft,
+  mediaForm,
+  setMediaForm,
+  managedUserForm,
+  setManagedUserForm,
+  notificationForm,
+  setNotificationForm,
+  settingsDraft,
+  setSettingsDraft,
+  onClose,
+  onSelectTemplate,
+  onPrintForm,
+  onRegisterDocument,
+  onSaveMedia,
+  onSaveUser,
+  onSaveNotification,
+  onMarkNotificationRead,
+  onSaveSettings
+}: {
+  dialog: AdminDialogState | null;
+  selectedClient: ClientRecord | null;
+  draft: FormDraft;
+  mediaForm: MediaFile;
+  setMediaForm: React.Dispatch<React.SetStateAction<MediaFile>>;
+  managedUserForm: ManagedUser;
+  setManagedUserForm: React.Dispatch<React.SetStateAction<ManagedUser>>;
+  notificationForm: NotificationItem;
+  setNotificationForm: React.Dispatch<React.SetStateAction<NotificationItem>>;
+  settingsDraft: AdminSettingsDraft;
+  setSettingsDraft: React.Dispatch<React.SetStateAction<AdminSettingsDraft>>;
+  onClose: () => void;
+  onSelectTemplate: (templateId: string) => void;
+  onPrintForm: () => void;
+  onRegisterDocument: () => void;
+  onSaveMedia: (event: React.FormEvent) => void;
+  onSaveUser: (event: React.FormEvent) => void;
+  onSaveNotification: (event: React.FormEvent) => void;
+  onMarkNotificationRead: (notification: NotificationItem) => void;
+  onSaveSettings: (event: React.FormEvent) => void;
+}) {
+  if (!dialog) return null;
+
+  const closeButton = (
+    <button className="icon-tool tooltip-link" type="button" data-tooltip="Zavřít" aria-label="Zavřít dialog" onClick={onClose}>
+      <X size={18} />
+    </button>
+  );
+
+  if (dialog.type === 'template') {
+    const template = dialog.template;
+    const sensitivity = formSensitivity(template);
+    const templateFileUrl = resolvePublicFileUrl(template.fileUrl || template.sourceNote, template);
+    return (
+      <div className="editor-backdrop" role="presentation" onMouseDown={onClose}>
+        <section className="admin-detail-dialog" role="dialog" aria-modal="true" aria-label="Detail šablony" onMouseDown={(event) => event.stopPropagation()}>
+          <div className="editor-titlebar">
+            <div>
+              <p className="section-label">Tisková šablona</p>
+              <h3>{template.title}</h3>
+            </div>
+            <div className="editor-title-actions">{closeButton}</div>
+          </div>
+          <div className="detail-meta-grid">
+            <div><span>ID</span><strong>{template.id}</strong></div>
+            <div><span>Kategorie</span><strong>{formCategoryTitle(template.folder)}</strong></div>
+            <div><span>Citlivost</span><strong>{sensitivity}</strong></div>
+            <div><span>Velikost</span><strong>{readableBytes(template.sizeBytes)}</strong></div>
+            <div><span>Stav</span><strong>{template.isActive === false ? 'Skrytá' : 'Aktivní'}</strong></div>
+            <div><span>Klient pro náhled</span><strong>{selectedClient ? `${selectedClient.firstName} ${selectedClient.lastName}` : 'nevybrán'}</strong></div>
+          </div>
+          <div className="detail-section">
+            <span>Popis</span>
+            <p>{template.description || 'PDF šablona připravená k otevření, vyplnění a podpisu.'}</p>
+          </div>
+          <div className="detail-section">
+            <span>Zdroj</span>
+            <p>{template.sourceNote || 'bez poznámky ke zdroji'}</p>
+            {templateFileUrl ? (
+              <a className="button secondary" href={templateFileUrl} target="_blank" rel="noreferrer">
+                <FolderOpen size={18} /> Otevřít PDF
+              </a>
+            ) : (
+              <p className="empty-note">Šablona zatím nemá veřejnou cestu k PDF.</p>
+            )}
+          </div>
+          <div className="detail-section">
+            <span>Pole pro tisk</span>
+            <div className="detail-field-list">
+              {template.fields.length === 0 && <p className="empty-note">Šablona nemá definovaná doplňková pole.</p>}
+              {template.fields.map((field) => (
+                <div key={field.key}>
+                  <strong>{field.label}</strong>
+                  <small>{field.key} / řádků {field.rows ?? 3}</small>
+                  {draft[field.key] && <p>{draft[field.key]}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="editor-actions">
+            <button className="button primary" type="button" onClick={() => onSelectTemplate(template.id)}>
+              <ClipboardList size={18} /> Použít šablonu
+            </button>
+            <button className="button secondary" type="button" onClick={onPrintForm} disabled={!selectedClient}>
+              <Printer size={18} /> Tisknout k podpisu
+            </button>
+            <button className="button secondary" type="button" onClick={onRegisterDocument} disabled={!selectedClient}>
+              <FileText size={18} /> Zapsat do dokumentů
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (dialog.type === 'media') {
+    const mediaFileUrl = resolvePublicFileUrl(mediaForm.fileUrl);
+    return (
+      <div className="editor-backdrop" role="presentation" onMouseDown={onClose}>
+        <form className="admin-detail-dialog" role="dialog" aria-modal="true" aria-label="Detail média" onSubmit={onSaveMedia} onMouseDown={(event) => event.stopPropagation()}>
+          <div className="editor-titlebar">
+            <div>
+              <p className="section-label">Médium</p>
+              <h3>{mediaForm.id ? 'Upravit soubor' : 'Nový soubor'}</h3>
+            </div>
+            <div className="editor-title-actions">{closeButton}</div>
+          </div>
+          <div className="editor-fields">
+            <label>
+              Název
+              <input value={mediaForm.title} onChange={(event) => setMediaForm((current) => ({ ...current, title: event.target.value }))} required />
+            </label>
+            <label>
+              Kategorie
+              <input value={mediaForm.category} onChange={(event) => setMediaForm((current) => ({ ...current, category: event.target.value }))} />
+            </label>
+            <label>
+              Název souboru
+              <input value={mediaForm.fileName} onChange={(event) => setMediaForm((current) => ({ ...current, fileName: event.target.value }))} />
+            </label>
+            <label>
+              MIME typ
+              <input value={mediaForm.mimeType} onChange={(event) => setMediaForm((current) => ({ ...current, mimeType: event.target.value }))} />
+            </label>
+            <label className="editor-full">
+              URL souboru
+              <input value={mediaForm.fileUrl} onChange={(event) => setMediaForm((current) => ({ ...current, fileUrl: event.target.value }))} required />
+            </label>
+            <label>
+              Velikost v bytech
+              <input type="number" min="0" value={mediaForm.fileSize} onChange={(event) => setMediaForm((current) => ({ ...current, fileSize: Number(event.target.value) }))} />
+            </label>
+            <label>
+              Vytvořeno
+              <input value={mediaForm.createdAt} onChange={(event) => setMediaForm((current) => ({ ...current, createdAt: event.target.value }))} />
+            </label>
+            <label className="editor-full">
+              Alt text / popis obrázku
+              <textarea rows={4} value={mediaForm.altText} onChange={(event) => setMediaForm((current) => ({ ...current, altText: event.target.value }))} />
+            </label>
+          </div>
+          {mediaForm.fileUrl && (
+            <div className="media-dialog-preview">
+              {mediaForm.mimeType.startsWith('image/') ? <img src={mediaFileUrl} alt={mediaForm.altText || ''} /> : <FileText size={42} />}
+              <div>
+                <span>ID: {mediaForm.id || 'nový záznam'}</span>
+                <span>{readableBytes(mediaForm.fileSize)}</span>
+                <a href={mediaFileUrl} target="_blank" rel="noreferrer">Otevřít soubor</a>
+              </div>
+            </div>
+          )}
+          <div className="editor-actions">
+            <button className="button primary" type="submit">
+              <Save size={18} /> Uložit médium
+            </button>
+            <button className="button secondary" type="button" onClick={onClose}>
+              <X size={18} /> Zavřít
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  if (dialog.type === 'user') {
+    return (
+      <div className="editor-backdrop" role="presentation" onMouseDown={onClose}>
+        <form className="admin-detail-dialog" role="dialog" aria-modal="true" aria-label="Detail uživatele" onSubmit={onSaveUser} onMouseDown={(event) => event.stopPropagation()}>
+          <div className="editor-titlebar">
+            <div>
+              <p className="section-label">Uživatel a role</p>
+              <h3>{managedUserForm.name}</h3>
+            </div>
+            <div className="editor-title-actions">{closeButton}</div>
+          </div>
+          <div className="detail-meta-grid">
+            <div><span>ID</span><strong>{managedUserForm.id}</strong></div>
+            <div><span>E-mail</span><strong>{managedUserForm.email}</strong></div>
+            <div><span>Telefon</span><strong>{managedUserForm.phone || 'neuveden'}</strong></div>
+            <div><span>Vytvořen</span><strong>{new Date(managedUserForm.createdAt).toLocaleString('cs-CZ')}</strong></div>
+            <div><span>Poslední login</span><strong>{managedUserForm.lastLoginAt ? new Date(managedUserForm.lastLoginAt).toLocaleString('cs-CZ') : 'bez záznamu'}</strong></div>
+            <div><span>Stav</span><strong>{managedUserForm.isActive ? 'aktivní' : 'deaktivovaný'}</strong></div>
+          </div>
+          <div className="editor-fields">
+            <label>
+              Role
+              <select value={managedUserForm.role} onChange={(event) => setManagedUserForm((current) => ({ ...current, role: event.target.value as ApiRole }))}>
+                <option value="admin">admin</option>
+                <option value="editor">editor</option>
+                <option value="client">client</option>
+              </select>
+            </label>
+            <label className="checkbox-field">
+              <input type="checkbox" checked={managedUserForm.isActive} onChange={(event) => setManagedUserForm((current) => ({ ...current, isActive: event.target.checked }))} />
+              Aktivní účet
+            </label>
+          </div>
+          <div className="editor-actions">
+            <button className="button primary" type="submit">
+              <Save size={18} /> Uložit roli
+            </button>
+            <button className="button secondary" type="button" onClick={onClose}>
+              <X size={18} /> Zavřít
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  if (dialog.type === 'notification') {
+    return (
+      <div className="editor-backdrop" role="presentation" onMouseDown={onClose}>
+        <form className="admin-detail-dialog" role="dialog" aria-modal="true" aria-label="Detail notifikace" onSubmit={onSaveNotification} onMouseDown={(event) => event.stopPropagation()}>
+          <div className="editor-titlebar">
+            <div>
+              <p className="section-label">Notifikace</p>
+              <h3>{notificationForm.id ? 'Upravit upozornění' : 'Nové upozornění'}</h3>
+            </div>
+            <div className="editor-title-actions">{closeButton}</div>
+          </div>
+          <div className="editor-fields">
+            <label>
+              Nadpis
+              <input value={notificationForm.title} onChange={(event) => setNotificationForm((current) => ({ ...current, title: event.target.value }))} required />
+            </label>
+            <label>
+              Kategorie
+              <input value={notificationForm.category} onChange={(event) => setNotificationForm((current) => ({ ...current, category: event.target.value }))} />
+            </label>
+            <label>
+              Typ hlášky
+              <select value={notificationForm.tone} onChange={(event) => setNotificationForm((current) => ({ ...current, tone: event.target.value }))}>
+                <option value="info">info</option>
+                <option value="success">success</option>
+                <option value="warning">warning</option>
+                <option value="error">error</option>
+              </select>
+            </label>
+            <label>
+              Příjemce ID
+              <input value={notificationForm.recipientId || ''} onChange={(event) => setNotificationForm((current) => ({ ...current, recipientId: event.target.value || null }))} />
+            </label>
+            <label className="editor-full">
+              Text
+              <textarea rows={5} value={notificationForm.body} onChange={(event) => setNotificationForm((current) => ({ ...current, body: event.target.value }))} required />
+            </label>
+            <label className="editor-full">
+              Odkaz
+              <input value={notificationForm.linkHref} onChange={(event) => setNotificationForm((current) => ({ ...current, linkHref: event.target.value }))} />
+            </label>
+          </div>
+          <div className="detail-meta-grid">
+            <div><span>ID</span><strong>{notificationForm.id || 'nový záznam'}</strong></div>
+            <div><span>Vytvořeno</span><strong>{new Date(notificationForm.createdAt).toLocaleString('cs-CZ')}</strong></div>
+            <div><span>Přečteno</span><strong>{notificationForm.readAt ? new Date(notificationForm.readAt).toLocaleString('cs-CZ') : 'ne'}</strong></div>
+          </div>
+          <div className="editor-actions">
+            <button className="button primary" type="submit">
+              <Save size={18} /> Uložit notifikaci
+            </button>
+            {notificationForm.id && !notificationForm.readAt && (
+              <button className="button secondary" type="button" onClick={() => onMarkNotificationRead(notificationForm)}>
+                <CheckCircle2 size={18} /> Označit přečtené
+              </button>
+            )}
+            <button className="button secondary" type="button" onClick={onClose}>
+              <X size={18} /> Zavřít
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="editor-backdrop" role="presentation" onMouseDown={onClose}>
+      <form className="admin-detail-dialog" role="dialog" aria-modal="true" aria-label="Nastavení administrace" onSubmit={onSaveSettings} onMouseDown={(event) => event.stopPropagation()}>
+        <div className="editor-titlebar">
+          <div>
+            <p className="section-label">Nastavení</p>
+            <h3>{dialog.section === 'organization' ? 'Profil organizace' : 'Bezpečnost'}</h3>
+          </div>
+          <div className="editor-title-actions">{closeButton}</div>
+        </div>
+        {dialog.section === 'organization' ? (
+          <div className="editor-fields">
+            <label>
+              Název organizace
+              <input value={settingsDraft.organizationName} onChange={(event) => setSettingsDraft((current) => ({ ...current, organizationName: event.target.value }))} />
+            </label>
+            <label>
+              Primární barva
+              <input value={settingsDraft.primaryColor} onChange={(event) => setSettingsDraft((current) => ({ ...current, primaryColor: event.target.value }))} />
+            </label>
+            <label className="editor-full">
+              SEO titulek
+              <input value={settingsDraft.seoTitle} onChange={(event) => setSettingsDraft((current) => ({ ...current, seoTitle: event.target.value }))} />
+            </label>
+            <label className="editor-full">
+              SEO popis
+              <textarea rows={4} value={settingsDraft.seoDescription} onChange={(event) => setSettingsDraft((current) => ({ ...current, seoDescription: event.target.value }))} />
+            </label>
+            <label className="editor-full">
+              Cookies režim
+              <input value={settingsDraft.cookiesMode} onChange={(event) => setSettingsDraft((current) => ({ ...current, cookiesMode: event.target.value }))} />
+            </label>
+          </div>
+        ) : (
+          <div className="editor-fields">
+            <label>
+              Login
+              <input value={settingsDraft.loginMode} onChange={(event) => setSettingsDraft((current) => ({ ...current, loginMode: event.target.value }))} />
+            </label>
+            <label>
+              Role
+              <input value={settingsDraft.rolesMode} onChange={(event) => setSettingsDraft((current) => ({ ...current, rolesMode: event.target.value }))} />
+            </label>
+            <label>
+              Reset hesla
+              <input value={settingsDraft.passwordResetMode} onChange={(event) => setSettingsDraft((current) => ({ ...current, passwordResetMode: event.target.value }))} />
+            </label>
+            <label>
+              2FA
+              <input value={settingsDraft.twoFactorMode} onChange={(event) => setSettingsDraft((current) => ({ ...current, twoFactorMode: event.target.value }))} />
+            </label>
+          </div>
+        )}
+        <div className="editor-actions">
+          <button className="button primary" type="submit">
+            <Save size={18} /> Uložit nastavení
+          </button>
+          <button className="button secondary" type="button" onClick={onClose}>
+            <X size={18} /> Zavřít
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 

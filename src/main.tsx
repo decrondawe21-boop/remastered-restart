@@ -64,25 +64,35 @@ import {
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
   listClients,
+  listDocuments,
   listFormTemplates,
+  listMedia,
   listNews,
   listNewsDiscussion,
+  listNotifications,
   listSlides,
+  listUsers,
   loginUser,
   logoutUser,
   registerClient as registerClientAccount,
   requestPasswordReset,
   saveClient as saveClientRecord,
+  saveDocument as saveDocumentRecord,
   saveNews as saveNewsRecord,
   saveSlide as saveSlideRecord,
   toggleNewsLike,
   updateNewsComment,
+  updateUser as updateUserRecord,
   ApiRequestError,
+  type ApiClientDocument,
   type ApiClientRecord,
   type ApiFormTemplate,
+  type ApiManagedUser,
+  type ApiMediaFile,
   type ApiNewsComment,
   type ApiNewsLike,
   type ApiHomeSlide,
+  type ApiNotification,
   type ApiPasswordResetRequest,
   type ApiRole,
   type ApiUser
@@ -178,7 +188,13 @@ type FormTemplate = {
   folder?: string;
   sourceNote?: string;
   sizeBytes?: number;
+  isActive?: boolean;
 };
+
+type ManagedUser = ApiManagedUser;
+type MediaFile = ApiMediaFile;
+type ClientDocument = ApiClientDocument;
+type NotificationItem = ApiNotification;
 
 type AuthRole = ApiRole;
 
@@ -613,8 +629,29 @@ const fromApiFormTemplate = (template: ApiFormTemplate): FormTemplate => ({
   fileUrl: template.fileUrl,
   folder: template.folder,
   sourceNote: template.sourceNote,
-  sizeBytes: template.sizeBytes
+  sizeBytes: template.sizeBytes,
+  isActive: template.isActive
 });
+
+const readableBytes = (value?: number) => {
+  if (!value) return 'velikost neznámá';
+  if (value < 1024 * 1024) return `${Math.round(value / 102.4) / 10} kB`;
+  return `${Math.round(value / 1024 / 102.4) / 10} MB`;
+};
+
+const formCategoryTitle = (folder?: string) => {
+  if (!folder) return 'Bez kategorie';
+  const withoutPrefix = folder.replace(/^\d+_/, '').replace(/_/g, ' ').toLowerCase();
+  return withoutPrefix.charAt(0).toUpperCase() + withoutPrefix.slice(1);
+};
+
+const formSensitivity = (template: FormTemplate) => {
+  const source = `${template.folder || ''} ${template.sourceNote || ''}`.toLowerCase();
+  if (source.includes('gdpr')) return 'GDPR';
+  if (source.includes('citliv')) return 'Citlivé';
+  if (source.includes('klient')) return 'Klientské';
+  return 'Standard';
+};
 
 const starterAccounts: AuthAccount[] = [
   {
@@ -3249,6 +3286,10 @@ function App() {
   const [slides, setSlides] = useStoredState<HomeSlide[]>('restart-home-slides', starterSlides);
   const [formTemplates, setFormTemplates] = useStoredState<FormTemplate[]>('restart-form-templates', fallbackFormTemplates);
   const [accounts, setAccounts] = useStoredState<AuthAccount[]>('restart-auth-accounts', starterAccounts);
+  const [managedUsers, setManagedUsers] = React.useState<ManagedUser[]>([]);
+  const [mediaFiles, setMediaFiles] = React.useState<MediaFile[]>([]);
+  const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
+  const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
   const [sessionId, setSessionId] = useStoredState<string | null>('restart-auth-session', null);
   const [apiAccount, setApiAccount] = React.useState<AuthAccount | null>(null);
   const [modal, setModal] = React.useState<ModalState>(null);
@@ -3295,6 +3336,18 @@ function App() {
         const mapped = items.map(fromApiFormTemplate).filter((template) => template.fields.length > 0);
         if (mapped.length > 0) setFormTemplates(mapped);
       })
+      .catch(() => undefined);
+    listUsers()
+      .then(setManagedUsers)
+      .catch(() => undefined);
+    listMedia()
+      .then(setMediaFiles)
+      .catch(() => undefined);
+    listDocuments()
+      .then(setClientDocuments)
+      .catch(() => undefined);
+    listNotifications()
+      .then(setNotifications)
       .catch(() => undefined);
   }, [currentAccount?.id, currentAccount?.role, setClients, setFormTemplates]);
 
@@ -3345,6 +3398,19 @@ function App() {
   const saveNewsViaApi = (item: NewsItem) => saveNewsRecord(item);
   const deleteNewsViaApi = (id: string) => deleteNewsRecord(id);
   const saveSlideViaApi = (item: HomeSlide) => saveSlideRecord(item);
+  const saveDocumentViaApi = async (document: Omit<ClientDocument, 'createdAt'> & { createdAt?: string }) => {
+    const saved = await saveDocumentRecord(document);
+    setClientDocuments((current) => {
+      const exists = current.some((item) => item.id === saved.id);
+      return exists ? current.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...current];
+    });
+    return saved;
+  };
+  const updateManagedUserViaApi = async (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => {
+    const saved = await updateUserRecord(user);
+    setManagedUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
+    return saved;
+  };
   const toggleLikeViaApi = async (newsId: string) => {
     try {
       const like = await toggleNewsLike(newsId);
@@ -3448,6 +3514,10 @@ function App() {
           news={news}
           slides={slides}
           formTemplates={formTemplates}
+          managedUsers={managedUsers}
+          mediaFiles={mediaFiles}
+          clientDocuments={clientDocuments}
+          notifications={notifications}
           onClientsChange={setClients}
           onNewsChange={setNews}
           onSlidesChange={setSlides}
@@ -3455,6 +3525,8 @@ function App() {
           onNewsSaveRequest={saveNewsViaApi}
           onNewsDeleteRequest={deleteNewsViaApi}
           onSlideSaveRequest={saveSlideViaApi}
+          onDocumentSaveRequest={saveDocumentViaApi}
+          onUserUpdateRequest={updateManagedUserViaApi}
           account={currentAccount}
           onLogout={logout}
           onNotify={notify}
@@ -3521,6 +3593,10 @@ function AdminWorkspace({
   news,
   slides,
   formTemplates,
+  managedUsers,
+  mediaFiles,
+  clientDocuments,
+  notifications,
   onClientsChange,
   onNewsChange,
   onSlidesChange,
@@ -3528,6 +3604,8 @@ function AdminWorkspace({
   onNewsSaveRequest,
   onNewsDeleteRequest,
   onSlideSaveRequest,
+  onDocumentSaveRequest,
+  onUserUpdateRequest,
   account,
   onLogout,
   onNotify
@@ -3536,6 +3614,10 @@ function AdminWorkspace({
   news: NewsItem[];
   slides: HomeSlide[];
   formTemplates: FormTemplate[];
+  managedUsers: ManagedUser[];
+  mediaFiles: MediaFile[];
+  clientDocuments: ClientDocument[];
+  notifications: NotificationItem[];
   onClientsChange: React.Dispatch<React.SetStateAction<ClientRecord[]>>;
   onNewsChange: React.Dispatch<React.SetStateAction<NewsItem[]>>;
   onSlidesChange: React.Dispatch<React.SetStateAction<HomeSlide[]>>;
@@ -3543,6 +3625,8 @@ function AdminWorkspace({
   onNewsSaveRequest?: (item: NewsItem) => Promise<NewsItem>;
   onNewsDeleteRequest?: (id: string) => Promise<void>;
   onSlideSaveRequest?: (item: HomeSlide) => Promise<HomeSlide>;
+  onDocumentSaveRequest?: (document: Omit<ClientDocument, 'createdAt'> & { createdAt?: string }) => Promise<ClientDocument>;
+  onUserUpdateRequest?: (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => Promise<ManagedUser>;
   account: AuthAccount;
   onLogout: () => void;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
@@ -3551,6 +3635,8 @@ function AdminWorkspace({
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
   const [selectedClientId, setSelectedClientId] = React.useState('');
   const [selectedTemplateId, setSelectedTemplateId] = React.useState(formTemplates[0]?.id ?? '');
+  const [templateQuery, setTemplateQuery] = React.useState('');
+  const [templateCategory, setTemplateCategory] = React.useState('all');
   const [draft, setDraft] = React.useState<FormDraft>({});
   const [newsForm, setNewsForm] = React.useState<NewsItem>({
     id: '',
@@ -3577,6 +3663,23 @@ function AdminWorkspace({
 
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
   const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
+  const templateCategories = Array.from(new Set(formTemplates.map((template) => template.folder || 'bez-kategorie'))).sort((left, right) =>
+    formCategoryTitle(left).localeCompare(formCategoryTitle(right), 'cs')
+  );
+  const filteredTemplates = formTemplates.filter((template) => {
+    const matchesCategory = templateCategory === 'all' || (template.folder || 'bez-kategorie') === templateCategory;
+    const query = templateQuery.trim().toLowerCase();
+    const matchesQuery =
+      !query ||
+      [template.title, template.description, template.folder, template.sourceNote]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    return matchesCategory && matchesQuery;
+  });
+  const selectedClientDocuments = selectedClient
+    ? clientDocuments.filter((document) => document.clientId === selectedClient.id || document.title.includes(selectedClient.lastName))
+    : [];
+  const unreadNotifications = notifications.filter((notification) => !notification.readAt);
 
   React.useEffect(() => {
     if (!selectedClientId && clients[0]) setSelectedClientId(clients[0].id);
@@ -3809,6 +3912,54 @@ function AdminWorkspace({
     window.print();
   };
 
+  const registerPreparedDocument = async () => {
+    if (!selectedClient) {
+      onNotify('warning', 'Dokument nejde zapsat', 'Nejdřív vyberte klienta.');
+      return;
+    }
+    const documentDraft: Omit<ClientDocument, 'createdAt'> & { createdAt?: string } = {
+      id: crypto.randomUUID(),
+      clientId: selectedClient.id,
+      userId: null,
+      mediaId: null,
+      title: `${selectedTemplate.title} - ${selectedClient.firstName} ${selectedClient.lastName}`,
+      documentType: 'form',
+      status: 'prepared',
+      fileUrl: selectedTemplate.fileUrl || '',
+      notes: [
+        `Program: ${selectedClient.program}`,
+        draft.handoverNote ? `Předání: ${draft.handoverNote}` : '',
+        draft.signatureNote ? `Podpis: ${draft.signatureNote}` : ''
+      ]
+        .filter(Boolean)
+        .join(' | '),
+      signedAt: null
+    };
+    if (!onDocumentSaveRequest) {
+      onNotify('warning', 'Evidence dokumentu není napojená', 'Dokument lze vytisknout, ale zápis do databáze není dostupný.');
+      return;
+    }
+    try {
+      await onDocumentSaveRequest(documentDraft);
+      onNotify('success', 'Dokument zapsán', 'Formulář je evidovaný u klienta jako připravený k podpisu.');
+    } catch (error) {
+      onNotify('error', 'Dokument se nepodařilo zapsat', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const updateManagedUser = async (user: ManagedUser, patch: Partial<Pick<ManagedUser, 'role' | 'isActive'>>) => {
+    if (!onUserUpdateRequest) {
+      onNotify('warning', 'Správa rolí není dostupná', 'Backend pro změnu rolí není připojený.');
+      return;
+    }
+    try {
+      const saved = await onUserUpdateRequest({ id: user.id, role: patch.role ?? user.role, isActive: patch.isActive ?? user.isActive });
+      onNotify('success', 'Uživatel upraven', `${saved.name} má aktualizovaná oprávnění.`);
+    } catch (error) {
+      onNotify('error', 'Uživatel se nepodařil upravit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
   const selectAdminTab = (tab: AdminSection) => {
     setActiveTab(tab);
     const labels: Record<AdminSection, string> = {
@@ -3997,7 +4148,44 @@ function AdminWorkspace({
 
         {activeTab === 'forms' && (
           <div className="forms-layout">
-            <div className="admin-card no-print">
+            <div className="forms-control-stack no-print">
+              <div className="admin-card">
+                <h3>Knihovna šablon</h3>
+                <div className="form-grid two">
+                  <label>
+                    Vyhledat
+                    <input value={templateQuery} onChange={(event) => setTemplateQuery(event.target.value)} placeholder="GDPR, intake, krizový..." />
+                  </label>
+                  <label>
+                    Kategorie
+                    <select value={templateCategory} onChange={(event) => setTemplateCategory(event.target.value)}>
+                      <option value="all">Všechny kategorie</option>
+                      {templateCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {formCategoryTitle(category)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="template-library" aria-label="Knihovna tiskových šablon">
+                  {filteredTemplates.length === 0 && <p className="empty-note">Žádná šablona neodpovídá filtru.</p>}
+                  {filteredTemplates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      className={template.id === selectedTemplate.id ? 'active' : ''}
+                      onClick={() => selectTemplateForForm(template.id)}
+                    >
+                      <strong>{template.title}</strong>
+                      <span>{formCategoryTitle(template.folder)}</span>
+                      <small>{formSensitivity(template)}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="admin-card">
               <h3>Připravit formulář</h3>
               <label>
                 Klient
@@ -4020,10 +4208,20 @@ function AdminWorkspace({
                   ))}
                 </select>
               </label>
-              <p className="form-help">{selectedTemplate.description}</p>
+              <div className="selected-template-summary">
+                <div>
+                  <span>Vybraná šablona</span>
+                  <strong>{selectedTemplate.title}</strong>
+                  <p>{selectedTemplate.description || 'PDF šablona připravená k otevření, vyplnění a podpisu.'}</p>
+                </div>
+                <Badge tone={formSensitivity(selectedTemplate) === 'GDPR' || formSensitivity(selectedTemplate) === 'Citlivé' ? 'warning' : 'info'}>
+                  {formSensitivity(selectedTemplate)}
+                </Badge>
+              </div>
               {(selectedTemplate.folder || selectedTemplate.fileUrl || selectedTemplate.sourceNote) && (
                 <div className="template-meta">
-                  {selectedTemplate.folder && <span>{selectedTemplate.folder}</span>}
+                  {selectedTemplate.folder && <span>{formCategoryTitle(selectedTemplate.folder)}</span>}
+                  <span>{readableBytes(selectedTemplate.sizeBytes)}</span>
                   {selectedTemplate.sourceNote && <span>{selectedTemplate.sourceNote}</span>}
                   {selectedTemplate.fileUrl && (
                     <a href={selectedTemplate.fileUrl} target="_blank" rel="noreferrer">
@@ -4042,9 +4240,29 @@ function AdminWorkspace({
                   />
                 </label>
               ))}
-              <button className="button primary" type="button" onClick={printForm} disabled={!selectedClient}>
-                <Printer size={18} /> Tisknout k podpisu
-              </button>
+              <div className="form-actions">
+                <button className="button primary" type="button" onClick={printForm} disabled={!selectedClient}>
+                  <Printer size={18} /> Tisknout k podpisu
+                </button>
+                <button className="button secondary" type="button" onClick={registerPreparedDocument} disabled={!selectedClient}>
+                  <ClipboardList size={18} /> Zapsat do dokumentů
+                </button>
+              </div>
+              {selectedClient && (
+                <div className="linked-documents">
+                  <span>Dokumenty klienta</span>
+                  {selectedClientDocuments.length === 0 ? (
+                    <p className="empty-note">Zatím není zapsaný žádný připravený formulář.</p>
+                  ) : (
+                    selectedClientDocuments.slice(0, 4).map((document) => (
+                      <a key={document.id} href={document.fileUrl || '#/admin'} target={document.fileUrl ? '_blank' : undefined} rel="noreferrer">
+                        {document.title}
+                      </a>
+                    ))
+                  )}
+                </div>
+              )}
+              </div>
             </div>
 
             <PrintableForm client={selectedClient} template={selectedTemplate} draft={draft} />
@@ -4270,11 +4488,20 @@ function AdminWorkspace({
 
         {activeTab === 'media' && (
           <div className="admin-grid">
-            <WorkspacePlaceholder
-              title="Knihovna souborů"
-              text="Obrázky, PDF, dokumenty a soubory pro aktuality, formuláře i veřejné stránky."
-              items={['Obrázky', 'Dokumenty', 'Soubory ke stažení', 'Galerie']}
-            />
+            <article className="admin-card">
+              <h3>Knihovna souborů</h3>
+              <p className="form-help">Obrázky, PDF a dokumenty dostupné z databáze i veřejné složky webu.</p>
+              <div className="table-lite media-table">
+                {mediaFiles.length === 0 && <p className="empty-note">V databázi zatím nejsou uložená média. Slideshow níže používá veřejné soubory z webu.</p>}
+                {mediaFiles.map((file) => (
+                  <div key={file.id}>
+                    <strong>{file.title}</strong>
+                    <span>{file.category} - {readableBytes(file.fileSize)}</span>
+                    <a href={file.fileUrl} target="_blank" rel="noreferrer">Otevřít</a>
+                  </div>
+                ))}
+              </div>
+            </article>
             <article className="admin-card">
               <h3>Aktuální vizuály</h3>
               <div className="client-list slide-list">
@@ -4292,17 +4519,37 @@ function AdminWorkspace({
 
         {activeTab === 'users' && (
           <div className="admin-grid">
-            <WorkspacePlaceholder
-              title="Uživatelé a role"
-              text="Správa administrátorů, editorů, klientů a oprávnění pro jednotlivé části systému."
-              items={['Admin', 'Editor', 'User', 'Oprávnění modulů']}
-            />
+            <article className="admin-card">
+              <h3>Uživatelé</h3>
+              <p className="form-help">Role a aktivace účtů. Změny se ukládají přes admin API.</p>
+              <div className="user-admin-list">
+                {managedUsers.length === 0 && <p className="empty-note">Seznam uživatelů není dostupný nebo je prázdný.</p>}
+                {managedUsers.map((user) => (
+                  <article key={user.id} className="user-admin-row">
+                    <div>
+                      <strong>{user.name}</strong>
+                      <span>{user.email}</span>
+                      <small>{user.lastLoginAt ? `poslední přihlášení ${new Date(user.lastLoginAt).toLocaleDateString('cs-CZ')}` : 'bez posledního přihlášení'}</small>
+                    </div>
+                    <select value={user.role} onChange={(event) => updateManagedUser(user, { role: event.target.value as ApiRole })}>
+                      <option value="admin">admin</option>
+                      <option value="editor">editor</option>
+                      <option value="client">client</option>
+                    </select>
+                    <label className="switch-row">
+                      <input type="checkbox" checked={user.isActive} onChange={(event) => updateManagedUser(user, { isActive: event.target.checked })} />
+                      Aktivní
+                    </label>
+                  </article>
+                ))}
+              </div>
+            </article>
             <article className="admin-card">
               <h3>Role</h3>
               <div className="table-lite">
-                <div><strong>Admin</strong><span>plný přístup</span></div>
-                <div><strong>Editor</strong><span>obsah a média</span></div>
-                <div><strong>User</strong><span>klientská zóna</span></div>
+                <div><strong>Admin</strong><span>plný přístup k administraci, klientům, formulářům a nastavení</span></div>
+                <div><strong>Editor</strong><span>obsah, aktuality a média bez správy rolí</span></div>
+                <div><strong>Client</strong><span>klientská zóna, profil a vlastní dokumenty</span></div>
               </div>
             </article>
           </div>
@@ -4310,27 +4557,53 @@ function AdminWorkspace({
 
         {activeTab === 'notifications' && (
           <div className="admin-grid">
-            <WorkspacePlaceholder
-              title="Notifikace"
-              text="Zprávy, žádosti klientů a systémová upozornění."
-              items={['Nové registrace', 'Žádosti o reset hesla', 'Komentáře k aktualitám', 'Systémové chyby']}
-            />
+            <article className="admin-card">
+              <h3>Notifikace</h3>
+              <p className="form-help">{unreadNotifications.length} nepřečtených upozornění.</p>
+              <div className="notification-admin-list">
+                {notifications.length === 0 && <p className="empty-note">Zatím nejsou uložená žádná upozornění.</p>}
+                {notifications.map((notification) => (
+                  <article key={notification.id} className={notification.readAt ? 'read' : ''}>
+                    <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
+                    <div>
+                      <strong>{notification.title}</strong>
+                      <p>{notification.body}</p>
+                      <span>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</span>
+                    </div>
+                    {notification.linkHref && <a href={notification.linkHref}>Otevřít</a>}
+                  </article>
+                ))}
+              </div>
+            </article>
+            <article className="admin-card">
+              <h3>Typy upozornění</h3>
+              <div className="table-lite">
+                <div><strong>Registrace</strong><span>nové účty a klientské žádosti</span></div>
+                <div><strong>Dokumenty</strong><span>formuláře připravené k podpisu</span></div>
+                <div><strong>Systém</strong><span>API, databáze a bezpečnostní zprávy</span></div>
+              </div>
+            </article>
           </div>
         )}
 
         {activeTab === 'settings' && (
           <div className="admin-grid">
-            <WorkspacePlaceholder
-              title="Profil organizace"
-              text="Branding, jazyk, SEO metadata, vzhled a bezpečnostní nastavení."
-              items={['Logo a barvy', 'SEO metadata', 'Jazyk webu', 'Bezpečnost', 'Cookies']}
-            />
+            <article className="admin-card">
+              <h3>Profil organizace</h3>
+              <div className="table-lite">
+                <div><strong>Název</strong><span>REST||ART Integrace</span></div>
+                <div><strong>Primární barva</strong><span>zelený akcent webu</span></div>
+                <div><strong>SEO</strong><span>neziskový projekt druhých šancí</span></div>
+                <div><strong>Cookies</strong><span>lišta a správa kategorií aktivní</span></div>
+              </div>
+            </article>
             <article className="admin-card">
               <h3>Bezpečnost</h3>
               <div className="table-lite">
                 <div><strong>Login</strong><span>aktivní</span></div>
-                <div><strong>Role</strong><span>připraveno k rozšíření</span></div>
-                <div><strong>2FA</strong><span>plánovaný modul</span></div>
+                <div><strong>Role</strong><span>admin, editor, client</span></div>
+                <div><strong>Reset hesla</strong><span>tokenový reset přes API</span></div>
+                <div><strong>2FA</strong><span>další bezpečnostní modul</span></div>
               </div>
             </article>
           </div>

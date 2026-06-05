@@ -1,6 +1,7 @@
 const { spawn } = require('node:child_process');
 const { loadDotEnv } = require('../server/env.cjs');
 const { query, getPool } = require('../server/db.cjs');
+const { randomId } = require('../server/security.cjs');
 
 loadDotEnv();
 
@@ -73,6 +74,7 @@ async function request(path, options = {}) {
   let commentId = '';
   let replyId = '';
   let likedNewsId = '';
+  let testNewsId = '';
   try {
     await waitForServer();
     email = `client.${Date.now()}@example.test`;
@@ -150,13 +152,20 @@ async function request(path, options = {}) {
       throw new Error(`Login with reset password failed: ${JSON.stringify(relogin.body)}`);
     }
 
+    testNewsId = randomId();
+    await query(
+      `INSERT INTO news (id, title, excerpt, body, published_at, status)
+       VALUES (?, ?, ?, ?, NOW(), 'published')`,
+      [testNewsId, `API test aktualita ${Date.now()}`, 'Dočasná aktualita pro API test.', '<p>Testovací obsah.</p>']
+    );
+
     const news = await request('/api/news');
     if (!news.response.ok || !Array.isArray(news.body.news)) {
       throw new Error(`News endpoint failed: ${JSON.stringify(news.body)}`);
     }
-    const firstNews = news.body.news[0];
+    const firstNews = news.body.news.find((item) => item.id === testNewsId);
     if (!firstNews?.id) {
-      throw new Error('News endpoint should return at least one item for interaction tests.');
+      throw new Error('News endpoint should return the temporary item for interaction tests.');
     }
 
     const discussion = await request('/api/news/discussion', {
@@ -225,6 +234,7 @@ async function request(path, options = {}) {
         ).catch(() => undefined);
       }
       await query('DELETE FROM users WHERE email = ?', [email]).catch(() => undefined);
+      if (testNewsId) await query('DELETE FROM news WHERE id = ?', [testNewsId]).catch(() => undefined);
       await getPool().end().catch(() => undefined);
     }
   }

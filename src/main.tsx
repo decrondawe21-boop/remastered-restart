@@ -505,12 +505,82 @@ const fromApiClient = (client: ApiClientRecord): ClientRecord => ({
   createdAt: client.createdAt
 });
 
+const newsHtmlTags = new Set(['A', 'B', 'BLOCKQUOTE', 'BR', 'EM', 'H2', 'H3', 'H4', 'I', 'IFRAME', 'IMG', 'LI', 'OL', 'P', 'STRONG', 'U', 'UL']);
+const newsHtmlAttrs = new Map([
+  ['A', new Set(['href', 'target', 'rel', 'title'])],
+  ['IMG', new Set(['src', 'alt', 'title', 'loading'])],
+  ['IFRAME', new Set(['src', 'title', 'allow', 'allowfullscreen', 'loading'])]
+]);
+
+function isSafeNewsUrl(tagName: string, attrName: string, value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (attrName === 'href') return /^(https?:|mailto:|tel:|#|\/)/i.test(trimmed);
+  if (tagName === 'IMG' && attrName === 'src') return /^(https?:|\/)/i.test(trimmed);
+  if (tagName === 'IFRAME' && attrName === 'src') {
+    try {
+      const url = new URL(trimmed, window.location.origin);
+      return ['youtube.com', 'www.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com', 'vimeo.com', 'player.vimeo.com'].includes(url.hostname);
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
 function cleanNewsHtml(value = '') {
-  return value
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-    .replace(/\son\w+="[^"]*"/gi, '')
-    .replace(/\son\w+='[^']*'/gi, '')
-    .replace(/javascript:/gi, '');
+  if (typeof document === 'undefined') {
+    return value
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+      .replace(/\son\w+=("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/javascript:/gi, '');
+  }
+
+  const template = document.createElement('template');
+  template.innerHTML = value;
+
+  const cleanNode = (node: Node) => {
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType === Node.COMMENT_NODE) {
+        child.remove();
+        continue;
+      }
+      if (child.nodeType !== Node.ELEMENT_NODE) {
+        continue;
+      }
+
+      const element = child as HTMLElement;
+      const tagName = element.tagName;
+      if (!newsHtmlTags.has(tagName)) {
+        if (tagName === 'SCRIPT' || tagName === 'STYLE') {
+          element.remove();
+        } else {
+          element.replaceWith(...Array.from(element.childNodes));
+        }
+        cleanNode(node);
+        continue;
+      }
+
+      const allowedAttrs = newsHtmlAttrs.get(tagName) || new Set<string>();
+      for (const attribute of Array.from(element.attributes)) {
+        const attrName = attribute.name.toLowerCase();
+        if (!allowedAttrs.has(attrName) || !isSafeNewsUrl(tagName, attrName, attribute.value)) {
+          element.removeAttribute(attribute.name);
+        }
+      }
+
+      if (tagName === 'A') {
+        element.setAttribute('rel', 'noopener noreferrer');
+      }
+      if (tagName === 'IMG' || tagName === 'IFRAME') {
+        element.setAttribute('loading', 'lazy');
+      }
+      cleanNode(element);
+    }
+  };
+
+  cleanNode(template.content);
+  return template.innerHTML;
 }
 
 const fromApiFormTemplate = (template: ApiFormTemplate): FormTemplate => ({

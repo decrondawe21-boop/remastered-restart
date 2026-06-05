@@ -6,6 +6,7 @@ loadDotEnv();
 const apply = process.argv.includes('--apply');
 const testEmailPatterns = ['%@example.test', '%@restart.test'];
 const testNamePatterns = ['%Databaze %', '%Test Klient%'];
+const testNewsTitlePatterns = ['Aktualita databaze %', 'UI aktualita %', 'API test aktualita %'];
 
 async function countRows(connection, sql, params) {
   const [rows] = await connection.execute(sql, params);
@@ -21,15 +22,18 @@ async function countRows(connection, sql, params) {
       ...testEmailPatterns.map(() => 'email LIKE ?'),
       ...testNamePatterns.map(() => 'CONCAT(first_name, " ", last_name) LIKE ?')
     ].join(' OR ');
+    const newsWhere = testNewsTitlePatterns.map(() => 'title LIKE ?').join(' OR ');
 
     const userCount = await countRows(connection, `SELECT COUNT(*) AS count FROM users WHERE ${userWhere}`, testEmailPatterns);
     const clientCount = await countRows(connection, `SELECT COUNT(*) AS count FROM clients WHERE ${clientWhere}`, [
       ...testEmailPatterns,
       ...testNamePatterns
     ]);
+    const newsCount = await countRows(connection, `SELECT COUNT(*) AS count FROM news WHERE ${newsWhere}`, testNewsTitlePatterns);
 
     console.log(`Test users matched: ${userCount}`);
     console.log(`Test clients matched: ${clientCount}`);
+    console.log(`Test news matched: ${newsCount}`);
 
     if (!apply) {
       console.log('Dry-run only. Run `npm run db:cleanup-test-data -- --apply` to delete matched test data.');
@@ -37,6 +41,7 @@ async function countRows(connection, sql, params) {
     }
 
     await connection.beginTransaction();
+    await connection.execute(`DELETE FROM news WHERE ${newsWhere}`, testNewsTitlePatterns);
     await connection.execute(`DELETE FROM clients WHERE ${clientWhere}`, [...testEmailPatterns, ...testNamePatterns]);
     await connection.execute(`DELETE FROM users WHERE ${userWhere}`, testEmailPatterns);
     await connection.commit();

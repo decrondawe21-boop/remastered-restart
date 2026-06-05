@@ -19,6 +19,11 @@ export interface Program {
   goal: string;
   activities: string[];
   icon: LucideIcon;
+  featureText?: string;
+  image?: {
+    src: string;
+    alt: string;
+  };
 }
 
 export const programs: Program[] = [
@@ -33,7 +38,7 @@ export const programs: Program[] = [
     title: 'RESET',
     audience: 'Lidé bez domova, v závislosti nebo v sociální krizi',
     goal: 'Obnova důstojnosti, základních návyků a dlouhodobé životní stability.',
-    activities: ['individuální podpora', 'rekvalifikace', 'dluhové poradenství', 'terapeutická pomoc'],
+    activities: ['individuální podpora', 'komunitní terapie', 'dluhové poradenství', 'terapeutická pomoc'],
     icon: Sprout
   },
   {
@@ -45,10 +50,16 @@ export const programs: Program[] = [
   },
   {
     title: 'STREETWISE',
-    audience: 'Mladí lidé a lidé v rizikovém prostředí',
-    goal: 'První kontakt v terénu, prevence sociálního vyloučení a napojení na pomoc.',
-    activities: ['streetwork', 'komunitní práce', 'prevence kriminality', 'podpora vzdělávání'],
-    icon: MapPinned
+    audience: 'Lidé bez domova, mladí lidé v riziku a lidé mimo dosah systému',
+    goal: 'Bezpečný první kontakt v terénu, nízkoprahové zázemí a konkrétní krok zpět ke stabilitě.',
+    activities: ['terénní kontakt', 'nízkoprahové zázemí', 'hygiena, dokumenty a první plán', 'napojení na práci a bydlení'],
+    icon: MapPinned,
+    featureText:
+      'Z věcí, které měly skončit, stavíme nové zázemí. STREETWISE vzniká z materiálu, práce, trpělivosti a víry, že i odepsané věci mohou znovu sloužit. Stejnou logiku neseme k lidem: neodepisovat, zůstat poblíž a najít první bezpečný krok.',
+    image: {
+      src: '/images/crops/streetwise/streetwise-bouda-stavba.jpg',
+      alt: 'Rozpracované zázemí STREETWISE stavěné ze zachráněného materiálu'
+    }
   },
   {
     title: 'BOD ZLOMU',

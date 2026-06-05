@@ -110,9 +110,31 @@ const routeLabels: Record<string, string> = {
   '/admin': 'Administrace'
 };
 
+const programSlug = (title: string) =>
+  title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\|\|/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+const getProgramBySlug = (slug: string) => programs.find((program) => programSlug(program.title) === slug);
+
+const getRouteLabel = (path: string) => {
+  if (routeLabels[path]) return routeLabels[path];
+  if (path.startsWith('/programy/')) {
+    const program = getProgramBySlug(path.replace('/programy/', ''));
+    return program?.title ?? 'Program';
+  }
+  return 'Domů';
+};
+
 const normalizePath = (value: string) => {
   const path = value.replace(/^#/, '') || '/';
-  return routeLabels[path] ? path : '/';
+  if (routeLabels[path]) return path;
+  if (path.startsWith('/programy/') && getProgramBySlug(path.replace('/programy/', ''))) return path;
+  return '/';
 };
 
 type ClientRecord = {
@@ -957,7 +979,16 @@ function Header({ currentPath, account }: { currentPath: string; account: AuthAc
           </div>
           <nav className="desktop-nav" aria-label="Hlavní navigace">
             {visibleNavItems.map((item) => (
-              <a key={item.href} href={item.href} className={currentPath === item.href.slice(1) ? 'active' : ''}>
+              <a
+                key={item.href}
+                href={item.href}
+                className={
+                  currentPath === item.href.slice(1) ||
+                  (item.href === '#/programy' && currentPath.startsWith('/programy/'))
+                    ? 'active'
+                    : ''
+                }
+              >
                 {item.label}
               </a>
             ))}
@@ -997,8 +1028,15 @@ function Header({ currentPath, account }: { currentPath: string; account: AuthAc
 }
 
 function Breadcrumb({ path }: { path: string }) {
+  const programDetail = path.startsWith('/programy/') ? getProgramBySlug(path.replace('/programy/', '')) : null;
   const crumbs =
-    path === '/kontakt'
+    programDetail
+      ? [
+          { label: 'Domů', href: '#/' },
+          { label: 'Programy', href: '#/programy' },
+          { label: programDetail.title }
+        ]
+      : path === '/kontakt'
       ? [
           { label: 'Domů', href: '#/' },
           { label: 'Kontakt', href: '#/kontakt' },
@@ -1018,7 +1056,7 @@ function Breadcrumb({ path }: { path: string }) {
           ? [{ label: 'Domů' }]
           : [
               { label: 'Domů', href: '#/' },
-              { label: routeLabels[path] }
+              { label: getRouteLabel(path) }
             ];
 
   return (
@@ -1082,7 +1120,7 @@ function ProgramsList() {
             <div className="program-icon">
               <Icon size={24} />
             </div>
-            <div>
+            <div className="program-content">
               <div className="program-heading">
                 <h3>{program.title}</h3>
                 <span>{program.audience}</span>
@@ -1093,6 +1131,9 @@ function ProgramsList() {
                   <li key={activity}>{activity}</li>
                 ))}
               </ul>
+              <a className="program-link" href={`#/programy/${programSlug(program.title)}`}>
+                Detail programu <ArrowRight size={17} />
+              </a>
             </div>
           </article>
         );
@@ -1644,6 +1685,61 @@ function ProgramsPage() {
       />
       <section className="muted-section">
         <ProgramsList />
+      </section>
+    </>
+  );
+}
+
+function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) {
+  const Icon = program.icon;
+  const fallbackText =
+    'Detail programu postupně doplníme o konkrétní metodiku, návazné služby, formuláře a kontakty. Základní směr je už teď jasný: praktická podpora, důstojný přístup a plán, který se dá zvládnout krok za krokem.';
+
+  return (
+    <>
+      <section className={`program-detail-hero${program.image ? ' has-image' : ''}`}>
+        <div className="program-detail-copy">
+          <a className="back-link" href="#/programy">
+            <ChevronLeft size={18} /> Zpět na programy
+          </a>
+          <p className="section-label">Program</p>
+          <div className="program-detail-title">
+            <span className="program-icon">
+              <Icon size={26} />
+            </span>
+            <div>
+              <h1>{program.title}</h1>
+              <p>{program.audience}</p>
+            </div>
+          </div>
+          <p className="program-detail-lead">{program.goal}</p>
+          <p>{program.featureText ?? fallbackText}</p>
+          <div className="program-detail-actions">
+            <a className="button primary" href="#/kontakt">
+              Napište nám <ArrowRight size={18} />
+            </a>
+            <a className="button secondary" href="#/zapojeni">
+              Chci pomoci
+            </a>
+          </div>
+        </div>
+        {program.image ? (
+          <figure className="program-detail-media">
+            <img src={program.image.src} alt={program.image.alt} />
+          </figure>
+        ) : null}
+      </section>
+      <section className="content-section program-detail-section">
+        <SectionIntro
+          label="V praxi"
+          title="Co v programu řešíme"
+          text="Každá položka je konkrétní oblast, kterou lze později rozpracovat do metodiky, formulářů nebo samostatných aktualit."
+        />
+        <div className="program-detail-points">
+          {program.activities.map((activity) => (
+            <span key={activity}>{activity}</span>
+          ))}
+        </div>
       </section>
     </>
   );
@@ -3302,11 +3398,15 @@ function App() {
     }
   };
 
+  const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
+
   const page =
     currentPath === '/co-delame' ? (
       <WorkPage />
     ) : currentPath === '/programy' ? (
       <ProgramsPage />
+    ) : selectedProgram ? (
+      <ProgramDetailPage program={selectedProgram} />
     ) : currentPath === '/aktuality' ? (
       <NewsPage
         news={news}

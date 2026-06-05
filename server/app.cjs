@@ -1154,6 +1154,15 @@ async function createApp(request, response) {
       sendJson(response, 200, { ok: true });
       return;
     }
+    if (request.method === 'GET' && url.pathname === '/api/health/db') {
+      const rows = await query('SELECT DATABASE() AS databaseName, CURRENT_USER() AS currentUser');
+      sendJson(response, 200, {
+        ok: true,
+        database: rows[0]?.databaseName || null,
+        user: rows[0]?.currentUser || null
+      });
+      return;
+    }
     if (request.method === 'POST' && url.pathname === '/api/auth/register') return await registerClient(request, response);
     if (request.method === 'POST' && url.pathname === '/api/auth/login') return await login(request, response);
     if (request.method === 'GET' && url.pathname === '/api/auth/me') return await me(request, response);

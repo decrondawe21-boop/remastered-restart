@@ -3317,6 +3317,23 @@ function ClientProfile({
     }
   };
 
+  const requestClientDocument = () => {
+    const subject = encodeURIComponent(`Žádost o dokument - ${displayName}`);
+    const body = encodeURIComponent(
+      [
+        `Jméno: ${displayName}`,
+        `E-mail: ${account.email}`,
+        `Telefon: ${displayPhone || '-'}`,
+        '',
+        'Prosím o přípravu dokumentu nebo formuláře do klientské zóny.',
+        'Poznámka klienta:',
+        profile.note.trim() || '-'
+      ].join('\n')
+    );
+    onNotify('success', 'Žádost je připravená', 'Otevře se e-mail pro pracovníka REST||ART Integrace.');
+    window.location.href = `mailto:restartintegrace@dk-i.cz?subject=${subject}&body=${body}`;
+  };
+
   const currentClientNav = clientNavItems.find((item) => item.id === activeSection) ?? clientNavItems[0];
   const avatarEditor = (
     <article className="avatar-editor">
@@ -3485,6 +3502,7 @@ function ClientProfile({
                   <button type="button" onClick={() => setActiveSection('profile')}>Upravit profil</button>
                   <button type="button" onClick={() => setActiveSection('avatar')}>Změnit avatar</button>
                   <button type="button" onClick={() => setActiveSection('documents')}>Moje dokumenty</button>
+                  <button type="button" onClick={requestClientDocument}>Požádat o formulář</button>
                 </div>
               </article>
             </div>
@@ -3536,10 +3554,24 @@ function ClientProfile({
           {activeSection === 'documents' && (
             <div className="client-dashboard">
               <article className="client-wide-card">
-                <h2>Moje dokumenty</h2>
-                <p>Připravené formuláře, soubory k podpisu a historie uložených dokumentů.</p>
+                <div className="client-card-heading">
+                  <div>
+                    <h2>Moje dokumenty</h2>
+                    <p>Připravené formuláře, soubory k podpisu a historie uložených dokumentů.</p>
+                  </div>
+                  <button className="button secondary" type="button" onClick={requestClientDocument}>
+                    <Mail size={18} /> Požádat o dokument
+                  </button>
+                </div>
                 <div className="client-document-list">
-                  {visibleDocuments.length === 0 && <p className="empty-note">Zatím tu není žádný dokument. Jakmile pracovník připraví formulář, zobrazí se tady.</p>}
+                  {visibleDocuments.length === 0 && (
+                    <div className="empty-action-state">
+                      <p className="empty-note">Zatím tu není žádný dokument. Jakmile pracovník připraví formulář, zobrazí se tady.</p>
+                      <button className="button primary" type="button" onClick={requestClientDocument}>
+                        <Mail size={18} /> Požádat pracovníka
+                      </button>
+                    </div>
+                  )}
                   {visibleDocuments.map((document) => (
                     <article key={document.id}>
                       <div>
@@ -3581,10 +3613,24 @@ function ClientProfile({
           {activeSection === 'notifications' && (
             <div className="client-dashboard">
               <article className="client-wide-card">
-                <h2>Notifikace</h2>
-                <p>Nové zprávy, potvrzení, připomínky a systémová upozornění.</p>
+                <div className="client-card-heading">
+                  <div>
+                    <h2>Notifikace</h2>
+                    <p>Nové zprávy, potvrzení, připomínky a systémová upozornění.</p>
+                  </div>
+                  <button className="button secondary" type="button" onClick={requestClientDocument}>
+                    <Mail size={18} /> Napsat pracovníkovi
+                  </button>
+                </div>
                 <div className="client-notification-list">
-                  {visibleNotifications.length === 0 && <p className="empty-note">Zatím nemáte žádné notifikace.</p>}
+                  {visibleNotifications.length === 0 && (
+                    <div className="empty-action-state">
+                      <p className="empty-note">Zatím nemáte žádné notifikace. Pokud čekáte na dokument nebo potvrzení, můžete pracovníkovi poslat krátkou žádost.</p>
+                      <button className="button primary" type="button" onClick={requestClientDocument}>
+                        <Mail size={18} /> Poslat žádost
+                      </button>
+                    </div>
+                  )}
                   {visibleNotifications.map((notification) => (
                     <button key={notification.id} type="button" className={notification.readAt ? 'read' : ''} onClick={() => markClientNotificationRead(notification)}>
                       <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>

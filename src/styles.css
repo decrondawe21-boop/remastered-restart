@@ -2790,6 +2790,27 @@ h3 {
   color: var(--muted);
 }
 
+.client-card-heading {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.client-card-heading h2,
+.client-card-heading p {
+  margin: 0;
+}
+
+.client-card-heading p {
+  margin-top: 8px;
+}
+
+.client-card-heading .button {
+  flex: 0 0 auto;
+}
+
 .profile-editor,
 .avatar-editor {
   grid-column: span 2;
@@ -2995,6 +3016,24 @@ h3 {
 
 .client-notification-list.compact button {
   padding: 12px;
+}
+
+.empty-action-state {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+  padding: 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  background: #f7fbf6;
+}
+
+.empty-action-state p {
+  margin: 0;
+}
+
+.empty-action-state .button {
+  justify-self: start;
 }
 
 .site-footer {
@@ -4154,6 +4193,14 @@ h3 {
   .profile-editor,
   .avatar-editor {
     grid-column: auto;
+  }
+
+  .client-card-heading {
+    display: grid;
+  }
+
+  .client-card-heading .button {
+    justify-self: start;
   }
 
   .client-document-list article {

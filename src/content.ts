@@ -95,7 +95,7 @@ export const programs: Program[] = [
     ],
     contactBox: {
       title: 'Kontaktní zázemí programu',
-      lines: ['David Kozák International s.r.o.', 'Drážďanská 517/52, 400 07 Ústí nad Labem', 'restartintegrace@dk-i.cz']
+      lines: ['David Kozák International s.r.o.', 'Drážďanská 517/52, 400 07 Ústí nad Labem', 'restart@dk-i.cz']
     }
   },
   {
@@ -103,14 +103,88 @@ export const programs: Program[] = [
     audience: 'Lidé v závislosti, sociální krizi nebo bez stabilního zázemí',
     goal: 'Obnova důstojnosti, základních návyků a dlouhodobé životní stability.',
     activities: ['individuální podpora', 'komunitní terapie', 'dluhové poradenství', 'terapeutická pomoc'],
-    icon: Sprout
+    icon: Sprout,
+    duration: '3-9 měsíců podle míry krize a stabilizace',
+    featureText:
+      'RESET je prostor pro lidi, kterým se rozpadl režim, vztahy, zdraví nebo bezpečné zázemí. Nezačínáme tlakem na výkon, ale návratem k základům: bezpečí, důvěra, zdraví, dokumenty, dluhy a malé kroky, které se dají opakovat.',
+    quote: {
+      text: 'Nejde o rychlou nápravu. Jde o návrat k rytmu, který člověk dokáže unést i zítra.',
+      caption: 'RESET | stabilizace po krizi'
+    },
+    sections: [
+      {
+        label: 'První stabilizace',
+        title: 'Bezpečí, režim a důvěra',
+        text:
+          'První fáze programu pomáhá zastavit chaos. Společně mapujeme aktuální situaci, rizika, dluhy, zdraví, bydlení a vztahy tak, aby člověk získal alespoň minimální oporu pro další rozhodnutí.'
+      },
+      {
+        label: 'Závislosti a krize',
+        title: 'Podpora bez moralizování',
+        text:
+          'RESET pracuje s realitou, ne s dokonalým obrazem klienta. Důležitá je pravidelnost kontaktu, jasná dohoda a postupné přebírání odpovědnosti.',
+        items: [
+          'Individuální plán stabilizace a krizové mapování.',
+          'Komunitní a terapeutická návaznost podle situace.',
+          'Dluhové, dokumentové a praktické minimum.',
+          'Podpora při návratu ke zdravým návykům a vztahům.'
+        ]
+      },
+      {
+        label: 'Směr dál',
+        title: 'Z krize k odpovědnosti',
+        text:
+          'Jakmile se situace uklidní, navazujeme na další pilíře REST||ART Integrace. Cílem není závislost na pomoci, ale schopnost znovu držet vlastní život v rukou.'
+      }
+    ],
+    contactBox: {
+      title: 'Kontakt pro program RESET',
+      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+    }
   },
   {
     title: 'REWORK',
     audience: 'Dlouhodobě nezaměstnaní a lidé s bariérami',
     goal: 'Zlepšení zaměstnatelnosti a bezpečný vstup na pracovní trh.',
     activities: ['kariérní vedení', 'rekvalifikace', 'pracovní stáže', 'spolupráce se zaměstnavateli'],
-    icon: Briefcase
+    icon: Briefcase,
+    duration: '2-6 měsíců podle připravenosti k práci',
+    featureText:
+      'REWORK staví most mezi člověkem a pracovním trhem. Neřeší jen životopis, ale i režim, docházku, komunikaci, dluhy, motivaci a bezpečné pracovní prostředí, ve kterém se dá znovu začít.',
+    quote: {
+      text: 'Práce není jen příjem. Je to režim, kontakt, odpovědnost a důvod vstát.',
+      caption: 'REWORK | návrat k práci'
+    },
+    sections: [
+      {
+        label: 'Mapování bariér',
+        title: 'Nejdřív zjistit, co skutečně brání práci',
+        text:
+          'U každého klienta hledáme konkrétní překážky: chybějící doklady, exekuce, nestabilní bydlení, zdravotní omezení, strach z nástupu nebo dlouhý výpadek z pracovního rytmu.'
+      },
+      {
+        label: 'Příprava na práci',
+        title: 'Režim, dovednosti a trénink',
+        text:
+          'Pracujeme s praktickými úkoly, rekvalifikací, pohovory, zkušebními směnami a nácvikem komunikace. Klient ví, co se od něj očekává, a zaměstnavatel ví, s čím počítat.',
+        items: [
+          'Kariérní vedení a pracovní plán.',
+          'Rekvalifikace a doplnění základních dovedností.',
+          'Příprava na pohovor, nástup a první týdny v práci.',
+          'Doprovod při komunikaci se zaměstnavatelem.'
+        ]
+      },
+      {
+        label: 'Spolupráce s firmami',
+        title: 'Druhá šance musí být dobře připravená',
+        text:
+          'Firmám nabízíme jasný rámec spolupráce. Druhá šance není charita bez hranic, ale dohoda, odpovědnost a podpora v prvních kritických týdnech.'
+      }
+    ],
+    contactBox: {
+      title: 'Kontakt pro program REWORK',
+      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+    }
   },
   {
     title: 'STREETWISE',
@@ -118,8 +192,44 @@ export const programs: Program[] = [
     goal: 'Bezpečný první kontakt v terénu, nízkoprahové zázemí a konkrétní krok zpět ke stabilitě.',
     activities: ['terénní kontakt', 'nízkoprahové zázemí', 'hygiena, dokumenty a první plán', 'napojení na práci a bydlení'],
     icon: MapPinned,
+    duration: 'první kontakt ihned, návaznost podle situace',
     featureText:
       'Z věcí, které měly skončit, stavíme nové zázemí. STREETWISE vzniká z materiálu, práce, trpělivosti a víry, že i odepsané věci mohou znovu sloužit. Stejnou logiku neseme k lidem: neodepisovat, zůstat poblíž a najít první bezpečný krok.',
+    quote: {
+      text:
+        'REST||ART Integrace vzniká stejně jako naše bouda: z materiálu, práce, trpělivosti a víry, že i odepsané věci mohou znovu sloužit.',
+      caption: 'STREETWISE | zázemí, které roste'
+    },
+    sections: [
+      {
+        label: 'Nízkoprahové zázemí',
+        title: 'Střecha pro první krok',
+        text:
+          'STREETWISE buduje praktické místo pro první kontakt: bezpečí, rozhovor, hygienu, dokumenty, základní orientaci a plán. Někdy stačí stůl, židle, klid a člověk, který neutíká pryč.'
+      },
+      {
+        label: 'Terén',
+        title: 'Být poblíž, když člověk ještě nevěří systému',
+        text:
+          'Lidé bez domova často nepřijdou sami do kanceláře. Terénní práce proto začíná tam, kde člověk skutečně je, a postupně ho vede k dalším krokům.',
+        items: [
+          'První rozhovor bez tlaku a bez zbytečné administrativy.',
+          'Pomoc s doklady, kontakty, hygienou a základní orientací.',
+          'Napojení na práci, bydlení, zdravotní péči nebo další program.',
+          'Dlouhodobější doprovod, pokud člověk chce změnu držet.'
+        ]
+      },
+      {
+        label: 'Smysl zázemí',
+        title: 'Z odepsaného materiálu vzniká prostor pro návrat',
+        text:
+          'Bouda stavěná ze zachráněného dřeva a věcí z demolic je i symbolem programu. To, co mělo skončit, může dostat nový účel. Stejně pracujeme s lidmi na okraji.'
+      }
+    ],
+    contactBox: {
+      title: 'Kontakt pro program STREETWISE',
+      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+    },
     image: {
       src: '/images/crops/streetwise/streetwise-bouda-stavba.jpg',
       alt: 'Rozpracované zázemí STREETWISE stavěné ze zachráněného materiálu'
@@ -130,14 +240,88 @@ export const programs: Program[] = [
     audience: 'Mládež z dětských domovů a ústavní péče',
     goal: 'Podpora samostatnosti, zdravých vztahů a pozitivního životního směru.',
     activities: ['mentoring', 'tréninkové bydlení', 'rozvojové aktivity', 'psychoterapeutická podpora'],
-    icon: UsersRound
+    icon: UsersRound,
+    duration: '6-18 měsíců podle věku a podpůrné sítě',
+    featureText:
+      'BOD ZLOMU je pro mladé lidi, kteří odcházejí z dětského domova, ústavní péče nebo z prostředí, kde chyběla bezpečná opora. Právě přechod do dospělosti může rozhodnout, jestli člověk spadne do chaosu, nebo najde směr.',
+    quote: {
+      text: 'Bod zlomu může být pád, ale také okamžik, kdy se poprvé objeví směr.',
+      caption: 'BOD ZLOMU | přechod do samostatnosti'
+    },
+    sections: [
+      {
+        label: 'Přechod do samostatnosti',
+        title: 'Nenechat mladého člověka stát na prahu samotného',
+        text:
+          'Program pomáhá zvládnout první období samostatnosti: bydlení, dokumenty, školu, práci, finance, vztahy a hranice. Cílem je, aby mladý člověk nemusel všechno pochopit až přes průšvih.'
+      },
+      {
+        label: 'Praktický život',
+        title: 'Věci, které se ve škole často neučí',
+        text:
+          'BOD ZLOMU dává praktický rámec pro každodenní fungování. Vedeme klienty k tomu, aby rozuměli smlouvám, penězům, komunikaci s úřady i rizikům vztahů, které mohou zneužívat jejich nejistotu.',
+        items: [
+          'Trénink samostatného bydlení a základního hospodaření.',
+          'Podpora při škole, práci nebo rekvalifikaci.',
+          'Mentoring a bezpečný dospělý kontakt.',
+          'Rozvoj zdravých hranic, vztahů a odpovědnosti.'
+        ]
+      },
+      {
+        label: 'Dlouhodobý směr',
+        title: 'Mladý člověk nepotřebuje jen radu, ale oporu',
+        text:
+          'Snažíme se vytvořit podpůrnou síť, která mladého člověka drží i po prvním úspěchu. Samostatnost není skok, ale proces.'
+      }
+    ],
+    contactBox: {
+      title: 'Kontakt pro program BOD ZLOMU',
+      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+    }
   },
   {
     title: 'STABILIZACE',
     audience: 'Lidé, kteří prošli změnou a chtějí ji udržet',
     goal: 'Dlouhodobé udržení práce, bydlení, duševní rovnováhy a komunitního zapojení.',
     activities: ['follow-up', 'podporované bydlení', 'komunitní podpora', 'zdravotní a psychologická péče'],
-    icon: Home
+    icon: Home,
+    duration: 'dlouhodobý follow-up podle potřeb klienta',
+    featureText:
+      'STABILIZACE drží změnu po skončení intenzivní podpory. Sleduje práci, bydlení, zdraví, vztahy, finance a rizika návratu do starých vzorců. Pomoc se zmenšuje postupně, ne skokem.',
+    quote: {
+      text: 'Úspěch není jen vstát. Úspěch je vydržet stát i po prvním nárazu.',
+      caption: 'STABILIZACE | udržení změny'
+    },
+    sections: [
+      {
+        label: 'Follow-up',
+        title: 'Změna potřebuje dohled i po úspěchu',
+        text:
+          'Největší riziko často přichází ve chvíli, kdy to zvenku vypadá dobře. STABILIZACE proto nabízí následný kontakt, kontrolu plánů a včasné zachycení problémů.'
+      },
+      {
+        label: 'Bydlení, práce, vztahy',
+        title: 'Udržet to, co se podařilo vybudovat',
+        text:
+          'Pomáháme klientům řešit konflikty, výpadky v práci, změny bydlení, dluhy, zdraví a tlak okolí. Cílem je, aby krize nestrhla celý předchozí proces.',
+        items: [
+          'Pravidelný kontakt a kontrola stabilizačního plánu.',
+          'Podpora při udržení práce a bydlení.',
+          'Napojení na komunitu, služby a bezpečné vztahy.',
+          'Rychlá reakce při riziku relapsu nebo sociálního propadu.'
+        ]
+      },
+      {
+        label: 'Ukončení podpory',
+        title: 'Od pomoci k samostatnému fungování',
+        text:
+          'Program směřuje k tomu, aby klient podporu postupně nepotřeboval. Stabilita se pozná podle toho, že člověk umí požádat o pomoc včas a zároveň zvládá běžné věci sám.'
+      }
+    ],
+    contactBox: {
+      title: 'Kontakt pro stabilizační podporu',
+      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+    }
   }
 ];
 

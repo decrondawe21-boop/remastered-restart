@@ -148,32 +148,32 @@ const programPillarVisuals: Record<string, { src: string; alt: string; shortLabe
   JAILBREAK: {
     src: '/images/program-pillars/jailbreak.png',
     alt: 'Černobílá kresba programu JAILBREAK s otevřenou branou a cestou ven',
-    shortLabel: 'navrat po VTOS'
+    shortLabel: 'návrat po VTOS'
   },
   RESET: {
     src: '/images/program-pillars/reset.png',
     alt: 'Černobílá kresba programu RESET se symbolem podpory a abstinence',
-    shortLabel: 'zavislosti a krize'
+    shortLabel: 'závislosti a krize'
   },
   REWORK: {
     src: '/images/program-pillars/rework.png',
     alt: 'Černobílá kresba programu REWORK s člověkem u pracovního stolu',
-    shortLabel: 'dlouhodobe nezamestnani'
+    shortLabel: 'dlouhodobě nezaměstnaní'
   },
   STREETWISE: {
     src: '/images/program-pillars/streetwise.png',
     alt: 'Černobílá kresba programu STREETWISE s člověkem na ulici u lavičky',
-    shortLabel: 'lide bez domova'
+    shortLabel: 'lidé bez domova'
   },
   'BOD ZLOMU': {
     src: '/images/program-pillars/bod-zlomu.png',
     alt: 'Černobílá kresba programu BOD ZLOMU se dvěma dětmi a plyšovým medvědem',
-    shortLabel: 'mladi lide z detskych domovu'
+    shortLabel: 'mladí lidé z dětských domovů'
   },
   STABILIZACE: {
     src: '/images/program-pillars/stabilizace.png',
     alt: 'Černobílá kresba programu STABILIZACE se dvěma lidmi při podání ruky',
-    shortLabel: 'konecna podpora'
+    shortLabel: 'konečná podpora'
   }
 };
 

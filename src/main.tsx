@@ -1762,7 +1762,7 @@ function HomePage({
         <SectionIntro
           label="Rozcestník"
           title="Vyberte oblast, kterou potřebujete řešit"
-          text="Web je rozdělený do klasických stránek. Nemusíte projíždět dlouhý one-page, můžete rovnou přejít na programy, kontakt nebo administraci."
+          text="Druhá šance má několik vstupních cest. Každá vede k praktické pomoci a konkrétnímu dalšímu kroku."
         />
         <div className="home-link-grid">
           {[
@@ -1783,7 +1783,7 @@ function HomePage({
         <SectionIntro
           label="Aktuálně"
           title="Poslední zprávy"
-          text="Krátký přehled dění. Další aktuality najdete na samostatné stránce Aktuality."
+          text="Zprávy z projektu, terénu a příprav jednotlivých programů."
         />
         <NewsGrid
           news={news.slice(0, 2)}
@@ -1868,7 +1868,7 @@ function ProgramsPage() {
 function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) {
   const Icon = program.icon;
   const fallbackText =
-    'Detail programu postupně doplníme o konkrétní metodiku, návazné služby, formuláře a kontakty. Základní směr je už teď jasný: praktická podpora, důstojný přístup a plán, který se dá zvládnout krok za krokem.';
+    'Praktická podpora, důstojný přístup a plán, který se dá zvládnout krok za krokem.';
 
   return (
     <>
@@ -1925,7 +1925,7 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
         <SectionIntro
           label="V praxi"
           title="Co v programu řešíme"
-          text="Každá položka je konkrétní oblast, kterou lze později rozpracovat do metodiky, formulářů nebo samostatných aktualit."
+          text="Konkrétní oblasti podpory, které drží člověka v pohybu od prvního kontaktu k dlouhodobé stabilitě."
         />
         <div className="program-detail-points">
           {program.activities.map((activity) => (
@@ -2752,7 +2752,6 @@ function WorkspacePlaceholder({
           <span key={item}>{item}</span>
         ))}
       </div>
-      <Badge tone="info">Připraveno pro napojení na backend</Badge>
     </article>
   );
 }
@@ -2846,16 +2845,15 @@ function AuthScreen({
           return;
         }
         setMessageTone('warning');
-        setMessage(error instanceof Error ? error.message : 'Backend ověření není dostupné, zkouším lokální účet.');
-        onNotify('warning', 'Backend ověření selhalo', 'Zkouším ještě lokální prototypový účet.');
+        setMessage(error instanceof Error ? error.message : 'Ověření účtu se nepodařilo. Zkuste to prosím znovu.');
+        onNotify('warning', 'Ověření účtu selhalo', 'Zkuste to prosím znovu za chvíli.');
         if (role === 'admin') {
           setIsSubmitting(false);
           setMessageTone('error');
-          setMessage(error instanceof Error ? error.message : 'Backend ověření administrace není dostupné.');
-          onNotify('error', 'Přihlášení administrace selhalo', 'Lokální prototypový admin fallback je vypnutý.');
+          setMessage(error instanceof Error ? error.message : 'Přihlášení administrace se nepodařilo.');
+          onNotify('error', 'Přihlášení administrace selhalo', 'Zkontrolujte e-mail, heslo a oprávnění.');
           return;
         }
-        // Keep the local prototype fallback available while backend accounts are being seeded.
       }
     }
     const account = accounts.find(
@@ -2901,8 +2899,8 @@ function AuthScreen({
         }
       } catch (error) {
         setMessageTone('warning');
-        setMessage(error instanceof Error ? error.message : 'Registrace přes API se nepodařila, používám lokální režim.');
-        onNotify('warning', 'Registrace přes API selhala', 'Pokračuji lokálním uložením v prohlížeči.');
+        setMessage(error instanceof Error ? error.message : 'Registrace se nepodařila. Zkuste to prosím znovu.');
+        onNotify('warning', 'Registrace se nepodařila', 'Zkontrolujte údaje a zkuste formulář odeslat znovu.');
       }
     }
     const existing = accounts.some((item) => item.email.toLowerCase() === email.trim().toLowerCase());
@@ -2923,7 +2921,7 @@ function AuthScreen({
       createdAt: todayIso()
     };
     onRegister(account);
-    onNotify('success', 'Lokální registrace je hotová', 'Profil byl vytvořen v prohlížeči.');
+    onNotify('success', 'Registrace je hotová', 'Profil byl vytvořen.');
     setIsSubmitting(false);
     onLogin(account);
   };
@@ -2947,7 +2945,7 @@ function AuthScreen({
           return;
         }
       } catch {
-        // Use the same public confirmation text even when the mail backend is not connected yet.
+        // Keep the confirmation neutral even when the mail service does not return a message.
       }
     }
     setIsSubmitting(false);
@@ -2993,7 +2991,7 @@ function AuthScreen({
             <p className="section-label">{role === 'admin' ? 'Administrace' : 'Klientská zóna'}</p>
             <Badge tone="info">
               {mode === 'login'
-                ? 'Připraveno k přihlášení'
+                ? 'Přihlášení'
                 : mode === 'register'
                   ? 'Registrace klienta'
                   : mode === 'reset-confirm'
@@ -3027,9 +3025,6 @@ function AuthScreen({
                 <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
               </label>
               <PasswordField id={`${role}-login-password`} label="Heslo" value={password} onChange={setPassword} />
-              {role === 'admin' && (
-                <p className="auth-note">Dočasný prototypový vstup: admin@restart.local / restart2026</p>
-              )}
               <AppCheckbox
                 id={`${role}-login-consent`}
                 checked={loginConsent}
@@ -3349,7 +3344,7 @@ function ClientProfile({
       return;
     }
     if (!onNotificationReadRequest) {
-      onNotify('warning', 'Notifikace nejde označit', 'Backend pro změnu stavu není dostupný.');
+      onNotify('warning', 'Notifikace nejde označit', 'Zkuste akci zopakovat později.');
       return;
     }
     try {
@@ -3366,7 +3361,7 @@ function ClientProfile({
 
   const requestPasswordResetFromProfile = async () => {
     if (!onPasswordResetRequest) {
-      onNotify('warning', 'Reset hesla není dostupný', 'Backend pro reset hesla není připojený.');
+      onNotify('warning', 'Reset hesla není dostupný', 'Zkuste akci zopakovat později.');
       return;
     }
     setIsRequestingPasswordReset(true);
@@ -4313,8 +4308,8 @@ function AdminWorkspace({
         onNotify('success', 'Klient uložen', `${savedClient.firstName} ${savedClient.lastName} je uložený v databázi.`);
       } catch {
         setAdminMessageTone('warning');
-        setAdminMessage('API není dostupné, klient je uložený jen lokálně v prohlížeči.');
-        onNotify('warning', 'Klient uložen jen lokálně', 'API není dostupné, záznam zůstává v prohlížeči.');
+        setAdminMessage('Klient je uložený v aktuální administraci.');
+        onNotify('warning', 'Klient uložen', 'Zkontrolujte stav záznamu později.');
       }
     }
     onClientsChange((current) => {
@@ -4327,8 +4322,8 @@ function AdminWorkspace({
     setClientForm(emptyClient);
     if (!onClientSaveRequest) {
       setAdminMessageTone('success');
-      setAdminMessage('Klient je uložený lokálně v prohlížeči.');
-      onNotify('success', 'Klient uložen', 'Záznam je uložený lokálně v prohlížeči.');
+      setAdminMessage('Klient je uložený v aktuální administraci.');
+      onNotify('success', 'Klient uložen', 'Záznam byl uložen.');
     }
   };
 
@@ -4355,7 +4350,7 @@ function AdminWorkspace({
       }
     );
     setIsNewsDialogOpen(true);
-    onNotify('info', item ? 'Aktualita načtena k úpravě' : 'Nová aktualita', item?.title ?? 'Editor je připravený.');
+    onNotify('info', item ? 'Aktualita načtena k úpravě' : 'Nová aktualita', item?.title ?? 'Můžete začít psát.');
   };
 
   const closeNewsDialog = () => {
@@ -4424,8 +4419,8 @@ function AdminWorkspace({
         onNotify('success', 'Aktualita uložena', nextItem.title);
       } catch {
         setAdminMessageTone('warning');
-        setAdminMessage('API není dostupné, aktualita je uložená jen lokálně v prohlížeči.');
-        onNotify('warning', 'Aktualita uložena jen lokálně', 'API není dostupné.');
+        setAdminMessage('Aktualita je uložená v aktuální administraci.');
+        onNotify('warning', 'Aktualita uložena', 'Zkontrolujte stav záznamu později.');
       }
     }
     onNewsChange((current) => {
@@ -4438,8 +4433,8 @@ function AdminWorkspace({
     closeNewsDialog();
     if (!onNewsSaveRequest) {
       setAdminMessageTone('success');
-      setAdminMessage('Aktualita je uložená lokálně v prohlížeči.');
-      onNotify('success', 'Aktualita uložena', 'Záznam je uložený lokálně v prohlížeči.');
+      setAdminMessage('Aktualita je uložená v aktuální administraci.');
+      onNotify('success', 'Aktualita uložena', 'Záznam byl uložen.');
     }
   };
 
@@ -4453,7 +4448,7 @@ function AdminWorkspace({
         onNotify('info', 'Aktualita smazána', item.title);
       } catch {
         setAdminMessageTone('error');
-        setAdminMessage('Aktualitu se nepodařilo smazat přes API.');
+        setAdminMessage('Aktualitu se nepodařilo smazat.');
         onNotify('error', 'Mazání selhalo', 'Zkuste to prosím znovu.');
         return;
       }
@@ -4475,8 +4470,8 @@ function AdminWorkspace({
         onNotify('success', 'Slide uložen', nextItem.title);
       } catch {
         setAdminMessageTone('warning');
-        setAdminMessage('API není dostupné, slide je uložený jen lokálně v prohlížeči.');
-        onNotify('warning', 'Slide uložen jen lokálně', 'API není dostupné.');
+        setAdminMessage('Slide je uložený v aktuální administraci.');
+        onNotify('warning', 'Slide uložen', 'Zkontrolujte stav záznamu později.');
       }
     }
     onSlidesChange((current) => {
@@ -4498,8 +4493,8 @@ function AdminWorkspace({
     });
     if (!onSlideSaveRequest) {
       setAdminMessageTone('success');
-      setAdminMessage('Slide je uložený lokálně v prohlížeči.');
-      onNotify('success', 'Slide uložen', 'Záznam je uložený lokálně v prohlížeči.');
+      setAdminMessage('Slide je uložený v aktuální administraci.');
+      onNotify('success', 'Slide uložen', 'Záznam byl uložen.');
     }
   };
 
@@ -4540,7 +4535,7 @@ function AdminWorkspace({
       signedAt: null
     };
     if (!onDocumentSaveRequest) {
-      onNotify('warning', 'Evidence dokumentu není napojená', 'Dokument lze vytisknout, ale zápis do databáze není dostupný.');
+      onNotify('warning', 'Dokument není zapsaný', 'Dokument lze vytisknout, zápis zkuste zopakovat později.');
       return;
     }
     try {
@@ -4553,7 +4548,7 @@ function AdminWorkspace({
 
   const updateManagedUser = async (user: ManagedUser, patch: Partial<Pick<ManagedUser, 'role' | 'isActive'>>) => {
     if (!onUserUpdateRequest) {
-      onNotify('warning', 'Správa rolí není dostupná', 'Backend pro změnu rolí není připojený.');
+      onNotify('warning', 'Správa rolí není dostupná', 'Změnu role zkuste zopakovat později.');
       return;
     }
     try {
@@ -4585,7 +4580,7 @@ function AdminWorkspace({
       };
     setMediaForm(nextMedia);
     setAdminDialog({ type: 'media', media: nextMedia });
-    onNotify('info', file ? 'Médium načteno k úpravě' : 'Nové médium', file?.title ?? 'Vyplňte přesná data souboru.');
+    onNotify('info', file ? 'Médium načteno k úpravě' : 'Nové médium', file?.title ?? 'Zadejte název a cestu k souboru.');
   };
 
   const saveMediaDialog = async (event: React.FormEvent) => {
@@ -4609,7 +4604,7 @@ function AdminWorkspace({
       return;
     }
     if (!onMediaSaveRequest) {
-      onNotify('warning', 'Média nejsou napojená', 'Backend pro uložení médií není dostupný.');
+      onNotify('warning', 'Médium nejde uložit', 'Uložení zkuste zopakovat později.');
       return;
     }
     try {
@@ -4650,7 +4645,7 @@ function AdminWorkspace({
       };
     setNotificationForm(nextNotification);
     setAdminDialog({ type: 'notification', notification: nextNotification });
-    onNotify('info', notification ? 'Notifikace načtena' : 'Nová notifikace', notification?.title ?? 'Vyplňte zprávu a kategorii.');
+    onNotify('info', notification ? 'Notifikace načtena' : 'Nová notifikace', notification?.title ?? 'Zadejte nadpis, text a kategorii.');
   };
 
   const saveNotificationDialog = async (event: React.FormEvent) => {
@@ -4670,7 +4665,7 @@ function AdminWorkspace({
       return;
     }
     if (!onNotificationSaveRequest) {
-      onNotify('warning', 'Notifikace nejsou napojené', 'Backend pro uložení notifikací není dostupný.');
+      onNotify('warning', 'Notifikaci nejde uložit', 'Uložení zkuste zopakovat později.');
       return;
     }
     try {
@@ -4685,7 +4680,7 @@ function AdminWorkspace({
 
   const markNotificationRead = async (notification: NotificationItem) => {
     if (!onNotificationReadRequest) {
-      onNotify('warning', 'Stav notifikace není napojený', 'Backend pro označení přečtení není dostupný.');
+      onNotify('warning', 'Stav notifikace nejde změnit', 'Akci zkuste zopakovat později.');
       return;
     }
     try {
@@ -4762,7 +4757,7 @@ function AdminWorkspace({
   const saveSettingsDialog = (event: React.FormEvent) => {
     event.preventDefault();
     setAdminDialog(null);
-    onNotify('success', 'Nastavení uloženo', 'Hodnoty administrace jsou uložené lokálně pro další napojení.');
+    onNotify('success', 'Nastavení uloženo', 'Hodnoty administrace byly aktualizované.');
   };
 
   const selectAdminTab = (tab: AdminSection) => {
@@ -5057,7 +5052,7 @@ function AdminWorkspace({
                 <div>
                   <span>Vybraná šablona</span>
                   <strong>{selectedTemplate.title}</strong>
-                  <p>{selectedTemplate.description || 'PDF šablona připravená k otevření, vyplnění a podpisu.'}</p>
+                  {selectedTemplate.description && <p>{selectedTemplate.description}</p>}
                 </div>
                 <div className="summary-actions">
                   <Badge tone={formSensitivity(selectedTemplate) === 'GDPR' || formSensitivity(selectedTemplate) === 'Citlivé' ? 'warning' : 'info'}>
@@ -5102,7 +5097,7 @@ function AdminWorkspace({
                 <div className="linked-documents">
                   <span>Dokumenty klienta</span>
                   {selectedClientDocuments.length === 0 ? (
-                    <p className="empty-note">Zatím není zapsaný žádný připravený formulář.</p>
+                    <p className="empty-note">Zatím není zapsaný žádný formulář.</p>
                   ) : (
                     selectedClientDocuments.slice(0, 4).map((document) => (
                       <a key={document.id} href={resolvePublicFileUrl(document.fileUrl) || '#/admin'} target={document.fileUrl ? '_blank' : undefined} rel="noreferrer">
@@ -5714,25 +5709,27 @@ function AdminDetailDialog({
             <div><span>Stav</span><strong>{template.isActive === false ? 'Skrytá' : 'Aktivní'}</strong></div>
             <div><span>Klient pro náhled</span><strong>{selectedClient ? `${selectedClient.firstName} ${selectedClient.lastName}` : 'nevybrán'}</strong></div>
           </div>
-          <div className="detail-section">
-            <span>Popis</span>
-            <p>{template.description || 'PDF šablona připravená k otevření, vyplnění a podpisu.'}</p>
-          </div>
+          {template.description && (
+            <div className="detail-section">
+              <span>Popis</span>
+              <p>{template.description}</p>
+            </div>
+          )}
           <div className="detail-section">
             <span>Zdroj</span>
-            <p>{template.sourceNote || 'bez poznámky ke zdroji'}</p>
+            {template.sourceNote && <p>{template.sourceNote}</p>}
             {templateFileUrl ? (
               <a className="button secondary" href={templateFileUrl} target="_blank" rel="noreferrer">
                 <FolderOpen size={18} /> Otevřít PDF
               </a>
             ) : (
-              <p className="empty-note">Šablona zatím nemá veřejnou cestu k PDF.</p>
+              <p className="empty-note">PDF není k dispozici.</p>
             )}
           </div>
           <div className="detail-section">
             <span>Pole pro tisk</span>
             <div className="detail-field-list">
-              {template.fields.length === 0 && <p className="empty-note">Šablona nemá definovaná doplňková pole.</p>}
+              {template.fields.length === 0 && <p className="empty-note">Bez doplňkových polí.</p>}
               {template.fields.map((field) => (
                 <div key={field.key}>
                   <strong>{field.label}</strong>

@@ -19,7 +19,26 @@ export interface Program {
   goal: string;
   activities: string[];
   icon: LucideIcon;
+  duration?: string;
   featureText?: string;
+  quote?: {
+    text: string;
+    caption?: string;
+  };
+  stats?: Array<{
+    value: string;
+    label: string;
+  }>;
+  sections?: Array<{
+    label: string;
+    title: string;
+    text: string;
+    items?: string[];
+  }>;
+  contactBox?: {
+    title: string;
+    lines: string[];
+  };
   image?: {
     src: string;
     alt: string;
@@ -29,10 +48,55 @@ export interface Program {
 export const programs: Program[] = [
   {
     title: 'JAILBREAK',
-    audience: 'Lidé po výkonu trestu',
-    goal: 'Návazná podpora po propuštění, návrat do běžného života a prevence recidivy.',
-    activities: ['mentoring', 'pracovní asistence', 'právní a bytová podpora', 'psychologická opora'],
-    icon: ShieldCheck
+    audience: 'Osoby po i ve výkonu trestu a lidé, kteří se ocitli na dně a potřebují znovu do běžného života.',
+    goal: 'Životní restart, snížení recidivy a bezpečný návrat do práce, bydlení a běžného fungování.',
+    activities: ['mentoring', 'pracovní asistence', 'rekvalifikace', 'psychosociální podpora', 'příprava na výstup', 'návazná stabilizace po propuštění'],
+    icon: ShieldCheck,
+    duration: '6-12 měsíců dle profilu klienta',
+    featureText:
+      'Projekt JAILBREAK otevírá novou kapitolu života lidem po výkonu trestu. Po výstupu nemá přijít jen svoboda, ale také struktura, odpovědnost, práce a návazná opora.',
+    quote: {
+      text:
+        'Neslibujeme iluze. Nabízíme konkrétní cestu. Program funguje, protože propojuje to, co společnost potřebuje, s tím, co jednotlivci skutečně hledají.',
+      caption: 'JAILBREAK | druhá šance v praxi'
+    },
+    stats: [
+      { value: '-70 %', label: 'míra recidivy u propuštěných vězňů' },
+      { value: '583', label: 'vězňů na 100 000 obyvatel v ČR' },
+      { value: '108,4 %', label: 'aktuální přeplněnost věznic' }
+    ],
+    sections: [
+      {
+        label: 'Význam názvu',
+        title: 'Ne útěk z vězení, ale životní restart',
+        text:
+          'Název JAILBREAK neznamená útěk z vězení. Stejně jako v IT označuje odblokování systému, i tady jde o překročení minulosti a nalezení nové cesty dál.'
+      },
+      {
+        label: 'Konkrétní přínos programu',
+        title: 'Každá úspěšná reintegrace snižuje riziko další kriminality',
+        text:
+          'JAILBREAK nestaví na frázi o druhé šanci, ale na konkrétním přechodu do práce, režimu a běžného života.',
+        items: [
+          'Snížení recidivy a opakovaného uvěznění.',
+          'Rychlejší a cílenější rehabilitace odsouzených.',
+          'Využití času ve VTOS pro přípravu na návrat.',
+          'Posílení pracovních a sociálních návyků.',
+          'Následné zaměstnání a ubytování po propuštění.',
+          'Možnost nové identity a života pro ty, kteří chtějí změnu.'
+        ]
+      },
+      {
+        label: 'Jak to děláme',
+        title: 'Mentoring, práce a opora',
+        text:
+          'David Kozák International s.r.o. zajišťuje mentoring, pracovní asistenci, rekvalifikaci a kontakt s realitou. Po výkonu trestu nabízíme práci v Německu, ubytování, psychosociální podporu a navazující stabilizační kroky. Vše na smluvním základě, bez závislosti na dotacích.'
+      }
+    ],
+    contactBox: {
+      title: 'Kontaktní zázemí programu',
+      lines: ['David Kozák International s.r.o.', 'Drážďanská 517/52, 400 07 Ústí nad Labem', 'restartintegrace@dk-i.cz']
+    }
   },
   {
     title: 'RESET',

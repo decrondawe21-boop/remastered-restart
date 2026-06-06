@@ -226,6 +226,13 @@ type ClientProfileDraft = {
   filter: string;
 };
 
+type ClientSettingsDraft = {
+  privacyMode: string;
+  documentEmails: boolean;
+  commentEmails: boolean;
+  twoFactorEnabled: boolean;
+};
+
 type LoginRequest = {
   email: string;
   password: string;
@@ -1829,7 +1836,14 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
             </div>
           </div>
           <p className="program-detail-lead">{program.goal}</p>
+          {program.duration ? <p className="program-duration">{program.title} | {program.duration}</p> : null}
           <p>{program.featureText ?? fallbackText}</p>
+          {program.quote ? (
+            <blockquote className="program-quote">
+              <p>{program.quote.text}</p>
+              {program.quote.caption ? <cite>{program.quote.caption}</cite> : null}
+            </blockquote>
+          ) : null}
           <div className="program-detail-actions">
             <a className="button primary" href="#/kontakt">
               Napište nám <ArrowRight size={18} />
@@ -1845,6 +1859,16 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
           </figure>
         ) : null}
       </section>
+      {program.stats?.length ? (
+        <section className="program-stat-band" aria-label={`${program.title} v číslech`}>
+          {program.stats.map((item) => (
+            <div key={`${item.value}-${item.label}`}>
+              <strong>{item.value}</strong>
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </section>
+      ) : null}
       <section className="content-section program-detail-section">
         <SectionIntro
           label="V praxi"
@@ -1857,6 +1881,33 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
           ))}
         </div>
       </section>
+      {program.sections?.length ? (
+        <section className="content-section program-story-section">
+          {program.sections.map((section) => (
+            <article key={section.title} className="program-story-card">
+              <p className="section-label">{section.label}</p>
+              <h2>{section.title}</h2>
+              <p>{section.text}</p>
+              {section.items?.length ? (
+                <ul>
+                  {section.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          ))}
+          {program.contactBox ? (
+            <aside className="program-contact-box">
+              <p className="section-label">REST||ART | {program.title}</p>
+              <h3>{program.contactBox.title}</h3>
+              {program.contactBox.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </aside>
+          ) : null}
+        </section>
+      ) : null}
     </>
   );
 }
@@ -1930,6 +1981,70 @@ function SupportPage() {
               </div>
             );
           })}
+        </div>
+      </section>
+      <section className="donate-section">
+        <div className="donate-copy">
+          <p className="section-label">DONATE</p>
+          <h2>Podpořte nás</h2>
+          <p>
+            Každý dar pomáhá měnit druhou šanci v konkrétní kroky: mentoring, práci, stabilizaci, materiály a návrat
+            lidí zpět do života.
+          </p>
+          <div className="donate-actions">
+            <a className="button primary" href="https://donate.stripe.com/8x23cv0HAdIg8dibnF3ks03?locale=cs&prefilled_email=kozakdavid%40dk-i.cz" target="_blank" rel="noreferrer">
+              <Heart size={18} /> Darovat přes Stripe
+            </a>
+            <a className="button secondary" href="#/kontakt">
+              Chci být partner
+            </a>
+          </div>
+        </div>
+        <div className="donate-card">
+          <p className="section-label">Transparentní podpora</p>
+          <h3>Dary jdou do konkrétních kroků, ne do prázdných slibů.</h3>
+          <p>Stripe odkaz vede přímo na bezpečnou platební stránku. Pokud preferujete přímý převod, použijte níže uvedený účet.</p>
+          <dl>
+            <div>
+              <dt>IBAN</dt>
+              <dd>LT45 3250 0078 0969 2068</dd>
+            </div>
+            <div>
+              <dt>BIC / SWIFT</dt>
+              <dd>REVOLT21</dd>
+            </div>
+            <div>
+              <dt>Korespondent BIC</dt>
+              <dd>BARCGB22</dd>
+            </div>
+            <div>
+              <dt>Banka</dt>
+              <dd>Revolut Bank UAB, Konstitucijos ave. 21B, 08130 Vilnius, Lithuania</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="donate-amounts">
+          {[
+            { amount: '500 Kč', title: 'Startovací pomoc', text: 'Materiály, první konzultace, doprava nebo praktická drobnost pro první krok.' },
+            { amount: '1 500 Kč', title: 'Mentoring a stabilizace', text: 'Čas s mentorem, příprava na práci, doprovod při úřadech a návrat do režimu.' },
+            { amount: '5 000 Kč+', title: 'Programový rozvoj', text: 'Podpora workshopů, pracovního vybavení a dlouhodobého dopadu programů.' }
+          ].map((item) => (
+            <article key={item.amount}>
+              <strong>{item.amount}</strong>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+        <div className="donate-challenges">
+          <p className="section-label">Aktuální výzvy</p>
+          <h3>Vyberte si, kde chcete být vidět.</h3>
+          <ol>
+            <li>Pomozte pokrýt první praktické kroky po návratu z vězení nebo krize.</li>
+            <li>Podpořte mentoring, pracovní restart a stabilizaci lidí, kteří chtějí začít znovu.</li>
+            <li>Staňte se partnerem výzvy druhé šance a pomozte nám z programu udělat opakovatelný systém.</li>
+          </ol>
+          <p className="donate-motto">Na nikoho se nezapomíná. Každý si zaslouží druhou šanci.</p>
         </div>
       </section>
     </>
@@ -2979,10 +3094,18 @@ function avatarFilter(filter: string) {
 
 function ClientProfile({
   account,
+  clientDocuments,
+  notifications,
+  onNotificationReadRequest,
+  onPasswordResetRequest,
   onLogout,
   onNotify
 }: {
   account: AuthAccount;
+  clientDocuments: ClientDocument[];
+  notifications: NotificationItem[];
+  onNotificationReadRequest?: (notificationId: string) => Promise<void>;
+  onPasswordResetRequest?: (email: string) => Promise<ApiPasswordResetRequest | null>;
   onLogout: () => void;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
@@ -3000,6 +3123,14 @@ function ClientProfile({
   });
   const [profileMessage, setProfileMessage] = React.useState('');
   const [activeSection, setActiveSection] = React.useState<ClientSection>('dashboard');
+  const [settingsDraft, setSettingsDraft] = useStoredState<ClientSettingsDraft>(`restart-client-settings-${account.id}`, {
+    privacyMode: 'Profil je viditelný pouze pracovníkům projektu',
+    documentEmails: true,
+    commentEmails: true,
+    twoFactorEnabled: false
+  });
+  const [passwordResetMessage, setPasswordResetMessage] = React.useState('');
+  const [isRequestingPasswordReset, setIsRequestingPasswordReset] = React.useState(false);
   const [previousAvatarDraft, setPreviousAvatarDraft] = React.useState<Pick<
     ClientProfileDraft,
     'source' | 'avatar' | 'zoom' | 'offsetX' | 'offsetY' | 'rotation' | 'filter'
@@ -3009,6 +3140,51 @@ function ClientProfile({
   const isAdminProfile = account.role === 'admin';
   const workspaceBadge = isAdminProfile ? 'Admin profil' : 'Klientská zóna';
   const workspaceTitle = isAdminProfile ? 'Profil administrátora' : 'Přihlášený klient';
+  const profileCompletion = Math.round(
+    ([
+      Boolean(displayName),
+      Boolean(account.email),
+      Boolean(displayPhone),
+      Boolean(profile.note.trim()),
+      Boolean(profile.avatar || profile.source)
+    ].filter(Boolean).length /
+      5) *
+      100
+  );
+  const visibleDocuments = clientDocuments
+    .filter((document) => {
+      if (isAdminProfile) return true;
+      const haystack = `${document.userId || ''} ${document.title} ${document.notes}`.toLowerCase();
+      return document.userId === account.id || haystack.includes(account.email.toLowerCase()) || haystack.includes(displayName.toLowerCase());
+    })
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+  const visibleNotifications = notifications
+    .filter((notification) => isAdminProfile || !notification.recipientId || notification.recipientId === account.id)
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+  const unreadNotifications = visibleNotifications.filter((notification) => !notification.readAt);
+  const activityItems = [
+    ...visibleDocuments.slice(0, 5).map((document) => ({
+      id: `document-${document.id}`,
+      title: document.title,
+      text: `${document.status || 'dokument'} - ${document.documentType || 'soubor'}`,
+      date: document.createdAt,
+      tone: document.signedAt ? 'success' : 'warning'
+    })),
+    ...visibleNotifications.slice(0, 5).map((notification) => ({
+      id: `notification-${notification.id}`,
+      title: notification.title,
+      text: notification.category,
+      date: notification.createdAt,
+      tone: notification.readAt ? 'info' : 'warning'
+    })),
+    {
+      id: 'profile-created',
+      title: 'Profil vytvořen',
+      text: account.email,
+      date: account.createdAt,
+      tone: 'success'
+    }
+  ].sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
 
   const updateProfile = <K extends keyof ClientProfileDraft>(key: K, value: ClientProfileDraft[K]) => {
     setProfile((current) => ({ ...current, [key]: value }));
@@ -3113,6 +3289,48 @@ function ClientProfile({
   const saveProfile = () => {
     setProfileMessage('Profilové údaje jsou uložené v prohlížeči.');
     onNotify('success', 'Profil je uložený', 'Profilové údaje jsou uložené v prohlížeči.');
+  };
+
+  const markClientNotificationRead = async (notification: NotificationItem) => {
+    if (notification.readAt) {
+      onNotify('info', 'Notifikace už je přečtená', notification.title);
+      return;
+    }
+    if (!onNotificationReadRequest) {
+      onNotify('warning', 'Notifikace nejde označit', 'Backend pro změnu stavu není dostupný.');
+      return;
+    }
+    try {
+      await onNotificationReadRequest(notification.id);
+      onNotify('success', 'Notifikace označena', notification.title);
+    } catch (error) {
+      onNotify('error', 'Notifikace se nepodařila uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const saveAccountSettings = () => {
+    onNotify('success', 'Nastavení účtu uloženo', 'Předvolby soukromí a upozornění jsou uložené v profilu.');
+  };
+
+  const requestPasswordResetFromProfile = async () => {
+    if (!onPasswordResetRequest) {
+      onNotify('warning', 'Reset hesla není dostupný', 'Backend pro reset hesla není připojený.');
+      return;
+    }
+    setIsRequestingPasswordReset(true);
+    setPasswordResetMessage('Odesílám žádost o obnovu hesla...');
+    try {
+      const result = await onPasswordResetRequest(account.email);
+      const message = result?.message || 'Pokud účet existuje, dorazí instrukce pro obnovu hesla.';
+      setPasswordResetMessage(message);
+      onNotify('success', 'Obnova hesla připravena', message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Žádost se nepodařilo odeslat.';
+      setPasswordResetMessage(message);
+      onNotify('error', 'Obnova hesla selhala', message);
+    } finally {
+      setIsRequestingPasswordReset(false);
+    }
   };
 
   const currentClientNav = clientNavItems.find((item) => item.id === activeSection) ?? clientNavItems[0];
@@ -3243,16 +3461,40 @@ function ClientProfile({
                     <dd>{displayPhone || '-'}</dd>
                   </div>
                   <div>
+                    <dt>Dokumenty</dt>
+                    <dd>{visibleDocuments.length}</dd>
+                  </div>
+                  <div>
+                    <dt>Nepřečtené zprávy</dt>
+                    <dd>{unreadNotifications.length}</dd>
+                  </div>
+                  <div>
                     <dt>Profil vytvořen</dt>
                     <dd>{new Date(account.createdAt).toLocaleDateString('cs-CZ')}</dd>
                   </div>
                 </dl>
               </article>
-              <WorkspacePlaceholder
-                title="Notifikace"
-                text="Tady budou nové zprávy, potvrzení schůzek a systémová upozornění."
-                items={['Nová zpráva od pracovníka', 'Dokument čeká na podpis', 'Profil čeká na ověření']}
-              />
+              <article className="client-progress-card">
+                <h2>Dokončení profilu</h2>
+                <div className="progress-meter" aria-label={`Profil vyplněn z ${profileCompletion} procent`}>
+                  <span style={{ width: `${profileCompletion}%` }} />
+                </div>
+                <strong>{profileCompletion} %</strong>
+                <p>Doplňte telefon, poznámku a profilovou fotku, aby měl pracovník rychlejší kontext.</p>
+              </article>
+              <article>
+                <h2>Poslední notifikace</h2>
+                <div className="client-notification-list compact">
+                  {visibleNotifications.length === 0 && <p className="empty-note">Zatím tu nejsou žádné zprávy.</p>}
+                  {visibleNotifications.slice(0, 3).map((notification) => (
+                    <button key={notification.id} type="button" className={notification.readAt ? 'read' : ''} onClick={() => markClientNotificationRead(notification)}>
+                      <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
+                      <strong>{notification.title}</strong>
+                      <span>{notification.body}</span>
+                    </button>
+                  ))}
+                </div>
+              </article>
               <article>
                 <h2>Rychlé akce</h2>
                 <div className="quick-action-grid">
@@ -3309,46 +3551,115 @@ function ClientProfile({
 
           {activeSection === 'documents' && (
             <div className="client-dashboard">
-              <WorkspacePlaceholder
-                title="Moje dokumenty"
-                text="Přehled uložených souborů, formulářů a historie podpisů."
-                items={['Vstupní karta', 'Souhlas se zapojením', 'Stabilizační plán']}
-              />
-              <article>
-                <h2>Dokumenty k podpisu</h2>
-                <p>Dokumenty budou připravené k tisku, stažení a potvrzení po napojení na databázi.</p>
-                <a className="button secondary" href="#/kontakt">Kontaktovat pracovníka</a>
+              <article className="client-wide-card">
+                <h2>Moje dokumenty</h2>
+                <p>Připravené formuláře, soubory k podpisu a historie uložených dokumentů.</p>
+                <div className="client-document-list">
+                  {visibleDocuments.length === 0 && <p className="empty-note">Zatím tu není žádný dokument. Jakmile pracovník připraví formulář, zobrazí se tady.</p>}
+                  {visibleDocuments.map((document) => (
+                    <article key={document.id}>
+                      <div>
+                        <strong>{document.title}</strong>
+                        <span>{document.documentType} - {document.status}</span>
+                        <small>{new Date(document.createdAt).toLocaleString('cs-CZ')}</small>
+                      </div>
+                      <Badge tone={document.signedAt ? 'success' : 'warning'}>{document.signedAt ? 'Podepsáno' : 'K podpisu'}</Badge>
+                      {document.fileUrl && (
+                        <a className="button secondary" href={resolvePublicFileUrl(document.fileUrl)} target="_blank" rel="noreferrer">
+                          <FolderOpen size={18} /> Otevřít
+                        </a>
+                      )}
+                    </article>
+                  ))}
+                </div>
               </article>
             </div>
           )}
 
           {activeSection === 'activity' && (
             <div className="client-dashboard">
-              <WorkspacePlaceholder
-                title="Moje aktivita"
-                text="Historie odeslaných formulářů, změn profilu a potvrzení."
-                items={['Profil vytvořen', 'Avatar připraven k úpravě', 'Čeká na ověření pracovníkem']}
-              />
+              <article className="client-wide-card">
+                <h2>Moje aktivita</h2>
+                <p>Historie změn profilu, dokumentů a důležitých upozornění.</p>
+                <div className="activity-list timeline-list">
+                  {activityItems.map((item) => (
+                    <span key={item.id}>
+                      <Badge tone={item.tone as FeedbackTone}>{new Date(item.date).toLocaleDateString('cs-CZ')}</Badge>
+                      <strong>{item.title}</strong>
+                      <small>{item.text}</small>
+                    </span>
+                  ))}
+                </div>
+              </article>
             </div>
           )}
 
           {activeSection === 'notifications' && (
             <div className="client-dashboard">
-              <WorkspacePlaceholder
-                title="Notifikace"
-                text="Nové zprávy, potvrzení, připomínky a upozornění."
-                items={['Zprávy', 'Potvrzení', 'Upozornění']}
-              />
+              <article className="client-wide-card">
+                <h2>Notifikace</h2>
+                <p>Nové zprávy, potvrzení, připomínky a systémová upozornění.</p>
+                <div className="client-notification-list">
+                  {visibleNotifications.length === 0 && <p className="empty-note">Zatím nemáte žádné notifikace.</p>}
+                  {visibleNotifications.map((notification) => (
+                    <button key={notification.id} type="button" className={notification.readAt ? 'read' : ''} onClick={() => markClientNotificationRead(notification)}>
+                      <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
+                      <strong>{notification.title}</strong>
+                      <span>{notification.body}</span>
+                      <small>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</small>
+                    </button>
+                  ))}
+                </div>
+              </article>
             </div>
           )}
 
           {activeSection === 'settings' && (
             <div className="client-dashboard">
-              <WorkspacePlaceholder
-                title="Nastavení účtu"
-                text="Heslo, soukromí a dvoufázové ověření."
-                items={['Změna hesla', 'Soukromí profilu', '2FA']}
-              />
+              <article className="profile-editor">
+                <h2>Nastavení účtu</h2>
+                <label>
+                  Soukromí profilu
+                  <select value={settingsDraft.privacyMode} onChange={(event) => setSettingsDraft((current) => ({ ...current, privacyMode: event.target.value }))}>
+                    <option>Profil je viditelný pouze pracovníkům projektu</option>
+                    <option>Profil je viditelný administrátorům a editorům</option>
+                    <option>Profil je dočasně skrytý mimo nezbytné kontakty</option>
+                  </select>
+                </label>
+                <label className="checkbox-field">
+                  <input type="checkbox" checked={settingsDraft.documentEmails} onChange={(event) => setSettingsDraft((current) => ({ ...current, documentEmails: event.target.checked }))} />
+                  Posílat upozornění k dokumentům
+                </label>
+                <label className="checkbox-field">
+                  <input type="checkbox" checked={settingsDraft.commentEmails} onChange={(event) => setSettingsDraft((current) => ({ ...current, commentEmails: event.target.checked }))} />
+                  Posílat upozornění ke komentářům a odpovědím
+                </label>
+                <label className="checkbox-field">
+                  <input type="checkbox" checked={settingsDraft.twoFactorEnabled} onChange={(event) => setSettingsDraft((current) => ({ ...current, twoFactorEnabled: event.target.checked }))} />
+                  Připravit dvoufázové ověření pro účet
+                </label>
+                <button className="button primary" type="button" onClick={saveAccountSettings}>
+                  <Save size={18} /> Uložit nastavení
+                </button>
+              </article>
+              <article>
+                <h2>Heslo a bezpečnost</h2>
+                <p>Obnova hesla odešle požadavek na e-mail přihlášeného účtu.</p>
+                <button className="button secondary" type="button" onClick={requestPasswordResetFromProfile} disabled={isRequestingPasswordReset}>
+                  <KeyRound size={18} /> {isRequestingPasswordReset ? 'Odesílám...' : 'Obnovit heslo'}
+                </button>
+                {passwordResetMessage && <p className="auth-message">{passwordResetMessage}</p>}
+                <dl>
+                  <div>
+                    <dt>E-mail účtu</dt>
+                    <dd>{account.email}</dd>
+                  </div>
+                  <div>
+                    <dt>2FA</dt>
+                    <dd>{settingsDraft.twoFactorEnabled ? 'Připraveno k aktivaci' : 'Vypnuto'}</dd>
+                  </div>
+                </dl>
+              </article>
             </div>
           )}
         </div>
@@ -3590,7 +3901,15 @@ function App() {
       <ContactPage onNotify={notify} />
     ) : currentPath === '/klient' ? (
       currentAccount?.role === 'client' || currentAccount?.role === 'admin' ? (
-        <ClientProfile account={currentAccount} onLogout={logout} onNotify={notify} />
+        <ClientProfile
+          account={currentAccount}
+          clientDocuments={clientDocuments}
+          notifications={notifications}
+          onNotificationReadRequest={markNotificationReadViaApi}
+          onPasswordResetRequest={requestPasswordReset}
+          onLogout={logout}
+          onNotify={notify}
+        />
       ) : (
         <AuthScreen
           role="client"
@@ -3837,6 +4156,38 @@ function AdminWorkspace({
     ? clientDocuments.filter((document) => document.clientId === selectedClient.id || document.title.includes(selectedClient.lastName))
     : [];
   const unreadNotifications = notifications.filter((notification) => !notification.readAt);
+  const activeUsers = managedUsers.filter((user) => user.isActive);
+  const pendingDocuments = clientDocuments.filter((document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase()));
+  const adminActivityItems = [
+    ...clientDocuments.slice(0, 8).map((document) => ({
+      id: `document-${document.id}`,
+      title: document.title,
+      text: `Dokument: ${document.status || 'bez stavu'}`,
+      date: document.createdAt,
+      tone: document.signedAt ? 'success' : 'warning'
+    })),
+    ...notifications.slice(0, 8).map((notification) => ({
+      id: `notification-${notification.id}`,
+      title: notification.title,
+      text: `Notifikace: ${notification.category}`,
+      date: notification.createdAt,
+      tone: notification.readAt ? 'info' : 'warning'
+    })),
+    ...clients.slice(0, 8).map((client) => ({
+      id: `client-${client.id}`,
+      title: `${client.firstName} ${client.lastName}`,
+      text: `Klient: ${client.program} - ${client.status}`,
+      date: client.createdAt,
+      tone: 'success'
+    })),
+    ...news.slice(0, 8).map((item) => ({
+      id: `news-${item.id}`,
+      title: item.title,
+      text: 'Aktualita publikovaná na webu',
+      date: item.date,
+      tone: 'info'
+    }))
+  ].sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
 
   React.useEffect(() => {
     if (!selectedClientId && clients[0]) setSelectedClientId(clients[0].id);
@@ -4335,13 +4686,37 @@ function AdminWorkspace({
               <strong>{formTemplates.length}</strong>
               <p>šablon připravených k tisku</p>
             </article>
+            <article className="admin-card metric-card">
+              <span>Dokumenty</span>
+              <strong>{clientDocuments.length}</strong>
+              <p>{pendingDocuments.length} čeká na podpis nebo dokončení</p>
+            </article>
+            <article className="admin-card metric-card">
+              <span>Uživatelé</span>
+              <strong>{activeUsers.length}</strong>
+              <p>aktivních účtů z {managedUsers.length}</p>
+            </article>
+            <article className="admin-card metric-card">
+              <span>Notifikace</span>
+              <strong>{unreadNotifications.length}</strong>
+              <p>nepřečtených upozornění v systému</p>
+            </article>
+            <article className="admin-card metric-card">
+              <span>Média</span>
+              <strong>{mediaFiles.length}</strong>
+              <p>souborů v knihovně médií</p>
+            </article>
             <article className="admin-card">
-              <h3>Poslední změny</h3>
-              <div className="activity-list">
-                {[...clients.slice(0, 3).map((client) => `Klient: ${client.firstName} ${client.lastName}`), ...news.slice(0, 3).map((item) => `Aktualita: ${item.title}`)].slice(0, 5).map((item) => (
-                  <span key={item}>{item}</span>
+              <h3>Poslední aktivita</h3>
+              <div className="activity-list timeline-list">
+                {adminActivityItems.slice(0, 7).map((item) => (
+                  <span key={item.id}>
+                    <Badge tone={item.tone as FeedbackTone}>{new Date(item.date).toLocaleDateString('cs-CZ')}</Badge>
+                    <strong>{item.title}</strong>
+                    <small>{item.text}</small>
+                  </span>
                 ))}
-                {clients.length === 0 && news.length === 0 && <p className="empty-note">Zatím nejsou uložené žádné změny.</p>}
+                {adminActivityItems.length === 0 && <p className="empty-note">Zatím nejsou uložené žádné změny.</p>}
               </div>
             </article>
             <article className="admin-card">
@@ -4351,6 +4726,20 @@ function AdminWorkspace({
                 <button type="button" onClick={() => selectAdminTab('news')}>Vytvořit aktualitu</button>
                 <button type="button" onClick={() => selectAdminTab('forms')}>Tiskový formulář</button>
                 <button type="button" onClick={() => selectAdminTab('content')}>Správa obsahu</button>
+                <button type="button" onClick={() => selectAdminTab('notifications')}>Poslat notifikaci</button>
+                <button type="button" onClick={() => selectAdminTab('media')}>Přidat médium</button>
+              </div>
+            </article>
+            <article className="admin-card">
+              <h3>Dokumenty k řešení</h3>
+              <div className="table-lite">
+                {pendingDocuments.length === 0 && <p className="empty-note">Žádný dokument aktuálně nečeká na podpis.</p>}
+                {pendingDocuments.slice(0, 5).map((document) => (
+                  <div key={document.id}>
+                    <strong>{document.title}</strong>
+                    <span>{document.status} - {new Date(document.createdAt).toLocaleDateString('cs-CZ')}</span>
+                  </div>
+                ))}
               </div>
             </article>
           </div>

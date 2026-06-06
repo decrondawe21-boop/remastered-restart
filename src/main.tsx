@@ -775,236 +775,77 @@ const starterAccounts: AuthAccount[] = [
 
 const starterSlides: HomeSlide[] = [
   {
-    id: 'slide-vstup',
-    title: 'Zázemí, které roste krok za krokem',
-    subtitle: 'To, co začíná jako malé semínko, může časem vytvořit bezpečný průchod.',
-    imageUrl: '/images/crops/streetwise/streetwise-klenba.jpg',
-    ctaLabel: 'STREETWISE',
-    ctaHref: '#/programy',
+    id: 'pillar-jailbreak',
+    title: 'JAILBREAK',
+    subtitle: 'Výkon trestu odnětí svobody a návrat ven: svoboda potřebuje strukturu, práci a konkrétní plán.',
+    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.jpg',
+    ctaLabel: 'O programu',
+    ctaHref: '#/programy/jailbreak',
     sortOrder: 10,
     isActive: true
   },
   {
-    id: 'slide-zazemi',
-    title: 'Z odepsaného vzniká zázemí',
-    subtitle: 'Z nalezeného dřeva a materiálu stavíme prostor, který může sloužit dál.',
-    imageUrl: '/images/crops/streetwise/streetwise-zelena-stena.jpg',
-    ctaLabel: 'Jak pracujeme',
-    ctaHref: '#/co-delame',
+    id: 'pillar-reset',
+    title: 'RESET',
+    subtitle: 'Závislosti, krize a ztracený režim: důstojný restart přes terapii, komunitu a bezpečný každodenní rytmus.',
+    imageUrl: '/images/crops/streetwise/streetwise-ruze-detail.jpg',
+    ctaLabel: 'O programu',
+    ctaHref: '#/programy/reset',
     sortOrder: 20,
     isActive: true
   },
   {
-    id: 'slide-detail',
-    title: 'Trpělivá péče má smysl',
-    subtitle: 'Růže, zázemí i lidská změna rostou tehdy, když dostanou čas a oporu.',
-    imageUrl: '/images/crops/streetwise/streetwise-ruze-detail.jpg',
-    ctaLabel: 'Zapojit se',
-    ctaHref: '#/zapojeni',
+    id: 'pillar-rework',
+    title: 'REWORK',
+    subtitle: 'Dlouhodobě nezaměstnaní a lidé s bariérami: pracovní restart, rekvalifikace a férový návrat do praxe.',
+    imageUrl: '/images/crops/new-photos/foto-175346-mid.jpg',
+    ctaLabel: 'O programu',
+    ctaHref: '#/programy/rework',
     sortOrder: 30,
     isActive: true
   },
   {
-    id: 'slide-streetwise-cesta',
-    title: 'Střecha pro první krok',
-    subtitle: 'STREETWISE buduje bezpečné místo pro kontakt, podporu a první stabilní krok.',
-    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.jpg',
-    ctaLabel: 'Potřebuji pomoc',
-    ctaHref: '#/kontakt',
-    sortOrder: 40,
-    isActive: true
-  },
-  {
-    id: 'slide-streetwise-bouda',
-    title: 'Stavíme z toho, co ještě může sloužit',
-    subtitle: 'Dřevo z demolic, ruce, trpělivost a víra v druhou šanci. Pro věci i pro lidi.',
+    id: 'pillar-streetwise',
+    title: 'STREETWISE',
+    subtitle: 'Lidé bez domova a mimo dosah systému: nízkoprahové zázemí, terén a první bezpečný krok.',
     imageUrl: '/images/crops/streetwise/streetwise-bouda-stavba.jpg',
-    ctaLabel: 'Druhá šance v praxi',
-    ctaHref: '#/co-delame',
+    ctaLabel: 'O programu',
+    ctaHref: '#/programy/streetwise',
+    sortOrder: 40,
+    isActive: true
+  },
+  {
+    id: 'pillar-bod-zlomu',
+    title: 'BOD ZLOMU',
+    subtitle: 'Děti z dětských domovů a mladí lidé po ústavní péči: přechod do samostatnosti, vztahů a vlastního směru.',
+    imageUrl: '/images/crops/new-photos/foto-175300-mid.jpg',
+    ctaLabel: 'O programu',
+    ctaHref: '#/programy/bod-zlomu',
     sortOrder: 50,
     isActive: true
   },
   {
-    id: 'slide-01',
-    title: 'REST||ART Integrace',
-    subtitle: 'Neziskový projekt druhých šancí.',
-    imageUrl: '/images/01.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 100,
-    isActive: false
-  },
-  {
-    id: 'slide-04',
-    title: 'Vizuál 04',
-    subtitle: 'REST||ART Integrace - banner 04.',
-    imageUrl: '/images/04.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 40,
-    isActive: false
-  },
-  {
-    id: 'slide-05',
-    title: 'Vizuál 05',
-    subtitle: 'REST||ART Integrace - banner 05.',
-    imageUrl: '/images/05.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 50,
-    isActive: false
-  },
-  {
-    id: 'slide-06',
-    title: 'Vizuál 06',
-    subtitle: 'REST||ART Integrace - banner 06.',
-    imageUrl: '/images/06.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
+    id: 'pillar-stabilizace',
+    title: 'STABILIZACE',
+    subtitle: 'Konečný podpůrný program: udržet změnu v bydlení, práci, režimu, komunitě a běžném životě.',
+    imageUrl: '/images/crops/new-photos/foto-175413-mid.jpg',
+    ctaLabel: 'O programu',
+    ctaHref: '#/programy/stabilizace',
     sortOrder: 60,
-    isActive: false
-  },
-  {
-    id: 'slide-07',
-    title: 'Vizuál 07',
-    subtitle: 'REST||ART Integrace - banner 07.',
-    imageUrl: '/images/07.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 70,
-    isActive: false
-  },
-  {
-    id: 'slide-08',
-    title: 'Vizuál 08',
-    subtitle: 'REST||ART Integrace - banner 08.',
-    imageUrl: '/images/08.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 80,
-    isActive: false
-  },
-  {
-    id: 'slide-09',
-    title: 'Vizuál 09',
-    subtitle: 'REST||ART Integrace - banner 09.',
-    imageUrl: '/images/09.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 90,
-    isActive: false
-  },
-  {
-    id: 'slide-10',
-    title: 'Vizuál 10',
-    subtitle: 'REST||ART Integrace - banner 10.',
-    imageUrl: '/images/10.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 100,
-    isActive: false
-  },
-  {
-    id: 'slide-11',
-    title: 'Vizuál 11',
-    subtitle: 'REST||ART Integrace - banner 11.',
-    imageUrl: '/images/11.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 110,
-    isActive: false
-  },
-  {
-    id: 'slide-12',
-    title: 'Vizuál 12',
-    subtitle: 'REST||ART Integrace - banner 12.',
-    imageUrl: '/images/12.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 120,
-    isActive: false
-  },
-  {
-    id: 'slide-13',
-    title: 'Vizuál 13',
-    subtitle: 'REST||ART Integrace - banner 13.',
-    imageUrl: '/images/13.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 130,
-    isActive: false
-  },
-  {
-    id: 'slide-14',
-    title: 'Vizuál 14',
-    subtitle: 'REST||ART Integrace - banner 14.',
-    imageUrl: '/images/14.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 140,
-    isActive: false
-  },
-  {
-    id: 'slide-15',
-    title: 'Vizuál 15',
-    subtitle: 'REST||ART Integrace - banner 15.',
-    imageUrl: '/images/15.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 150,
-    isActive: false
-  },
-  {
-    id: 'slide-16',
-    title: 'Vizuál 16',
-    subtitle: 'REST||ART Integrace - banner 16.',
-    imageUrl: '/images/16.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 160,
-    isActive: false
-  },
-  {
-    id: 'slide-17',
-    title: 'Vizuál 17',
-    subtitle: 'REST||ART Integrace - banner 17.',
-    imageUrl: '/images/17.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 170,
-    isActive: false
-  },
-  {
-    id: 'slide-18',
-    title: 'Vizuál 18',
-    subtitle: 'REST||ART Integrace - banner 18.',
-    imageUrl: '/images/18.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 180,
-    isActive: false
-  },
-  {
-    id: 'slide-19',
-    title: 'Vizuál 19',
-    subtitle: 'REST||ART Integrace - banner 19.',
-    imageUrl: '/images/19.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 190,
-    isActive: false
-  },
-  {
-    id: 'slide-20',
-    title: 'Vizuál 20',
-    subtitle: 'REST||ART Integrace - banner 20.',
-    imageUrl: '/images/20.png',
-    ctaLabel: 'Zobrazit programy',
-    ctaHref: '#/programy',
-    sortOrder: 200,
-    isActive: false
+    isActive: true
   }
 ];
+
+const starterSlideIds = new Set(starterSlides.map((slide) => slide.id));
+
+const hasProgramPillarDeck = (slides: HomeSlide[]) =>
+  slides.filter((slide) => slide.isActive && starterSlideIds.has(slide.id)).length === starterSlides.length;
+
+const shouldUseProgramPillarDeck = (slides: HomeSlide[]) => {
+  const activeSlides = slides.filter((slide) => slide.isActive);
+  if (activeSlides.length < starterSlides.length) return true;
+  return activeSlides.some((slide) => slide.id.startsWith('slide-')) && !hasProgramPillarDeck(slides);
+};
 
 const emptyClient: ClientRecord = {
   id: '',
@@ -3840,6 +3681,12 @@ function App() {
   }, []);
 
   React.useEffect(() => {
+    if (shouldUseProgramPillarDeck(slides)) {
+      setSlides(starterSlides);
+    }
+  }, [slides, setSlides]);
+
+  React.useEffect(() => {
     getSession()
       .then((user) => setApiAccount(user ? fromApiUser(user) : null))
       .catch(() => setApiAccount(null));
@@ -3850,7 +3697,7 @@ function App() {
       .catch(() => undefined);
     listSlides()
       .then((items) => {
-        if (items.length > 0) setSlides(items);
+        if (items.length > 0) setSlides(shouldUseProgramPillarDeck(items) ? starterSlides : items);
       })
       .catch(() => undefined);
   }, [setNews, setSlides]);

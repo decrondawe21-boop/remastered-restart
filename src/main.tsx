@@ -3,11 +3,14 @@ import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
   AlertCircle,
+  Barcode,
   Bell,
   Bold,
   ChevronLeft,
   CheckCircle2,
   ClipboardList,
+  Copy,
+  Download,
   Heading1,
   Eye,
   EyeOff,
@@ -32,6 +35,7 @@ import {
   Phone,
   Plus,
   Printer,
+  QrCode,
   Reply,
   RotateCcw,
   Save,
@@ -45,8 +49,11 @@ import {
   UserRound,
   Users,
   Video,
+  Wrench,
   X
 } from 'lucide-react';
+import JsBarcode from 'jsbarcode';
+import QRCode from 'qrcode';
 import {
   contacts,
   focusAreas,
@@ -233,6 +240,16 @@ type ClientSettingsDraft = {
   twoFactorEnabled: boolean;
 };
 
+type AdminToolsDraft = {
+  firstName: string;
+  lastName: string;
+  registrationDate: string;
+  sequence: number;
+  generatedId: string;
+  barcodeValue: string;
+  qrValue: string;
+};
+
 type LoginRequest = {
   email: string;
   password: string;
@@ -333,6 +350,7 @@ type AdminSection =
   | 'content'
   | 'clients'
   | 'forms'
+  | 'tools'
   | 'media'
   | 'users'
   | 'notifications'
@@ -379,6 +397,7 @@ const adminNavItems: Array<WorkspaceNavItem<AdminSection>> = [
   { id: 'content', label: 'Příspěvky / obsah', text: 'Články, reporty, galerie', icon: FileStack },
   { id: 'clients', label: 'Klienti', text: 'Seznam, detail, stav', icon: Users },
   { id: 'forms', label: 'Tiskové formuláře', text: 'Šablony a exporty', icon: ClipboardList },
+  { id: 'tools', label: 'Tools', text: 'ID, čárové kódy, QR', icon: Wrench },
   { id: 'media', label: 'Média', text: 'Obrázky a dokumenty', icon: ImageIcon },
   { id: 'users', label: 'Uživatelé a role', text: 'Admin, editor, user', icon: UserCog },
   { id: 'notifications', label: 'Notifikace', text: 'Zprávy a upozornění', icon: Bell },
@@ -1037,6 +1056,39 @@ const fallbackFormTemplates: FormTemplate[] = [
 ];
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
+
+const stripDiacritics = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+const initialsFromName = (firstName: string, lastName: string) => {
+  const first = stripDiacritics(firstName.trim()).replace(/[^a-zA-Z]/g, '');
+  const last = stripDiacritics(lastName.trim()).replace(/[^a-zA-Z]/g, '');
+  const initials = `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
+  return initials.padEnd(2, 'X').slice(0, Math.max(2, initials.length));
+};
+
+const dateToCompactId = (isoDate: string) => {
+  const date = isoDate ? new Date(`${isoDate}T00:00:00`) : new Date();
+  if (Number.isNaN(date.getTime())) return dateToCompactId(todayIso());
+  return `${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getFullYear()).slice(-2)}`;
+};
+
+const randomFourDigits = () => String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+
+const buildClientOperationalId = (draft: Pick<AdminToolsDraft, 'firstName' | 'lastName' | 'registrationDate' | 'sequence'>, randomCode = randomFourDigits()) =>
+  `${initialsFromName(draft.firstName, draft.lastName)}-${dateToCompactId(draft.registrationDate)}-${randomCode}-${String(Math.max(1, draft.sequence || 1)).padStart(3, '0')}`;
+
+const downloadDataUrl = (dataUrl: string, fileName: string) => {
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = fileName;
+  link.click();
+};
+
+const downloadSvgElement = (svg: SVGSVGElement, fileName: string) => {
+  const source = new XMLSerializer().serializeToString(svg);
+  const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
+  downloadDataUrl(dataUrl, fileName);
+};
 
 function useStoredState<T>(key: string, initialValue: T) {
   const [value, setValue] = React.useState<T>(() => {
@@ -4124,6 +4176,17 @@ function AdminWorkspace({
     readAt: null,
     createdAt: new Date().toISOString()
   });
+  const [toolsDraft, setToolsDraft] = useStoredState<AdminToolsDraft>('restart-admin-tools', {
+    firstName: '',
+    lastName: '',
+    registrationDate: todayIso(),
+    sequence: Math.max(1, clients.length + 1),
+    generatedId: '',
+    barcodeValue: '',
+    qrValue: ''
+  });
+  const barcodeRef = React.useRef<SVGSVGElement | null>(null);
+  const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const [settingsDraft, setSettingsDraft] = useStoredState<AdminSettingsDraft>('restart-admin-settings', {
     organizationName: 'REST||ART Integrace',
     primaryColor: 'zelený akcent webu',
@@ -4188,6 +4251,39 @@ function AdminWorkspace({
       tone: 'info'
     }))
   ].sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
+
+  React.useEffect(() => {
+    if (!barcodeRef.current || !toolsDraft.barcodeValue.trim()) return;
+    try {
+      JsBarcode(barcodeRef.current, toolsDraft.barcodeValue.trim(), {
+        format: 'CODE128',
+        lineColor: '#14231b',
+        width: 2,
+        height: 86,
+        displayValue: true,
+        font: 'Poppins',
+        fontSize: 16,
+        margin: 14
+      });
+    } catch (error) {
+      onNotify('error', 'Čárový kód nejde vykreslit', error instanceof Error ? error.message : 'Zkontrolujte hodnotu kódu.');
+    }
+  }, [onNotify, toolsDraft.barcodeValue]);
+
+  React.useEffect(() => {
+    if (!qrCanvasRef.current || !toolsDraft.qrValue.trim()) return;
+    QRCode.toCanvas(qrCanvasRef.current, toolsDraft.qrValue.trim(), {
+      width: 236,
+      margin: 2,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: '#14231b',
+        light: '#ffffff'
+      }
+    }).catch((error) => {
+      onNotify('error', 'QR kód nejde vykreslit', error instanceof Error ? error.message : 'Zkontrolujte hodnotu QR kódu.');
+    });
+  }, [onNotify, toolsDraft.qrValue]);
 
   React.useEffect(() => {
     if (!selectedClientId && clients[0]) setSelectedClientId(clients[0].id);
@@ -4604,6 +4700,65 @@ function AdminWorkspace({
     }
   };
 
+  const loadClientIntoTools = (clientId: string) => {
+    const client = clients.find((item) => item.id === clientId);
+    if (!client) return;
+    setToolsDraft((current) => ({
+      ...current,
+      firstName: client.firstName,
+      lastName: client.lastName,
+      registrationDate: client.createdAt || todayIso(),
+      sequence: Math.max(1, clients.findIndex((item) => item.id === client.id) + 1)
+    }));
+    onNotify('info', 'Klient načten do tools', `${client.firstName} ${client.lastName}`);
+  };
+
+  const generateOperationalId = () => {
+    if (!toolsDraft.firstName.trim() && !toolsDraft.lastName.trim()) {
+      onNotify('warning', 'ID nejde vygenerovat', 'Vyplňte jméno nebo příjmení klienta.');
+      return;
+    }
+    const generatedId = buildClientOperationalId(toolsDraft);
+    setToolsDraft((current) => ({
+      ...current,
+      generatedId,
+      barcodeValue: generatedId,
+      qrValue: generatedId
+    }));
+    onNotify('success', 'ID vygenerováno', generatedId);
+  };
+
+  const copyToolsValue = async (value: string, label: string) => {
+    if (!value.trim()) {
+      onNotify('warning', 'Není co kopírovat', `Nejdřív vygenerujte nebo vyplňte ${label}.`);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(value);
+      onNotify('success', 'Zkopírováno', value);
+    } catch {
+      onNotify('warning', 'Kopírování selhalo', 'Prohlížeč nepovolil zápis do schránky.');
+    }
+  };
+
+  const downloadBarcode = () => {
+    if (!barcodeRef.current || !toolsDraft.barcodeValue.trim()) {
+      onNotify('warning', 'Čárový kód není připravený', 'Vyplňte hodnotu pro čárový kód.');
+      return;
+    }
+    downloadSvgElement(barcodeRef.current, `${toolsDraft.barcodeValue.trim() || 'barcode'}.svg`);
+    onNotify('success', 'Čárový kód stažen', 'SVG je připravené pro tisk nebo štítek.');
+  };
+
+  const downloadQrCode = () => {
+    if (!qrCanvasRef.current || !toolsDraft.qrValue.trim()) {
+      onNotify('warning', 'QR kód není připravený', 'Vyplňte hodnotu pro QR kód.');
+      return;
+    }
+    downloadDataUrl(qrCanvasRef.current.toDataURL('image/png'), `${toolsDraft.qrValue.trim() || 'qr-code'}.png`);
+    onNotify('success', 'QR kód stažen', 'PNG je připravené pro tisk nebo sdílení.');
+  };
+
   const saveSettingsDialog = (event: React.FormEvent) => {
     event.preventDefault();
     setAdminDialog(null);
@@ -4617,6 +4772,7 @@ function AdminWorkspace({
       content: 'Příspěvky / obsah',
       clients: 'Klienti',
       forms: 'Formuláře',
+      tools: 'Tools',
       news: 'Aktuality',
       media: 'Média',
       users: 'Uživatelé a role',
@@ -4725,6 +4881,7 @@ function AdminWorkspace({
                 <button type="button" onClick={() => selectAdminTab('clients')}>Registrovat klienta</button>
                 <button type="button" onClick={() => selectAdminTab('news')}>Vytvořit aktualitu</button>
                 <button type="button" onClick={() => selectAdminTab('forms')}>Tiskový formulář</button>
+                <button type="button" onClick={() => selectAdminTab('tools')}>Tools</button>
                 <button type="button" onClick={() => selectAdminTab('content')}>Správa obsahu</button>
                 <button type="button" onClick={() => selectAdminTab('notifications')}>Poslat notifikaci</button>
                 <button type="button" onClick={() => selectAdminTab('media')}>Přidat médium</button>
@@ -4959,6 +5116,114 @@ function AdminWorkspace({
             </div>
 
             <PrintableForm client={selectedClient} template={selectedTemplate} draft={draft} />
+          </div>
+        )}
+
+        {activeTab === 'tools' && (
+          <div className="admin-grid tools-grid">
+            <article className="admin-card tools-card">
+              <div className="admin-card-header">
+                <div>
+                  <h3>Generátor klientského ID</h3>
+                  <p className="form-help">Formát: iniciály, datum registrace, čtyři náhodné číslice a pořadí.</p>
+                </div>
+                <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Generovat ID" aria-label="Generovat ID" onClick={generateOperationalId}>
+                  <RotateCcw size={18} />
+                </button>
+              </div>
+              <label>
+                Načíst klienta z registru
+                <select value="" onChange={(event) => loadClientIntoTools(event.target.value)}>
+                  <option value="">Vyberte klienta...</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.firstName} {client.lastName} - {client.program}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="form-grid two">
+                <label>
+                  Jméno
+                  <input value={toolsDraft.firstName} onChange={(event) => setToolsDraft((current) => ({ ...current, firstName: event.target.value }))} placeholder="David" />
+                </label>
+                <label>
+                  Příjmení
+                  <input value={toolsDraft.lastName} onChange={(event) => setToolsDraft((current) => ({ ...current, lastName: event.target.value }))} placeholder="Kozák" />
+                </label>
+                <label>
+                  Datum registrace
+                  <input type="date" value={toolsDraft.registrationDate} onChange={(event) => setToolsDraft((current) => ({ ...current, registrationDate: event.target.value }))} />
+                </label>
+                <label>
+                  Pořadí
+                  <input type="number" min="1" value={toolsDraft.sequence} onChange={(event) => setToolsDraft((current) => ({ ...current, sequence: Number(event.target.value) || 1 }))} />
+                </label>
+              </div>
+              <div className="generated-id-panel">
+                <span>Výsledné ID</span>
+                <strong>{toolsDraft.generatedId || 'DK-060626-0000-001'}</strong>
+                <small>Iniciály se doplní minimálně na dvě písmena. Datum se ukládá jako DDMMYY.</small>
+              </div>
+              <div className="form-actions">
+                <button className="button primary" type="button" onClick={generateOperationalId}>
+                  <Wrench size={18} /> Vygenerovat ID
+                </button>
+                <button className="icon-tool tooltip-link" type="button" data-tooltip="Kopírovat ID" aria-label="Kopírovat ID" onClick={() => copyToolsValue(toolsDraft.generatedId, 'ID')}>
+                  <Copy size={18} />
+                </button>
+              </div>
+            </article>
+
+            <article className="admin-card tools-card">
+              <div className="admin-card-header">
+                <div>
+                  <h3><Barcode size={18} /> Čárový kód a QR</h3>
+                  <p className="form-help">Hodnoty lze použít pro štítky, dokumenty, karty nebo rychlé dohledání klienta.</p>
+                </div>
+                <Badge tone="success"><QrCode size={14} /> CODE128 + QR</Badge>
+              </div>
+              <label>
+                Hodnota pro čárový kód
+                <input value={toolsDraft.barcodeValue} onChange={(event) => setToolsDraft((current) => ({ ...current, barcodeValue: event.target.value }))} placeholder="DK-060626-4821-001" />
+              </label>
+              <div className="code-preview barcode-panel">
+                {toolsDraft.barcodeValue ? <svg ref={barcodeRef} className="barcode-preview" aria-label={`Čárový kód ${toolsDraft.barcodeValue}`} /> : <p className="empty-note">Po zadání hodnoty se vykreslí čárový kód.</p>}
+              </div>
+              <div className="tool-action-row">
+                <button className="icon-tool tooltip-link" type="button" data-tooltip="Kopírovat hodnotu" aria-label="Kopírovat hodnotu čárového kódu" onClick={() => copyToolsValue(toolsDraft.barcodeValue, 'hodnotu čárového kódu')}>
+                  <Copy size={18} />
+                </button>
+                <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Stáhnout SVG" aria-label="Stáhnout čárový kód jako SVG" onClick={downloadBarcode}>
+                  <Download size={18} />
+                </button>
+              </div>
+              <label>
+                Hodnota pro QR
+                <textarea rows={4} value={toolsDraft.qrValue} onChange={(event) => setToolsDraft((current) => ({ ...current, qrValue: event.target.value }))} placeholder="ID, odkaz na profil nebo text pro kartu" />
+              </label>
+              <div className="code-preview qr-panel">
+                {toolsDraft.qrValue ? <canvas ref={qrCanvasRef} className="qr-preview" aria-label={`QR kód ${toolsDraft.qrValue}`} /> : <p className="empty-note">Po zadání hodnoty se vykreslí QR kód.</p>}
+              </div>
+              <div className="tool-action-row">
+                <button className="icon-tool tooltip-link" type="button" data-tooltip="Kopírovat QR hodnotu" aria-label="Kopírovat QR hodnotu" onClick={() => copyToolsValue(toolsDraft.qrValue, 'QR hodnotu')}>
+                  <Copy size={18} />
+                </button>
+                <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Stáhnout PNG" aria-label="Stáhnout QR kód jako PNG" onClick={downloadQrCode}>
+                  <Download size={18} />
+                </button>
+              </div>
+            </article>
+
+            <article className="admin-card tools-help-card">
+              <h3>Pravidlo ID</h3>
+              <div className="table-lite">
+                <div><strong>DK</strong><span>minimálně dvě iniciály ze jména a příjmení</span></div>
+                <div><strong>060626</strong><span>datum registrace ve formátu den, měsíc, rok</span></div>
+                <div><strong>4821</strong><span>čtyři náhodné číslice pro rozlišení</span></div>
+                <div><strong>001</strong><span>pořadí klienta nebo ručně zadané číslo</span></div>
+              </div>
+            </article>
           </div>
         )}
 

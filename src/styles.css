@@ -1045,7 +1045,13 @@ h3 {
 }
 
 .program-row li {
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 6px 12px;
+  text-align: center;
+  line-height: 1.25;
 }
 
 .program-link,
@@ -1209,12 +1215,18 @@ h3 {
 }
 
 .program-detail-points span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
   border: 1px solid #cfe0d2;
   border-radius: 999px;
   background: #fff;
   color: #304139;
   font-size: 0.95rem;
-  padding: 8px 12px;
+  padding: 8px 14px;
+  text-align: center;
+  line-height: 1.25;
 }
 
 .program-story-section {
@@ -3250,6 +3262,76 @@ h3 {
   font-weight: var(--weight-medium);
 }
 
+.tools-grid {
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 0.72fr);
+}
+
+.tools-card {
+  gap: 18px;
+}
+
+.generated-id-panel,
+.code-preview {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #cfe0d2;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f7fbf8, #fff);
+}
+
+.generated-id-panel span,
+.generated-id-panel small {
+  color: var(--muted);
+}
+
+.generated-id-panel strong {
+  overflow-wrap: anywhere;
+  color: var(--green-dark);
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  line-height: 1.1;
+}
+
+.code-preview {
+  min-height: 138px;
+  place-items: center;
+  background: #fff;
+}
+
+.barcode-panel {
+  overflow-x: auto;
+}
+
+.barcode-preview {
+  width: min(100%, 560px);
+  min-width: 260px;
+  height: 132px;
+}
+
+.qr-panel {
+  min-height: 280px;
+}
+
+.qr-preview {
+  width: 236px;
+  height: 236px;
+  border: 10px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(26, 51, 36, 0.1);
+}
+
+.tool-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.tools-help-card {
+  grid-column: 1 / -1;
+}
+
 .news-admin-layout {
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.54fr);
 }
@@ -3900,6 +3982,7 @@ h3 {
   .donate-challenges ol,
   .forms-layout,
   .forms-control-stack,
+  .tools-grid,
   .client-dashboard,
   .contact-section {
     grid-template-columns: 1fr;
@@ -4244,8 +4327,22 @@ h3 {
 
   .admin-head,
   .admin-grid,
-  .forms-layout {
+  .forms-layout,
+  .tools-grid {
     padding: 14px;
+  }
+
+  .barcode-preview {
+    min-width: 220px;
+  }
+
+  .qr-panel {
+    min-height: 240px;
+  }
+
+  .qr-preview {
+    width: 210px;
+    height: 210px;
   }
 
   .template-library button,

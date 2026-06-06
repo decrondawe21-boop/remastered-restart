@@ -144,6 +144,41 @@ const programSlug = (title: string) =>
 
 const getProgramBySlug = (slug: string) => programs.find((program) => programSlug(program.title) === slug);
 
+const programPillarVisuals: Record<string, { src: string; alt: string; shortLabel: string }> = {
+  JAILBREAK: {
+    src: '/images/program-pillars/jailbreak.png',
+    alt: 'Černobílá kresba programu JAILBREAK s otevřenou branou a cestou ven',
+    shortLabel: 'navrat po VTOS'
+  },
+  RESET: {
+    src: '/images/program-pillars/reset.png',
+    alt: 'Černobílá kresba programu RESET se symbolem podpory a abstinence',
+    shortLabel: 'zavislosti a krize'
+  },
+  REWORK: {
+    src: '/images/program-pillars/rework.png',
+    alt: 'Černobílá kresba programu REWORK s člověkem u pracovního stolu',
+    shortLabel: 'dlouhodobe nezamestnani'
+  },
+  STREETWISE: {
+    src: '/images/program-pillars/streetwise.png',
+    alt: 'Černobílá kresba programu STREETWISE s člověkem na ulici u lavičky',
+    shortLabel: 'lide bez domova'
+  },
+  'BOD ZLOMU': {
+    src: '/images/program-pillars/bod-zlomu.png',
+    alt: 'Černobílá kresba programu BOD ZLOMU se dvěma dětmi a plyšovým medvědem',
+    shortLabel: 'mladi lide z detskych domovu'
+  },
+  STABILIZACE: {
+    src: '/images/program-pillars/stabilizace.png',
+    alt: 'Černobílá kresba programu STABILIZACE se dvěma lidmi při podání ruky',
+    shortLabel: 'konecna podpora'
+  }
+};
+
+const getProgramPillarVisual = (programTitle: string) => programPillarVisuals[programTitle];
+
 const getRouteLabel = (path: string) => {
   if (routeLabels[path]) return routeLabels[path];
   if (path.startsWith('/programy/')) {
@@ -1161,6 +1196,41 @@ function ProgramsList() {
   );
 }
 
+function ProgramPillarMap() {
+  return (
+    <section className="program-pillar-section">
+      <div className="program-map-layout">
+        <figure className="program-map-figure">
+          <img src="/images/program-pillars/restart-integrace-map.png" alt="Mapa sesti piliru projektu REST||ART Integrace" />
+        </figure>
+        <div className="program-map-copy">
+          <p className="section-label">REST||ART Integrace</p>
+          <h2>Šest pilířů druhé šance</h2>
+          <p>
+            Každý pilíř řeší jinou životní situaci. Dohromady tvoří systém podpory od prvního
+            kontaktu přes práci, bydlení a dokumenty až po dlouhodobou stabilizaci.
+          </p>
+        </div>
+      </div>
+      <div className="program-pillar-grid">
+        {programs.map((program) => {
+          const visual = getProgramPillarVisual(program.title);
+          return (
+            <a key={program.title} className="program-pillar-card" href={`#/programy/${programSlug(program.title)}`}>
+              {visual ? <img src={visual.src} alt={visual.alt} loading="lazy" /> : null}
+              <div>
+                <span>{visual?.shortLabel ?? program.audience}</span>
+                <strong>{program.title}</strong>
+                <p>{program.goal}</p>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function NewsGrid({
   news,
   discussion,
@@ -1795,6 +1865,7 @@ function ProgramsPage() {
         title="Šest cest podle konkrétní situace člověka"
         text="Každý program má jinou cílovou skupinu, ale společný cíl: návrat k samostatnosti, práci, vztahům a bezpečnému fungování."
       />
+      <ProgramPillarMap />
       <section className="muted-section">
         <ProgramsList />
       </section>
@@ -1804,12 +1875,14 @@ function ProgramsPage() {
 
 function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) {
   const Icon = program.icon;
+  const pillarVisual = getProgramPillarVisual(program.title);
+  const heroImage = program.image ?? pillarVisual;
   const fallbackText =
     'Praktická podpora, důstojný přístup a plán, který se dá zvládnout krok za krokem.';
 
   return (
     <>
-      <section className={`program-detail-hero${program.image ? ' has-image' : ''}`}>
+      <section className={`program-detail-hero${heroImage ? ' has-image' : ''}`}>
         <div className="program-detail-copy">
           <a className="back-link" href="#/programy">
             <ChevronLeft size={18} /> Zpět na programy
@@ -1842,9 +1915,9 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
             </a>
           </div>
         </div>
-        {program.image ? (
+        {heroImage ? (
           <figure className="program-detail-media">
-            <img src={program.image.src} alt={program.image.alt} />
+            <img src={heroImage.src} alt={heroImage.alt} />
           </figure>
         ) : null}
       </section>

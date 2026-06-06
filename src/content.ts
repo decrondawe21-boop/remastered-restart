@@ -100,7 +100,7 @@ export const programs: Program[] = [
   },
   {
     title: 'RESET',
-    audience: 'Lidé bez domova, v závislosti nebo v sociální krizi',
+    audience: 'Lidé v závislosti, sociální krizi nebo bez stabilního zázemí',
     goal: 'Obnova důstojnosti, základních návyků a dlouhodobé životní stability.',
     activities: ['individuální podpora', 'komunitní terapie', 'dluhové poradenství', 'terapeutická pomoc'],
     icon: Sprout

@@ -180,9 +180,64 @@ export const supportPaths = [
 ];
 
 export const stats = [
-  { value: '6', label: 'programových linií' },
-  { value: '4', label: 'hlavní oblasti pomoci' },
-  { value: '1', label: 'konkrétní plán změny' }
+  { value: '127+', label: 'klientů v integračním procesu' },
+  { value: '6', label: 'aktivních programů REST||ART' },
+  { value: '78 %', label: 'úspěšnost stabilizace' }
+];
+
+export const realityCards = [
+  {
+    value: '600 000 Kč',
+    title: 'Náklad systému na člověka za rok',
+    text: 'Konzervativní model nákladů spojených s uvězněním, opakovanou krizí nebo dlouhodobým propadem bez stabilizace.'
+  },
+  {
+    value: '50 000 Kč',
+    title: 'Reintegrace na člověka za rok',
+    text: 'Mentoring, praktická pomoc, doprovod, první materiální zajištění a návrat do režimu běžného života.'
+  },
+  {
+    value: '550 000 Kč',
+    title: 'Rozdíl, který lze vrátit do života',
+    text: 'Každý úspěšný návrat snižuje tlak na systém a zároveň vrací člověku důstojnost, práci a odpovědnost.'
+  }
+];
+
+export const solutionPrinciples = [
+  {
+    title: 'Propojení',
+    text: 'Spojujeme lidi, firmy, obce, instituce a konkrétní příležitosti.'
+  },
+  {
+    title: 'Příběhy',
+    text: 'Za každým klientem je konkrétní cesta, ne anonymní položka ve statistice.'
+  },
+  {
+    title: 'Odpovědnost',
+    text: 'Druhá šance není bezbřehá tolerance. Je to jasný plán, dohoda a práce.'
+  },
+  {
+    title: 'Udržitelnost',
+    text: 'Cílem není jednorázová pomoc, ale stav, který vydrží i po skončení programu.'
+  }
+];
+
+export const impactMetrics = [
+  {
+    value: '-53 p. b.',
+    title: 'modelové snížení recidivy',
+    text: 'Dlouhodobá práce, režim a návazné zaměstnání významně snižují riziko návratu do stejného kruhu.'
+  },
+  {
+    value: '550 000 Kč',
+    title: 'potenciální roční úspora',
+    text: 'Rozdíl mezi pasivním nákladem systému a aktivní reintegrací se dá převést do konkrétní pomoci.'
+  },
+  {
+    value: 'stabilní opora',
+    title: 'práce, bydlení, režim',
+    text: 'Výsledek měříme tím, zda má člověk kam jít, co dělat a komu se ozvat, když přijde krize.'
+  }
 ];
 
 export const principles = [
@@ -195,7 +250,7 @@ export const principles = [
 ];
 
 export const contacts = [
-  { label: 'E-mail', value: 'kozak.david@dk-i.cz', href: 'mailto:kozak.david@dk-i.cz' },
+  { label: 'E-mail', value: 'restartintegrace@dk-i.cz', href: 'mailto:restartintegrace@dk-i.cz' },
   { label: 'Telefon', value: '+420 778 564 279', href: 'tel:+420778564279' },
   { label: 'Adresa', value: 'Drážďanská 517/52, 400 07 Ústí nad Labem' }
 ];
@@ -209,17 +264,24 @@ export const partnerTypes = [
 
 export const starterNews = [
   {
-    id: 'news-start',
-    title: 'REST||ART Integrace připravuje program druhých šancí',
-    date: '2026-06-02',
+    id: 'news-second-chance',
+    title: 'Ne každý má možnosti. REST||ART umožňuje zkusit to znovu.',
+    date: '2026-06-03',
     excerpt:
-      'Vzniká nový veřejný a interní systém pro práci s klienty, partnery, aktualitami a formuláři projektu.'
+      'Společně vracíme lidem šanci na normální život: práci, režim, zázemí a podporu v okamžiku, kdy ji opravdu potřebují.'
   },
   {
-    id: 'news-programs',
-    title: 'Programy staví na mentoringu, práci, bydlení a stabilizaci',
+    id: 'news-meeting-support',
+    title: '28.05.2026 - 10:00 schůzka',
     date: '2026-05-28',
     excerpt:
-      'Základní programové linie propojují postpenitenciární podporu, terénní práci, rekvalifikace a dlouhodobé doprovázení.'
+      'Jednání o podporu projektu, na kterém závisí další rozvoj programů REST||ART Integrace a jejich praktického zázemí.'
+  },
+  {
+    id: 'news-people-on-edge',
+    title: 'Lidé na okraji společnosti',
+    date: '2026-05-13',
+    excerpt:
+      'Nabízíme konkrétní cestu těm, kteří stojí mimo systém: bezpečný první kontakt, mentoring, práci a návaznou stabilizaci.'
   }
 ];

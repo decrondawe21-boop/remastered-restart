@@ -57,9 +57,12 @@ import QRCode from 'qrcode';
 import {
   contacts,
   focusAreas,
+  impactMetrics,
   partnerTypes,
   principles,
   programs,
+  realityCards,
+  solutionPrinciples,
   starterNews,
   stats,
   supportPaths
@@ -1758,6 +1761,99 @@ function HomePage({
         </a>
       </section>
 
+      <section className="split-section">
+        <div>
+          <p className="section-label">Realita bez filtru</p>
+          <h2>Problém, který nejde schovat do statistik.</h2>
+        </div>
+        <div className="text-column">
+          <p>
+            Česká republika každoročně platí vysokou cenu za to, že lidé po krizi, výkonu trestu nebo dlouhodobém
+            propadu často zůstávají bez návazné podpory. Bez práce, bydlení a režimu se člověk snadno vrací zpět do
+            systému, který je drahý, přetížený a lidsky vyčerpávající.
+          </p>
+          <p>
+            REST||ART Integrace stojí na jednoduché otázce: co kdyby část těchto nákladů šla do návratu člověka dřív,
+            než se znovu zlomí?
+          </p>
+        </div>
+      </section>
+
+      <section className="content-section compact-section">
+        <SectionIntro
+          label="Ekonomika druhé šance"
+          title="Dát člověku cestu zpět je levnější než čekat na další pád."
+          text="Nejde o hezkou frázi. Jde o praktický rozdíl mezi pasivním nákladem systému a aktivní reintegrací."
+        />
+        <div className="metric-grid">
+          {realityCards.map((item) => (
+            <article className="metric-card" key={item.title}>
+              <strong>{item.value}</strong>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="solution-section">
+        <SectionIntro
+          label="Řešení"
+          title="Není to klasická nezisková organizace. Je to systém návratu."
+          text="REST||ART Integrace propojuje sociální práci, mentoring, firmy, obce, dokumenty, formuláře a každodenní praxi do jedné srozumitelné cesty."
+        />
+        <div className="principle-grid">
+          {solutionPrinciples.map((item) => (
+            <article key={item.title}>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="content-section compact-section">
+        <SectionIntro
+          label="Dopad"
+          title="Měřitelná změna, která má lidský i ekonomický smysl."
+          text="Druhá šance je pro nás konkrétní výsledek: méně návratů do krize, více práce, bezpečnější bydlení a opora, která člověka nenechá zmizet."
+        />
+        <div className="metric-grid">
+          {impactMetrics.map((item) => (
+            <article className="metric-card muted" key={item.title}>
+              <strong>{item.value}</strong>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="split-section partner-message">
+        <div>
+          <p className="section-label">Pro partnery</p>
+          <h2>Spolupráce s námi není charita. Je to investice do návratu lidí i stability okolí.</h2>
+        </div>
+        <div className="text-column">
+          <p>
+            Hledáme partnery, kteří chtějí být součástí praktické změny: zaměstnavatele, obce, instituce, odborníky i
+            lidi, kteří rozumí tomu, že druhá šance musí mít konkrétní kroky.
+          </p>
+          <p>
+            Podpora projektu pomáhá pokrýt mentoring, první materiály, dopravu, dokumenty, pracovní přípravu a zázemí,
+            kde může člověk začít znovu.
+          </p>
+          <div className="inline-actions">
+            <a className="button primary" href="#/zapojeni">
+              Chci být partner <ArrowRight size={18} />
+            </a>
+            <a className="button secondary" href="#/darujte">
+              Podpořit projekt
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section className="content-section">
         <SectionIntro
           label="Rozcestník"
@@ -2117,7 +2213,7 @@ function ContactPage({ onNotify }: { onNotify: (tone: FeedbackTone, title: strin
     const subject = encodeURIComponent(`Kontakt z webu REST||ART Integrace - ${name}`);
     const body = encodeURIComponent(`Jméno: ${name}\nKontakt: ${contact}\n\nZpráva:\n${message}`);
     onNotify('success', 'Zpráva je připravená', 'Otevře se e-mailový klient s předvyplněnou zprávou.');
-    window.location.href = `mailto:kozak.david@dk-i.cz?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:restartintegrace@dk-i.cz?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -2136,7 +2232,7 @@ function ContactPage({ onNotify }: { onNotify: (tone: FeedbackTone, title: strin
             </div>
           ))}
           <div className="contact-actions">
-            <a className="button primary" href="mailto:kozak.david@dk-i.cz">
+            <a className="button primary" href="mailto:restartintegrace@dk-i.cz">
               <Mail size={18} /> Poslat e-mail
             </a>
             <a className="button secondary" href="tel:+420778564279">

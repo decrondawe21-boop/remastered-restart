@@ -898,6 +898,85 @@ h3 {
   color: rgba(255, 255, 255, 0.88);
 }
 
+.compact-section {
+  padding-top: clamp(36px, 6vw, 72px);
+  padding-bottom: clamp(36px, 6vw, 72px);
+}
+
+.metric-grid,
+.principle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-card,
+.principle-grid article {
+  min-width: 0;
+  padding: clamp(22px, 3vw, 30px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 25px rgba(26, 51, 36, 0.045);
+}
+
+.metric-card strong {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--green);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+.metric-card h3,
+.principle-grid h3 {
+  margin-bottom: 10px;
+}
+
+.metric-card p,
+.principle-grid p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.metric-card.muted {
+  background: var(--bg-soft);
+}
+
+.solution-section {
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding: clamp(64px, 9vw, 108px) var(--page-gutter);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(241, 248, 243, 0.78), rgba(255, 255, 255, 0.96));
+}
+
+.solution-section .section-intro {
+  max-width: 960px;
+}
+
+.principle-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.principle-grid article {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.partner-message {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
 .content-section,
 .muted-section,
 .split-section,
@@ -3965,11 +4044,13 @@ h3 {
   .focus-grid,
   .partner-strip,
   .news-grid,
+  .metric-grid,
   .home-link-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .support-grid,
+  .principle-grid,
   .admin-head,
   .admin-grid,
   .news-admin-layout,
@@ -4128,6 +4209,8 @@ h3 {
   }
 
   .dashboard-grid,
+  .metric-grid,
+  .principle-grid,
   .quick-action-grid {
     grid-template-columns: 1fr;
   }

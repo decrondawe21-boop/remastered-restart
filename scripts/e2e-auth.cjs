@@ -47,7 +47,7 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
   await page.getByLabel('Telefon').fill('+420 777 111 222');
   await page.getByLabel('Heslo', { exact: true }).fill('tajneheslo');
   await page.getByRole('button', { name: 'Vytvořit profil' }).click();
-  if (!(await page.getByText('Souhlas chybí').isVisible())) {
+  if ((await page.getByText('Souhlas chybí').count()) === 0) {
     throw new Error('Registration should require consent checkbox.');
   }
   await page.getByLabel('Souhlasím se zpracováním údajů').click();

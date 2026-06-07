@@ -3475,6 +3475,41 @@ function ClientProfile({
       tone: 'success'
     }
   ].sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
+  const pendingClientDocuments = visibleDocuments.filter(
+    (document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase())
+  );
+  const clientWorkflow = [
+    {
+      title: 'Profil',
+      text: profileCompletion >= 80 ? 'Profil je pro pracovníka dobře čitelný.' : 'Doplňte telefon, poznámku nebo profilovou fotku.',
+      tone: profileCompletion >= 80 ? 'success' : 'warning'
+    },
+    {
+      title: 'Dokumenty',
+      text:
+        pendingClientDocuments.length > 0
+          ? `${pendingClientDocuments.length} dokument čeká na podpis nebo doplnění.`
+          : visibleDocuments.length > 0
+            ? 'Dokumenty jsou uložené v osobní zóně.'
+            : 'Zatím čekáte na první připravený dokument.',
+      tone: pendingClientDocuments.length > 0 ? 'warning' : visibleDocuments.length > 0 ? 'success' : 'info'
+    },
+    {
+      title: 'Zprávy',
+      text: unreadNotifications.length > 0 ? `${unreadNotifications.length} nepřečtené upozornění.` : 'Nemáte žádné nepřečtené upozornění.',
+      tone: unreadNotifications.length > 0 ? 'warning' : 'success'
+    },
+    {
+      title: 'Další krok',
+      text:
+        pendingClientDocuments.length > 0
+          ? 'Otevřete dokumenty a domluvte podpis s pracovníkem.'
+          : unreadNotifications.length > 0
+            ? 'Přečtěte poslední zprávu od týmu.'
+            : 'Udržujte profil aktuální a napište si o další formulář podle potřeby.',
+      tone: pendingClientDocuments.length > 0 || unreadNotifications.length > 0 ? 'warning' : 'info'
+    }
+  ];
 
   const updateProfile = <K extends keyof ClientProfileDraft>(key: K, value: ClientProfileDraft[K]) => {
     setProfile((current) => ({ ...current, [key]: value }));
@@ -3788,6 +3823,28 @@ function ClientProfile({
                 </div>
                 <strong>{profileCompletion} %</strong>
                 <p>Doplňte telefon, poznámku a profilovou fotku, aby měl pracovník rychlejší kontext.</p>
+              </article>
+              <article className="client-wide-card client-workflow-card">
+                <div className="client-card-heading">
+                  <div>
+                    <h2>Stav spolupráce</h2>
+                    <p>Krátký přehled profilu, dokumentů, zpráv a dalšího kroku v klientské zóně.</p>
+                  </div>
+                  <Badge tone={pendingClientDocuments.length > 0 ? 'warning' : 'success'}>
+                    {pendingClientDocuments.length > 0 ? 'Čeká akce' : 'Připraveno'}
+                  </Badge>
+                </div>
+                <div className="client-workflow-list">
+                  {clientWorkflow.map((item, index) => (
+                    <div key={item.title} className={`client-workflow-step tone-${item.tone}`}>
+                      <span>{index + 1}</span>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <p>{item.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </article>
               <article>
                 <h2>Poslední notifikace</h2>
@@ -4420,6 +4477,9 @@ function AdminWorkspace({
   const [activeTab, setActiveTab] = React.useState<AdminSection>('dashboard');
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
   const [selectedClientId, setSelectedClientId] = React.useState('');
+  const [clientQuery, setClientQuery] = React.useState('');
+  const [clientStatusFilter, setClientStatusFilter] = React.useState('all');
+  const [clientIdFilter, setClientIdFilter] = React.useState('all');
   const [selectedTemplateId, setSelectedTemplateId] = React.useState(formTemplates[0]?.id ?? '');
   const [templateQuery, setTemplateQuery] = React.useState('');
   const [templateCategory, setTemplateCategory] = React.useState('all');
@@ -4506,6 +4566,30 @@ function AdminWorkspace({
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
   const selectedToolsClient = selectedClientId ? clients.find((client) => client.id === selectedClientId) ?? null : null;
   const toolsClientHasOperationalId = Boolean(selectedToolsClient?.operationalId?.trim());
+  const clientStatusOptions = Array.from(new Set(clients.map((client) => client.status || 'Bez stavu'))).sort((left, right) =>
+    left.localeCompare(right, 'cs')
+  );
+  const filteredClients = clients.filter((client) => {
+    const query = clientQuery.trim().toLowerCase();
+    const matchesQuery =
+      !query ||
+      [client.firstName, client.lastName, client.email, client.phone, client.program, client.status, client.operationalId, client.targetGroup, client.address]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    const matchesStatus = clientStatusFilter === 'all' || client.status === clientStatusFilter;
+    const hasOperationalId = Boolean(client.operationalId?.trim());
+    const matchesId =
+      clientIdFilter === 'all' ||
+      (clientIdFilter === 'with-id' && hasOperationalId) ||
+      (clientIdFilter === 'without-id' && !hasOperationalId);
+    return matchesQuery && matchesStatus && matchesId;
+  });
+  React.useEffect(() => {
+    if (activeTab !== 'clients') return;
+    if (filteredClients.length === 0) return;
+    if (filteredClients.some((client) => client.id === selectedClientId)) return;
+    setSelectedClientId(filteredClients[0].id);
+  }, [activeTab, filteredClients, selectedClientId]);
   const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
   const selectedTemplateFileUrl = resolvePublicFileUrl(selectedTemplate.fileUrl || selectedTemplate.sourceNote, selectedTemplate);
   const templateCategories = Array.from(new Set(formTemplates.map((template) => template.folder || 'bez-kategorie'))).sort((left, right) =>
@@ -4522,8 +4606,70 @@ function AdminWorkspace({
     return matchesCategory && matchesQuery;
   });
   const selectedClientDocuments = selectedClient
-    ? clientDocuments.filter((document) => document.clientId === selectedClient.id || document.title.includes(selectedClient.lastName))
+    ? clientDocuments.filter((document) => {
+        const lastName = selectedClient.lastName.trim().toLowerCase();
+        return document.clientId === selectedClient.id || Boolean(lastName && document.title.toLowerCase().includes(lastName));
+      })
     : [];
+  const selectedClientPendingDocuments = selectedClientDocuments.filter(
+    (document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase())
+  );
+  const selectedClientNotifications = selectedClient
+    ? notifications.filter((notification) => {
+        const haystack = `${notification.title} ${notification.body} ${notification.category}`.toLowerCase();
+        const email = selectedClient.email.trim().toLowerCase();
+        const fullName = `${selectedClient.firstName} ${selectedClient.lastName}`.toLowerCase();
+        return notification.recipientId === selectedClient.id || Boolean(email && haystack.includes(email)) || Boolean(fullName.trim() && haystack.includes(fullName));
+      })
+    : [];
+  const selectedClientNextStep = selectedClient
+    ? !selectedClient.operationalId?.trim()
+      ? 'Vygenerovat interní ID a uložit ho ke kartě klienta.'
+      : selectedClientPendingDocuments.length > 0
+        ? 'Dokončit podpis nebo archivaci připravených dokumentů.'
+        : selectedClient.status === 'Nový kontakt'
+          ? 'Doplnit mapování situace, kontakt a první bezpečný krok.'
+          : selectedClient.status === 'V mapování'
+            ? 'Vybrat program, cíle spolupráce a připravit první formuláře.'
+            : selectedClient.status === 'Zařazen do programu'
+              ? 'Hlídání průběžných cílů, dokumentů a dalších setkání.'
+              : selectedClient.status === 'Stabilizace'
+                ? 'Připravit výstupní plán, návaznost a kontrolní kontakt.'
+                : 'Udržet archiv kompletní a případně založit návaznou aktivitu.'
+    : '';
+  const clientPanelClient = filteredClients.find((client) => client.id === selectedClient?.id) ?? filteredClients[0] ?? selectedClient;
+  const clientPanelDocuments = clientPanelClient
+    ? clientDocuments.filter((document) => {
+        const lastName = clientPanelClient.lastName.trim().toLowerCase();
+        return document.clientId === clientPanelClient.id || Boolean(lastName && document.title.toLowerCase().includes(lastName));
+      })
+    : [];
+  const clientPanelPendingDocuments = clientPanelDocuments.filter(
+    (document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase())
+  );
+  const clientPanelNotifications = clientPanelClient
+    ? notifications.filter((notification) => {
+        const haystack = `${notification.title} ${notification.body} ${notification.category}`.toLowerCase();
+        const email = clientPanelClient.email.trim().toLowerCase();
+        const fullName = `${clientPanelClient.firstName} ${clientPanelClient.lastName}`.toLowerCase();
+        return notification.recipientId === clientPanelClient.id || Boolean(email && haystack.includes(email)) || Boolean(fullName.trim() && haystack.includes(fullName));
+      })
+    : [];
+  const clientPanelNextStep = clientPanelClient
+    ? !clientPanelClient.operationalId?.trim()
+      ? 'Vygenerovat interní ID a uložit ho ke kartě klienta.'
+      : clientPanelPendingDocuments.length > 0
+        ? 'Dokončit podpis nebo archivaci připravených dokumentů.'
+        : clientPanelClient.status === 'Nový kontakt'
+          ? 'Doplnit mapování situace, kontakt a první bezpečný krok.'
+          : clientPanelClient.status === 'V mapování'
+            ? 'Vybrat program, cíle spolupráce a připravit první formuláře.'
+            : clientPanelClient.status === 'Zařazen do programu'
+              ? 'Hlídání průběžných cílů, dokumentů a dalších setkání.'
+              : clientPanelClient.status === 'Stabilizace'
+                ? 'Připravit výstupní plán, návaznost a kontrolní kontakt.'
+                : 'Udržet archiv kompletní a případně založit návaznou aktivitu.'
+    : '';
   const unreadNotifications = notifications.filter((notification) => !notification.readAt);
   const activeUsers = managedUsers.filter((user) => user.isActive);
   const pendingDocuments = clientDocuments.filter((document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase()));
@@ -5251,7 +5397,7 @@ function AdminWorkspace({
         )}
 
         {activeTab === 'clients' && (
-          <div className="admin-grid">
+          <div className="admin-grid clients-admin-grid">
             <form className="admin-card" onSubmit={saveClient}>
               <h3>{clientForm.id ? 'Upravit klienta' : 'Registrovat klienta'}</h3>
               <div className="form-grid two">
@@ -5330,11 +5476,50 @@ function AdminWorkspace({
             </form>
 
             <div className="admin-card">
-              <h3>Registr klientů</h3>
+              <div className="admin-card-header">
+                <div>
+                  <h3>Registr klientů</h3>
+                  <p>{filteredClients.length} z {clients.length} záznamů podle aktuálního filtru.</p>
+                </div>
+                <Badge tone={clients.some((client) => !client.operationalId?.trim()) ? 'warning' : 'success'}>
+                  {clients.filter((client) => !client.operationalId?.trim()).length} bez ID
+                </Badge>
+              </div>
+              <div className="client-filter-grid">
+                <label>
+                  Vyhledat
+                  <input value={clientQuery} onChange={(event) => setClientQuery(event.target.value)} placeholder="Jméno, e-mail, program, ID..." />
+                </label>
+                <label>
+                  Stav
+                  <select value={clientStatusFilter} onChange={(event) => setClientStatusFilter(event.target.value)}>
+                    <option value="all">Všechny stavy</option>
+                    {clientStatusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Interní ID
+                  <select value={clientIdFilter} onChange={(event) => setClientIdFilter(event.target.value)}>
+                    <option value="all">Všichni klienti</option>
+                    <option value="without-id">Jen bez ID</option>
+                    <option value="with-id">Jen s ID</option>
+                  </select>
+                </label>
+              </div>
               <div className="client-list">
                 {clients.length === 0 && <p className="empty-note">Zatím není uložený žádný klient.</p>}
-                {clients.map((client) => (
-                  <button key={client.id} type="button" className={client.operationalId ? 'has-operational-id' : 'missing-operational-id'} onClick={() => editClient(client)}>
+                {clients.length > 0 && filteredClients.length === 0 && <p className="empty-note">Žádný klient neodpovídá zvolenému filtru.</p>}
+                {filteredClients.map((client) => (
+                  <button
+                    key={client.id}
+                    type="button"
+                    className={`${client.operationalId ? 'has-operational-id' : 'missing-operational-id'} ${client.id === clientPanelClient?.id ? 'is-selected' : ''}`}
+                    onClick={() => editClient(client)}
+                  >
                     <strong>
                       {client.firstName} {client.lastName}
                     </strong>
@@ -5349,6 +5534,88 @@ function AdminWorkspace({
                 ))}
               </div>
             </div>
+
+            <aside className="admin-card client-detail-card">
+              <div className="admin-card-header">
+                <div>
+                  <h3>Karta klienta</h3>
+                  <p>Admin-only přehled pro rychlou práci s formuláři, ID a dokumenty.</p>
+                </div>
+                <UserRound size={22} aria-hidden="true" />
+              </div>
+              {!clientPanelClient ? (
+                <p className="empty-note">Vyberte klienta v registru.</p>
+              ) : (
+                <>
+                  <div className="client-detail-identity">
+                    <div>
+                      <span>Vybraný klient</span>
+                      <strong>{clientPanelClient.firstName} {clientPanelClient.lastName}</strong>
+                      <small>{clientPanelClient.email || clientPanelClient.phone || 'Kontakt není doplněný'}</small>
+                    </div>
+                    <span className={`client-status-chip ${clientStatusClass(clientPanelClient.status)}`}>{clientPanelClient.status}</span>
+                  </div>
+                  <div className="client-detail-grid">
+                    <div>
+                      <span>Interní ID</span>
+                      <strong>{clientPanelClient.operationalId?.trim() || 'Nevygenerováno'}</strong>
+                    </div>
+                    <div>
+                      <span>Program</span>
+                      <strong>{clientPanelClient.program}</strong>
+                    </div>
+                    <div>
+                      <span>Dokumenty</span>
+                      <strong>{clientPanelDocuments.length}</strong>
+                    </div>
+                    <div>
+                      <span>Notifikace</span>
+                      <strong>{clientPanelNotifications.length}</strong>
+                    </div>
+                  </div>
+                  <div className="client-next-step">
+                    <Badge tone={clientPanelPendingDocuments.length > 0 || !clientPanelClient.operationalId?.trim() ? 'warning' : 'info'}>Další krok</Badge>
+                    <p>{clientPanelNextStep}</p>
+                  </div>
+                  <div className="client-detail-actions">
+                    <button className="button secondary" type="button" onClick={() => editClient(clientPanelClient)}>
+                      <UserCog size={18} /> Upravit kartu
+                    </button>
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => {
+                        selectClientForForm(clientPanelClient.id);
+                        selectAdminTab('forms');
+                      }}
+                    >
+                      <FileText size={18} /> Formuláře
+                    </button>
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => {
+                        loadClientIntoTools(clientPanelClient.id);
+                        selectAdminTab('tools');
+                      }}
+                    >
+                      <Barcode size={18} /> ID / kódy
+                    </button>
+                  </div>
+                  <div className="client-detail-documents">
+                    <strong>Poslední dokumenty</strong>
+                    {clientPanelDocuments.length === 0 && <p className="empty-note">Zatím bez evidovaných dokumentů.</p>}
+                    {clientPanelDocuments.slice(0, 4).map((document) => (
+                      <span key={document.id}>
+                        <FileText size={15} aria-hidden="true" />
+                        <span>{document.title}</span>
+                        <Badge tone={document.signedAt ? 'success' : 'warning'}>{document.status}</Badge>
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+            </aside>
           </div>
         )}
 

@@ -3477,10 +3477,11 @@ h3 {
 
 .client-list button {
   display: grid;
-  gap: 4px;
+  gap: 8px;
   width: 100%;
   padding: 14px;
   border: 1px solid var(--line);
+  border-left-width: 4px;
   border-radius: 6px;
   background: #fff;
   color: inherit;
@@ -3488,9 +3489,82 @@ h3 {
   cursor: pointer;
 }
 
+.client-list button.has-operational-id {
+  border-left-color: var(--green);
+}
+
+.client-list button.missing-operational-id {
+  border-left-color: #d9b84d;
+  background: linear-gradient(90deg, rgba(255, 249, 230, 0.72), #fff 34%);
+}
+
 .client-list button:hover {
   border-color: #b8d1bd;
   background: var(--green-soft);
+}
+
+.client-list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.client-status-chip,
+.client-id-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 26px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: var(--weight-medium);
+  line-height: 1;
+}
+
+.client-status-chip.is-new {
+  border-color: #b8cceb;
+  background: #eef6ff;
+  color: #234a74;
+}
+
+.client-status-chip.is-mapping {
+  border-color: #c7e5cf;
+  background: #f0fbf2;
+  color: #23623b;
+}
+
+.client-status-chip.is-active {
+  border-color: #9fceb0;
+  background: #e2f4e6;
+  color: #19572f;
+}
+
+.client-status-chip.is-stabilization {
+  border-color: #e3cf83;
+  background: #fff8db;
+  color: #705816;
+}
+
+.client-status-chip.is-closed,
+.client-status-chip.is-default {
+  border-color: #d9ded8;
+  background: #f5f7f4;
+  color: #5b665d;
+}
+
+.client-id-chip.is-ready {
+  border-color: #bdd7c2;
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.client-id-chip.is-missing {
+  border-color: #e6d39a;
+  background: #fff9e6;
+  color: #725616;
 }
 
 .admin-card-header,

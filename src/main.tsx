@@ -208,6 +208,7 @@ type ClientRecord = {
   program: string;
   status: string;
   notes: string;
+  operationalId: string;
   createdAt: string;
 };
 
@@ -627,8 +628,19 @@ const fromApiClient = (client: ApiClientRecord): ClientRecord => ({
   program: client.program,
   status: client.status,
   notes: client.notes || '',
+  operationalId: client.operationalId || '',
   createdAt: client.createdAt
 });
+
+const clientStatusClass = (status: string) => {
+  const normalized = stripDiacritics(status).toLowerCase();
+  if (normalized.includes('novy')) return 'is-new';
+  if (normalized.includes('mapovani')) return 'is-mapping';
+  if (normalized.includes('zarazen')) return 'is-active';
+  if (normalized.includes('stabilizace')) return 'is-stabilization';
+  if (normalized.includes('uzavreno')) return 'is-closed';
+  return 'is-default';
+};
 
 const newsHtmlTags = new Set(['A', 'B', 'BLOCKQUOTE', 'BR', 'EM', 'H2', 'H3', 'H4', 'I', 'IFRAME', 'IMG', 'LI', 'OL', 'P', 'STRONG', 'U', 'UL']);
 const newsHtmlAttrs = new Map([
@@ -895,6 +907,7 @@ const emptyClient: ClientRecord = {
   program: 'JAILBREAK',
   status: 'Nový kontakt',
   notes: '',
+  operationalId: '',
   createdAt: ''
 };
 
@@ -4318,6 +4331,8 @@ function AdminWorkspace({
   });
 
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
+  const selectedToolsClient = selectedClientId ? clients.find((client) => client.id === selectedClientId) ?? null : null;
+  const toolsClientHasOperationalId = Boolean(selectedToolsClient?.operationalId?.trim());
   const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
   const selectedTemplateFileUrl = resolvePublicFileUrl(selectedTemplate.fileUrl || selectedTemplate.sourceNote, selectedTemplate);
   const templateCategories = Array.from(new Set(formTemplates.map((template) => template.folder || 'bez-kategorie'))).sort((left, right) =>
@@ -4451,7 +4466,7 @@ function AdminWorkspace({
   };
 
   const editClient = (client: ClientRecord) => {
-    setClientForm(client);
+    setClientForm({ ...emptyClient, ...client, operationalId: client.operationalId || '' });
     setSelectedClientId(client.id);
     setActiveTab('clients');
     onNotify('info', 'Klient načten k úpravě', `${client.firstName} ${client.lastName}`);
@@ -4821,19 +4836,40 @@ function AdminWorkspace({
   const loadClientIntoTools = (clientId: string) => {
     const client = clients.find((item) => item.id === clientId);
     if (!client) return;
+    const savedOperationalId = client.operationalId?.trim() ?? '';
+    setSelectedClientId(client.id);
     setToolsDraft((current) => ({
       ...current,
       firstName: client.firstName,
       lastName: client.lastName,
       registrationDate: client.createdAt || todayIso(),
-      sequence: Math.max(1, clients.findIndex((item) => item.id === client.id) + 1)
+      sequence: Math.max(1, clients.findIndex((item) => item.id === client.id) + 1),
+      generatedId: savedOperationalId,
+      barcodeValue: savedOperationalId || current.barcodeValue,
+      qrValue: savedOperationalId || current.qrValue
     }));
-    onNotify('info', 'Klient načten do tools', `${client.firstName} ${client.lastName}`);
+    onNotify(
+      'info',
+      savedOperationalId ? 'Interní ID načteno' : 'Klient načten do tools',
+      savedOperationalId || `${client.firstName} ${client.lastName} zatím nemá interní ID.`
+    );
   };
 
-  const generateOperationalId = () => {
+  const generateOperationalId = async () => {
     if (!toolsDraft.firstName.trim() && !toolsDraft.lastName.trim()) {
       onNotify('warning', 'ID nejde vygenerovat', 'Vyplňte jméno nebo příjmení klienta.');
+      return;
+    }
+    const selectedToolsClient = selectedClientId ? clients.find((client) => client.id === selectedClientId) : null;
+    if (selectedToolsClient?.operationalId?.trim()) {
+      const savedOperationalId = selectedToolsClient.operationalId.trim();
+      setToolsDraft((current) => ({
+        ...current,
+        generatedId: savedOperationalId,
+        barcodeValue: savedOperationalId,
+        qrValue: savedOperationalId
+      }));
+      onNotify('info', 'ID už existuje', `${selectedToolsClient.firstName} ${selectedToolsClient.lastName}: ${savedOperationalId}`);
       return;
     }
     const generatedId = buildClientOperationalId(toolsDraft);
@@ -4843,7 +4879,28 @@ function AdminWorkspace({
       barcodeValue: generatedId,
       qrValue: generatedId
     }));
-    onNotify('success', 'ID vygenerováno', generatedId);
+    if (!selectedToolsClient) {
+      onNotify('warning', 'ID vygenerováno jen lokálně', 'Vyberte klienta z registru, aby se ID uložilo do databáze.');
+      return;
+    }
+    const nextClient = { ...selectedToolsClient, operationalId: generatedId };
+    onClientsChange((current) => current.map((client) => (client.id === nextClient.id ? nextClient : client)));
+    if (!onClientSaveRequest) {
+      onNotify('success', 'ID uloženo lokálně', generatedId);
+      return;
+    }
+    try {
+      const savedClient = await onClientSaveRequest(nextClient);
+      onClientsChange((current) => current.map((client) => (client.id === savedClient.id ? savedClient : client)));
+      setClientForm((current) => (current.id === savedClient.id ? savedClient : current));
+      setAdminMessageTone('success');
+      setAdminMessage('Interní ID klienta je uložené v databázi.');
+      onNotify('success', 'ID uloženo ke klientovi', `${savedClient.firstName} ${savedClient.lastName}: ${savedClient.operationalId}`);
+    } catch (error) {
+      setAdminMessageTone('warning');
+      setAdminMessage('ID je zatím jen v aktuální administraci. Databázové uložení selhalo.');
+      onNotify('error', 'ID se nepodařilo uložit do DB', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
   };
 
   const copyToolsValue = async (value: string, label: string) => {
@@ -5077,6 +5134,15 @@ function AdminWorkspace({
                 </select>
               </label>
               <label>
+                Interní ID klienta (pouze admin)
+                <input
+                  value={clientForm.operationalId}
+                  onChange={(event) => updateClientField('operationalId', event.target.value)}
+                  placeholder="Vygeneruje se v Tools"
+                />
+                <small className="form-help">Nezobrazuje se v klientské zóně. Slouží pro interní kartu, štítky, čárový kód a QR.</small>
+              </label>
+              <label>
                 Poznámky
                 <textarea rows={5} value={clientForm.notes} onChange={(event) => updateClientField('notes', event.target.value)} />
               </label>
@@ -5095,13 +5161,17 @@ function AdminWorkspace({
               <div className="client-list">
                 {clients.length === 0 && <p className="empty-note">Zatím není uložený žádný klient.</p>}
                 {clients.map((client) => (
-                  <button key={client.id} type="button" onClick={() => editClient(client)}>
+                  <button key={client.id} type="button" className={client.operationalId ? 'has-operational-id' : 'missing-operational-id'} onClick={() => editClient(client)}>
                     <strong>
                       {client.firstName} {client.lastName}
                     </strong>
-                    <span>
-                      {client.program} - {client.status}
-                    </span>
+                    <div className="client-list-meta">
+                      <span className={`client-status-chip ${clientStatusClass(client.status)}`}>{client.status}</span>
+                      <span className={client.operationalId ? 'client-id-chip is-ready' : 'client-id-chip is-missing'}>
+                        {client.operationalId ? `ID ${client.operationalId}` : 'Bez ID'}
+                      </span>
+                    </div>
+                    <small>{client.program}</small>
                   </button>
                 ))}
               </div>
@@ -5251,7 +5321,7 @@ function AdminWorkspace({
               </div>
               <label>
                 Načíst klienta z registru
-                <select value="" onChange={(event) => loadClientIntoTools(event.target.value)}>
+                <select value={selectedToolsClient?.id ?? ''} onChange={(event) => loadClientIntoTools(event.target.value)}>
                   <option value="">Vyberte klienta...</option>
                   {clients.map((client) => (
                     <option key={client.id} value={client.id}>
@@ -5281,11 +5351,15 @@ function AdminWorkspace({
               <div className="generated-id-panel">
                 <span>Výsledné ID</span>
                 <strong>{toolsDraft.generatedId || 'DK-060626-0000-001'}</strong>
-                <small>Iniciály se doplní minimálně na dvě písmena. Datum se ukládá jako DDMMYY.</small>
+                <small>
+                  {toolsClientHasOperationalId
+                    ? 'Tento klient už má interní ID uložené v databázi. Generátor ho pouze načítá.'
+                    : 'Iniciály se doplní minimálně na dvě písmena. Datum se ukládá jako DDMMYY.'}
+                </small>
               </div>
               <div className="form-actions">
-                <button className="button primary" type="button" onClick={generateOperationalId}>
-                  <Wrench size={18} /> Vygenerovat ID
+                <button className="button primary" type="button" onClick={generateOperationalId} disabled={toolsClientHasOperationalId}>
+                  <Wrench size={18} /> {toolsClientHasOperationalId ? 'ID už existuje' : 'Vygenerovat ID'}
                 </button>
                 <button className="icon-tool tooltip-link" type="button" data-tooltip="Kopírovat ID" aria-label="Kopírovat ID" onClick={() => copyToolsValue(toolsDraft.generatedId, 'ID')}>
                   <Copy size={18} />

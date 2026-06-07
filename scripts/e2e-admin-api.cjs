@@ -66,6 +66,7 @@ async function request(path, options = {}) {
 
 (async () => {
   const stamp = Date.now();
+  const stampText = String(stamp);
   const adminId = randomId();
   const adminEmail = `admin.${stamp}@example.test`;
   const adminPassword = 'AdminTestHeslo123';
@@ -117,16 +118,20 @@ async function request(path, options = {}) {
         email: `admin-client-${stamp}@restart.test`,
         program: 'RESET',
         status: 'V mapování',
+        operationalId: `AD-${stampText.slice(-6)}-1234-001`,
         notes: 'Založeno e2e admin testem.'
       })
     });
-    if (!created.response.ok || created.body.client.program !== 'RESET') {
+    if (!created.response.ok || created.body.client.program !== 'RESET' || !created.body.client.operationalId) {
       throw new Error(`Client creation failed: ${JSON.stringify(created.body)}`);
     }
     createdClientId = created.body.client.id;
 
     const list = await request('/api/clients', { headers: { cookie } });
-    if (!list.response.ok || !list.body.clients.some((client) => client.id === created.body.client.id)) {
+    if (
+      !list.response.ok ||
+      !list.body.clients.some((client) => client.id === created.body.client.id && client.operationalId === created.body.client.operationalId)
+    ) {
       throw new Error(`Created client is missing from database list: ${JSON.stringify(list.body)}`);
     }
     const newsTitle = `Aktualita databaze ${stamp}`;

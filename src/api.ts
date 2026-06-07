@@ -62,6 +62,7 @@ export type ApiClientRecord = {
   program: string;
   status: string;
   notes: string | null;
+  operationalId: string | null;
   createdAt: string;
 };
 

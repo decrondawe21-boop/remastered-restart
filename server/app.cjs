@@ -606,6 +606,7 @@ async function listClients(request, response) {
        program,
        status,
        notes,
+       operational_id AS operationalId,
        DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
      FROM clients
      ORDER BY created_at DESC
@@ -627,10 +628,11 @@ async function createClient(request, response) {
     return;
   }
   const id = body.id || randomId();
+  const operationalId = String(body.operationalId || '').trim() || null;
   await query(
     `INSERT INTO clients
-       (id, first_name, last_name, birth_date, phone, email, address, target_group, program, status, notes, created_by)
-     VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?, ?, ?, ?, ?)
+       (id, first_name, last_name, birth_date, phone, email, address, target_group, program, status, notes, operational_id, created_by)
+     VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
        first_name = VALUES(first_name),
        last_name = VALUES(last_name),
@@ -641,7 +643,8 @@ async function createClient(request, response) {
        target_group = VALUES(target_group),
        program = VALUES(program),
        status = VALUES(status),
-       notes = VALUES(notes)`,
+       notes = VALUES(notes),
+       operational_id = VALUES(operational_id)`,
     [
       id,
       body.firstName.trim(),
@@ -654,6 +657,7 @@ async function createClient(request, response) {
       body.program || 'JAILBREAK',
       body.status || 'Nový kontakt',
       body.notes || '',
+      operationalId,
       user.id
     ]
   );
@@ -670,6 +674,7 @@ async function createClient(request, response) {
        program,
        status,
        notes,
+       operational_id AS operationalId,
        DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
      FROM clients
      WHERE id = ?`,

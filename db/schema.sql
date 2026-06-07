@@ -32,15 +32,22 @@ CREATE TABLE IF NOT EXISTS clients (
   program VARCHAR(80) NOT NULL DEFAULT 'JAILBREAK',
   status VARCHAR(80) NOT NULL DEFAULT 'Nový kontakt',
   notes TEXT NULL,
+  operational_id VARCHAR(64) NULL,
   created_by CHAR(36) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT clients_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT clients_created_by_fk FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL,
+  UNIQUE KEY clients_operational_id_unique (operational_id),
   KEY clients_status_idx (status),
   KEY clients_program_idx (program),
   KEY clients_name_idx (last_name, first_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE clients
+  ADD COLUMN IF NOT EXISTS operational_id VARCHAR(64) NULL AFTER notes;
+
+CREATE UNIQUE INDEX IF NOT EXISTS clients_operational_id_unique ON clients (operational_id);
 
 CREATE TABLE IF NOT EXISTS client_notes (
   id CHAR(36) PRIMARY KEY,

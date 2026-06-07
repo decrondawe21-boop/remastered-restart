@@ -55,7 +55,16 @@ export const programs: Program[] = [
     title: 'JAILBREAK',
     audience: 'Osoby po i ve výkonu trestu a lidé, kteří se ocitli na dně a potřebují znovu do běžného života.',
     goal: 'Životní restart, snížení recidivy a bezpečný návrat do práce, bydlení a běžného fungování.',
-    activities: ['mentoring', 'pracovní asistence', 'rekvalifikace', 'psychosociální podpora', 'příprava na výstup', 'návazná stabilizace po propuštění'],
+    activities: [
+      'mentoring',
+      'korespondence a návštěvy',
+      'cíle a režim',
+      'žádost o PP',
+      'rodinné vztahy',
+      'hygienické balíky',
+      'pracovní návaznost',
+      'stabilizace po propuštění'
+    ],
     icon: ShieldCheck,
     duration: '6-12 měsíců dle profilu klienta',
     featureText:
@@ -95,7 +104,15 @@ export const programs: Program[] = [
         label: 'Jak to děláme',
         title: 'Mentoring, práce a opora',
         text:
-          'David Kozák International s.r.o. zajišťuje mentoring, pracovní asistenci, rekvalifikaci a kontakt s realitou. Po výkonu trestu nabízíme práci v Německu, ubytování, psychosociální podporu a navazující stabilizační kroky. Vše na smluvním základě, bez závislosti na dotacích.'
+          'David Kozák International s.r.o. zajišťuje mentoring, korespondenci s lidmi ve VTOS, návštěvy pracovníků, stanovení cílů, přípravu na podmíněné propuštění, podporu rodinných vztahů, pracovní návaznost a základní materiální pomoc pro nemajetné klienty. Po výkonu trestu nabízíme práci v Německu, ubytování, psychosociální podporu a navazující stabilizační kroky. Vše na smluvním základě, bez závislosti na dotacích.',
+        items: [
+          'Korespondence s vězni a příprava prvního důvěryhodného kontaktu.',
+          'Návštěvy pracovníků a osobní mapování situace ještě před výstupem.',
+          'Stanovení konkrétních cílů, termínů a kontrola jejich dodržování.',
+          'Podpora při přípravě žádosti o podmíněné propuštění.',
+          'Snaha o obnovu nebo zklidnění vztahů s rodinou, pokud je to bezpečné.',
+          'Hygienické balíky a základní hmotná pomoc pro nemajetné klienty.'
+        ]
       }
     ],
     activityDetails: [
@@ -107,11 +124,67 @@ export const programs: Program[] = [
           'nastavení osobního plánu a priorit',
           'pravidelné konzultace a kontrola postupu',
           'podpora při komunikaci s institucemi',
-          'práce s odpovědností, režimem a motivací'
+          'práce s odpovědností, režimem a motivací',
+          'dohoda na cílech, které se dají průběžně ověřovat'
         ]
       },
       {
-        title: 'Pracovní asistence',
+        title: 'Korespondence a návštěvy',
+        text:
+          'Práce s klientem může začít ještě ve výkonu trestu. Korespondence, návštěvy pracovníků a osobní kontakt pomáhají ověřit motivaci, situaci i reálné možnosti ještě před výstupem.',
+        items: [
+          'korespondence s vězni a postupné mapování potřeb',
+          'návštěvy pracovníků tam, kde je to možné a smysluplné',
+          'fyzický kontakt jako důležitý prvek důvěry a odpovědnosti',
+          'příprava konkrétních kroků ještě před propuštěním'
+        ]
+      },
+      {
+        title: 'Cíle a režim',
+        text:
+          'Bez konkrétních cílů se druhá šance rychle rozpadne na dobrý úmysl. Společně nastavujeme reálné kroky, termíny a jednoduchý režim, který se dá dodržet i ve stresu.',
+        items: [
+          'stanovení krátkodobých a dlouhodobých cílů',
+          'kontrola dodržování domluvených kroků',
+          'práce s docházkou, komunikací a odpovědností',
+          'včasné pojmenování rizik, která mohou plán rozbít'
+        ]
+      },
+      {
+        title: 'Žádost o PP',
+        text:
+          'U klientů, kde to dává smysl, pomáháme připravit podklady a realistický plán pro žádost o podmíněné propuštění. Nejde o slib výsledku, ale o odpovědnou přípravu.',
+        items: [
+          'mapování situace a reálných podmínek pro PP',
+          'příprava plánu práce, bydlení a následné podpory',
+          'pomoc s formulací konkrétních závazků',
+          'důraz na odpovědnost, nikoli na prázdné prohlášení'
+        ]
+      },
+      {
+        title: 'Rodinné vztahy',
+        text:
+          'Rodina může být oporou, ale také zdrojem bolesti a rizika. Program pomáhá hledat bezpečný způsob, jak vztahy uklidnit, obnovit nebo nastavit zdravé hranice.',
+        items: [
+          'citlivé mapování vztahů s rodinou a blízkými',
+          'snaha o léčbu vztahů tam, kde je to bezpečné',
+          'podpora při komunikaci a omluvě bez tlaku na druhou stranu',
+          'nastavení hranic, pokud návrat do rodiny není vhodný'
+        ]
+      },
+      {
+        title: 'Hygienické balíky',
+        text:
+          'Někteří lidé nemají při výstupu ani základní věci. Hygienický balík a drobná hmotná pomoc nejsou charita pro efekt, ale praktický start, který snižuje ponížení a chaos prvních dnů.',
+        items: [
+          'základní hygienické potřeby pro nemajetné klienty',
+          'praktické minimum pro první dny po výstupu',
+          'pomoc podle skutečné nouze, ne podle dojmu',
+          'navázání materiální pomoci na další konkrétní kroky'
+        ]
+      },
+      {
+        title: 'Pracovní návaznost',
         text:
           'Návrat do práce je praktická změna režimu. Pomáháme s výběrem vhodné práce, přípravou na nástup, první komunikací se zaměstnavatelem a zvládnutím prvních týdnů.',
         items: [
@@ -119,39 +192,6 @@ export const programs: Program[] = [
           'příprava životopisu, pohovoru a nástupu',
           'doprovod při prvním kontaktu se zaměstnavatelem',
           'podpora při udržení docházky a pracovních návyků'
-        ]
-      },
-      {
-        title: 'Rekvalifikace',
-        text:
-          'Pokud člověk nemá použitelnou kvalifikaci nebo potřebuje změnit obor, hledáme krátké a praktické doplnění dovedností, které má smysl pro konkrétní pracovní cestu.',
-        items: [
-          'výběr vhodného směru podle profilu klienta',
-          'doplnění základních pracovních dovedností',
-          'příprava na práci v partnerském prostředí',
-          'návaznost na reálnou nabídku práce'
-        ]
-      },
-      {
-        title: 'Psychosociální podpora',
-        text:
-          'Po návratu z výkonu trestu se často kumuluje tlak, stud, dluhy, vztahy a nejistota. Podpora pomáhá zklidnit situaci, pojmenovat rizika a udržet člověka v kontaktu.',
-        items: [
-          'krizové mapování a stabilizační plán',
-          'práce s rodinnými a sociálními vztahy',
-          'napojení na další odbornou pomoc podle potřeby',
-          'prevence návratu do rizikového prostředí'
-        ]
-      },
-      {
-        title: 'Příprava na výstup',
-        text:
-          'Ideální práce začíná ještě před propuštěním. Cílem je, aby den výstupu nebyl prázdný okamžik bez plánu, ale přechod do konkrétní návaznosti.',
-        items: [
-          'plán prvních 24 hodin, týdne a měsíce',
-          'řešení dokladů, kontaktů, práce a bydlení',
-          'dohoda o navazující podpoře po propuštění',
-          'pojmenování rizik a krizových scénářů'
         ]
       },
       {

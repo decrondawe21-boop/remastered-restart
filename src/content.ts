@@ -35,6 +35,11 @@ export interface Program {
     text: string;
     items?: string[];
   }>;
+  activityDetails?: Array<{
+    title: string;
+    text: string;
+    items?: string[];
+  }>;
   contactBox?: {
     title: string;
     lines: string[];
@@ -91,6 +96,74 @@ export const programs: Program[] = [
         title: 'Mentoring, práce a opora',
         text:
           'David Kozák International s.r.o. zajišťuje mentoring, pracovní asistenci, rekvalifikaci a kontakt s realitou. Po výkonu trestu nabízíme práci v Německu, ubytování, psychosociální podporu a navazující stabilizační kroky. Vše na smluvním základě, bez závislosti na dotacích.'
+      }
+    ],
+    activityDetails: [
+      {
+        title: 'Mentoring',
+        text:
+          'Pravidelný kontakt s člověkem, který pomáhá držet směr po výkonu trestu nebo při přípravě na výstup. Mentor neřeší klienta místo něj, ale pomáhá mu převádět plán do konkrétních kroků.',
+        items: [
+          'nastavení osobního plánu a priorit',
+          'pravidelné konzultace a kontrola postupu',
+          'podpora při komunikaci s institucemi',
+          'práce s odpovědností, režimem a motivací'
+        ]
+      },
+      {
+        title: 'Pracovní asistence',
+        text:
+          'Návrat do práce je praktická změna režimu. Pomáháme s výběrem vhodné práce, přípravou na nástup, první komunikací se zaměstnavatelem a zvládnutím prvních týdnů.',
+        items: [
+          'mapování zkušeností a reálných možností',
+          'příprava životopisu, pohovoru a nástupu',
+          'doprovod při prvním kontaktu se zaměstnavatelem',
+          'podpora při udržení docházky a pracovních návyků'
+        ]
+      },
+      {
+        title: 'Rekvalifikace',
+        text:
+          'Pokud člověk nemá použitelnou kvalifikaci nebo potřebuje změnit obor, hledáme krátké a praktické doplnění dovedností, které má smysl pro konkrétní pracovní cestu.',
+        items: [
+          'výběr vhodného směru podle profilu klienta',
+          'doplnění základních pracovních dovedností',
+          'příprava na práci v partnerském prostředí',
+          'návaznost na reálnou nabídku práce'
+        ]
+      },
+      {
+        title: 'Psychosociální podpora',
+        text:
+          'Po návratu z výkonu trestu se často kumuluje tlak, stud, dluhy, vztahy a nejistota. Podpora pomáhá zklidnit situaci, pojmenovat rizika a udržet člověka v kontaktu.',
+        items: [
+          'krizové mapování a stabilizační plán',
+          'práce s rodinnými a sociálními vztahy',
+          'napojení na další odbornou pomoc podle potřeby',
+          'prevence návratu do rizikového prostředí'
+        ]
+      },
+      {
+        title: 'Příprava na výstup',
+        text:
+          'Ideální práce začíná ještě před propuštěním. Cílem je, aby den výstupu nebyl prázdný okamžik bez plánu, ale přechod do konkrétní návaznosti.',
+        items: [
+          'plán prvních 24 hodin, týdne a měsíce',
+          'řešení dokladů, kontaktů, práce a bydlení',
+          'dohoda o navazující podpoře po propuštění',
+          'pojmenování rizik a krizových scénářů'
+        ]
+      },
+      {
+        title: 'Návazná stabilizace po propuštění',
+        text:
+          'První týdny po propuštění rozhodují. Stabilizace drží práci, bydlení, režim, finance a vztahy tak, aby první chyba neznamenala návrat do starého kruhu.',
+        items: [
+          'follow-up po propuštění a pravidelný kontakt',
+          'podpora při bydlení, práci a financích',
+          'řešení konfliktů a krizových situací včas',
+          'postupné snižování podpory podle stability klienta'
+        ]
       }
     ],
     contactBox: {

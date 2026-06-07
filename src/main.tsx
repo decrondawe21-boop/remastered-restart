@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
@@ -1877,8 +1878,20 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
   const Icon = program.icon;
   const pillarVisual = getProgramPillarVisual(program.title);
   const heroImage = program.image ?? pillarVisual;
+  const [activeActivityIndex, setActiveActivityIndex] = React.useState<number | null>(null);
+  const activeActivity =
+    activeActivityIndex !== null ? program.activityDetails?.[activeActivityIndex] ?? null : null;
   const fallbackText =
     'Praktická podpora, důstojný přístup a plán, který se dá zvládnout krok za krokem.';
+
+  React.useEffect(() => {
+    if (!activeActivity) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveActivityIndex(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeActivity]);
 
   return (
     <>
@@ -1938,11 +1951,59 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
           text="Konkrétní oblasti podpory, které drží člověka v pohybu od prvního kontaktu k dlouhodobé stabilitě."
         />
         <div className="program-detail-points">
-          {program.activities.map((activity) => (
-            <span key={activity}>{activity}</span>
-          ))}
+          {program.activities.map((activity, index) => {
+            const detail = program.activityDetails?.[index];
+            return detail ? (
+              <button
+                key={activity}
+                className="program-activity-chip"
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => setActiveActivityIndex(index)}
+              >
+                <Info size={16} />
+                {activity}
+              </button>
+            ) : (
+              <span key={activity}>{activity}</span>
+            );
+          })}
         </div>
       </section>
+      {activeActivity
+        ? createPortal(
+            <div
+              className="modal-backdrop program-modal-backdrop"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setActiveActivityIndex(null);
+              }}
+            >
+              <article
+                className="program-activity-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="program-activity-modal-title"
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <button className="modal-close" type="button" aria-label="Zavřít detail bodu" onClick={() => setActiveActivityIndex(null)}>
+                  <X size={18} />
+                </button>
+                <p className="section-label">JAILBREAK | co řešíme</p>
+                <h2 id="program-activity-modal-title">{activeActivity.title}</h2>
+                <p>{activeActivity.text}</p>
+                {activeActivity.items?.length ? (
+                  <ul>
+                    {activeActivity.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </article>
+            </div>,
+            document.body
+          )
+        : null}
       {program.sections?.length ? (
         <section className="content-section program-story-section">
           {program.sections.map((section) => (

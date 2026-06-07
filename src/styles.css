@@ -1405,6 +1405,7 @@ h3 {
 }
 
 .program-detail-points span {
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1417,6 +1418,83 @@ h3 {
   padding: 8px 14px;
   text-align: center;
   line-height: 1.25;
+}
+
+.program-activity-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid #b8d4bf;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--green-dark);
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 8px 14px;
+  text-align: center;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.program-activity-chip:hover,
+.program-activity-chip:focus-visible {
+  border-color: var(--green);
+  background: #eef8f0;
+  box-shadow: 0 10px 24px rgba(25, 107, 62, 0.12);
+  transform: translateY(-1px);
+}
+
+.program-activity-chip svg {
+  flex: 0 0 auto;
+}
+
+.modal-backdrop.program-modal-backdrop {
+  z-index: 130;
+}
+
+.program-activity-modal {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: min(760px, calc(100vh - 44px));
+  overflow: auto;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(10, 20, 14, 0.3);
+}
+
+.program-activity-modal h2 {
+  max-width: 560px;
+  margin: 0 38px 14px 0;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  line-height: 1.02;
+}
+
+.program-activity-modal p:not(.section-label) {
+  color: var(--muted);
+  font-size: 1.04rem;
+}
+
+.program-activity-modal ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 22px 0 0;
+  list-style: none;
+}
+
+.program-activity-modal li {
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: #304139;
 }
 
 .program-story-section {
@@ -4209,6 +4287,7 @@ h3 {
   .program-stat-band,
   .program-story-section,
   .program-story-card ul,
+  .program-activity-modal ul,
   .donate-section,
   .donate-amounts,
   .donate-challenges ol,

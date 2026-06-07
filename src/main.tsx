@@ -40,6 +40,7 @@ import {
   Reply,
   RotateCcw,
   Save,
+  Search,
   Settings,
   ShieldCheck,
   Trash2,
@@ -131,7 +132,84 @@ const routeLabels: Record<string, string> = {
   '/kontakt': 'Kontakt',
   '/kontakt/formular': 'Formulář',
   '/klient': 'Klientský profil',
-  '/admin': 'Administrace'
+  '/admin': 'Administrace',
+  '/pro-firmy': 'Pro firmy',
+  '/media': 'Média',
+  '/zasady-ochrany-osobnich-udaju': 'Zásady ochrany osobních údajů',
+  '/povinne-zverejnovani': 'Povinné zveřejňování',
+  '/webove-gdpr': 'Webové GDPR'
+};
+
+const footerNavGroups = [
+  {
+    title: 'Navigace',
+    links: [
+      { href: '#/', label: 'Domů' },
+      { href: '#/co-delame', label: 'Co děláme' },
+      { href: '#/programy', label: 'Programy' },
+      { href: '#/aktuality', label: 'Aktuality' },
+      { href: '#/zapojeni', label: 'Zapojení' },
+      { href: '#/kontakt', label: 'Kontakt' }
+    ]
+  },
+  {
+    title: 'Projekt',
+    links: [
+      { href: '#/pro-firmy', label: 'Pro firmy' },
+      { href: '#/media', label: 'Média' },
+      { href: '#/povinne-zverejnovani', label: 'Povinné zveřejňování' },
+      { href: '#/webove-gdpr', label: 'Webové GDPR' },
+      { href: '#/zasady-ochrany-osobnich-udaju', label: 'Zásady ochrany osobních údajů' }
+    ]
+  }
+];
+
+const staticPages: Record<string, { label: string; title: string; lead: string; sections: Array<{ title: string; text: string }> }> = {
+  '/pro-firmy': {
+    label: 'Spolupráce',
+    title: 'Pro firmy',
+    lead: 'REST||ART Integrace hledá partnery, kteří chtějí proměnit druhou šanci v konkrétní práci, mentoring a stabilní návrat do běžného života.',
+    sections: [
+      { title: 'Partnerství v praxi', text: 'Firmy mohou nabídnout pracovní příležitosti, materiál, odborný mentoring, vybavení nebo podporu konkrétní výzvy.' },
+      { title: 'Smysluplný dopad', text: 'Podpora směřuje do programů JAILBREAK, REWORK, RESET, STREETWISE, BOD ZLOMU a STABILIZACE.' }
+    ]
+  },
+  '/media': {
+    label: 'Média',
+    title: 'Média',
+    lead: 'Základní informace pro novináře, partnery a veřejnou komunikaci projektu.',
+    sections: [
+      { title: 'O projektu', text: 'REST||ART Integrace je neziskový projekt druhých šancí zaměřený na mentoring, práci, bydlení, stabilizaci a návrat lidí zpět do života.' },
+      { title: 'Kontakt pro média', text: 'Pro mediální dotazy použijte kontaktní formulář nebo e-mail restartintegrace@dk-i.cz.' }
+    ]
+  },
+  '/zasady-ochrany-osobnich-udaju': {
+    label: 'Soukromí',
+    title: 'Zásady ochrany osobních údajů',
+    lead: 'Osobní údaje zpracováváme pouze v rozsahu potřebném pro komunikaci, registraci, klientskou podporu, administraci a zákonné povinnosti.',
+    sections: [
+      { title: 'Rozsah údajů', text: 'Typicky zpracováváme identifikační, kontaktní, registrační a provozní údaje. Citlivé údaje patří pouze do chráněné administrace a formulářů.' },
+      { title: 'Práva subjektu údajů', text: 'Uživatel může požádat o přístup, opravu, omezení zpracování nebo výmaz tam, kde tomu nebrání zákonná povinnost.' }
+    ]
+  },
+  '/povinne-zverejnovani': {
+    label: 'Transparentnost',
+    title: 'Povinné zveřejňování',
+    lead: 'Tato část je připravená pro absolutní transparentnost projektu: dokumenty, kontakty, účel podpory, financování a veřejné výstupy.',
+    sections: [
+      { title: 'Dokumenty projektu', text: 'Po produkčním spuštění zde budou přehledně dostupné zakládací dokumenty, výroční nebo provozní reporty, výzvy a veřejné informace.' },
+      { title: 'Financování a dary', text: 'Transparentní podpora má jasně ukazovat, kam prostředky směřují a jaký konkrétní krok pomohly pokrýt.' }
+    ]
+  },
+  '/webove-gdpr': {
+    label: 'GDPR',
+    title: 'Webové GDPR',
+    lead: 'Web pracuje s technickými cookies a může používat statistické nebo marketingové nástroje pouze podle zvoleného souhlasu.',
+    sections: [
+      { title: 'Cookies', text: 'Technické cookies jsou nutné pro základní fungování webu. Statistiky a marketing lze spravovat v nastavení cookies.' },
+      { title: 'Formuláře a účty', text: 'Přihlašovací a registrační formuláře používají potvrzení vstupu do chráněné zóny a oddělují klientské a administrátorské prostředí.' }
+    ]
+  }
 };
 
 const programSlug = (title: string) =>
@@ -1016,7 +1094,64 @@ function useHashPath() {
   return path;
 }
 
-function Header({ currentPath, account }: { currentPath: string; account: AuthAccount | null }) {
+function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => void }) {
+  const [query, setQuery] = React.useState('');
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const searchInputId = React.useId();
+
+  const submitSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    const value = query.trim();
+    if (!value) {
+      inputRef.current?.focus();
+      onNotify('warning', 'Vyhledávání je prázdné', 'Zadejte text, který chcete najít na aktuální stránce.');
+      return;
+    }
+
+    const browserFind = (window as Window & { find?: (text: string, caseSensitive?: boolean, backwards?: boolean, wrapAround?: boolean) => boolean }).find;
+    const found = browserFind ? browserFind(value, false, false, true) : document.body.innerText.toLowerCase().includes(value.toLowerCase());
+    if (found) {
+      onNotify('success', 'Text nalezen', `Prohlížeč zvýraznil výskyt: ${value}`);
+      onDone?.();
+      return;
+    }
+    onNotify('warning', 'Text nenalezen', `Na této stránce se nenašlo: ${value}`);
+  };
+
+  return (
+    <form className="site-search" role="search" onSubmit={submitSearch}>
+      <label className="visually-hidden" htmlFor={searchInputId}>Vyhledat text na stránce</label>
+      <Search size={16} aria-hidden="true" />
+      <input
+        id={searchInputId}
+        ref={inputRef}
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Vyhledat text na stránce"
+      />
+      <button className="tooltip-link" type="submit" aria-label="Vyhledat text" data-tooltip="Vyhledat">
+        <ArrowRight size={16} />
+      </button>
+    </form>
+  );
+}
+
+function FeedbackCenter() {
+  const { messages } = useToast();
+  const latest = messages[messages.length - 1];
+  if (!latest) return null;
+  return (
+    <section className={`feedback-center ${latest.tone}`} aria-live="polite" aria-label="Aktuální stav aplikace">
+      <div className="feedback-center-icon"><FeedbackIcon tone={latest.tone} /></div>
+      <div>
+        <strong>{latest.title}</strong>
+        {latest.text && <span>{latest.text}</span>}
+      </div>
+    </section>
+  );
+}
+
+function Header({ currentPath, account, onNotify }: { currentPath: string; account: AuthAccount | null; onNotify: NotifyFn }) {
   const [open, setOpen] = React.useState(false);
   const visibleNavItems = navItems.filter((item) => item.href !== '#/klient' || account?.role === 'client' || account?.role === 'admin');
 
@@ -1030,20 +1165,23 @@ function Header({ currentPath, account }: { currentPath: string; account: AuthAc
           <Menu size={22} />
         </button>
         <div className="header-nav-stack">
-          <div className="auth-actions" aria-label="Přístup k účtu">
-            <a
-              className="signin-icon tooltip-link"
-              href={account?.role === 'client' ? '#/klient' : '#/admin'}
-              aria-label={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
-              data-tooltip={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
-            >
-              <UserRound size={19} />
-            </a>
-            {!account && (
-              <a className="signup-link" href="#/klient" aria-label="Sign up">
-                Sign up
+          <div className="header-tools">
+            <PageSearch onNotify={onNotify} />
+            <div className="auth-actions" aria-label="Přístup k účtu">
+              <a
+                className="signin-icon tooltip-link"
+                href={account?.role === 'client' ? '#/klient' : '#/admin'}
+                aria-label={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
+                data-tooltip={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
+              >
+                <UserRound size={19} />
               </a>
-            )}
+              {!account && (
+                <a className="signup-link" href="#/klient" aria-label="Sign up">
+                  Sign up
+                </a>
+              )}
+            </div>
           </div>
           <nav className="desktop-nav" aria-label="Hlavní navigace">
             {visibleNavItems.map((item) => (
@@ -1071,6 +1209,7 @@ function Header({ currentPath, account }: { currentPath: string; account: AuthAc
           <button className="close-button" type="button" aria-label="Zavřít menu" onClick={() => setOpen(false)}>
             <X size={22} />
           </button>
+          <PageSearch onNotify={onNotify} onDone={() => setOpen(false)} />
           {visibleNavItems.map((item) => (
             <a key={item.href} href={item.href} onClick={() => setOpen(false)}>
               {item.label}
@@ -2184,6 +2323,26 @@ function SupportPage() {
         </div>
       </section>
     </>
+  );
+}
+
+function StaticInfoPage({ page }: { page: (typeof staticPages)[string] }) {
+  return (
+    <section className="content-section static-info-page">
+      <div className="static-info-head">
+        <p className="section-label">{page.label}</p>
+        <h1>{page.title}</h1>
+        <p>{page.lead}</p>
+      </div>
+      <div className="static-info-grid">
+        {page.sections.map((section) => (
+          <article key={section.title}>
+            <h2>{section.title}</h2>
+            <p>{section.text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -4060,6 +4219,7 @@ function App() {
 
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
 
+  const staticPage = staticPages[currentPath];
   const page =
     currentPath === '/co-delame' ? (
       <WorkPage />
@@ -4082,6 +4242,8 @@ function App() {
       <SupportPage />
     ) : currentPath === '/kontakt' ? (
       <ContactPage onNotify={notify} />
+    ) : staticPage ? (
+      <StaticInfoPage page={staticPage} />
     ) : currentPath === '/klient' ? (
       currentAccount?.role === 'client' || currentAccount?.role === 'admin' ? (
         <ClientProfile
@@ -4167,8 +4329,9 @@ function App() {
   return (
     <>
       <WeatherLeaves />
-      <Header currentPath={currentPath} account={currentAccount} />
+      <Header currentPath={currentPath} account={currentAccount} onNotify={notify} />
       <Breadcrumb path={currentPath} />
+      <FeedbackCenter />
       <main id="top">
         <RevealFx key={currentPath} className="page-reveal" delay={70}>
           {page}
@@ -4177,10 +4340,20 @@ function App() {
       <AppModal modal={modal} onClose={() => setModal(null)} />
       <CookieConsent forceOpen={cookieSettingsOpen} onClose={() => setCookieSettingsOpen(false)} />
       <footer className="site-footer">
-        <div>
+        <div className="footer-brand-block">
           <p>REST||ART Integrace</p>
           <span>Druhá šance v praxi. Mentoring, práce, bydlení, stabilizace.</span>
         </div>
+        <nav className="footer-nav" aria-label="Textová navigace v patičce">
+          {footerNavGroups.map((group) => (
+            <div key={group.title}>
+              <strong>{group.title}</strong>
+              {group.links.map((link) => (
+                <a key={link.href} href={link.href}>{link.label}</a>
+              ))}
+            </div>
+          ))}
+        </nav>
         <div className="codex-credit" aria-label="Technická spolupráce">
           <span>Design a vývoj ve spolupráci s</span>
           <strong>OpenAI Codex</strong>

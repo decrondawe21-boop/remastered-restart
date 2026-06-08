@@ -4101,7 +4101,7 @@ function App() {
       .catch(() => setApiAccount(null));
     listNews()
       .then((items) => {
-        if (items.length > 0) setNews(items);
+        setNews(items);
       })
       .catch(() => undefined);
     listSlides()
@@ -4897,21 +4897,34 @@ function AdminWorkspace({
 
   const deleteNews = async (item: NewsItem) => {
     if (!window.confirm(`Smazat aktualitu "${item.title}"?`)) return;
+    let removedFromDatabase = false;
+    let removedStaleLocalItem = false;
     if (onNewsDeleteRequest) {
       try {
         await onNewsDeleteRequest(item.id);
-        setAdminMessageTone('success');
-        setAdminMessage('Aktualita byla smazána z databáze.');
-        onNotify('info', 'Aktualita smazána', item.title);
-      } catch {
-        setAdminMessageTone('error');
-        setAdminMessage('Aktualitu se nepodařilo smazat.');
-        onNotify('error', 'Mazání selhalo', 'Zkuste to prosím znovu.');
-        return;
+        removedFromDatabase = true;
+      } catch (error) {
+        if (error instanceof ApiRequestError && error.status === 404) {
+          removedStaleLocalItem = true;
+        } else {
+          setAdminMessageTone('error');
+          setAdminMessage(error instanceof Error ? error.message : 'Aktualitu se nepodařilo smazat.');
+          onNotify('error', 'Mazání selhalo', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+          return;
+        }
       }
     }
     onNewsChange((current) => current.filter((newsItem) => newsItem.id !== item.id));
     if (newsForm.id === item.id) closeNewsDialog();
+    if (removedFromDatabase) {
+      setAdminMessageTone('success');
+      setAdminMessage('Aktualita byla smazána z databáze.');
+      onNotify('info', 'Aktualita smazána', item.title);
+    } else if (removedStaleLocalItem) {
+      setAdminMessageTone('warning');
+      setAdminMessage('Aktualita už v databázi nebyla. Odstranil jsem ji z lokální administrace.');
+      onNotify('warning', 'Lokální aktualita odstraněna', 'Záznam v databázi už neexistoval.');
+    }
   };
 
   const saveSlide = async (event: React.FormEvent) => {

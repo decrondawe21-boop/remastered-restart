@@ -43,6 +43,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  Star,
   Trash2,
   Underline,
   Undo2,
@@ -82,8 +83,10 @@ import {
   listNews,
   listNewsDiscussion,
   listNotifications,
+  listPublicMedia,
   listSlides,
   listUsers,
+  uploadMediaFile,
   loginUser,
   logoutUser,
   markNotificationRead as markNotificationReadRecord,
@@ -119,6 +122,7 @@ const navItems = [
   { href: '#/programy', label: 'Programy' },
   { href: '#/aktuality', label: 'Aktuality' },
   { href: '#/zapojeni', label: 'Zapojení' },
+  { href: '#/povinne-zverejnovani', label: 'Transparentnost' },
   { href: '#/kontakt', label: 'Kontakt' },
   { href: '#/klient', label: 'Klientská zóna' }
 ];
@@ -323,6 +327,89 @@ type ManagedUser = ApiManagedUser;
 type MediaFile = ApiMediaFile;
 type ClientDocument = ApiClientDocument;
 type NotificationItem = ApiNotification;
+const TRANSPARENCY_DOCUMENT_CATEGORY = 'transparency';
+const seededTransparentDocuments: MediaFile[] = [
+  {
+    id: 'fallback-opz-051',
+    title: 'REST||ART Podklad ke konzultaci OPZ 051',
+    fileName: 'REST_ART_PODKLAD_KONZULTACE_OPZ_051_v1.pdf',
+    fileUrl: '/documents/transparency/REST_ART_PODKLAD_KONZULTACE_OPZ_051_v1.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 111226,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: '',
+    uploadedBy: null,
+    createdAt: '2026-06-10'
+  },
+  {
+    id: 'fallback-kpz-politiky-ktere-funguji',
+    title: 'REST||ART KPZ - Politiky, které fungují',
+    fileName: 'REST_ART_KPZ_POLITIKY_KTERE_FUNGUJI_v1.pdf',
+    fileUrl: '/documents/transparency/REST_ART_KPZ_POLITIKY_KTERE_FUNGUJI_v1.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 175390,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: '',
+    uploadedBy: null,
+    createdAt: '2026-06-11'
+  },
+  {
+    id: 'fallback-opz-051-59',
+    title: 'REST||ART Podklad ke konzultaci OPZ 051/59',
+    fileName: 'REST_ART_PODKLAD_KONZULTACE_OPZ_051_59_v1.pdf',
+    fileUrl: '/documents/transparency/REST_ART_PODKLAD_KONZULTACE_OPZ_051_59_v1.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 409589,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: '',
+    uploadedBy: null,
+    createdAt: '2026-06-11'
+  }
+];
+
+type PublicMediaAsset = {
+  id: string;
+  title: string;
+  description: string;
+  fileName: string;
+  fileUrl: string;
+  mimeType: string;
+  fileSize: number;
+  kind: 'pdf' | 'image' | 'logo';
+};
+
+const publicMediaKitAssets: PublicMediaAsset[] = [
+  {
+    id: 'restart-plakat',
+    title: 'REST||ART plakát',
+    description: 'Veřejný plakát projektu pro sdílení, tisk a partnerskou komunikaci.',
+    fileName: 'restart-plakat.pdf',
+    fileUrl: '/documents/media/restart-plakat.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 3865485,
+    kind: 'pdf'
+  },
+  {
+    id: 'restart-sekundarni-znak',
+    title: 'Sekundární znak REST||ART',
+    description: 'Černobílý kruhový znak pro dokumenty, plakáty a doprovodné materiály.',
+    fileName: 'restart-sekundarni-znak.png',
+    fileUrl: '/images/media/restart-sekundarni-znak.png',
+    mimeType: 'image/png',
+    fileSize: 773976,
+    kind: 'logo'
+  },
+  {
+    id: 'restart-zazemi-upravena-fotka',
+    title: 'Upravená fotka zázemí',
+    description: 'Prezentační fotografie zázemí projektu pro média a veřejnou komunikaci.',
+    fileName: 'restart-zazemi-upravena-fotka.png',
+    fileUrl: '/images/media/restart-zazemi-upravena-fotka.png',
+    mimeType: 'image/png',
+    fileSize: 5447357,
+    kind: 'image'
+  }
+];
 
 type AuthRole = ApiRole;
 
@@ -368,6 +455,22 @@ type AdminToolsDraft = {
   qrValue: string;
 };
 
+type CodeArchiveKind = 'barcode' | 'qr';
+
+type CodeArchiveEntry = {
+  id: string;
+  kind: CodeArchiveKind;
+  value: string;
+  clientId: string;
+  clientName: string;
+  formId: string;
+  formTitle: string;
+  note: string;
+  source: 'manual' | 'csv';
+  createdAt: string;
+  importedAt: string;
+};
+
 type LoginRequest = {
   email: string;
   password: string;
@@ -386,7 +489,15 @@ type ResetConfirmRequest = {
   password: string;
 };
 
+type MediaUploadResult = {
+  fileName: string;
+  fileUrl: string;
+  mimeType: string;
+  fileSize: number;
+};
+
 type FeedbackTone = 'success' | 'error' | 'warning' | 'info';
+type FeedbackVariant = FeedbackTone | 'danger';
 
 type ToastMessage = {
   id: string;
@@ -469,6 +580,7 @@ type AdminSection =
   | 'clients'
   | 'forms'
   | 'tools'
+  | 'codeArchive'
   | 'media'
   | 'users'
   | 'notifications'
@@ -482,6 +594,31 @@ type ClientSection =
   | 'activity'
   | 'notifications'
   | 'settings';
+
+type AdminActivityKind = 'notification' | 'comment' | 'like' | 'registration' | 'client' | 'document' | 'news';
+
+type AdminActivityTarget = {
+  tab: AdminSection;
+  clientId?: string;
+  newsId?: string;
+  notificationId?: string;
+  userId?: string;
+  documentId?: string;
+  href?: string;
+};
+
+type AdminActivityItem = {
+  id: string;
+  kind: AdminActivityKind;
+  title: string;
+  text: string;
+  date: string;
+  tone: FeedbackTone;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  target: AdminActivityTarget;
+  unread?: boolean;
+  meta?: string;
+};
 
 type WorkspaceNavItem<T extends string> = {
   id: T;
@@ -516,11 +653,47 @@ const adminNavItems: Array<WorkspaceNavItem<AdminSection>> = [
   { id: 'clients', label: 'Klienti', text: 'Seznam, detail, stav', icon: Users },
   { id: 'forms', label: 'Tiskové formuláře', text: 'Šablony a exporty', icon: ClipboardList },
   { id: 'tools', label: 'Tools', text: 'ID, čárové kódy, QR', icon: Wrench },
+  { id: 'codeArchive', label: 'Archiv kódů', text: 'CSV, čárové kódy, QR', icon: FolderOpen },
   { id: 'media', label: 'Média', text: 'Obrázky a dokumenty', icon: ImageIcon },
   { id: 'users', label: 'Uživatelé a role', text: 'Admin, editor, user', icon: UserCog },
   { id: 'notifications', label: 'Notifikace', text: 'Zprávy a upozornění', icon: Bell },
   { id: 'settings', label: 'Nastavení', text: 'Branding, SEO, bezpečnost', icon: Settings }
 ];
+
+const adminSectionIds = adminNavItems.map((item) => item.id);
+
+const toFeedbackTone = (value: string | null | undefined): FeedbackTone =>
+  value === 'success' || value === 'error' || value === 'warning' || value === 'info' ? value : 'info';
+
+const shortenActivityText = (value: string, maxLength = 132) => {
+  const text = value.replace(/\s+/g, ' ').trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+};
+
+const parseAdminActivityLink = (href?: string): AdminActivityTarget | null => {
+  if (!href) return null;
+  const normalized = href.trim().replace(/^#/, '');
+  const [path, search = ''] = normalized.split('?');
+  if (path !== '/admin') return null;
+  const params = new URLSearchParams(search);
+  const tab = params.get('tab') as AdminSection | null;
+  const safeTab = tab && adminSectionIds.includes(tab) ? tab : 'dashboard';
+  return {
+    tab: safeTab,
+    clientId: params.get('client') ?? undefined,
+    newsId: params.get('news') ?? undefined,
+    notificationId: params.get('notification') ?? undefined,
+    userId: params.get('user') ?? undefined,
+    documentId: params.get('document') ?? undefined,
+    href
+  };
+};
+
+const getAdminActivityQueryParam = (href: string | undefined, key: string) => {
+  if (!href) return '';
+  const query = href.split('?')[1] || '';
+  return new URLSearchParams(query).get(key) || '';
+};
 
 const clientNavItems: Array<WorkspaceNavItem<ClientSection>> = [
   { id: 'dashboard', label: 'Dashboard', text: 'Stav účtu a přehled', icon: LayoutDashboard },
@@ -904,7 +1077,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-jailbreak',
     title: 'JAILBREAK',
     subtitle: 'Výkon trestu odnětí svobody a návrat ven: svoboda potřebuje strukturu, práci a konkrétní plán.',
-    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.jpg',
+    imageUrl: '/images/program-pillars/jailbreak-skica.png',
     ctaLabel: 'O programu',
     ctaHref: '#/programy/jailbreak',
     sortOrder: 10,
@@ -914,7 +1087,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-reset',
     title: 'RESET',
     subtitle: 'Závislosti, krize a ztracený režim: důstojný restart přes terapii, komunitu a bezpečný každodenní rytmus.',
-    imageUrl: '/images/crops/streetwise/streetwise-ruze-detail.jpg',
+    imageUrl: '/images/program-pillars/reset-skica.png',
     ctaLabel: 'O programu',
     ctaHref: '#/programy/reset',
     sortOrder: 20,
@@ -924,7 +1097,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-rework',
     title: 'REWORK',
     subtitle: 'Dlouhodobě nezaměstnaní a lidé s bariérami: pracovní restart, rekvalifikace a férový návrat do praxe.',
-    imageUrl: '/images/crops/new-photos/foto-175346-mid.jpg',
+    imageUrl: '/images/program-pillars/rework-skica.png',
     ctaLabel: 'O programu',
     ctaHref: '#/programy/rework',
     sortOrder: 30,
@@ -934,7 +1107,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-streetwise',
     title: 'STREETWISE',
     subtitle: 'Lidé bez domova a mimo dosah systému: nízkoprahové zázemí, terén a první bezpečný krok.',
-    imageUrl: '/images/crops/streetwise/streetwise-bouda-stavba.jpg',
+    imageUrl: '/images/program-pillars/streetwise-skica.png',
     ctaLabel: 'O programu',
     ctaHref: '#/programy/streetwise',
     sortOrder: 40,
@@ -944,7 +1117,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-bod-zlomu',
     title: 'BOD ZLOMU',
     subtitle: 'Děti z dětských domovů a mladí lidé po ústavní péči: přechod do samostatnosti, vztahů a vlastního směru.',
-    imageUrl: '/images/crops/new-photos/foto-175300-mid.jpg',
+    imageUrl: '/images/program-pillars/bod-zlomu-skica.png',
     ctaLabel: 'O programu',
     ctaHref: '#/programy/bod-zlomu',
     sortOrder: 50,
@@ -954,7 +1127,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-stabilizace',
     title: 'STABILIZACE',
     subtitle: 'Konečný podpůrný program: udržet změnu v bydlení, práci, režimu, komunitě a běžném životě.',
-    imageUrl: '/images/crops/new-photos/foto-175413-mid.jpg',
+    imageUrl: '/images/program-pillars/stabilizace-skica.png',
     ctaLabel: 'O programu',
     ctaHref: '#/programy/stabilizace',
     sortOrder: 60,
@@ -963,6 +1136,60 @@ const starterSlides: HomeSlide[] = [
 ];
 
 const starterSlideIds = new Set(starterSlides.map((slide) => slide.id));
+const designedTextSlidePattern = /^\/images\/\d{2}\.png$/i;
+const sketchPillarSlidePattern =
+  /^\/images\/program-pillars\/(?:jailbreak|reset|rework|streetwise|bod-zlomu|stabilizace)-skica\.png$/i;
+
+const practicePhotoSlides = [
+  {
+    id: 'practice-rose-arch',
+    title: 'Klenba, která vyrostla',
+    text: 'Z malých sazenic vznikl průchod. Stejně stavíme zázemí: trpělivě, rukama a krok za krokem.',
+    imageUrl: '/images/crops/roses-20260608/ruze-klenba.jpg'
+  },
+  {
+    id: 'practice-roses',
+    title: 'Trpělivost, která roste',
+    text: 'Růže, práce a čas připomínají, že změna nevzniká naráz.',
+    imageUrl: '/images/crops/roses-20260608/ruze-detail.jpg'
+  },
+  {
+    id: 'practice-gate',
+    title: 'První průchod',
+    text: 'Místo, kde se z prvního kontaktu může stát další bezpečný krok.',
+    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.jpg'
+  },
+  {
+    id: 'practice-workbench',
+    title: 'Zázemí z nalezeného',
+    text: 'Z věcí, které měly skončit, vzniká praktický prostor pro STREETWISE.',
+    imageUrl: '/images/crops/new-photos/foto-175346-mid.jpg'
+  },
+  {
+    id: 'practice-shelter',
+    title: 'Bouda v procesu',
+    text: 'Materiál, ruce a čas. Malé kroky, které dávají prostoru smysl.',
+    imageUrl: '/images/crops/streetwise/streetwise-bouda-stavba.jpg'
+  },
+  {
+    id: 'practice-flowers',
+    title: 'Zázemí z detailů',
+    text: 'I malá úprava prostoru mění pocit z prvního setkání.',
+    imageUrl: '/images/crops/roses-20260608/kvetiny-zazemi.jpg'
+  },
+  {
+    id: 'practice-path',
+    title: 'Cesta k bezpečí',
+    text: 'Každý stabilní bod začíná konkrétním místem, kam se dá přijít.',
+    imageUrl: '/images/crops/roses-20260608/ruze-pruchod.jpg'
+  },
+  {
+    id: 'practice-green',
+    title: 'Živé místo',
+    text: 'Zázemí nemá působit jako instituce. Má být čitelné, lidské a použitelné.',
+    imageUrl: '/images/crops/roses-20260608/ruze-svetlo.jpg'
+  }
+];
 
 const hasProgramPillarDeck = (slides: HomeSlide[]) =>
   slides.filter((slide) => slide.isActive && starterSlideIds.has(slide.id)).length === starterSlides.length;
@@ -1061,6 +1288,109 @@ const downloadSvgElement = (svg: SVGSVGElement, fileName: string) => {
   downloadDataUrl(dataUrl, fileName);
 };
 
+const normalizeCsvHeader = (value: string) => stripDiacritics(value).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const splitCsvLine = (line: string, delimiter: string) => {
+  const cells: string[] = [];
+  let current = '';
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const next = line[index + 1];
+    if (char === '"' && quoted && next === '"') {
+      current += '"';
+      index += 1;
+      continue;
+    }
+    if (char === '"') {
+      quoted = !quoted;
+      continue;
+    }
+    if (char === delimiter && !quoted) {
+      cells.push(current.trim());
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  cells.push(current.trim());
+  return cells;
+};
+
+const parseCsvText = (text: string) => {
+  const lines = text
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return [];
+  const headerLine = lines[0];
+  const delimiter = (headerLine.match(/;/g)?.length ?? 0) > (headerLine.match(/,/g)?.length ?? 0) ? ';' : ',';
+  const headers = splitCsvLine(headerLine, delimiter).map(normalizeCsvHeader);
+  return lines.slice(1).map((line) => {
+    const cells = splitCsvLine(line, delimiter);
+    return headers.reduce<Record<string, string>>((row, header, index) => {
+      if (header) row[header] = cells[index] ?? '';
+      return row;
+    }, {});
+  });
+};
+
+const csvValue = (row: Record<string, string>, keys: string[]) => {
+  for (const key of keys) {
+    const normalized = normalizeCsvHeader(key);
+    if (row[normalized]?.trim()) return row[normalized].trim();
+  }
+  return '';
+};
+
+const decodeCsvBuffer = (buffer: ArrayBuffer) => {
+  const decoderOptions = [
+    { label: 'utf-8', options: { fatal: true } },
+    { label: 'windows-1250', options: undefined },
+    { label: 'iso-8859-2', options: undefined },
+    { label: 'utf-8', options: undefined }
+  ];
+
+  for (const decoderOption of decoderOptions) {
+    try {
+      const decoded = new TextDecoder(decoderOption.label, decoderOption.options).decode(buffer);
+      if (!decoded.includes('\uFFFD')) return decoded;
+    } catch {
+      // Try the next common Czech CSV encoding.
+    }
+  }
+
+  return new TextDecoder('utf-8').decode(buffer);
+};
+
+const readTextFile = (file: File) => file.arrayBuffer().then(decodeCsvBuffer);
+
+const buildCodeArchiveEntriesFromCsv = (text: string, kind: CodeArchiveKind): CodeArchiveEntry[] => {
+  const importedAt = new Date().toISOString();
+  return parseCsvText(text)
+    .map<CodeArchiveEntry | null>((row, index) => {
+      const value = csvValue(row, ['value', 'hodnota', 'kod', 'code', 'barcode', 'qr', 'id', 'uniqueId', 'unikatniId']);
+      if (!value) return null;
+      const createdAt = csvValue(row, ['createdAt', 'created', 'datum', 'vytvoreno', 'datumVytvoreni']) || todayIso();
+      const entry: CodeArchiveEntry = {
+        id: crypto.randomUUID(),
+        kind,
+        value,
+        clientId: csvValue(row, ['clientId', 'klientId', 'idKlienta']),
+        clientName: csvValue(row, ['client', 'clientName', 'klient', 'jmenoKlienta', 'name']),
+        formId: csvValue(row, ['formId', 'formularId', 'templateId', 'sablonaId']),
+        formTitle: csvValue(row, ['form', 'formular', 'formTitle', 'template', 'sablona', 'document', 'dokument']),
+        note: csvValue(row, ['note', 'notes', 'poznamka', 'popis']) || `CSV řádek ${index + 2}`,
+        source: 'csv',
+        createdAt,
+        importedAt
+      };
+      return entry;
+    })
+    .filter((entry): entry is CodeArchiveEntry => Boolean(entry));
+};
+
 function useStoredState<T>(key: string, initialValue: T) {
   const [value, setValue] = React.useState<T>(() => {
     const stored = window.localStorage.getItem(key);
@@ -1133,21 +1463,6 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
         <ArrowRight size={16} />
       </button>
     </form>
-  );
-}
-
-function FeedbackCenter() {
-  const { messages } = useToast();
-  const latest = messages[messages.length - 1];
-  if (!latest) return null;
-  return (
-    <section className={`feedback-center ${latest.tone}`} aria-live="polite" aria-label="Aktuální stav aplikace">
-      <div className="feedback-center-icon"><FeedbackIcon tone={latest.tone} /></div>
-      <div>
-        <strong>{latest.title}</strong>
-        {latest.text && <span>{latest.text}</span>}
-      </div>
-    </section>
   );
 }
 
@@ -1287,6 +1602,32 @@ function SectionIntro({ label, title, text }: { label: string; title: string; te
       <h2>{title}</h2>
       <p>{text}</p>
     </div>
+  );
+}
+
+function StarCard({
+  value,
+  title,
+  text,
+  index
+}: {
+  value: string;
+  title: string;
+  text: string;
+  index: number;
+}) {
+  return (
+    <article className="star-card">
+      <div className="star-card-top">
+        <span className="star-card-mark" aria-hidden="true">
+          <Star size={18} />
+        </span>
+        <span className="star-card-index">{String(index + 1).padStart(2, '0')}</span>
+      </div>
+      <strong>{value}</strong>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
   );
 }
 
@@ -1635,7 +1976,8 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const manualPauseUntil = React.useRef(0);
   const swipeStartX = React.useRef<number | null>(null);
   const activeSlide = visibleSlides[activeIndex] ?? visibleSlides[0] ?? starterSlides[0];
-  const activeSlideHasDesignedText = /^\/images\/\d{2}\.png$/i.test(activeSlide.imageUrl);
+  const activeSlideHasDesignedText =
+    designedTextSlidePattern.test(activeSlide.imageUrl) || sketchPillarSlidePattern.test(activeSlide.imageUrl);
   const slideCount = visibleSlides.length;
   const wrapIndex = (index: number) => {
     if (!slideCount) return 0;
@@ -1704,14 +2046,15 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
       onKeyDown={handleKeyDown}
     >
       <div
-        className="hero-banner"
+        className={`hero-banner${activeSlideHasDesignedText ? ' designed-slide' : ''}`}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={() => {
           swipeStartX.current = null;
         }}
       >
-        <img src={activeSlide.imageUrl} alt="" />
+        {activeSlideHasDesignedText && <img className="hero-banner-bg" src={activeSlide.imageUrl} alt="" aria-hidden="true" />}
+        <img className="hero-banner-main" src={activeSlide.imageUrl} alt="" />
         <div className={`hero-banner-overlay${activeSlideHasDesignedText ? ' visually-hidden' : ''}`} aria-live="polite">
           <p className="quiet-label">Projekt druhých šancí</p>
           <h1>{activeSlide.title}</h1>
@@ -1760,6 +2103,77 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   );
 }
 
+function PracticePhotoSlideshow() {
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const manualPauseUntil = React.useRef(0);
+  const slideCount = practicePhotoSlides.length;
+  const activeSlide = practicePhotoSlides[activeIndex] ?? practicePhotoSlides[0];
+  const wrapIndex = (index: number) => (index + slideCount) % slideCount;
+  const goToSlide = (index: number, manual = false) => {
+    if (manual) manualPauseUntil.current = Date.now() + 9000;
+    setActiveIndex(wrapIndex(index));
+  };
+  const goNext = (manual = false) => {
+    if (manual) manualPauseUntil.current = Date.now() + 9000;
+    setActiveIndex((current) => wrapIndex(current + 1));
+  };
+  const goPrev = (manual = false) => {
+    if (manual) manualPauseUntil.current = Date.now() + 9000;
+    setActiveIndex((current) => wrapIndex(current - 1));
+  };
+
+  React.useEffect(() => {
+    if (slideCount < 2) return;
+    const timer = window.setInterval(() => {
+      if (Date.now() < manualPauseUntil.current) return;
+      setActiveIndex((current) => (current + 1) % slideCount);
+    }, 7200);
+    return () => window.clearInterval(timer);
+  }, [slideCount]);
+
+  return (
+    <section className="practice-gallery" aria-label="Fotky z praxe">
+      <div className="practice-gallery-copy">
+        <p className="section-label">ZÁZEMÍ V OBRAZECH</p>
+        <h2>Reálné místo, reálná práce.</h2>
+        <p>
+          Skici ukazují směr projektu. Fotky drží stopu toho, jak zázemí opravdu vzniká: z materiálu, který se
+          podaří zachránit, a z práce, která je vidět až krok za krokem.
+        </p>
+      </div>
+      <div className="practice-gallery-stage">
+        <figure className="practice-photo-frame">
+          <img src={activeSlide.imageUrl} alt="" />
+          <figcaption>
+            <span>{activeIndex + 1} / {slideCount}</span>
+            <strong>{activeSlide.title}</strong>
+            <p>{activeSlide.text}</p>
+          </figcaption>
+        </figure>
+        <div className="practice-gallery-controls">
+          <button type="button" aria-label="Předchozí fotka" title="Předchozí fotka" onClick={() => goPrev(true)}>
+            <ChevronLeft size={22} />
+          </button>
+          <div className="slide-dots compact" aria-label="Výběr fotky">
+            {practicePhotoSlides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                className={index === activeIndex ? 'active' : ''}
+                aria-label={`Zobrazit fotku ${index + 1}`}
+                onClick={() => goToSlide(index, true)}
+              />
+            ))}
+          </div>
+          <button type="button" aria-label="Další fotka" title="Další fotka" onClick={() => goNext(true)}>
+            <ArrowRight size={21} />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomePage({
   news,
   slides,
@@ -1784,25 +2198,35 @@ function HomePage({
   return (
     <>
       <HomeSlideshow slides={slides} />
+      <PracticePhotoSlideshow />
 
-      <section className="streetwise-feature">
-        <div className="streetwise-copy">
+      <section className="streetwise-feature" aria-label="STREETWISE zázemí">
+        <article className="streetwise-card streetwise-card-main">
           <p className="section-label">STREETWISE</p>
           <h2>Z věcí, které měly skončit, stavíme nové zázemí.</h2>
           <p>
             REST||ART Integrace vzniká stejně jako naše bouda: z nalezeného materiálu, práce, trpělivosti a víry, že
             i to, co bylo odepsané, může znovu sloužit.
           </p>
-          <p>
-            STREETWISE bude zázemí a střecha pro lidi bez domova. Praktický prostor pro první kontakt, bezpečí a další
-            krok zpět ke stabilitě.
-          </p>
-          <a className="button primary" href="#/programy">
-            Zobrazit STREETWISE <ArrowRight size={18} />
+          <a className="button primary" href="#/programy/streetwise">
+            STREETWISE <ArrowRight size={18} />
           </a>
-        </div>
-        <figure className="streetwise-photo">
+        </article>
+        <article className="streetwise-card">
+          <strong>První kontakt</strong>
+          <p>
+            Nízkoprahové místo, kam člověk může přijít bez dlouhého vysvětlování a začít řešit další krok.
+          </p>
+        </article>
+        <article className="streetwise-card">
+          <strong>Zázemí a střecha</strong>
+          <p>
+            Praktický prostor pro lidi bez domova: bezpečí, orientace, hygienické balíky a návazná pomoc.
+          </p>
+        </article>
+        <figure className="streetwise-card streetwise-photo">
           <img src="/images/crops/streetwise/streetwise-bouda-stavba.jpg" alt="" />
+          <figcaption>Reálná stavba z nalezeného materiálu</figcaption>
         </figure>
       </section>
 
@@ -2346,6 +2770,86 @@ function StaticInfoPage({ page }: { page: (typeof staticPages)[string] }) {
   );
 }
 
+function MediaKitPage({ page, assets }: { page: (typeof staticPages)[string]; assets: PublicMediaAsset[] }) {
+  return (
+    <section className="content-section static-info-page">
+      <div className="static-info-head">
+        <p className="section-label">{page.label}</p>
+        <h1>{page.title}</h1>
+        <p>{page.lead}</p>
+      </div>
+      <div className="static-info-grid">
+        {page.sections.map((section) => (
+          <article key={section.title}>
+            <h2>{section.title}</h2>
+            <p>{section.text}</p>
+          </article>
+        ))}
+      </div>
+      <div className="media-kit-grid">
+        {assets.map((asset) => {
+          const publicUrl = resolvePublicFileUrl(asset.fileUrl);
+          return (
+            <article className="media-kit-card" key={asset.id}>
+              <div className={`media-kit-preview ${asset.kind === 'logo' ? 'is-logo' : ''}`}>
+                {asset.kind === 'pdf' ? <FileText size={54} /> : <img src={publicUrl} alt={asset.title} />}
+              </div>
+              <div className="media-kit-body">
+                <div>
+                  <p className="section-label">{asset.kind === 'pdf' ? 'PDF' : asset.kind === 'logo' ? 'Znak' : 'Fotografie'}</p>
+                  <h2>{asset.title}</h2>
+                  <p>{asset.description}</p>
+                  <small>{asset.fileName} · {readableBytes(asset.fileSize)} · {asset.mimeType}</small>
+                </div>
+                <a className="button secondary" href={publicUrl} target="_blank" rel="noreferrer" download={asset.fileName}>
+                  <Download size={18} /> {asset.kind === 'pdf' ? 'Otevřít plakát' : 'Stáhnout obrázek'}
+                </a>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function TransparencyDocumentsPage({ documents }: { documents: MediaFile[] }) {
+  const sorted = documents.slice().sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+
+  return (
+    <section className="content-section static-info-page">
+      <div className="static-info-head">
+        <p className="section-label">Transparentnost</p>
+        <h1>Povinné zveřejňování</h1>
+        <p>Zveřejňujeme dokumenty pro transparentnost projektových aktivit, financování a veřejných podkladů.</p>
+      </div>
+      <div className="client-document-list">
+        {sorted.length === 0 ? (
+          <p className="empty-note">Zatím nejsou žádné zveřejněné transparentní dokumenty. Přidejte je prosím v administraci v sekci Média.</p>
+        ) : (
+          sorted.map((document) => {
+            const publicUrl = resolvePublicFileUrl(document.fileUrl);
+            return (
+              <article key={document.id}>
+                <div>
+                  <strong>{document.title || document.fileName}</strong>
+                  <span>{document.fileName}</span>
+                  <small>
+                    {new Date(document.createdAt).toLocaleDateString('cs-CZ')} · {readableBytes(document.fileSize)} · {document.mimeType || 'soubor'}
+                  </small>
+                </div>
+                <a className="button secondary" href={publicUrl} target="_blank" rel="noreferrer">
+                  <Download size={18} /> Otevřít PDF
+                </a>
+              </article>
+            );
+          })
+        )}
+      </div>
+    </section>
+  );
+}
+
 function ContactPage({ onNotify }: { onNotify: (tone: FeedbackTone, title: string, text?: string) => void }) {
   const prepareMessage = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -2455,6 +2959,63 @@ function FeedbackIcon({ tone }: { tone: FeedbackTone }) {
   if (tone === 'success') return <CheckCircle2 {...props} />;
   if (tone === 'error') return <AlertCircle {...props} />;
   return <Info {...props} />;
+}
+
+const normalizeFeedbackTone = (variant: FeedbackVariant = 'info'): FeedbackTone => (variant === 'danger' ? 'error' : variant);
+
+function Feedback({
+  variant = 'info',
+  icon = true,
+  title,
+  description,
+  showCloseButton = false,
+  onClose,
+  children,
+  className = ''
+}: {
+  variant?: FeedbackVariant;
+  icon?: boolean;
+  title?: string;
+  description?: string;
+  showCloseButton?: boolean;
+  onClose?: () => void;
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  const tone = normalizeFeedbackTone(variant);
+  return (
+    <section className={`ui-feedback ${tone}${className ? ` ${className}` : ''}`} aria-live={tone === 'error' ? 'assertive' : 'polite'}>
+      {icon && (
+        <div className="ui-feedback-icon" aria-hidden="true">
+          <FeedbackIcon tone={tone} />
+        </div>
+      )}
+      <div className="ui-feedback-body">
+        {title && <strong className="ui-feedback-title">{title}</strong>}
+        {description && <p className="ui-feedback-description">{description}</p>}
+        {children}
+      </div>
+      {showCloseButton && onClose && (
+        <button className="ui-feedback-close" type="button" aria-label="Zavřít hlášku" onClick={onClose}>
+          <X size={16} />
+        </button>
+      )}
+    </section>
+  );
+}
+
+function Line() {
+  return <span className="ui-line" aria-hidden="true" />;
+}
+
+function SectionDivider({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="section-divider" role="separator" aria-label={typeof children === 'string' ? children : undefined}>
+      <Line />
+      <span>{children}</span>
+      <Line />
+    </div>
+  );
 }
 
 function Badge({ tone = 'info', children }: { tone?: FeedbackTone; children: React.ReactNode }) {
@@ -2600,16 +3161,15 @@ function ToastStack({
   return (
     <div className="toast-stack" role="status" aria-live="polite" aria-atomic="false">
       {messages.map((message) => (
-        <div className={`ui-toast ${message.tone}`} key={message.id}>
-          <div className="toast-icon"><FeedbackIcon tone={message.tone} /></div>
-          <div>
-            <strong>{message.title}</strong>
-            {message.text && <p>{message.text}</p>}
-          </div>
-          <button type="button" aria-label="Zavřít hlášku" onClick={() => onDismiss(message.id)}>
-            <X size={16} />
-          </button>
-        </div>
+        <Feedback
+          className="ui-toast"
+          key={message.id}
+          variant={message.tone}
+          title={message.title}
+          description={message.text}
+          showCloseButton={true}
+          onClose={() => onDismiss(message.id)}
+        />
       ))}
     </div>
   );
@@ -4071,6 +4631,7 @@ function App() {
   const [accounts, setAccounts] = useStoredState<AuthAccount[]>('restart-auth-accounts', starterAccounts);
   const [managedUsers, setManagedUsers] = React.useState<ManagedUser[]>([]);
   const [mediaFiles, setMediaFiles] = React.useState<MediaFile[]>([]);
+  const [publicMediaFiles, setPublicMediaFiles] = React.useState<MediaFile[]>(seededTransparentDocuments);
   const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
   const [sessionId, setSessionId] = useStoredState<string | null>('restart-auth-session', null);
@@ -4110,6 +4671,24 @@ function App() {
       })
       .catch(() => undefined);
   }, [setNews, setSlides]);
+
+  React.useEffect(() => {
+    listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY)
+      .then((items) => {
+        setPublicMediaFiles((current) => {
+          const fallbackIds = new Set(current.map((item) => item.fileUrl));
+          const merged = [...current];
+          items.forEach((item) => {
+            if (!fallbackIds.has(item.fileUrl)) {
+              merged.push(item);
+              fallbackIds.add(item.fileUrl);
+            }
+          });
+          return merged;
+        });
+      })
+      .catch(() => undefined);
+  }, []);
 
   React.useEffect(() => {
     refreshNewsDiscussion().catch(() => undefined);
@@ -4203,6 +4782,8 @@ function App() {
     });
     return saved;
   };
+  const uploadMediaViaApi = (mediaFile: File, category = TRANSPARENCY_DOCUMENT_CATEGORY): Promise<MediaUploadResult> =>
+    uploadMediaFile(mediaFile, category);
   const saveNotificationViaApi = async (notification: Omit<NotificationItem, 'createdAt' | 'readAt'> & { createdAt?: string; readAt?: string | null }) => {
     const saved = await saveNotificationRecord(notification);
     setNotifications((current) => {
@@ -4277,6 +4858,9 @@ function App() {
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
 
   const staticPage = staticPages[currentPath];
+  const transparencyPublicDocuments = publicMediaFiles
+    .filter((document) => document.category === TRANSPARENCY_DOCUMENT_CATEGORY || document.fileUrl.startsWith('/documents/transparency/'))
+    .filter((document, index, list) => list.findIndex((other) => other.fileUrl === document.fileUrl) === index);
   const page =
     currentPath === '/co-delame' ? (
       <WorkPage />
@@ -4297,6 +4881,10 @@ function App() {
       />
     ) : currentPath === '/zapojeni' ? (
       <SupportPage />
+    ) : currentPath === '/media' ? (
+      <MediaKitPage page={staticPages['/media']} assets={publicMediaKitAssets} />
+    ) : currentPath === '/povinne-zverejnovani' ? (
+      <TransparencyDocumentsPage documents={transparencyPublicDocuments} />
     ) : currentPath === '/kontakt' ? (
       <ContactPage onNotify={notify} />
     ) : staticPage ? (
@@ -4339,6 +4927,7 @@ function App() {
           mediaFiles={mediaFiles}
           clientDocuments={clientDocuments}
           notifications={notifications}
+          discussion={newsDiscussion}
           onClientsChange={setClients}
           onNewsChange={setNews}
           onSlidesChange={setSlides}
@@ -4348,6 +4937,7 @@ function App() {
           onSlideSaveRequest={saveSlideViaApi}
           onDocumentSaveRequest={saveDocumentViaApi}
           onMediaSaveRequest={saveMediaViaApi}
+          onMediaUploadRequest={uploadMediaViaApi}
           onNotificationSaveRequest={saveNotificationViaApi}
           onNotificationReadRequest={markNotificationReadViaApi}
           onUserUpdateRequest={updateManagedUserViaApi}
@@ -4388,7 +4978,6 @@ function App() {
       <WeatherLeaves />
       <Header currentPath={currentPath} account={currentAccount} onNotify={notify} />
       <Breadcrumb path={currentPath} />
-      <FeedbackCenter />
       <main id="top">
         <RevealFx key={currentPath} className="page-reveal" delay={70}>
           {page}
@@ -4432,6 +5021,7 @@ function AdminWorkspace({
   mediaFiles,
   clientDocuments,
   notifications,
+  discussion,
   onClientsChange,
   onNewsChange,
   onSlidesChange,
@@ -4441,6 +5031,7 @@ function AdminWorkspace({
   onSlideSaveRequest,
   onDocumentSaveRequest,
   onMediaSaveRequest,
+  onMediaUploadRequest,
   onNotificationSaveRequest,
   onNotificationReadRequest,
   onUserUpdateRequest,
@@ -4456,6 +5047,7 @@ function AdminWorkspace({
   mediaFiles: MediaFile[];
   clientDocuments: ClientDocument[];
   notifications: NotificationItem[];
+  discussion: NewsDiscussion;
   onClientsChange: React.Dispatch<React.SetStateAction<ClientRecord[]>>;
   onNewsChange: React.Dispatch<React.SetStateAction<NewsItem[]>>;
   onSlidesChange: React.Dispatch<React.SetStateAction<HomeSlide[]>>;
@@ -4465,6 +5057,7 @@ function AdminWorkspace({
   onSlideSaveRequest?: (item: HomeSlide) => Promise<HomeSlide>;
   onDocumentSaveRequest?: (document: Omit<ClientDocument, 'createdAt'> & { createdAt?: string }) => Promise<ClientDocument>;
   onMediaSaveRequest?: (media: Omit<MediaFile, 'createdAt' | 'uploadedBy'> & { createdAt?: string; uploadedBy?: string | null }) => Promise<MediaFile>;
+  onMediaUploadRequest?: (mediaFile: File, category: string) => Promise<MediaUploadResult>;
   onNotificationSaveRequest?: (
     notification: Omit<NotificationItem, 'createdAt' | 'readAt'> & { createdAt?: string; readAt?: string | null }
   ) => Promise<NotificationItem>;
@@ -4475,6 +5068,8 @@ function AdminWorkspace({
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
   const [activeTab, setActiveTab] = React.useState<AdminSection>('dashboard');
+  const [focusedNewsId, setFocusedNewsId] = React.useState('');
+  const [focusedActivityId, setFocusedActivityId] = React.useState('');
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
   const [selectedClientId, setSelectedClientId] = React.useState('');
   const [clientQuery, setClientQuery] = React.useState('');
@@ -4519,6 +5114,7 @@ function AdminWorkspace({
     uploadedBy: account.id,
     createdAt: todayIso()
   });
+  const [mediaUploadFile, setMediaUploadFile] = React.useState<File | null>(null);
   const [managedUserForm, setManagedUserForm] = React.useState<ManagedUser>({
     id: '',
     role: 'client',
@@ -4549,6 +5145,9 @@ function AdminWorkspace({
     barcodeValue: '',
     qrValue: ''
   });
+  const [codeArchive, setCodeArchive] = useStoredState<CodeArchiveEntry[]>('restart-admin-code-archive', []);
+  const [codeArchiveQuery, setCodeArchiveQuery] = React.useState('');
+  const [codeArchiveKindFilter, setCodeArchiveKindFilter] = React.useState<'all' | CodeArchiveKind>('all');
   const barcodeRef = React.useRef<SVGSVGElement | null>(null);
   const qrCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const [settingsDraft, setSettingsDraft] = useStoredState<AdminSettingsDraft>('restart-admin-settings', {
@@ -4566,6 +5165,18 @@ function AdminWorkspace({
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
   const selectedToolsClient = selectedClientId ? clients.find((client) => client.id === selectedClientId) ?? null : null;
   const toolsClientHasOperationalId = Boolean(selectedToolsClient?.operationalId?.trim());
+  const filteredCodeArchive = codeArchive
+    .filter((entry) => codeArchiveKindFilter === 'all' || entry.kind === codeArchiveKindFilter)
+    .filter((entry) => {
+      const query = codeArchiveQuery.trim().toLowerCase();
+      if (!query) return true;
+      return [entry.value, entry.clientName, entry.clientId, entry.formTitle, entry.formId, entry.note]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    })
+    .sort((left, right) => new Date(right.importedAt || right.createdAt).getTime() - new Date(left.importedAt || left.createdAt).getTime());
+  const barcodeArchiveCount = codeArchive.filter((entry) => entry.kind === 'barcode').length;
+  const qrArchiveCount = codeArchive.filter((entry) => entry.kind === 'qr').length;
   const clientStatusOptions = Array.from(new Set(clients.map((client) => client.status || 'Bez stavu'))).sort((left, right) =>
     left.localeCompare(right, 'cs')
   );
@@ -4673,36 +5284,128 @@ function AdminWorkspace({
   const unreadNotifications = notifications.filter((notification) => !notification.readAt);
   const activeUsers = managedUsers.filter((user) => user.isActive);
   const pendingDocuments = clientDocuments.filter((document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase()));
-  const adminActivityItems = [
+  const newsById = new Map(news.map((item) => [item.id, item]));
+  const notificationTargets = notifications.map((notification) => ({
+    notification,
+    target: parseAdminActivityLink(notification.linkHref)
+  }));
+  const notifiedCommentIds = new Set(
+    notificationTargets
+      .map(({ target }) => getAdminActivityQueryParam(target?.href, 'comment'))
+      .filter(Boolean)
+  );
+  const notifiedNewsLikeIds = new Set(
+    notificationTargets
+      .filter(({ notification }) => notification.title.toLowerCase().includes('srdíčko'))
+      .map(({ target }) => target?.newsId)
+      .filter(Boolean)
+  );
+  const notifiedUserIds = new Set(notificationTargets.map(({ target }) => target?.userId).filter(Boolean));
+  const registrationUsers = managedUsers.filter((user) => user.role === 'client');
+  const interactionActivityCount = Object.values(discussion.likes).reduce((sum, item) => sum + Number(item.count || 0), 0) + discussion.comments.length;
+  const adminActivityItems: AdminActivityItem[] = [
+    ...notifications.slice(0, 18).map((notification) => ({
+      id: `notification-${notification.id}`,
+      kind: 'notification' as const,
+      title: notification.title,
+      text: notification.body,
+      date: notification.createdAt,
+      tone: notification.readAt ? 'info' : toFeedbackTone(notification.tone || 'warning'),
+      icon: Bell,
+      target: {
+        ...(parseAdminActivityLink(notification.linkHref) ?? { tab: 'notifications' as AdminSection, href: notification.linkHref }),
+        notificationId: notification.id
+      },
+      unread: !notification.readAt,
+      meta: notification.category
+    })),
+    ...discussion.comments
+      .filter((comment) => !notifiedCommentIds.has(comment.id))
+      .slice(-20)
+      .map((comment) => ({
+        id: `comment-${comment.id}`,
+        kind: 'comment' as const,
+        title: 'Přidaný komentář',
+        text: `${comment.authorName}: ${shortenActivityText(comment.body, 120)}`,
+        date: comment.createdAt,
+        tone: 'info' as const,
+        icon: MessageCircle,
+        target: { tab: 'news' as AdminSection, newsId: comment.newsId },
+        meta: newsById.get(comment.newsId)?.title ?? 'Aktualita'
+      })),
+    ...Object.values(discussion.likes)
+      .filter((like) => Number(like.count || 0) > 0 && !notifiedNewsLikeIds.has(like.newsId))
+      .map((like) => ({
+        id: `like-${like.newsId}-${like.count}`,
+        kind: 'like' as const,
+        title: 'Srdíčka u aktuality',
+        text: `${like.count}x <3 u „${newsById.get(like.newsId)?.title ?? 'aktuality'}“`,
+        date: newsById.get(like.newsId)?.date ?? todayIso(),
+        tone: 'success' as const,
+        icon: Heart,
+        target: { tab: 'news' as AdminSection, newsId: like.newsId },
+        meta: 'Aktuality'
+      })),
+    ...registrationUsers
+      .filter((user) => !notifiedUserIds.has(user.id))
+      .slice(0, 12)
+      .map((user) => ({
+        id: `registration-${user.id}`,
+        kind: 'registration' as const,
+        title: 'Nová registrace',
+        text: `${user.name} - ${user.email}`,
+        date: user.createdAt,
+        tone: 'success' as const,
+        icon: UserRound,
+        target: { tab: 'users' as AdminSection, userId: user.id },
+        meta: 'Klientský účet'
+      })),
     ...clientDocuments.slice(0, 8).map((document) => ({
       id: `document-${document.id}`,
+      kind: 'document' as const,
       title: document.title,
       text: `Dokument: ${document.status || 'bez stavu'}`,
       date: document.createdAt,
-      tone: document.signedAt ? 'success' : 'warning'
-    })),
-    ...notifications.slice(0, 8).map((notification) => ({
-      id: `notification-${notification.id}`,
-      title: notification.title,
-      text: `Notifikace: ${notification.category}`,
-      date: notification.createdAt,
-      tone: notification.readAt ? 'info' : 'warning'
+      tone: document.signedAt ? 'success' as const : 'warning' as const,
+      icon: ClipboardList,
+      target: { tab: 'forms' as AdminSection, documentId: document.id },
+      meta: 'Dokument'
     })),
     ...clients.slice(0, 8).map((client) => ({
       id: `client-${client.id}`,
+      kind: 'client' as const,
       title: `${client.firstName} ${client.lastName}`,
       text: `Klient: ${client.program} - ${client.status}`,
       date: client.createdAt,
-      tone: 'success'
+      tone: 'success' as const,
+      icon: Users,
+      target: { tab: 'clients' as AdminSection, clientId: client.id },
+      meta: client.operationalId ? client.operationalId : 'bez ID'
     })),
     ...news.slice(0, 8).map((item) => ({
       id: `news-${item.id}`,
+      kind: 'news' as const,
       title: item.title,
       text: 'Aktualita publikovaná na webu',
       date: item.date,
-      tone: 'info'
+      tone: 'info' as const,
+      icon: Newspaper,
+      target: { tab: 'news' as AdminSection, newsId: item.id },
+      meta: 'Aktualita'
     }))
-  ].sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
+  ].sort((left, right) => {
+    const leftDate = new Date(left.date).getTime();
+    const rightDate = new Date(right.date).getTime();
+    return (Number.isNaN(rightDate) ? 0 : rightDate) - (Number.isNaN(leftDate) ? 0 : leftDate);
+  });
+  const systemActivityItems = adminActivityItems.filter((item) => item.kind === 'like' || item.kind === 'comment' || item.kind === 'registration');
+  const previewNews = (focusedNewsId ? news.find((item) => item.id === focusedNewsId) : null) ?? news[0] ?? null;
+  const previewNewsComments = previewNews
+    ? discussion.comments
+        .filter((comment) => comment.newsId === previewNews.id)
+        .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+    : [];
+  const previewNewsLike = previewNews ? discussion.likes[previewNews.id] : null;
 
   React.useEffect(() => {
     if (!barcodeRef.current || !toolsDraft.barcodeValue.trim()) return;
@@ -5049,21 +5752,58 @@ function AdminWorkspace({
         createdAt: todayIso()
       };
     setMediaForm(nextMedia);
+    setMediaUploadFile(null);
     setAdminDialog({ type: 'media', media: nextMedia });
     onNotify('info', file ? 'Médium načteno k úpravě' : 'Nové médium', file?.title ?? 'Zadejte název a cestu k souboru.');
   };
 
+  const onMediaUploadSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.currentTarget.files?.[0] || null;
+    setMediaUploadFile(selectedFile);
+    if (!selectedFile) return;
+    setMediaForm((current) => ({
+      ...current,
+      title: current.title || selectedFile.name.replace(/\.[^.]+$/, ''),
+      fileName: selectedFile.name,
+      mimeType: selectedFile.type || current.mimeType || 'application/pdf',
+      fileSize: selectedFile.size
+    }));
+    onNotify('info', 'Soubor zvolen', `Nahrávání připraveno: ${selectedFile.name}`);
+  };
+
   const saveMediaDialog = async (event: React.FormEvent) => {
     event.preventDefault();
-    const fileName = mediaForm.fileName.trim() || mediaForm.fileUrl.split('/').pop() || mediaForm.title.trim();
+    let fileName = mediaForm.fileName.trim() || mediaForm.fileUrl.split('/').pop() || mediaForm.title.trim();
+    let fileUrl = mediaForm.fileUrl.trim();
+    let mimeType = mediaForm.mimeType.trim() || 'application/octet-stream';
+    let fileSize = Number(mediaForm.fileSize) || 0;
+
+    if (mediaUploadFile) {
+      if (!onMediaUploadRequest) {
+        onNotify('warning', 'Nahrávání je vypnuté', 'Soubor nejde uložit bez dostupného upload endpointu.');
+        return;
+      }
+      try {
+        const uploaded = await onMediaUploadRequest(mediaUploadFile, mediaForm.category || TRANSPARENCY_DOCUMENT_CATEGORY);
+        fileUrl = uploaded.fileUrl;
+        fileName = mediaForm.fileName.trim() || uploaded.fileName;
+        mimeType = uploaded.mimeType || mimeType;
+        fileSize = uploaded.fileSize || fileSize;
+        onNotify('success', 'Soubor nahrán', `${mediaUploadFile.name} je uložen na serveru.`);
+      } catch (error) {
+        onNotify('error', 'Nahrávání souboru selhalo', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+        return;
+      }
+    }
+
     const nextMedia: MediaFile = {
       ...mediaForm,
       id: mediaForm.id || crypto.randomUUID(),
       title: mediaForm.title.trim(),
       fileName,
-      fileUrl: mediaForm.fileUrl.trim(),
-      mimeType: mediaForm.mimeType.trim() || 'application/octet-stream',
-      fileSize: Number(mediaForm.fileSize) || 0,
+      fileUrl,
+      mimeType,
+      fileSize,
       category: mediaForm.category.trim() || 'visual',
       altText: mediaForm.altText.trim(),
       uploadedBy: mediaForm.uploadedBy || account.id,
@@ -5081,6 +5821,7 @@ function AdminWorkspace({
       const saved = await onMediaSaveRequest(nextMedia);
       setMediaForm(saved);
       setAdminDialog({ type: 'media', media: saved });
+      setMediaUploadFile(null);
       onNotify('success', 'Médium uloženo', saved.title);
     } catch (error) {
       onNotify('error', 'Médium se nepodařilo uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
@@ -5266,27 +6007,196 @@ function AdminWorkspace({
     onNotify('success', 'QR kód stažen', 'PNG je připravené pro tisk nebo sdílení.');
   };
 
+  const saveCurrentCodeToArchive = (kind: CodeArchiveKind) => {
+    const value = kind === 'barcode' ? toolsDraft.barcodeValue.trim() : toolsDraft.qrValue.trim();
+    if (!value) {
+      onNotify('warning', kind === 'barcode' ? 'Čárový kód není připravený' : 'QR kód není připravený', 'Nejdřív vyplňte nebo vygenerujte hodnotu.');
+      return;
+    }
+    const entry: CodeArchiveEntry = {
+      id: crypto.randomUUID(),
+      kind,
+      value,
+      clientId: selectedToolsClient?.id ?? '',
+      clientName: selectedToolsClient ? `${selectedToolsClient.firstName} ${selectedToolsClient.lastName}`.trim() : `${toolsDraft.firstName} ${toolsDraft.lastName}`.trim(),
+      formId: selectedTemplate?.id ?? '',
+      formTitle: selectedTemplate?.title ?? '',
+      note: kind === 'barcode' ? 'Ručně uložený čárový kód z Tools.' : 'Ručně uložený QR kód z Tools.',
+      source: 'manual',
+      createdAt: todayIso(),
+      importedAt: new Date().toISOString()
+    };
+    let duplicate = false;
+    setCodeArchive((current) => {
+      duplicate = current.some((item) => item.kind === entry.kind && item.value === entry.value);
+      return duplicate ? current : [entry, ...current];
+    });
+    if (duplicate) {
+      onNotify('info', 'Kód už je v archivu', value);
+      return;
+    }
+    onNotify('success', kind === 'barcode' ? 'Čárový kód uložen do archivu' : 'QR kód uložen do archivu', value);
+  };
+
+  const importCodeArchiveCsv = async (event: React.ChangeEvent<HTMLInputElement>, kind: CodeArchiveKind) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    try {
+      const text = await readTextFile(file);
+      const entries = buildCodeArchiveEntriesFromCsv(text, kind);
+      if (entries.length === 0) {
+        onNotify('warning', 'CSV neobsahuje kódy', 'Soubor musí mít sloupec value/hodnota/kod/qr/barcode.');
+        return;
+      }
+      let inserted = 0;
+      let skipped = 0;
+      setCodeArchive((current) => {
+        const existing = new Set(current.map((entry) => `${entry.kind}:${entry.value}`));
+        const uniqueEntries = entries.filter((entry) => {
+          const key = `${entry.kind}:${entry.value}`;
+          if (existing.has(key)) {
+            skipped += 1;
+            return false;
+          }
+          existing.add(key);
+          inserted += 1;
+          return true;
+        });
+        return [...uniqueEntries, ...current];
+      });
+      onNotify(
+        'success',
+        kind === 'barcode' ? 'Čárové kódy importovány' : 'QR kódy importovány',
+        `${inserted} přidáno${skipped ? `, ${skipped} duplicit přeskočeno` : ''}.`
+      );
+    } catch (error) {
+      onNotify('error', 'CSV se nepodařilo načíst', error instanceof Error ? error.message : 'Zkontrolujte soubor a zkuste to znovu.');
+    }
+  };
+
+  const deleteCodeArchiveEntry = (entry: CodeArchiveEntry) => {
+    setCodeArchive((current) => current.filter((item) => item.id !== entry.id));
+    onNotify('success', 'Kód odebrán z archivu', entry.value);
+  };
+
+  const exportCodeArchiveCsv = () => {
+    const rows = filteredCodeArchive.length ? filteredCodeArchive : codeArchive;
+    if (rows.length === 0) {
+      onNotify('warning', 'Archiv je prázdný', 'Nejdřív importujte CSV nebo uložte kód z Tools.');
+      return;
+    }
+    const escapeCell = (value: string | number) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const header = ['type', 'value', 'clientId', 'clientName', 'formId', 'formTitle', 'note', 'source', 'createdAt', 'importedAt'];
+    const body = rows.map((entry) =>
+      [
+        entry.kind,
+        entry.value,
+        entry.clientId,
+        entry.clientName,
+        entry.formId,
+        entry.formTitle,
+        entry.note,
+        entry.source,
+        entry.createdAt,
+        entry.importedAt
+      ]
+        .map(escapeCell)
+        .join(';')
+    );
+    const csv = `\uFEFF${[header.join(';'), ...body].join('\r\n')}`;
+    downloadDataUrl(`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`, `restart-archiv-kodu-${todayIso()}.csv`);
+    onNotify('success', 'Archiv exportován', `${rows.length} záznamů v CSV.`);
+  };
+
   const saveSettingsDialog = (event: React.FormEvent) => {
     event.preventDefault();
     setAdminDialog(null);
     onNotify('success', 'Nastavení uloženo', 'Hodnoty administrace byly aktualizované.');
   };
 
+  const markNotificationReadQuietly = async (notification: NotificationItem) => {
+    if (notification.readAt || !onNotificationReadRequest) return;
+    try {
+      await onNotificationReadRequest(notification.id);
+    } catch (error) {
+      onNotify('warning', 'Notifikace zůstala nepřečtená', error instanceof Error ? error.message : notification.title);
+    }
+  };
+
+  const focusAdminTarget = (target: AdminActivityTarget, label: string) => {
+    setActiveTab(target.tab);
+    if (target.clientId) {
+      const client = clients.find((item) => item.id === target.clientId);
+      if (client) {
+        setSelectedClientId(client.id);
+        setClientForm({ ...emptyClient, ...client, operationalId: client.operationalId || '' });
+      }
+    }
+    if (target.newsId) {
+      setFocusedNewsId(target.newsId);
+      window.setTimeout(() => {
+        const selector = `[data-news-id="${target.newsId?.replace(/"/g, '\\"')}"]`;
+        document.querySelector(selector)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 80);
+    }
+    if (target.userId) {
+      const user = managedUsers.find((item) => item.id === target.userId);
+      if (user) {
+        setManagedUserForm(user);
+        setAdminDialog({ type: 'user', user });
+      }
+    }
+    if (target.notificationId && target.tab === 'notifications') {
+      const notification = notifications.find((item) => item.id === target.notificationId);
+      if (notification) openNotificationDialog(notification);
+    }
+    if (target.href && !target.href.startsWith('#/admin') && target.href.startsWith('#/')) {
+      window.location.hash = target.href;
+    }
+    onNotify('info', 'Aktivita otevřena', label);
+  };
+
+  const openAdminActivity = async (item: AdminActivityItem) => {
+    setFocusedActivityId(item.id);
+    if (item.kind === 'notification' && item.target.notificationId) {
+      const notification = notifications.find((entry) => entry.id === item.target.notificationId);
+      if (notification) await markNotificationReadQuietly(notification);
+    }
+    focusAdminTarget(item.target, item.title);
+  };
+
+  const openNotificationTarget = async (notification: NotificationItem) => {
+    const target = parseAdminActivityLink(notification.linkHref);
+    if (!target) {
+      openNotificationDialog(notification);
+      return;
+    }
+    await markNotificationReadQuietly(notification);
+    focusAdminTarget({ ...target, notificationId: notification.id }, notification.title);
+  };
+
+  const renderActivityItem = (item: AdminActivityItem) => {
+    const ActivityIcon = item.icon;
+    return (
+      <button
+        key={item.id}
+        className={`activity-feed-item ${item.unread ? 'is-unread' : ''} ${focusedActivityId === item.id ? 'is-focused' : ''}`}
+        type="button"
+        onClick={() => openAdminActivity(item)}
+      >
+        <span className={`activity-icon activity-${item.kind}`} aria-hidden="true">
+          <ActivityIcon size={16} />
+        </span>
+        <Badge tone={item.tone}>{item.meta ?? new Date(item.date).toLocaleDateString('cs-CZ')}</Badge>
+        <strong>{item.title}</strong>
+        <small>{item.text}</small>
+      </button>
+    );
+  };
+
   const selectAdminTab = (tab: AdminSection) => {
     setActiveTab(tab);
-    const labels: Record<AdminSection, string> = {
-      dashboard: 'Dashboard',
-      content: 'Příspěvky / obsah',
-      clients: 'Klienti',
-      forms: 'Formuláře',
-      tools: 'Tools',
-      news: 'Aktuality',
-      media: 'Média',
-      users: 'Uživatelé a role',
-      notifications: 'Notifikace',
-      settings: 'Nastavení'
-    };
-    onNotify('info', 'Sekce otevřena', labels[tab]);
   };
 
   const selectClientForForm = (clientId: string) => {
@@ -5325,7 +6235,17 @@ function AdminWorkspace({
             onLogout={onLogout}
             quickAction={<button className="button primary" type="button" onClick={() => selectAdminTab('clients')}><Plus size={18} /> Nový klient</button>}
           />
-          {adminMessage && <p className={`admin-message ${adminMessageTone}`}>{adminMessage}</p>}
+          {adminMessage && (
+            <Feedback
+              className="admin-message"
+              variant={adminMessageTone}
+              title={adminMessageTone === 'success' ? 'Hotovo' : adminMessageTone === 'warning' ? 'Pozor' : adminMessageTone === 'error' ? 'Akce se nepodařila' : 'Informace'}
+              description={adminMessage}
+              showCloseButton={true}
+              onClose={() => setAdminMessage('')}
+            />
+          )}
+          <SectionDivider>{currentAdminNav.label}</SectionDivider>
 
         {activeTab === 'dashboard' && (
           <div className="admin-grid dashboard-grid">
@@ -5372,13 +6292,7 @@ function AdminWorkspace({
             <article className="admin-card">
               <h3>Poslední aktivita</h3>
               <div className="activity-list timeline-list">
-                {adminActivityItems.slice(0, 7).map((item) => (
-                  <span key={item.id}>
-                    <Badge tone={item.tone as FeedbackTone}>{new Date(item.date).toLocaleDateString('cs-CZ')}</Badge>
-                    <strong>{item.title}</strong>
-                    <small>{item.text}</small>
-                  </span>
-                ))}
+                {adminActivityItems.slice(0, 7).map(renderActivityItem)}
                 {adminActivityItems.length === 0 && <p className="empty-note">Zatím nejsou uložené žádné změny.</p>}
               </div>
             </article>
@@ -5842,6 +6756,9 @@ function AdminWorkspace({
                 <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Stáhnout SVG" aria-label="Stáhnout čárový kód jako SVG" onClick={downloadBarcode}>
                   <Download size={18} />
                 </button>
+                <button className="icon-tool tooltip-link" type="button" data-tooltip="Uložit do archivu" aria-label="Uložit čárový kód do archivu" onClick={() => saveCurrentCodeToArchive('barcode')}>
+                  <Save size={18} />
+                </button>
               </div>
               <label>
                 Hodnota pro QR
@@ -5857,7 +6774,13 @@ function AdminWorkspace({
                 <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Stáhnout PNG" aria-label="Stáhnout QR kód jako PNG" onClick={downloadQrCode}>
                   <Download size={18} />
                 </button>
+                <button className="icon-tool tooltip-link" type="button" data-tooltip="Uložit do archivu" aria-label="Uložit QR kód do archivu" onClick={() => saveCurrentCodeToArchive('qr')}>
+                  <Save size={18} />
+                </button>
               </div>
+              <button className="button secondary" type="button" onClick={() => selectAdminTab('codeArchive')}>
+                <FolderOpen size={18} /> Otevřít archiv kódů
+              </button>
             </article>
 
             <article className="admin-card tools-help-card">
@@ -5867,6 +6790,122 @@ function AdminWorkspace({
                 <div><strong>060626</strong><span>datum registrace ve formátu den, měsíc, rok</span></div>
                 <div><strong>4821</strong><span>čtyři náhodné číslice pro rozlišení</span></div>
                 <div><strong>001</strong><span>pořadí klienta nebo ručně zadané číslo</span></div>
+              </div>
+            </article>
+          </div>
+        )}
+
+        {activeTab === 'codeArchive' && (
+          <div className="admin-grid code-archive-grid">
+            <article className="admin-card code-archive-hero">
+              <div className="admin-card-header">
+                <div>
+                  <span className="eyebrow">ARCHIV KÓDŮ</span>
+                  <h3>Čárové kódy a QR pro formuláře</h3>
+                  <p className="form-help">
+                    Archiv drží hodnotu kódu, klienta a vazbu na formulář. Finální sada formulářů s čárovými kódy se sem později může importovat přes CSV.
+                  </p>
+                </div>
+                <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Export CSV" aria-label="Exportovat archiv do CSV" onClick={exportCodeArchiveCsv}>
+                  <Download size={18} />
+                </button>
+              </div>
+              <div className="code-archive-stats">
+                <div className="metric-card">
+                  <span>Čárové kódy</span>
+                  <strong>{barcodeArchiveCount}</strong>
+                  <p>CODE128 a štítky</p>
+                </div>
+                <div className="metric-card">
+                  <span>QR kódy</span>
+                  <strong>{qrArchiveCount}</strong>
+                  <p>Profil, formulář, odkaz</p>
+                </div>
+                <div className="metric-card">
+                  <span>Celkem</span>
+                  <strong>{codeArchive.length}</strong>
+                  <p>záznamů v archivu</p>
+                </div>
+              </div>
+            </article>
+
+            <article className="admin-card code-import-card">
+              <div className="admin-card-header">
+                <div>
+                  <h3><Barcode size={18} /> Import čárových kódů</h3>
+                  <p className="form-help">CSV může obsahovat sloupce value/hodnota, client/klient, form/formulář, note/poznámka.</p>
+                </div>
+                <label className="button secondary code-import-button">
+                  <Upload size={18} /> Nahrát CSV
+                  <input type="file" accept=".csv,text/csv" onChange={(event) => importCodeArchiveCsv(event, 'barcode')} />
+                </label>
+              </div>
+            </article>
+
+            <article className="admin-card code-import-card">
+              <div className="admin-card-header">
+                <div>
+                  <h3><QrCode size={18} /> Import QR kódů</h3>
+                  <p className="form-help">QR archiv používá stejnou CSV strukturu. Hodnota může být ID, URL profilu, nebo text pro formulář.</p>
+                </div>
+                <label className="button secondary code-import-button">
+                  <Upload size={18} /> Nahrát CSV
+                  <input type="file" accept=".csv,text/csv" onChange={(event) => importCodeArchiveCsv(event, 'qr')} />
+                </label>
+              </div>
+            </article>
+
+            <article className="admin-card code-archive-table-card">
+              <div className="admin-card-header">
+                <div>
+                  <h3>Přehled archivu</h3>
+                  <p className="form-help">{filteredCodeArchive.length} z {codeArchive.length} záznamů podle aktuálního filtru.</p>
+                </div>
+                <Badge tone={codeArchive.length ? 'success' : 'warning'}>{codeArchive.length ? 'Archiv aktivní' : 'Bez záznamů'}</Badge>
+              </div>
+              <div className="form-grid two code-archive-filters">
+                <label>
+                  Vyhledat
+                  <input value={codeArchiveQuery} onChange={(event) => setCodeArchiveQuery(event.target.value)} placeholder="ID, klient, formulář..." />
+                </label>
+                <label>
+                  Typ kódu
+                  <select value={codeArchiveKindFilter} onChange={(event) => setCodeArchiveKindFilter(event.target.value as 'all' | CodeArchiveKind)}>
+                    <option value="all">Všechny typy</option>
+                    <option value="barcode">Čárové kódy</option>
+                    <option value="qr">QR kódy</option>
+                  </select>
+                </label>
+              </div>
+              <div className="code-archive-table">
+                {codeArchive.length === 0 && <p className="empty-note">Archiv je zatím prázdný. Uložte kód z Tools nebo nahrajte CSV.</p>}
+                {codeArchive.length > 0 && filteredCodeArchive.length === 0 && <p className="empty-note">Žádný kód neodpovídá zvolenému filtru.</p>}
+                {filteredCodeArchive.map((entry) => {
+                  const CodeIcon = entry.kind === 'barcode' ? Barcode : QrCode;
+                  return (
+                    <div className="code-archive-row" key={entry.id}>
+                      <span className={`code-kind-chip is-${entry.kind}`}>
+                        <CodeIcon size={15} /> {entry.kind === 'barcode' ? 'CODE128' : 'QR'}
+                      </span>
+                      <div className="code-archive-value">
+                        <strong>{entry.value}</strong>
+                        <small>{entry.note || (entry.source === 'csv' ? 'Import CSV' : 'Ručně uložený záznam')}</small>
+                      </div>
+                      <div>
+                        <span>Klient</span>
+                        <strong>{entry.clientName || entry.clientId || 'bez vazby'}</strong>
+                      </div>
+                      <div>
+                        <span>Formulář</span>
+                        <strong>{entry.formTitle || entry.formId || 'nepřiřazeno'}</strong>
+                      </div>
+                      <Badge tone={entry.source === 'csv' ? 'info' : 'success'}>{entry.source === 'csv' ? 'CSV' : 'Ručně'}</Badge>
+                      <button className="icon-tool tooltip-link danger" type="button" data-tooltip="Smazat z archivu" aria-label={`Smazat kód ${entry.value}`} onClick={() => deleteCodeArchiveEntry(entry)}>
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </article>
           </div>
@@ -5887,7 +6926,7 @@ function AdminWorkspace({
               <div className="news-admin-list">
                 {news.length === 0 && <p className="empty-note">Zatím není uložená žádná aktualita.</p>}
                 {news.map((item) => (
-                  <article key={item.id} className="news-admin-row">
+                  <article key={item.id} className={`news-admin-row ${focusedNewsId === item.id ? 'is-targeted' : ''}`} data-news-id={item.id}>
                     <button className="news-admin-main" type="button" onClick={() => editNews(item)}>
                       <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
                       <strong>{item.title}</strong>
@@ -5907,13 +6946,27 @@ function AdminWorkspace({
             </div>
 
             <div className="admin-card">
-              <h3>Náhled poslední aktuality</h3>
-              {news[0] ? (
+              <h3>{focusedNewsId ? 'Aktualita z aktivity' : 'Náhled poslední aktuality'}</h3>
+              {previewNews ? (
                 <article className="news-preview-card">
-                  <time dateTime={news[0].date}>{new Date(news[0].date).toLocaleDateString('cs-CZ')}</time>
-                  <h4>{news[0].title}</h4>
-                  <p>{news[0].excerpt}</p>
-                  {news[0].body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(news[0].body) }} />}
+                  <time dateTime={previewNews.date}>{new Date(previewNews.date).toLocaleDateString('cs-CZ')}</time>
+                  <h4>{previewNews.title}</h4>
+                  <p>{previewNews.excerpt}</p>
+                  <div className="news-interaction-summary" aria-label="Interakce aktuality">
+                    <Badge tone="success"><Heart size={13} /> {previewNewsLike?.count ?? 0}x &lt;3</Badge>
+                    <Badge tone="info"><MessageCircle size={13} /> {previewNewsComments.length} komentářů</Badge>
+                  </div>
+                  {previewNewsComments.length > 0 && (
+                    <div className="admin-comment-snippet-list">
+                      {previewNewsComments.slice(0, 4).map((comment) => (
+                        <span key={comment.id}>
+                          <strong>{comment.authorName}</strong>
+                          <small>{shortenActivityText(comment.body, 110)}</small>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {previewNews.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(previewNews.body) }} />}
                 </article>
               ) : (
                 <p className="empty-note">Po vytvoření aktuality se tady ukáže rychlý náhled.</p>
@@ -6177,7 +7230,7 @@ function AdminWorkspace({
               <div className="admin-card-header">
                 <div>
                   <h3>Notifikace</h3>
-                  <p className="form-help">{unreadNotifications.length} nepřečtených upozornění.</p>
+                  <p className="form-help">{unreadNotifications.length} nepřečtených upozornění, {interactionActivityCount} veřejných interakcí.</p>
                 </div>
                 <button className="icon-tool tooltip-link primary" type="button" data-tooltip="Nová notifikace" aria-label="Nová notifikace" onClick={() => openNotificationDialog()}>
                   <Plus size={18} />
@@ -6187,8 +7240,8 @@ function AdminWorkspace({
                 {notifications.length === 0 && <p className="empty-note">Zatím nejsou uložená žádná upozornění.</p>}
                 {notifications.map((notification) => (
                   <article key={notification.id} className={notification.readAt ? 'read' : ''}>
-                    <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
-                    <button className="notification-admin-main" type="button" onClick={() => openNotificationDialog(notification)}>
+                    <Badge tone={toFeedbackTone(notification.tone)}>{notification.category}</Badge>
+                    <button className="notification-admin-main" type="button" onClick={() => openNotificationTarget(notification)}>
                       <strong>{notification.title}</strong>
                       <p>{notification.body}</p>
                       <span>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</span>
@@ -6202,16 +7255,29 @@ function AdminWorkspace({
                           <CheckCircle2 size={16} />
                         </button>
                       )}
-                      {notification.linkHref && <a href={notification.linkHref}>Otevřít</a>}
+                      {notification.linkHref && (
+                        <button className="text-link-button" type="button" onClick={() => openNotificationTarget(notification)}>
+                          Otevřít
+                        </button>
+                      )}
                     </div>
                   </article>
                 ))}
               </div>
             </article>
             <article className="admin-card">
+              <h3>Systémové události</h3>
+              <div className="activity-list timeline-list system-event-list">
+                {systemActivityItems.slice(0, 9).map(renderActivityItem)}
+                {systemActivityItems.length === 0 && <p className="empty-note">Zatím nejsou žádné registrace, komentáře ani srdíčka k řešení.</p>}
+              </div>
+            </article>
+            <article className="admin-card">
               <h3>Typy upozornění</h3>
               <div className="table-lite">
                 <div><strong>Registrace</strong><span>nové účty a klientské žádosti</span></div>
+                <div><strong>Srdíčka</strong><span>reakce registrovaných uživatelů u aktualit</span></div>
+                <div><strong>Komentáře</strong><span>nové veřejné komentáře a odpovědi</span></div>
                 <div><strong>Dokumenty</strong><span>formuláře připravené k podpisu</span></div>
                 <div><strong>Systém</strong><span>API, databáze a bezpečnostní zprávy</span></div>
               </div>

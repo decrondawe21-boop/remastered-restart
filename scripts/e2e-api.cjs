@@ -233,6 +233,8 @@ async function request(path, options = {}) {
           [likedNewsId, email]
         ).catch(() => undefined);
       }
+      await query('DELETE FROM notifications WHERE created_by = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
+      await query('DELETE FROM notifications WHERE body LIKE ? OR title LIKE ?', [`%${email}%`, '%API test aktualita%']).catch(() => undefined);
       await query('DELETE FROM users WHERE email = ?', [email]).catch(() => undefined);
       if (testNewsId) await query('DELETE FROM news WHERE id = ?', [testNewsId]).catch(() => undefined);
       await getPool().end().catch(() => undefined);

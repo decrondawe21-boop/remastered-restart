@@ -102,6 +102,13 @@ export type ApiMediaFile = {
   createdAt: string;
 };
 
+export type ApiMediaUpload = {
+  fileName: string;
+  fileUrl: string;
+  mimeType: string;
+  fileSize: number;
+};
+
 export type ApiClientDocument = {
   id: string;
   clientId: string | null;
@@ -307,6 +314,36 @@ export async function saveMedia(media: Omit<ApiMediaFile, 'createdAt' | 'uploade
   const body = await request<{ media: ApiMediaFile }>('/api/media', {
     method: 'POST',
     body: JSON.stringify(media)
+  });
+  return body.media;
+}
+
+export async function listPublicMedia(category?: string) {
+  const search = new URLSearchParams();
+  if (category) {
+    search.set('category', category);
+  }
+  const path = search.toString() ? `/api/media/public?${search}` : '/api/media/public';
+  const body = await request<{ media: ApiMediaFile[] }>(path);
+  return body.media;
+}
+
+export async function uploadMediaFile(file: File, category = 'transparency') {
+  const toBase64 = async (value: File) => {
+    const buffer = await value.arrayBuffer();
+    const byteString = String.fromCharCode(...new Uint8Array(buffer));
+    return btoa(byteString);
+  };
+
+  const body = await request<{ media: ApiMediaUpload }>('/api/media/upload', {
+    method: 'POST',
+    body: JSON.stringify({
+      fileName: file.name,
+      mimeType: file.type || 'application/pdf',
+      fileSize: file.size,
+      contentBase64: await toBase64(file),
+      category
+    })
   });
   return body.media;
 }

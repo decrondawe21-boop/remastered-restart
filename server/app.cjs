@@ -1,5 +1,7 @@
 const crypto = require('node:crypto');
 const { query } = require('./db.cjs');
+const fs = require('node:fs');
+const path = require('node:path');
 const {
   clearSessionCookie,
   createSessionToken,
@@ -21,12 +23,70 @@ function sendJson(response, statusCode, body, headers = {}) {
   response.end(JSON.stringify(body));
 }
 
+const publicRoot = path.resolve(__dirname, '..', 'public');
+const documentMimeTypes = {
+  '.pdf': 'application/pdf',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+};
+
+async function servePublicDocument(request, response, url) {
+  if (!['GET', 'HEAD'].includes(request.method) || !url.pathname.startsWith('/documents/')) {
+    return false;
+  }
+
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(url.pathname);
+  } catch {
+    sendJson(response, 400, { error: 'Invalid file path.' });
+    return true;
+  }
+
+  const filePath = path.resolve(publicRoot, `.${decodedPath}`);
+  if (!filePath.startsWith(`${publicRoot}${path.sep}`)) {
+    sendJson(response, 403, { error: 'Forbidden.' });
+    return true;
+  }
+
+  let stat;
+  try {
+    stat = await fs.promises.stat(filePath);
+  } catch {
+    sendJson(response, 404, { error: 'File not found.' });
+    return true;
+  }
+
+  if (!stat.isFile()) {
+    sendJson(response, 404, { error: 'File not found.' });
+    return true;
+  }
+
+  response.writeHead(200, {
+    'content-type': documentMimeTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
+    'content-length': stat.size,
+    'cache-control': 'public, max-age=3600'
+  });
+
+  if (request.method === 'HEAD') {
+    response.end();
+    return true;
+  }
+
+  fs.createReadStream(filePath).pipe(response);
+  return true;
+}
+
 function readBody(request) {
   return new Promise((resolve, reject) => {
     let raw = '';
     request.on('data', (chunk) => {
       raw += chunk.toString();
-      if (raw.length > 1_000_000) {
+      if (raw.length > 12_000_000) {
         reject(new Error('Request body is too large.'));
         request.destroy();
       }
@@ -89,6 +149,31 @@ async function requireAdmin(request, response) {
   return user;
 }
 
+function truncateText(value, maxLength = 150) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+}
+
+async function createSystemNotification({
+  recipientId = null,
+  title,
+  body,
+  tone = 'info',
+  category = 'Systém',
+  linkHref = '',
+  createdBy = null
+}) {
+  try {
+    await query(
+      `INSERT INTO notifications (id, recipient_id, title, body, tone, category, link_href, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?)`,
+      [randomId(), recipientId, title, body, tone, category, linkHref, createdBy]
+    );
+  } catch (error) {
+    console.warn('[notifications] system notification failed:', error.message);
+  }
+}
+
 async function registerClient(request, response) {
   const body = await readBody(request);
   const missing = requireFields(body, ['name', 'email', 'password']);
@@ -113,6 +198,14 @@ async function registerClient(request, response) {
 
   const rows = await query('SELECT id, role, name, email, phone, created_at FROM users WHERE id = ? LIMIT 1', [id]);
   const user = rows[0];
+  await createSystemNotification({
+    title: 'Nová registrace klienta',
+    body: `${user.name} (${user.email}) vytvořil/a klientský účet.`,
+    tone: 'success',
+    category: 'Registrace',
+    linkHref: `#/admin?tab=users&user=${encodeURIComponent(user.id)}`,
+    createdBy: user.id
+  });
   sendJson(response, 201, { user: publicUser(user) }, { 'set-cookie': sessionCookie(createSessionToken(user)) });
 }
 
@@ -350,7 +443,7 @@ async function toggleNewsLike(request, response, newsId) {
     sendJson(response, 401, { error: 'Login required.' });
     return;
   }
-  const newsRows = await query('SELECT id FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
+  const newsRows = await query('SELECT id, title FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
   if (newsRows.length === 0) {
     sendJson(response, 404, { error: 'News item not found.' });
     return;
@@ -360,6 +453,14 @@ async function toggleNewsLike(request, response, newsId) {
     await query('DELETE FROM news_likes WHERE news_id = ? AND user_id = ?', [newsId, user.id]);
   } else {
     await query('INSERT INTO news_likes (news_id, user_id) VALUES (?, ?)', [newsId, user.id]);
+    await createSystemNotification({
+      title: 'Nové srdíčko u aktuality',
+      body: `${user.name || user.email} přidal/a srdíčko k aktualitě „${newsRows[0].title}“.`,
+      tone: 'success',
+      category: 'Aktuality',
+      linkHref: `#/admin?tab=news&news=${encodeURIComponent(newsId)}`,
+      createdBy: user.id
+    });
   }
   const rows = await query(
     `SELECT
@@ -394,7 +495,7 @@ async function addNewsComment(request, response, newsId) {
     sendJson(response, 400, { error: 'Comment is too long.' });
     return;
   }
-  const newsRows = await query('SELECT id FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
+  const newsRows = await query('SELECT id, title FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
   if (newsRows.length === 0) {
     sendJson(response, 404, { error: 'News item not found.' });
     return;
@@ -432,7 +533,16 @@ async function addNewsComment(request, response, newsId) {
      LIMIT 1`,
     [id]
   );
-  sendJson(response, 201, { comment: publicComment(rows[0], user) });
+  const comment = publicComment(rows[0], user);
+  await createSystemNotification({
+    title: parentId ? 'Nová odpověď u aktuality' : 'Nový komentář u aktuality',
+    body: `${comment.authorName}: ${truncateText(comment.body)}`,
+    tone: 'info',
+    category: 'Komentáře',
+    linkHref: `#/admin?tab=news&news=${encodeURIComponent(newsId)}&comment=${encodeURIComponent(comment.id)}`,
+    createdBy: user.id
+  });
+  sendJson(response, 201, { comment });
 }
 
 async function updateNewsComment(request, response, commentId) {
@@ -860,6 +970,105 @@ function publicMedia(row) {
   };
 }
 
+function normalizeUploadCategory(category) {
+  const normalized = String(category || '').trim().toLowerCase();
+  if (normalized === 'media') return 'media';
+  return 'transparency';
+}
+
+function sanitizeUploadedFileName(value) {
+  const fileName = String(value || '').trim();
+  const safe = fileName.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/-+/g, '-').replace(/\.{2,}/g, '.');
+  return safe || `soubor-${Date.now()}`;
+}
+
+async function uploadMediaToPublicFolder(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+
+  const body = await readBody(request);
+  const fileName = String(body.fileName || '').trim();
+  const mimeType = String(body.mimeType || '').trim() || 'application/pdf';
+  const contentBase64 = String(body.contentBase64 || '').trim();
+  const category = normalizeUploadCategory(body.category);
+
+  if (!fileName) {
+    sendJson(response, 400, { error: 'fileName is required.' });
+    return;
+  }
+  if (!contentBase64) {
+    sendJson(response, 400, { error: 'contentBase64 is required.' });
+    return;
+  }
+
+  let binary;
+  try {
+    binary = Buffer.from(contentBase64, 'base64');
+  } catch (error) {
+    sendJson(response, 400, { error: 'Invalid file payload.' });
+    return;
+  }
+
+  if (!binary.length) {
+    sendJson(response, 400, { error: 'Uploaded file is empty.' });
+    return;
+  }
+  if (binary.length > 10_000_000) {
+    sendJson(response, 413, { error: 'Uploaded file is too large.' });
+    return;
+  }
+
+  const extensionByMime = {
+    'application/pdf': '.pdf',
+    'image/jpeg': '.jpg',
+    'image/jpg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp'
+  };
+  const extension = path.extname(fileName) || extensionByMime[mimeType.toLowerCase()] || '.pdf';
+  const baseName = sanitizeUploadedFileName(path.basename(fileName, extension) || 'dokument');
+  const safeName = `${randomId()}-${baseName}${extension}`;
+  const uploadFolder = category === 'media' ? 'media' : 'transparency';
+  const destination = path.resolve(__dirname, '..', 'public', 'documents', uploadFolder);
+
+  await fs.promises.mkdir(destination, { recursive: true });
+  const filePath = path.join(destination, safeName);
+  await fs.promises.writeFile(filePath, binary);
+
+  sendJson(response, 200, {
+    media: {
+      fileName: safeName,
+      fileUrl: `/documents/${uploadFolder}/${safeName}`,
+      mimeType,
+      fileSize: binary.length
+    }
+  });
+}
+
+async function listPublicMedia(request, response) {
+  const params = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+  const category = normalizeUploadCategory(params.searchParams.get('category') || 'transparency');
+  const rows = await query(
+    `SELECT
+       id,
+       title,
+       file_name AS fileName,
+       file_url AS fileUrl,
+       mime_type AS mimeType,
+       file_size AS fileSize,
+       category,
+       alt_text AS altText,
+       uploaded_by AS uploadedBy,
+       created_at AS createdAt
+     FROM media_files
+     WHERE category = ?
+     ORDER BY created_at DESC
+     LIMIT 300`,
+    [category]
+  );
+  sendJson(response, 200, { media: rows.map(publicMedia) });
+}
+
 async function listMedia(request, response) {
   const user = await requireAdmin(request, response);
   if (!user) return;
@@ -1155,6 +1364,8 @@ async function markNotificationRead(request, response, notificationId) {
 async function createApp(request, response) {
   try {
     const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+    if (await servePublicDocument(request, response, url)) return;
+
     if (request.method === 'GET' && url.pathname === '/api/health') {
       sendJson(response, 200, { ok: true });
       return;
@@ -1194,8 +1405,10 @@ async function createApp(request, response) {
     if (request.method === 'GET' && url.pathname === '/api/admin/users') return await listUsers(request, response);
     const userMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)$/);
     if (request.method === 'PATCH' && userMatch) return await updateUser(request, response, userMatch[1]);
+    if (request.method === 'GET' && url.pathname === '/api/media/public') return await listPublicMedia(request, response);
     if (request.method === 'GET' && url.pathname === '/api/media') return await listMedia(request, response);
     if (request.method === 'POST' && url.pathname === '/api/media') return await saveMedia(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/media/upload') return await uploadMediaToPublicFolder(request, response);
     if (request.method === 'GET' && url.pathname === '/api/documents') return await listDocuments(request, response);
     if (request.method === 'POST' && url.pathname === '/api/documents') return await saveDocument(request, response);
     if (request.method === 'GET' && url.pathname === '/api/notifications') return await listNotifications(request, response);

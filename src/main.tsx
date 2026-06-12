@@ -390,6 +390,16 @@ const publicMediaKitAssets: PublicMediaAsset[] = [
     kind: 'pdf'
   },
   {
+    id: 'restart-projekt-infografika',
+    title: 'Projekt REST||ART Integrace',
+    description: 'Prezentační projektová infografika s posláním, kontakty a základními pilíři projektu.',
+    fileName: 'restart-projekt-infografika.png',
+    fileUrl: '/images/media/restart-projekt-infografika.png',
+    mimeType: 'image/png',
+    fileSize: 1396629,
+    kind: 'image'
+  },
+  {
     id: 'restart-sekundarni-znak',
     title: 'Sekundární znak REST||ART',
     description: 'Černobílý kruhový znak pro dokumenty, plakáty a doprovodné materiály.',

@@ -1078,17 +1078,7 @@ const formSensitivity = (template: FormTemplate) => {
   return 'Standard';
 };
 
-const starterAccounts: AuthAccount[] = [
-  {
-    id: 'admin-seed',
-    role: 'admin',
-    name: 'Administrátor REST||ART',
-    email: 'admin@restart.local',
-    phone: '',
-    password: 'restart2026',
-    createdAt: '2026-06-03'
-  }
-];
+const starterAccounts: AuthAccount[] = [];
 
 const starterSlides: HomeSlide[] = [
   {
@@ -3763,7 +3753,9 @@ function WorkspaceTopbar({
   account,
   badge,
   onLogout,
-  quickAction
+  quickAction,
+  notificationCount = 0,
+  onNotificationsClick
 }: {
   title: string;
   text: string;
@@ -3771,6 +3763,8 @@ function WorkspaceTopbar({
   badge: string;
   onLogout: () => void;
   quickAction?: React.ReactNode;
+  notificationCount?: number;
+  onNotificationsClick?: () => void;
 }) {
   return (
     <div className="workspace-topbar">
@@ -3781,9 +3775,14 @@ function WorkspaceTopbar({
       </div>
       <div className="workspace-actions">
         {quickAction}
-        <button className="icon-action" type="button" aria-label="Notifikace">
+        <button
+          className="icon-action"
+          type="button"
+          aria-label={notificationCount > 0 ? `Notifikace: ${notificationCount} nepřečtené` : 'Notifikace'}
+          onClick={onNotificationsClick}
+        >
           <Bell size={18} />
-          <span>2</span>
+          {notificationCount > 0 && <span>{notificationCount}</span>}
         </button>
         <div className="session-chip">
           <UserRound size={16} />
@@ -3847,8 +3846,8 @@ function AuthScreen({
   onOpenModal: (modal: Exclude<ModalState, null>) => void;
 }) {
   const [mode, setMode] = React.useState<AuthMode>('login');
-  const [email, setEmail] = React.useState(role === 'admin' ? 'admin@restart.local' : '');
-  const [password, setPassword] = React.useState(role === 'admin' ? 'restart2026' : '');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const [name, setName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [message, setMessage] = React.useState('');
@@ -3898,12 +3897,12 @@ function AuthScreen({
           setMessage(
             role === 'client'
               ? 'Přihlášení se nepodařilo. Zkontrolujte e-mail, heslo a zda nejste v klientské zóně s admin účtem.'
-              : 'Přihlášení se nepodařilo. Zkontrolujte e-mail, heslo a oprávnění administrace.'
+              : 'Přihlášení se nepodařilo. Použijte aktivní administrátorský účet uložený v databázi.'
           );
           onNotify(
             'error',
             'Přihlášení se nepodařilo',
-            role === 'client' ? 'Pro admin účet použijte vstup do administrace.' : 'Účet nemá odpovídající administrátorský přístup.'
+            role === 'client' ? 'Pro admin účet použijte vstup do administrace.' : 'Zkontrolujte e-mail, heslo a zda je účet aktivní v DB.'
           );
           return;
         }
@@ -6481,6 +6480,21 @@ function AdminWorkspace({
   };
 
   const currentAdminNav = adminNavItems.find((item) => item.id === activeTab) ?? adminNavItems[0];
+  const programChartPalette = ['#226f3f', '#4f8f16', '#bb8f3a', '#0f4b3d', '#7aa66a', '#d8b15f', '#6a8f7a', '#15382f'];
+  const clientProgramStats = Array.from(
+    clients.reduce((groups, client) => {
+      const program = client.program?.trim() || 'Bez programu';
+      groups.set(program, (groups.get(program) || 0) + 1);
+      return groups;
+    }, new Map<string, number>())
+  )
+    .map(([program, count], index) => ({
+      program,
+      count,
+      share: clients.length > 0 ? Math.round((count / clients.length) * 100) : 0,
+      color: programChartPalette[index % programChartPalette.length]
+    }))
+    .sort((first, second) => second.count - first.count || first.program.localeCompare(second.program, 'cs'));
 
   return (
     <section className="admin-section" id="admin">
@@ -6493,6 +6507,8 @@ function AdminWorkspace({
             account={account}
             badge="Administrace"
             onLogout={onLogout}
+            notificationCount={notifications.filter((notification) => !notification.readAt).length}
+            onNotificationsClick={() => selectAdminTab('notifications')}
             quickAction={<button className="button primary" type="button" onClick={() => selectAdminTab('clients')}><Plus size={18} /> Nový klient</button>}
           />
           {adminMessage && (
@@ -6510,9 +6526,72 @@ function AdminWorkspace({
         {activeTab === 'dashboard' && (
           <div className="admin-grid dashboard-grid">
             <article className="admin-card metric-card">
-              <span>Klienti</span>
+              <span>Klienti celkem</span>
               <strong>{clients.length}</strong>
-              <p>aktivních záznamů v registru</p>
+              <p>aktivních záznamů v registru podle programu</p>
+              <div style={{ display: 'grid', gap: '12px', marginTop: '18px' }}>
+                <div
+                  aria-label={
+                    clientProgramStats.length > 0
+                      ? `Rozložení klientů podle programu: ${clientProgramStats.map((item) => `${item.program} ${item.count}`).join(', ')}`
+                      : 'Zatím nejsou evidovaní klienti podle programu.'
+                  }
+                  role="img"
+                  style={{
+                    display: 'flex',
+                    minHeight: '16px',
+                    overflow: 'hidden',
+                    borderRadius: '999px',
+                    background: 'rgba(34, 111, 63, 0.12)',
+                    boxShadow: 'inset 0 0 0 1px rgba(34, 111, 63, 0.16)'
+                  }}
+                >
+                  {clientProgramStats.length > 0 ? (
+                    clientProgramStats.map((item) => (
+                      <span
+                        key={item.program}
+                        title={`${item.program}: ${item.count} klientů (${item.share} %)`}
+                        style={{ width: `${Math.max(item.share, 4)}%`, background: item.color }}
+                      />
+                    ))
+                  ) : (
+                    <span style={{ width: '100%', background: 'rgba(34, 111, 63, 0.18)' }} />
+                  )}
+                </div>
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {clientProgramStats.length > 0 ? (
+                    clientProgramStats.map((item) => (
+                      <div
+                        key={item.program}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'auto 1fr auto',
+                          alignItems: 'center',
+                          gap: '8px',
+                          fontSize: '0.9rem',
+                          color: '#41564c'
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '999px',
+                            background: item.color
+                          }}
+                        />
+                        <span>{item.program}</span>
+                        <strong style={{ color: '#17241d' }}>
+                          {item.count} / {item.share} %
+                        </strong>
+                      </div>
+                    ))
+                  ) : (
+                    <span style={{ color: '#607067', fontSize: '0.9rem' }}>Zatím žádný klient k rozdělení.</span>
+                  )}
+                </div>
+              </div>
             </article>
             <article className="admin-card metric-card">
               <span>Aktuality</span>

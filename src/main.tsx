@@ -1520,6 +1520,19 @@ const dateToCompactId = (isoDate: string) => {
   return `${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getFullYear()).slice(-2)}`;
 };
 
+const dateToInputValue = (value?: string) => {
+  if (!value) return todayIso();
+  const directDate = value.slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(directDate)) return directDate;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? todayIso() : parsed.toISOString().slice(0, 10);
+};
+
+const clientSequenceNumber = (clients: Pick<ClientRecord, 'id'>[], clientId?: string) => {
+  const index = clientId ? clients.findIndex((client) => client.id === clientId) : -1;
+  return Math.max(1, index >= 0 ? index + 1 : clients.length + 1);
+};
+
 const randomFourDigits = () => String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 
 const buildClientOperationalId = (draft: Pick<AdminToolsDraft, 'firstName' | 'lastName' | 'registrationDate' | 'sequence'>, randomCode = randomFourDigits()) =>
@@ -5424,6 +5437,16 @@ function AdminWorkspace({
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
   const selectedToolsClient = selectedClientId ? clients.find((client) => client.id === selectedClientId) ?? null : null;
   const toolsClientHasOperationalId = Boolean(selectedToolsClient?.operationalId?.trim());
+  const toolsClientSequence = clientSequenceNumber(clients, selectedToolsClient?.id);
+  const toolsEffectiveDraft = selectedToolsClient
+    ? {
+        ...toolsDraft,
+        firstName: selectedToolsClient.firstName,
+        lastName: selectedToolsClient.lastName,
+        registrationDate: dateToInputValue(selectedToolsClient.createdAt),
+        sequence: toolsClientSequence
+      }
+    : toolsDraft;
   const filteredCodeArchive = codeArchive
     .filter((entry) => codeArchiveKindFilter === 'all' || entry.kind === codeArchiveKindFilter)
     .filter((entry) => {
@@ -5543,6 +5566,8 @@ function AdminWorkspace({
   const unreadNotifications = notifications.filter((notification) => !notification.readAt);
   const activeUsers = managedUsers.filter((user) => user.isActive);
   const pendingDocuments = clientDocuments.filter((document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase()));
+  const activeSlides = slides.filter((slide) => slide.isActive).sort((first, second) => first.sortOrder - second.sortOrder);
+  const clientsWithoutOperationalId = clients.filter((client) => !client.operationalId?.trim()).length;
   const newsById = new Map(news.map((item) => [item.id, item]));
   const notificationTargets = notifications.map((notification) => ({
     notification,
@@ -5702,6 +5727,31 @@ function AdminWorkspace({
   React.useEffect(() => {
     if (!selectedClientId && clients[0]) setSelectedClientId(clients[0].id);
   }, [clients, selectedClientId]);
+
+  React.useEffect(() => {
+    if (!selectedToolsClient) return;
+    const savedOperationalId = selectedToolsClient.operationalId?.trim() ?? '';
+    const nextDraft: AdminToolsDraft = {
+      firstName: selectedToolsClient.firstName,
+      lastName: selectedToolsClient.lastName,
+      registrationDate: dateToInputValue(selectedToolsClient.createdAt),
+      sequence: clientSequenceNumber(clients, selectedToolsClient.id),
+      generatedId: savedOperationalId,
+      barcodeValue: savedOperationalId,
+      qrValue: savedOperationalId
+    };
+    setToolsDraft((current) =>
+      current.firstName === nextDraft.firstName &&
+      current.lastName === nextDraft.lastName &&
+      current.registrationDate === nextDraft.registrationDate &&
+      current.sequence === nextDraft.sequence &&
+      current.generatedId === nextDraft.generatedId &&
+      current.barcodeValue === nextDraft.barcodeValue &&
+      current.qrValue === nextDraft.qrValue
+        ? current
+        : nextDraft
+    );
+  }, [clients, selectedToolsClient, setToolsDraft]);
 
   React.useEffect(() => {
     if (!formTemplates.length) return;
@@ -6174,11 +6224,11 @@ function AdminWorkspace({
       ...current,
       firstName: client.firstName,
       lastName: client.lastName,
-      registrationDate: client.createdAt || todayIso(),
-      sequence: Math.max(1, clients.findIndex((item) => item.id === client.id) + 1),
+      registrationDate: dateToInputValue(client.createdAt),
+      sequence: clientSequenceNumber(clients, client.id),
       generatedId: savedOperationalId,
-      barcodeValue: savedOperationalId || current.barcodeValue,
-      qrValue: savedOperationalId || current.qrValue
+      barcodeValue: savedOperationalId,
+      qrValue: savedOperationalId
     }));
     onNotify(
       'info',
@@ -6188,34 +6238,48 @@ function AdminWorkspace({
   };
 
   const generateOperationalId = async () => {
-    if (!toolsDraft.firstName.trim() && !toolsDraft.lastName.trim()) {
+    const sourceClient = selectedToolsClient;
+    const sourceDraft = sourceClient
+      ? {
+          ...toolsDraft,
+          firstName: sourceClient.firstName,
+          lastName: sourceClient.lastName,
+          registrationDate: dateToInputValue(sourceClient.createdAt),
+          sequence: clientSequenceNumber(clients, sourceClient.id)
+        }
+      : toolsDraft;
+    if (!sourceDraft.firstName.trim() && !sourceDraft.lastName.trim()) {
       onNotify('warning', 'ID nejde vygenerovat', 'Vyplňte jméno nebo příjmení klienta.');
       return;
     }
-    const selectedToolsClient = selectedClientId ? clients.find((client) => client.id === selectedClientId) : null;
-    if (selectedToolsClient?.operationalId?.trim()) {
-      const savedOperationalId = selectedToolsClient.operationalId.trim();
-      setToolsDraft((current) => ({
-        ...current,
-        generatedId: savedOperationalId,
-        barcodeValue: savedOperationalId,
-        qrValue: savedOperationalId
-      }));
-      onNotify('info', 'ID už existuje', `${selectedToolsClient.firstName} ${selectedToolsClient.lastName}: ${savedOperationalId}`);
-      return;
+    if (sourceClient?.operationalId?.trim()) {
+      const savedOperationalId = sourceClient.operationalId.trim();
+      const confirmed = window.confirm(`Klient ${sourceClient.firstName} ${sourceClient.lastName} už má ID ${savedOperationalId}. Přegenerovat ID podle aktuální karty klienta?`);
+      if (!confirmed) {
+        setToolsDraft((current) => ({
+          ...current,
+          ...sourceDraft,
+          generatedId: savedOperationalId,
+          barcodeValue: savedOperationalId,
+          qrValue: savedOperationalId
+        }));
+        onNotify('info', 'ID ponecháno beze změny', `${sourceClient.firstName} ${sourceClient.lastName}: ${savedOperationalId}`);
+        return;
+      }
     }
-    const generatedId = buildClientOperationalId(toolsDraft);
+    const generatedId = buildClientOperationalId(sourceDraft);
     setToolsDraft((current) => ({
       ...current,
+      ...sourceDraft,
       generatedId,
       barcodeValue: generatedId,
       qrValue: generatedId
     }));
-    if (!selectedToolsClient) {
+    if (!sourceClient) {
       onNotify('warning', 'ID vygenerováno jen lokálně', 'Vyberte klienta z registru, aby se ID uložilo do databáze.');
       return;
     }
-    const nextClient = { ...selectedToolsClient, operationalId: generatedId };
+    const nextClient = { ...sourceClient, operationalId: generatedId };
     onClientsChange((current) => current.map((client) => (client.id === nextClient.id ? nextClient : client)));
     if (!onClientSaveRequest) {
       onNotify('success', 'ID uloženo lokálně', generatedId);
@@ -6225,6 +6289,16 @@ function AdminWorkspace({
       const savedClient = await onClientSaveRequest(nextClient);
       onClientsChange((current) => current.map((client) => (client.id === savedClient.id ? savedClient : client)));
       setClientForm((current) => (current.id === savedClient.id ? savedClient : current));
+      setToolsDraft((current) => ({
+        ...current,
+        firstName: savedClient.firstName,
+        lastName: savedClient.lastName,
+        registrationDate: dateToInputValue(savedClient.createdAt),
+        sequence: clientSequenceNumber(clients, savedClient.id),
+        generatedId: savedClient.operationalId,
+        barcodeValue: savedClient.operationalId,
+        qrValue: savedClient.operationalId
+      }));
       setAdminMessageTone('success');
       setAdminMessage('Interní ID klienta je uložené v databázi.');
       onNotify('success', 'ID uloženo ke klientovi', `${savedClient.firstName} ${savedClient.lastName}: ${savedClient.operationalId}`);
@@ -6495,6 +6569,57 @@ function AdminWorkspace({
       color: programChartPalette[index % programChartPalette.length]
     }))
     .sort((first, second) => second.count - first.count || first.program.localeCompare(second.program, 'cs'));
+  let clientProgramChartCursor = 0;
+  const clientProgramChartBackground =
+    clientProgramStats.length > 0 && clients.length > 0
+      ? `conic-gradient(${clientProgramStats
+          .map((item) => {
+            const start = clientProgramChartCursor;
+            const end = start + (item.count / clients.length) * 100;
+            clientProgramChartCursor = end;
+            return `${item.color} ${start}% ${end}%`;
+          })
+          .join(', ')})`
+      : 'linear-gradient(135deg, rgba(34, 111, 63, 0.16), rgba(187, 143, 58, 0.16))';
+  const onlineWindowMs = 15 * 60 * 1000;
+  const onlineUsers = managedUsers.filter((user) => {
+    if (user.id === account.id) return true;
+    if (!user.lastLoginAt) return false;
+    const lastLogin = new Date(user.lastLoginAt).getTime();
+    return Number.isFinite(lastLogin) && Date.now() - lastLogin <= onlineWindowMs;
+  });
+  const documentStatusLabels: Record<string, string> = {
+    pending: 'Čeká na vyřízení',
+    prepared: 'Připraveno k podpisu',
+    draft: 'Rozpracováno',
+    ready: 'Připraveno',
+    signed: 'Podepsáno',
+    archived: 'Archiv'
+  };
+  const documentQueueStats = Array.from(
+    pendingDocuments.reduce((groups, document) => {
+      const status = String(document.status || 'pending');
+      const label = documentStatusLabels[status] || status;
+      groups.set(label, (groups.get(label) || 0) + 1);
+      return groups;
+    }, new Map<string, number>())
+  )
+    .map(([label, count]) => ({ label, count }))
+    .sort((first, second) => second.count - first.count || first.label.localeCompare(second.label, 'cs'));
+  const formFolderStats = Array.from(
+    formTemplates.reduce((groups, template) => {
+      const folder = template.folder || template.formGroup || template.title || 'Bez slozky';
+      groups.set(folder, (groups.get(folder) || 0) + 1);
+      return groups;
+    }, new Map<string, number>())
+  )
+    .map(([folder, count]) => ({
+      folder,
+      label: folder.replace(/^\d+_/, '').replace(/_/g, ' '),
+      count
+    }))
+    .sort((first, second) => second.count - first.count || first.label.localeCompare(second.label, 'cs'))
+    .slice(0, 4);
 
   return (
     <section className="admin-section" id="admin">
@@ -6526,10 +6651,12 @@ function AdminWorkspace({
         {activeTab === 'dashboard' && (
           <div className="admin-grid dashboard-grid">
             <article className="admin-card metric-card">
-              <span>Klienti celkem</span>
-              <strong>{clients.length}</strong>
-              <p>aktivních záznamů v registru podle programu</p>
-              <div style={{ display: 'grid', gap: '12px', marginTop: '18px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '18px', alignItems: 'start' }}>
+                <div>
+                  <span>Klienti celkem</span>
+                  <strong>{clients.length}</strong>
+                  <p>aktivních záznamů v registru podle programu</p>
+                </div>
                 <div
                   aria-label={
                     clientProgramStats.length > 0
@@ -6538,59 +6665,56 @@ function AdminWorkspace({
                   }
                   role="img"
                   style={{
-                    display: 'flex',
-                    minHeight: '16px',
-                    overflow: 'hidden',
-                    borderRadius: '999px',
-                    background: 'rgba(34, 111, 63, 0.12)',
-                    boxShadow: 'inset 0 0 0 1px rgba(34, 111, 63, 0.16)'
+                    width: '118px',
+                    height: '118px',
+                    borderRadius: '50%',
+                    background: clientProgramChartBackground,
+                    display: 'grid',
+                    placeItems: 'center',
+                    boxShadow: 'inset 0 0 0 1px rgba(34, 111, 63, 0.18)'
                   }}
                 >
-                  {clientProgramStats.length > 0 ? (
-                    clientProgramStats.map((item) => (
-                      <span
-                        key={item.program}
-                        title={`${item.program}: ${item.count} klientů (${item.share} %)`}
-                        style={{ width: `${Math.max(item.share, 4)}%`, background: item.color }}
-                      />
-                    ))
-                  ) : (
-                    <span style={{ width: '100%', background: 'rgba(34, 111, 63, 0.18)' }} />
-                  )}
+                  <span
+                    style={{
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '50%',
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: '#fff',
+                      color: '#17241d',
+                      fontWeight: 800,
+                      fontSize: '1.1rem'
+                    }}
+                  >
+                    {clients.length}
+                  </span>
                 </div>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                  {clientProgramStats.length > 0 ? (
-                    clientProgramStats.map((item) => (
-                      <div
-                        key={item.program}
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'auto 1fr auto',
-                          alignItems: 'center',
-                          gap: '8px',
-                          fontSize: '0.9rem',
-                          color: '#41564c'
-                        }}
-                      >
-                        <span
-                          aria-hidden="true"
-                          style={{
-                            width: '10px',
-                            height: '10px',
-                            borderRadius: '999px',
-                            background: item.color
-                          }}
-                        />
-                        <span>{item.program}</span>
-                        <strong style={{ color: '#17241d' }}>
-                          {item.count} / {item.share} %
-                        </strong>
-                      </div>
-                    ))
-                  ) : (
-                    <span style={{ color: '#607067', fontSize: '0.9rem' }}>Zatím žádný klient k rozdělení.</span>
-                  )}
-                </div>
+              </div>
+              <div style={{ display: 'grid', gap: '10px', marginTop: '18px' }}>
+                {clientProgramStats.length > 0 ? (
+                  clientProgramStats.map((item) => (
+                    <div
+                      key={item.program}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto 1fr auto',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '0.9rem',
+                        color: '#41564c'
+                      }}
+                    >
+                      <span aria-hidden="true" style={{ width: '10px', height: '10px', borderRadius: '999px', background: item.color }} />
+                      <span>{item.program}</span>
+                      <strong style={{ color: '#17241d' }}>
+                        {item.count} / {item.share} %
+                      </strong>
+                    </div>
+                  ))
+                ) : (
+                  <span style={{ color: '#607067', fontSize: '0.9rem' }}>Zatím žádný klient k rozdělení.</span>
+                )}
               </div>
             </article>
             <article className="admin-card metric-card">
@@ -6600,34 +6724,114 @@ function AdminWorkspace({
             </article>
             <article className="admin-card metric-card">
               <span>Slideshow</span>
-              <strong>{slides.filter((slide) => slide.isActive).length}</strong>
+              <strong>{activeSlides.length}</strong>
               <p>aktivních bannerů na homepage</p>
+              <div style={{ display: 'grid', gap: '8px', marginTop: '16px' }}>
+                {activeSlides.length === 0 && <span style={{ color: '#607067', fontSize: '0.9rem' }}>Žádný aktivní banner.</span>}
+                {activeSlides.slice(0, 4).map((slide) => (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    onClick={() => {
+                      setSlideForm(slide);
+                      selectAdminTab('content');
+                    }}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'auto 1fr auto',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 11px',
+                      borderRadius: '14px',
+                      border: '1px solid rgba(34, 111, 63, 0.16)',
+                      background: 'rgba(34, 111, 63, 0.05)',
+                      color: '#17462c',
+                      textAlign: 'left',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <span style={{ fontWeight: 800 }}>#{slide.sortOrder}</span>
+                    <span>{slide.title}</span>
+                    <Badge tone="success">aktivní</Badge>
+                  </button>
+                ))}
+                {activeSlides.length > 4 && (
+                  <button className="button secondary" type="button" onClick={() => selectAdminTab('content')} style={{ justifyContent: 'center' }}>
+                    Zobrazit všech {activeSlides.length} bannerů
+                  </button>
+                )}
+              </div>
+              <div style={{ borderTop: '1px solid rgba(34, 111, 63, 0.14)', marginTop: '18px', paddingTop: '16px', display: 'grid', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'end' }}>
+                  <div>
+                    <span>Dokumenty k vyřízení</span>
+                    <p>{pendingDocuments.length} čeká na podpis nebo dokončení</p>
+                  </div>
+                  <strong style={{ color: '#0f4b3d', fontSize: '2.25rem', lineHeight: 1 }}>{pendingDocuments.length}</strong>
+                </div>
+                {(documentQueueStats.length > 0 ? documentQueueStats : [{ label: 'Bez čekajících dokumentů', count: 0 }]).slice(0, 2).map((item) => (
+                  <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', color: '#41564c', fontSize: '0.92rem' }}>
+                    <span>{item.label}</span>
+                    <strong style={{ color: '#17241d' }}>{item.count}</strong>
+                  </div>
+                ))}
+                <button className="button secondary" type="button" onClick={() => selectAdminTab('clients')} style={{ justifyContent: 'center' }}>
+                  Vyřídit v kartách klientů
+                </button>
+              </div>
             </article>
             <article className="admin-card metric-card">
               <span>Formuláře</span>
               <strong>{formTemplates.length}</strong>
-              <p>šablon připravených k tisku</p>
+              <p>šablon připravených k tisku podle složek</p>
+              <div style={{ display: 'grid', gap: '8px', marginTop: '16px' }}>
+                {formFolderStats.map((folder) => (
+                  <button
+                    key={folder.folder}
+                    type="button"
+                    onClick={() => selectAdminTab('forms')}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr auto',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 11px',
+                      borderRadius: '14px',
+                      border: '1px solid rgba(34, 111, 63, 0.18)',
+                      background: 'rgba(34, 111, 63, 0.06)',
+                      color: '#17462c',
+                      textAlign: 'left',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <span>{folder.label}</span>
+                    <strong>{folder.count}</strong>
+                  </button>
+                ))}
+              </div>
             </article>
-            <article className="admin-card metric-card">
-              <span>Dokumenty</span>
-              <strong>{clientDocuments.length}</strong>
-              <p>{pendingDocuments.length} čeká na podpis nebo dokončení</p>
-            </article>
-            <article className="admin-card metric-card">
-              <span>Uživatelé</span>
-              <strong>{activeUsers.length}</strong>
-              <p>aktivních účtů z {managedUsers.length}</p>
-            </article>
-            <article className="admin-card metric-card">
-              <span>Notifikace</span>
-              <strong>{unreadNotifications.length}</strong>
-              <p>nepřečtených upozornění v systému</p>
-            </article>
-            <article className="admin-card metric-card">
-              <span>Média</span>
-              <strong>{mediaFiles.length}</strong>
-              <p>souborů v knihovně médií</p>
-            </article>
+            <div style={{ alignSelf: 'start', display: 'grid', gridTemplateColumns: 'repeat(2, minmax(128px, 1fr))', gap: '12px' }}>
+              <article className="admin-card metric-card" style={{ minHeight: 'auto', padding: '18px' }}>
+                <span>Uživatelé online</span>
+                <strong>{onlineUsers.length}</strong>
+                <p>z {activeUsers.length} aktivních účtů</p>
+              </article>
+              <article className="admin-card metric-card" style={{ minHeight: 'auto', padding: '18px' }}>
+                <span>Nepřečtené</span>
+                <strong>{unreadNotifications.length}</strong>
+                <p>notifikací čeká na reakci</p>
+              </article>
+              <article className="admin-card metric-card" style={{ minHeight: 'auto', padding: '18px' }}>
+                <span>Média</span>
+                <strong>{mediaFiles.length}</strong>
+                <p>souborů v knihovně</p>
+              </article>
+              <article className="admin-card metric-card" style={{ minHeight: 'auto', padding: '18px' }}>
+                <span>Bez interního ID</span>
+                <strong>{clientsWithoutOperationalId}</strong>
+                <p>klientů čeká na kód</p>
+              </article>
+            </div>
             <article className="admin-card">
               <h3>Poslední aktivita</h3>
               <div className="activity-list timeline-list">
@@ -7042,19 +7246,43 @@ function AdminWorkspace({
               <div className="form-grid two">
                 <label>
                   Jméno
-                  <input value={toolsDraft.firstName} onChange={(event) => setToolsDraft((current) => ({ ...current, firstName: event.target.value }))} placeholder="David" />
+                  <input
+                    value={toolsEffectiveDraft.firstName}
+                    onChange={(event) => setToolsDraft((current) => ({ ...current, firstName: event.target.value }))}
+                    placeholder="David"
+                    disabled={Boolean(selectedToolsClient)}
+                  />
                 </label>
                 <label>
                   Příjmení
-                  <input value={toolsDraft.lastName} onChange={(event) => setToolsDraft((current) => ({ ...current, lastName: event.target.value }))} placeholder="Kozák" />
+                  <input
+                    value={toolsEffectiveDraft.lastName}
+                    onChange={(event) => setToolsDraft((current) => ({ ...current, lastName: event.target.value }))}
+                    placeholder="Kozák"
+                    disabled={Boolean(selectedToolsClient)}
+                  />
                 </label>
                 <label>
                   Datum registrace
-                  <input type="date" value={toolsDraft.registrationDate} onChange={(event) => setToolsDraft((current) => ({ ...current, registrationDate: event.target.value }))} />
+                  <input
+                    type="date"
+                    value={toolsEffectiveDraft.registrationDate}
+                    onChange={(event) => setToolsDraft((current) => ({ ...current, registrationDate: event.target.value }))}
+                    disabled={Boolean(selectedToolsClient)}
+                  />
                 </label>
                 <label>
-                  Pořadí
-                  <input type="number" min="1" value={toolsDraft.sequence} onChange={(event) => setToolsDraft((current) => ({ ...current, sequence: Number(event.target.value) || 1 }))} />
+                  Pořadí automaticky
+                  <input
+                    type="number"
+                    min="1"
+                    value={toolsEffectiveDraft.sequence}
+                    onChange={(event) => setToolsDraft((current) => ({ ...current, sequence: Number(event.target.value) || 1 }))}
+                    disabled={Boolean(selectedToolsClient)}
+                  />
+                  <small className="form-help">
+                    {selectedToolsClient ? 'Pořadí se bere automaticky podle aktuální pozice klienta v registru.' : 'Bez vybraného klienta lze pořadí zadat ručně.'}
+                  </small>
                 </label>
               </div>
               <div className="generated-id-panel">
@@ -7067,8 +7295,8 @@ function AdminWorkspace({
                 </small>
               </div>
               <div className="form-actions">
-                <button className="button primary" type="button" onClick={generateOperationalId} disabled={toolsClientHasOperationalId}>
-                  <Wrench size={18} /> {toolsClientHasOperationalId ? 'ID už existuje' : 'Vygenerovat ID'}
+                <button className="button primary" type="button" onClick={generateOperationalId}>
+                  <Wrench size={18} /> {toolsClientHasOperationalId ? 'Přegenerovat ID podle klienta' : 'Vygenerovat ID'}
                 </button>
                 <button className="icon-tool tooltip-link" type="button" data-tooltip="Kopírovat ID" aria-label="Kopírovat ID" onClick={() => copyToolsValue(toolsDraft.generatedId, 'ID')}>
                   <Copy size={18} />

@@ -809,8 +809,12 @@ function publicFormTemplate(row) {
   const schema = parseJsonValue(row.schemaJson || row.schema_json, []);
   const fields = Array.isArray(schema) ? schema : Array.isArray(schema.fields) ? schema.fields : [];
   const meta = Array.isArray(schema) ? {} : schema;
+  const status = String(row.status || meta.status || '').trim() || (row.isCurrent === 0 || row.is_current === 0 ? 'legacy' : 'active');
+  const isCurrent = row.isCurrent === undefined && row.is_current === undefined ? status === 'active' : Boolean(row.isCurrent ?? row.is_current);
   return {
     id: row.id,
+    formUid: row.formUid || row.form_uid || meta.formUid || meta.form_uid || '',
+    formGroup: row.formGroup || row.form_group || meta.formGroup || meta.form_group || '',
     title: row.title,
     description: row.description || '',
     fields: fields
@@ -824,7 +828,9 @@ function publicFormTemplate(row) {
     folder: meta.folder || '',
     sourceNote: meta.sourceNote || meta.source_note || '',
     sizeBytes: Number(meta.sizeBytes || meta.size_bytes || 0),
-    isActive: Boolean(row.isActive ?? row.is_active)
+    status,
+    isCurrent,
+    isActive: Boolean(row.isActive ?? row.is_active ?? (status === 'active' && isCurrent))
   };
 }
 
@@ -835,6 +841,8 @@ async function listFormTemplates(request, response) {
     const documentRows = await query(
       `SELECT
          id,
+         form_uid AS formUid,
+         form_group AS formGroup,
          category_code AS categoryCode,
          category_title AS categoryTitle,
          document_code AS documentCode,
@@ -843,12 +851,16 @@ async function listFormTemplates(request, response) {
          file_name AS fileName,
          file_path AS filePath,
          sensitivity,
+         status,
+         is_current AS isCurrent,
          notes,
-         sort_order AS sortOrder
+         sort_order AS sortOrder,
+         size_bytes AS sizeBytes,
+         source_note AS sourceNote
        FROM rest_art_document_files
-       WHERE status = 'active' AND file_type = 'pdf'
-       ORDER BY category_code ASC, sort_order ASC, title ASC
-       LIMIT 300`
+       WHERE file_type = 'pdf'
+       ORDER BY is_current DESC, category_code ASC, sort_order ASC, title ASC
+       LIMIT 500`
     );
     if (documentRows.length > 0) {
       sendJson(response, 200, {
@@ -862,9 +874,13 @@ async function listFormTemplates(request, response) {
           ],
           fileUrl: row.filePath || '',
           folder: row.categoryCode || '',
-          sourceNote: [row.fileName, row.sensitivity ? `citlivost: ${row.sensitivity}` : ''].filter(Boolean).join(' | '),
-          sizeBytes: 0,
-          isActive: true
+          formUid: row.formUid || '',
+          formGroup: row.formGroup || '',
+          status: row.status || 'active',
+          isCurrent: Boolean(row.isCurrent),
+          sourceNote: [row.fileName, row.sensitivity ? `citlivost: ${row.sensitivity}` : '', row.sourceNote || ''].filter(Boolean).join(' | '),
+          sizeBytes: Number(row.sizeBytes || 0),
+          isActive: row.status === 'active' && Boolean(row.isCurrent)
         }))
       });
       return;

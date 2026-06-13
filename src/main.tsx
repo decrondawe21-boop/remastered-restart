@@ -313,6 +313,8 @@ type FormDraft = Record<string, string>;
 
 type FormTemplate = {
   id: string;
+  formUid?: string;
+  formGroup?: string;
   title: string;
   description: string;
   fields: Array<{ key: string; label: string; rows?: number }>;
@@ -320,6 +322,8 @@ type FormTemplate = {
   folder?: string;
   sourceNote?: string;
   sizeBytes?: number;
+  status?: string;
+  isCurrent?: boolean;
   isActive?: boolean;
 };
 
@@ -983,6 +987,8 @@ function cleanNewsHtml(value = '') {
 
 const fromApiFormTemplate = (template: ApiFormTemplate): FormTemplate => ({
   id: template.id,
+  formUid: template.formUid,
+  formGroup: template.formGroup,
   title: template.title,
   description: template.description,
   fields: template.fields,
@@ -990,6 +996,8 @@ const fromApiFormTemplate = (template: ApiFormTemplate): FormTemplate => ({
   folder: template.folder,
   sourceNote: template.sourceNote,
   sizeBytes: template.sizeBytes,
+  status: template.status,
+  isCurrent: template.isCurrent,
   isActive: template.isActive
 });
 
@@ -1226,6 +1234,247 @@ const emptyClient: ClientRecord = {
   createdAt: ''
 };
 
+const productionGdprFormTemplates: FormTemplate[] = [
+  {
+    id: 'rai-gdpr-001',
+    title: 'RAI-FRM-GDPR-001 - Krycí list GDPR balíčku',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-001_KRYCI_LIST_GDPR_BALICKU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-001_KRYCI_LIST_GDPR_BALICKU_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 124533,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-002',
+    title: 'RAI-FRM-GDPR-002 - Informační memorandum',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-002_INFORMACNI_MEMORANDUM_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-002_INFORMACNI_MEMORANDUM_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 119614,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-003',
+    title: 'RAI-FRM-GDPR-003 - Informovaný souhlas GDPR',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-003-INFORMOVANY-SOUHLAS_GDPR.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-003-INFORMOVANY-SOUHLAS_GDPR.pdf | ostrý provoz',
+    sizeBytes: 98773,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-004',
+    title: 'RAI-FRM-GDPR-004 - Zvláštní kategorie údajů',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-004_ZVLASTNI_KATEGORIE_UDAJU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-004_ZVLASTNI_KATEGORIE_UDAJU_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 119601,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-005',
+    title: 'RAI-FRM-GDPR-005 - Foto, video, audio',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-005_FOTO_VIDEO_AUDIO_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-005_FOTO_VIDEO_AUDIO_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 108266,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-006',
+    title: 'RAI-FRM-GDPR-006 - Příběh, citace, kazuistika',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-006_PRIBEH_CITACE_KAZUISTIKA_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-006_PRIBEH_CITACE_KAZUISTIKA_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 108452,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-007',
+    title: 'RAI-FRM-GDPR-007 - Sdílení údajů s partnery',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-007_SDILENI_UDAJU_S_PARTNERY_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-007_SDILENI_UDAJU_S_PARTNERY_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 120323,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-008',
+    title: 'RAI-FRM-GDPR-008 - Elektronická komunikace / follow-up',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-008_ELEKTRONICKA_KOMUNIKACE_FOLLOW_UP_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-008_ELEKTRONICKA_KOMUNIKACE_FOLLOW_UP_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 119271,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-009',
+    title: 'RAI-FRM-GDPR-009 - Bod zlomu: mladistvý / zákonný zástupce',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-009_BOD_ZLOMU_MLADISTVY_ZAKONNY_ZASTUPCE_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-009_BOD_ZLOMU_MLADISTVY_ZAKONNY_ZASTUPCE_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 109320,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-010',
+    title: 'RAI-FRM-GDPR-010 - Dobrovolník: osobní údaje',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-0010_DOBROVOLNIK_OSOBNI_UDAJE_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-0010_DOBROVOLNIK_OSOBNI_UDAJE_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 109758,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-011',
+    title: 'RAI-FRM-GDPR-011 - Pracovník / mentor: mlčenlivost',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-011_PRACOVNIK_MENTOR_MLCENLIVOST_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-011_PRACOVNIK_MENTOR_MLCENLIVOST_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 109124,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-012',
+    title: 'RAI-FRM-GDPR-012 - Partner / externí subjekt',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-012_PARTNER_EXTERNI_SUBJEKT_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-012_PARTNER_EXTERNI_SUBJEKT_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 119860,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-013',
+    title: 'RAI-FRM-GDPR-013 - Odvolání nebo omezení souhlasu',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-013_ODVOLANI_NEBO_OMEZENI_SOUHLASU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-013_ODVOLANI_NEBO_OMEZENI_SOUHLASU_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 109920,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-014',
+    title: 'RAI-FRM-GDPR-014 - Žádost subjektu údajů',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-014_ZADOST_SUBJEKTU_UDAJU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-014_ZADOST_SUBJEKTU_UDAJU_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 120872,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-015',
+    title: 'RAI-FRM-GDPR-015 - Záznam o incidentu',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-015_ZAZNAM_O_INCIDENTU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-015_ZAZNAM_O_INCIDENTU_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 121944,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-016',
+    title: 'RAI-FRM-GDPR-016 - Anonymizační donor export karta',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-016_ANONYMIZACNI_DONOR_EXPORT_KARTA_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-016_ANONYMIZACNI_DONOR_EXPORT_KARTA_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 89187,
+    isActive: true
+  },
+  {
+    id: 'rai-gdpr-017',
+    title: 'RAI-FRM-GDPR-017 - Archivace, skartace, přístupy',
+    description: 'Ostrý provozní GDPR formulář s čárovým kódem, v1.3.',
+    fields: [
+      { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+      { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+    ],
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-017_ARCHIVACE_SKARTACE_PRISTUPY_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    folder: '01_GDPR_A_SOUHLASY',
+    sourceNote: 'RAI-FRM-GDPR-017_ARCHIVACE_SKARTACE_PRISTUPY_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
+    sizeBytes: 121536,
+    isActive: true
+  }
+];
+
 const fallbackFormTemplates: FormTemplate[] = [
   {
     id: 'intake',
@@ -1260,7 +1509,8 @@ const fallbackFormTemplates: FormTemplate[] = [
       { key: 'supportPlan', label: 'Mentoring, zdraví a návazné služby', rows: 4 },
       { key: 'nextReview', label: 'Termín dalšího vyhodnocení', rows: 2 }
     ]
-  }
+  },
+  ...productionGdprFormTemplates
 ];
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -6588,8 +6838,8 @@ function AdminWorkspace({
                       onClick={() => selectTemplateForForm(template.id)}
                     >
                       <strong>{template.title}</strong>
-                      <span>{formCategoryTitle(template.folder)}</span>
-                      <small>{formSensitivity(template)}</small>
+                      <span>{[template.formUid, formCategoryTitle(template.folder)].filter(Boolean).join(' · ')}</span>
+                      <small>{[formSensitivity(template), template.isCurrent === false ? 'Archiv' : 'Aktivní'].join(' · ')}</small>
                     </button>
                   ))}
                 </div>
@@ -6635,7 +6885,10 @@ function AdminWorkspace({
               </div>
               {(selectedTemplate.folder || selectedTemplate.fileUrl || selectedTemplate.sourceNote) && (
                 <div className="template-meta">
+                  {selectedTemplate.formUid && <span>ID: {selectedTemplate.formUid}</span>}
+                  {selectedTemplate.formGroup && <span>Skupina: {selectedTemplate.formGroup}</span>}
                   {selectedTemplate.folder && <span>{formCategoryTitle(selectedTemplate.folder)}</span>}
+                  <span>{selectedTemplate.isCurrent === false ? 'Archiv' : 'Aktivní'}</span>
                   <span>{readableBytes(selectedTemplate.sizeBytes)}</span>
                   {selectedTemplate.sourceNote && <span>{selectedTemplate.sourceNote}</span>}
                   {selectedTemplateFileUrl && (
@@ -7428,11 +7681,13 @@ function AdminDetailDialog({
             <div className="editor-title-actions">{closeButton}</div>
           </div>
           <div className="detail-meta-grid">
-            <div><span>ID</span><strong>{template.id}</strong></div>
+            <div><span>ID záznamu</span><strong>{template.id}</strong></div>
+            <div><span>ID formuláře</span><strong>{template.formUid || '-'}</strong></div>
+            <div><span>Skupina</span><strong>{template.formGroup || '-'}</strong></div>
             <div><span>Kategorie</span><strong>{formCategoryTitle(template.folder)}</strong></div>
             <div><span>Citlivost</span><strong>{sensitivity}</strong></div>
             <div><span>Velikost</span><strong>{readableBytes(template.sizeBytes)}</strong></div>
-            <div><span>Stav</span><strong>{template.isActive === false ? 'Skrytá' : 'Aktivní'}</strong></div>
+            <div><span>Stav</span><strong>{template.isCurrent === false || template.isActive === false ? 'Archiv' : 'Aktivní'}</strong></div>
             <div><span>Klient pro náhled</span><strong>{selectedClient ? `${selectedClient.firstName} ${selectedClient.lastName}` : 'nevybrán'}</strong></div>
           </div>
           {template.description && (

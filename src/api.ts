@@ -74,6 +74,8 @@ export type ApiFormField = {
 
 export type ApiFormTemplate = {
   id: string;
+  formUid?: string;
+  formGroup?: string;
   title: string;
   description: string;
   fields: ApiFormField[];
@@ -81,6 +83,8 @@ export type ApiFormTemplate = {
   folder?: string;
   sourceNote?: string;
   sizeBytes?: number;
+  status?: string;
+  isCurrent?: boolean;
   isActive: boolean;
 };
 

@@ -55,6 +55,7 @@ import {
   Wrench,
   X
 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
 import {
@@ -5292,6 +5293,7 @@ function App() {
   return (
     <>
       <WeatherLeaves />
+      <Analytics />
       <Header currentPath={currentPath} account={currentAccount} onNotify={notify} />
       <Breadcrumb path={currentPath} />
       <main id="top">

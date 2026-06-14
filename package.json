@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
+    "@vercel/analytics": "^2.0.1",
     "@vitejs/plugin-react": "^4.7.0",
     "jsbarcode": "^3.12.3",
     "lucide-react": "^0.577.0",

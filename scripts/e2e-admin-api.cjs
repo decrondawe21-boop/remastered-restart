@@ -68,7 +68,9 @@ async function request(path, options = {}) {
   const stamp = Date.now();
   const stampText = String(stamp);
   const adminId = randomId();
+  const managedUserId = randomId();
   const adminEmail = `admin.${stamp}@example.test`;
+  const managedUserEmail = `managed.${stamp}@example.test`;
   const adminPassword = 'AdminTestHeslo123';
   let createdClientId = null;
   let createdNewsId = null;
@@ -100,6 +102,36 @@ async function request(path, options = {}) {
     const users = await request('/api/admin/users', { headers: { cookie } });
     if (!users.response.ok || !users.body.users.some((user) => user.id === adminId && user.role === 'admin')) {
       throw new Error(`Temporary admin is missing from user list: ${JSON.stringify(users.body)}`);
+    }
+
+    await query(
+      `INSERT INTO users (id, role, name, email, password_hash, is_active)
+       VALUES (?, 'client', 'E2E Managed Client', ?, ?, 1)`,
+      [managedUserId, managedUserEmail, hashPassword('ManagedClientHeslo123')]
+    );
+
+    const resetManaged = await request(`/api/admin/users/${encodeURIComponent(managedUserId)}/reset-password`, {
+      method: 'POST',
+      headers: { cookie }
+    });
+    if (!resetManaged.response.ok || resetManaged.body.email !== managedUserEmail || !resetManaged.body.resetToken) {
+      throw new Error(`Admin password reset failed: ${JSON.stringify(resetManaged.body)}`);
+    }
+
+    const deleteSelf = await request(`/api/admin/users/${encodeURIComponent(adminId)}`, {
+      method: 'DELETE',
+      headers: { cookie }
+    });
+    if (deleteSelf.response.status !== 400) {
+      throw new Error(`Admin should not delete own account: ${JSON.stringify(deleteSelf.body)}`);
+    }
+
+    const deleteManaged = await request(`/api/admin/users/${encodeURIComponent(managedUserId)}`, {
+      method: 'DELETE',
+      headers: { cookie }
+    });
+    if (!deleteManaged.response.ok || deleteManaged.body.id !== managedUserId) {
+      throw new Error(`Admin user delete failed: ${JSON.stringify(deleteManaged.body)}`);
     }
 
     const templates = await request('/api/forms/templates', { headers: { cookie } });
@@ -244,6 +276,10 @@ async function request(path, options = {}) {
     await query('DELETE FROM client_documents WHERE id = ?', [createdDocumentId]);
     await query('DELETE FROM media_files WHERE id = ?', [createdMediaId]);
     await query('DELETE FROM notifications WHERE id = ?', [createdNotificationId]);
+    await query('DELETE FROM notifications WHERE recipient_id = ? OR created_by = ?', [managedUserId, managedUserId]);
+    await query('DELETE FROM notifications WHERE body LIKE ?', [`%${managedUserEmail}%`]);
+    await query('DELETE FROM password_resets WHERE user_id = ?', [managedUserId]);
+    await query('DELETE FROM users WHERE id = ?', [managedUserId]);
     await query('DELETE FROM users WHERE id = ?', [adminId]);
     await getPool().end();
   }

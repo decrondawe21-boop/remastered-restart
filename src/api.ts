@@ -145,6 +145,11 @@ export type ApiPasswordResetRequest = {
   expiresInMinutes?: number;
   resetToken?: string;
   resetUrl?: string;
+  emailSent?: boolean;
+};
+
+export type ApiAdminPasswordResetResponse = ApiPasswordResetRequest & {
+  email: string;
 };
 
 export type ApiRegistrationResponse = {
@@ -312,6 +317,18 @@ export async function updateUser(user: Pick<ApiManagedUser, 'id' | 'role' | 'isA
     body: JSON.stringify({ role: user.role, isActive: user.isActive })
   });
   return body.user;
+}
+
+export async function resetUserPassword(userId: string) {
+  return request<ApiAdminPasswordResetResponse>(`/api/admin/users/${encodeURIComponent(userId)}/reset-password`, {
+    method: 'POST'
+  });
+}
+
+export async function deleteUser(userId: string) {
+  await request<{ ok: boolean; id: string }>(`/api/admin/users/${encodeURIComponent(userId)}`, {
+    method: 'DELETE'
+  });
 }
 
 export async function listMedia() {

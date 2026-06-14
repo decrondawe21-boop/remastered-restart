@@ -1,6 +1,7 @@
 const crypto = require('node:crypto');
 
 const sessionCookieName = 'restart_session';
+const oauthStateCookieName = 'restart_oauth_state';
 const oneDay = 24 * 60 * 60;
 
 function randomId() {
@@ -69,20 +70,45 @@ function parseCookies(header = '') {
   );
 }
 
-function sessionCookie(token) {
+function secureCookieEnabled() {
   const secure = process.env.COOKIE_SECURE === '1' || (process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== '0');
-  return `${sessionCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${oneDay * 7}${secure ? '; Secure' : ''}`;
+  return secure;
+}
+
+function sameSiteCookieValue() {
+  const value = String(process.env.COOKIE_SAMESITE || 'Lax').trim();
+  return ['Strict', 'Lax', 'None'].includes(value) ? value : 'Lax';
+}
+
+function buildCookie(name, value, maxAge) {
+  const secure = secureCookieEnabled();
+  const sameSite = sameSiteCookieValue();
+  return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=${sameSite}; Max-Age=${maxAge}${secure ? '; Secure' : ''}`;
+}
+
+function sessionCookie(token) {
+  return buildCookie(sessionCookieName, token, oneDay * 7);
 }
 
 function clearSessionCookie() {
-  const secure = process.env.COOKIE_SECURE === '1' || (process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== '0');
-  return `${sessionCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure ? '; Secure' : ''}`;
+  return buildCookie(sessionCookieName, '', 0);
+}
+
+function oauthStateCookie(state) {
+  return buildCookie(oauthStateCookieName, state, 10 * 60);
+}
+
+function clearOAuthStateCookie() {
+  return buildCookie(oauthStateCookieName, '', 0);
 }
 
 module.exports = {
+  clearOAuthStateCookie,
   clearSessionCookie,
   createSessionToken,
   hashPassword,
+  oauthStateCookie,
+  oauthStateCookieName,
   parseCookies,
   randomId,
   readSessionToken,

@@ -429,6 +429,22 @@ img {
   background: var(--green-soft);
 }
 
+.button.danger {
+  border-color: #e6b8b8;
+  background: #fff7f7;
+  color: #8f1f1f;
+}
+
+.button.danger:hover {
+  border-color: #d88d8d;
+  background: #ffe8e8;
+}
+
+.google-login-button {
+  justify-content: center;
+  width: 100%;
+}
+
 .button:disabled {
   opacity: 0.45;
   cursor: not-allowed;

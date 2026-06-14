@@ -74,6 +74,7 @@ import {
   getSession,
   addNewsComment,
   confirmPasswordReset,
+  deleteUser as deleteUserRecord,
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
   listClients,
@@ -92,6 +93,7 @@ import {
   markNotificationRead as markNotificationReadRecord,
   registerClient as registerClientAccount,
   requestPasswordReset,
+  resetUserPassword as resetUserPasswordRecord,
   saveClient as saveClientRecord,
   saveDocument as saveDocumentRecord,
   saveMedia as saveMediaRecord,
@@ -102,6 +104,7 @@ import {
   updateNewsComment,
   updateUser as updateUserRecord,
   ApiRequestError,
+  type ApiAdminPasswordResetResponse,
   type ApiClientDocument,
   type ApiClientRecord,
   type ApiFormTemplate,
@@ -272,11 +275,14 @@ const getRouteLabel = (path: string) => {
 };
 
 const normalizePath = (value: string) => {
-  const path = value.replace(/^#/, '') || '/';
+  const path = (value.replace(/^#/, '').split('?')[0] || '/') as string;
   if (routeLabels[path]) return path;
   if (path.startsWith('/programy/') && getProgramBySlug(path.replace('/programy/', ''))) return path;
   return '/';
 };
+
+const localAuthFallbackEnabled = () =>
+  ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) || window.location.protocol === 'file:';
 
 type ClientRecord = {
   id: string;
@@ -3889,6 +3895,34 @@ function AuthScreen({
   const [resetToken, setResetToken] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
 
+  React.useEffect(() => {
+    const query = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '';
+    if (!query) return;
+    const params = new URLSearchParams(query);
+    const tokenFromLink = params.get('resetToken');
+    const authNotice = params.get('auth');
+    if (tokenFromLink) {
+      setMode('reset-confirm');
+      setResetToken(tokenFromLink);
+      setMessageTone('info');
+      setMessage('Reset token je načtený z odkazu. Nastavte nové heslo.');
+      return;
+    }
+    if (authNotice === 'google-pending') {
+      setMessageTone('success');
+      setMessage('Registrace přes Google byla přijata a čeká na ověření administrátorem.');
+    } else if (authNotice === 'google-inactive') {
+      setMessageTone('warning');
+      setMessage('Google účet existuje, ale čeká na ověření nebo aktivaci administrátorem.');
+    } else if (authNotice === 'google-admin-denied') {
+      setMessageTone('error');
+      setMessage('Tento Google účet není aktivní administrátorský účet.');
+    } else if (authNotice === 'google-error') {
+      setMessageTone('error');
+      setMessage('Přihlášení přes Google se nepodařilo. Zkuste to prosím znovu.');
+    }
+  }, [role]);
+
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
     setMessage('');
@@ -3899,6 +3933,11 @@ function AuthScreen({
       'reset-confirm': 'Nové heslo'
     };
     onNotify('info', 'Režim změněn', labels[nextMode]);
+  };
+
+  const startGoogleLogin = () => {
+    const target = role === 'admin' ? '/admin' : '/klient';
+    window.location.href = `/api/auth/google/start?role=${encodeURIComponent(role)}&next=${encodeURIComponent(target)}`;
   };
 
   const submitLogin = async (event: React.FormEvent) => {
@@ -4153,6 +4192,9 @@ function AuthScreen({
                   Zapomenuté heslo
                 </button>
               </div>
+              <button className="button secondary google-login-button" type="button" onClick={startGoogleLogin}>
+                <Mail size={18} /> Pokračovat přes Google
+              </button>
             </form>
           )}
 
@@ -4945,7 +4987,7 @@ function App() {
   const [cookieSettingsOpen, setCookieSettingsOpen] = React.useState(false);
   const { notify } = useToast();
   const currentPath = useHashPath();
-  const currentAccount = apiAccount ?? accounts.find((account) => account.id === sessionId) ?? null;
+  const currentAccount = apiAccount ?? (localAuthFallbackEnabled() ? accounts.find((account) => account.id === sessionId) : null) ?? null;
 
   const refreshNewsDiscussion = React.useCallback(async () => {
     const discussion = await listNewsDiscussion();
@@ -5118,6 +5160,11 @@ function App() {
     setManagedUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
     return saved;
   };
+  const resetManagedUserPasswordViaApi = (userId: string) => resetUserPasswordRecord(userId);
+  const deleteManagedUserViaApi = async (userId: string) => {
+    await deleteUserRecord(userId);
+    setManagedUsers((current) => current.filter((item) => item.id !== userId));
+  };
   const toggleLikeViaApi = async (newsId: string) => {
     try {
       const like = await toggleNewsLike(newsId);
@@ -5257,6 +5304,8 @@ function App() {
           onNotificationSaveRequest={saveNotificationViaApi}
           onNotificationReadRequest={markNotificationReadViaApi}
           onUserUpdateRequest={updateManagedUserViaApi}
+          onUserResetPasswordRequest={resetManagedUserPasswordViaApi}
+          onUserDeleteRequest={deleteManagedUserViaApi}
           account={currentAccount}
           onLogout={logout}
           onNotify={notify}
@@ -5351,6 +5400,8 @@ function AdminWorkspace({
   onNotificationSaveRequest,
   onNotificationReadRequest,
   onUserUpdateRequest,
+  onUserResetPasswordRequest,
+  onUserDeleteRequest,
   account,
   onLogout,
   onNotify
@@ -5379,6 +5430,8 @@ function AdminWorkspace({
   ) => Promise<NotificationItem>;
   onNotificationReadRequest?: (notificationId: string) => Promise<void>;
   onUserUpdateRequest?: (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => Promise<ManagedUser>;
+  onUserResetPasswordRequest?: (userId: string) => Promise<ApiAdminPasswordResetResponse>;
+  onUserDeleteRequest?: (userId: string) => Promise<void>;
   account: AuthAccount;
   onLogout: () => void;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
@@ -6082,6 +6135,44 @@ function AdminWorkspace({
       onNotify('success', 'Uživatel upraven', `${saved.name} má aktualizovaná oprávnění.`);
     } catch (error) {
       onNotify('error', 'Uživatel se nepodařil upravit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const resetManagedUserPassword = async (user: ManagedUser) => {
+    if (!onUserResetPasswordRequest) {
+      onNotify('warning', 'Reset hesla není dostupný', 'Akci zkuste zopakovat později.');
+      return;
+    }
+    try {
+      const reset = await onUserResetPasswordRequest(user.id);
+      const detail = reset.emailSent
+        ? `Odkaz byl odeslán na ${reset.email}.`
+        : reset.resetUrl
+          ? `E-mail není nastavený. Odkaz: ${reset.resetUrl}`
+          : 'Reset byl připraven, ale e-mailová brána není nastavená.';
+      onNotify('success', 'Reset hesla připraven', detail);
+    } catch (error) {
+      onNotify('error', 'Reset hesla se nepodařil', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const deleteManagedUser = async (user: ManagedUser) => {
+    if (!onUserDeleteRequest) {
+      onNotify('warning', 'Mazání účtů není dostupné', 'Akci zkuste zopakovat později.');
+      return;
+    }
+    if (user.id === account.id) {
+      onNotify('warning', 'Vlastní účet nelze smazat', 'Nejdřív se přihlaste jiným administrátorským účtem.');
+      return;
+    }
+    const confirmed = window.confirm(`Opravdu smazat účet ${user.name} (${user.email})? Tato akce nejde vrátit zpět.`);
+    if (!confirmed) return;
+    try {
+      await onUserDeleteRequest(user.id);
+      setAdminDialog(null);
+      onNotify('success', 'Uživatel smazán', `${user.name} byl/a odstraněn/a ze systému.`);
+    } catch (error) {
+      onNotify('error', 'Uživatel se nepodařil smazat', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
     }
   };
 
@@ -7956,6 +8047,8 @@ function AdminWorkspace({
           onRegisterDocument={registerPreparedDocument}
           onSaveMedia={saveMediaDialog}
           onSaveUser={saveUserDialog}
+          onResetUserPassword={resetManagedUserPassword}
+          onDeleteUser={deleteManagedUser}
           onSaveNotification={saveNotificationDialog}
           onMarkNotificationRead={markNotificationRead}
           onSaveSettings={saveSettingsDialog}
@@ -7984,6 +8077,8 @@ function AdminDetailDialog({
   onRegisterDocument,
   onSaveMedia,
   onSaveUser,
+  onResetUserPassword,
+  onDeleteUser,
   onSaveNotification,
   onMarkNotificationRead,
   onSaveSettings
@@ -8005,6 +8100,8 @@ function AdminDetailDialog({
   onRegisterDocument: () => void;
   onSaveMedia: (event: React.FormEvent) => void;
   onSaveUser: (event: React.FormEvent) => void;
+  onResetUserPassword: (user: ManagedUser) => void;
+  onDeleteUser: (user: ManagedUser) => void;
   onSaveNotification: (event: React.FormEvent) => void;
   onMarkNotificationRead: (notification: NotificationItem) => void;
   onSaveSettings: (event: React.FormEvent) => void;
@@ -8192,6 +8289,12 @@ function AdminDetailDialog({
           <div className="editor-actions">
             <button className="button primary" type="submit">
               <Save size={18} /> Uložit roli
+            </button>
+            <button className="button secondary" type="button" onClick={() => onResetUserPassword(managedUserForm)}>
+              <KeyRound size={18} /> Reset hesla
+            </button>
+            <button className="button danger" type="button" onClick={() => onDeleteUser(managedUserForm)}>
+              <Trash2 size={18} /> Smazat účet
             </button>
             <button className="button secondary" type="button" onClick={onClose}>
               <X size={18} /> Zavřít

@@ -2,10 +2,15 @@ const crypto = require('node:crypto');
 const { query } = require('./db.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
+const nodemailer = require('nodemailer');
+const { OAuth2Client } = require('google-auth-library');
 const {
+  clearOAuthStateCookie,
   clearSessionCookie,
   createSessionToken,
   hashPassword,
+  oauthStateCookie,
+  oauthStateCookieName,
   parseCookies,
   randomId,
   readSessionToken,
@@ -21,6 +26,15 @@ function sendJson(response, statusCode, body, headers = {}) {
     ...headers
   });
   response.end(JSON.stringify(body));
+}
+
+function sendRedirect(response, location, headers = {}) {
+  response.writeHead(302, {
+    location,
+    'cache-control': 'no-store',
+    ...headers
+  });
+  response.end();
 }
 
 const publicRoot = path.resolve(__dirname, '..', 'public');
@@ -174,6 +188,124 @@ async function createSystemNotification({
   }
 }
 
+function publicBaseUrl(request) {
+  const configured = String(process.env.APP_BASE_URL || process.env.PUBLIC_BASE_URL || '').trim();
+  if (configured) return configured.replace(/\/+$/, '');
+  const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000';
+  const proto = request.headers['x-forwarded-proto'] || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  return `${String(proto).split(',')[0]}://${String(host).split(',')[0]}`.replace(/\/+$/, '');
+}
+
+function resetRouteForRole(role) {
+  return role === 'admin' ? '/admin' : '/klient';
+}
+
+function buildResetUrl(request, token, role) {
+  return `${publicBaseUrl(request)}/#${resetRouteForRole(role)}?resetToken=${encodeURIComponent(token)}`;
+}
+
+let mailTransporter = null;
+
+function smtpConfigured() {
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
+}
+
+function getMailTransporter() {
+  if (!smtpConfigured()) return null;
+  if (mailTransporter) return mailTransporter;
+  const port = Number(process.env.SMTP_PORT || 587);
+  mailTransporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    secure: process.env.SMTP_SECURE === '1' || port === 465,
+    auth:
+      process.env.SMTP_USER && process.env.SMTP_PASS
+        ? {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+          }
+        : undefined
+  });
+  return mailTransporter;
+}
+
+async function sendPasswordResetEmail(user, resetUrl) {
+  const transporter = getMailTransporter();
+  if (!transporter) return false;
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: user.email,
+    subject: 'Obnova hesla | REST||ART Integrace',
+    text: [
+      `Dobrý den${user.name ? `, ${user.name}` : ''},`,
+      '',
+      'pro obnovu hesla použijte tento odkaz:',
+      resetUrl,
+      '',
+      'Odkaz je platný 60 minut. Pokud jste o obnovu hesla nežádali, zprávu ignorujte.',
+      '',
+      'REST||ART Integrace'
+    ].join('\n'),
+    html: [
+      `<p>Dobrý den${user.name ? `, ${user.name}` : ''},</p>`,
+      '<p>pro obnovu hesla použijte tento odkaz:</p>',
+      `<p><a href="${resetUrl}">${resetUrl}</a></p>`,
+      '<p>Odkaz je platný 60 minut. Pokud jste o obnovu hesla nežádali, zprávu ignorujte.</p>',
+      '<p>REST||ART Integrace</p>'
+    ].join('')
+  });
+  return true;
+}
+
+async function createPasswordResetForUser(user, request) {
+  const token = crypto.randomBytes(32).toString('base64url');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const resetUrl = buildResetUrl(request, token, user.role);
+  await query('DELETE FROM password_resets WHERE user_id = ? OR expires_at < NOW() OR used_at IS NOT NULL', [user.id]);
+  await query(
+    `INSERT INTO password_resets (id, user_id, token_hash, expires_at)
+     VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))`,
+    [randomId(), user.id, tokenHash]
+  );
+  let emailSent = false;
+  try {
+    emailSent = await sendPasswordResetEmail(user, resetUrl);
+  } catch (error) {
+    console.warn('[mail] password reset email failed:', error.message);
+  }
+  const bodyResponse = {
+    ok: true,
+    message: emailSent
+      ? 'Odkaz pro obnovu hesla byl odeslán e-mailem.'
+      : 'Odkaz pro obnovu hesla byl připraven. E-mailová brána není nastavená nebo odeslání selhalo.',
+    expiresInMinutes: 60,
+    emailSent
+  };
+  if (process.env.NODE_ENV !== 'production' || process.env.RESET_TOKEN_IN_RESPONSE === '1') {
+    bodyResponse.resetToken = token;
+    bodyResponse.resetUrl = resetUrl;
+  }
+  return bodyResponse;
+}
+
+function googleOAuthConfig(request) {
+  const clientId = String(process.env.GOOGLE_OAUTH_CLIENT_ID || '').trim();
+  const clientSecret = String(process.env.GOOGLE_OAUTH_CLIENT_SECRET || '').trim();
+  if (!clientId || !clientSecret) return null;
+  const redirectUri =
+    String(process.env.GOOGLE_OAUTH_REDIRECT_URI || '').trim() || `${publicBaseUrl(request)}/api/auth/google/callback`;
+  return {
+    clientId,
+    redirectUri,
+    client: new OAuth2Client(clientId, clientSecret, redirectUri)
+  };
+}
+
+function googleRedirect(request, target, reason = '') {
+  const path = target === 'admin' ? '/admin' : '/klient';
+  return `${publicBaseUrl(request)}/#${path}${reason ? `?auth=${encodeURIComponent(reason)}` : ''}`;
+}
+
 async function registerClient(request, response) {
   const body = await readBody(request);
   const missing = requireFields(body, ['name', 'email', 'password']);
@@ -257,6 +389,107 @@ async function logout(_request, response) {
   sendJson(response, 200, { ok: true }, { 'set-cookie': clearSessionCookie() });
 }
 
+async function startGoogleLogin(request, response, url) {
+  const config = googleOAuthConfig(request);
+  if (!config) {
+    sendJson(response, 501, { error: 'Google OAuth is not configured.' });
+    return;
+  }
+  const role = url.searchParams.get('role') === 'admin' ? 'admin' : 'client';
+  const state = crypto.randomBytes(24).toString('base64url');
+  const stateCookieValue = [state, role].join('|');
+  const authUrl = config.client.generateAuthUrl({
+    access_type: 'online',
+    prompt: 'select_account',
+    scope: ['openid', 'email', 'profile'],
+    state
+  });
+  sendRedirect(response, authUrl, { 'set-cookie': oauthStateCookie(stateCookieValue) });
+}
+
+async function finishGoogleLogin(request, response, url) {
+  const config = googleOAuthConfig(request);
+  if (!config) {
+    sendRedirect(response, googleRedirect(request, 'client', 'google-error'));
+    return;
+  }
+  const cookies = parseCookies(request.headers.cookie || '');
+  const [expectedState, requestedRole = 'client'] = String(cookies[oauthStateCookieName] || '').split('|');
+  const receivedState = String(url.searchParams.get('state') || '');
+  const code = String(url.searchParams.get('code') || '');
+  const target = requestedRole === 'admin' ? 'admin' : 'client';
+  if (!expectedState || !receivedState || expectedState !== receivedState || !code) {
+    sendRedirect(response, googleRedirect(request, target, 'google-error'), { 'set-cookie': clearOAuthStateCookie() });
+    return;
+  }
+  try {
+    const { tokens } = await config.client.getToken(code);
+    if (!tokens.id_token) {
+      sendRedirect(response, googleRedirect(request, target, 'google-error'), { 'set-cookie': clearOAuthStateCookie() });
+      return;
+    }
+    const ticket = await config.client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: config.clientId
+    });
+    const payload = ticket.getPayload() || {};
+    const email = String(payload.email || '').trim().toLowerCase();
+    const emailVerified = payload.email_verified === true || payload.email_verified === 'true';
+    if (!email || !emailVerified) {
+      sendRedirect(response, googleRedirect(request, target, 'google-error'), { 'set-cookie': clearOAuthStateCookie() });
+      return;
+    }
+    const rows = await query(
+      'SELECT id, role, name, email, phone, is_active, created_at FROM users WHERE email = ? LIMIT 1',
+      [email]
+    );
+    let user = rows[0];
+    if (!user) {
+      if (target === 'admin') {
+        sendRedirect(response, googleRedirect(request, target, 'google-admin-denied'), { 'set-cookie': clearOAuthStateCookie() });
+        return;
+      }
+      const id = randomId();
+      const name = String(payload.name || email).trim();
+      await query(
+        `INSERT INTO users (id, role, name, email, phone, password_hash, password_algo, is_active)
+         VALUES (?, 'client', ?, ?, '', ?, 'scrypt', 0)`,
+        [id, name, email, hashPassword(crypto.randomBytes(32).toString('base64url'))]
+      );
+      const createdRows = await query(
+        'SELECT id, role, name, email, phone, is_active, created_at FROM users WHERE id = ? LIMIT 1',
+        [id]
+      );
+      user = createdRows[0];
+      await createSystemNotification({
+        title: 'Nový Google účet čeká na ověření',
+        body: `${user.name} (${user.email}) se registroval/a přes Google. Aktivujte účet v administraci uživatelů.`,
+        tone: 'warning',
+        category: 'Ověření účtu',
+        linkHref: `#/admin?tab=users&user=${encodeURIComponent(user.id)}`,
+        createdBy: user.id
+      });
+      sendRedirect(response, googleRedirect(request, target, 'google-pending'), { 'set-cookie': clearOAuthStateCookie() });
+      return;
+    }
+    if (target === 'admin' && user.role !== 'admin') {
+      sendRedirect(response, googleRedirect(request, target, 'google-admin-denied'), { 'set-cookie': clearOAuthStateCookie() });
+      return;
+    }
+    if (!user.is_active) {
+      sendRedirect(response, googleRedirect(request, target, 'google-inactive'), { 'set-cookie': clearOAuthStateCookie() });
+      return;
+    }
+    await query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
+    sendRedirect(response, googleRedirect(request, target), {
+      'set-cookie': [clearOAuthStateCookie(), sessionCookie(createSessionToken(user))]
+    });
+  } catch (error) {
+    console.warn('[auth] google login failed:', error.message);
+    sendRedirect(response, googleRedirect(request, target, 'google-error'), { 'set-cookie': clearOAuthStateCookie() });
+  }
+}
+
 async function resetPassword(request, response) {
   const body = await readBody(request);
   if (!String(body.email || '').trim()) {
@@ -264,30 +497,14 @@ async function resetPassword(request, response) {
     return;
   }
   const email = String(body.email).trim().toLowerCase();
-  const rows = await query('SELECT id, email FROM users WHERE email = ? AND is_active = 1 LIMIT 1', [email]);
+  const rows = await query('SELECT id, role, name, email FROM users WHERE email = ? AND is_active = 1 LIMIT 1', [email]);
   const message = 'Pokud účet existuje, je připravený odkaz pro obnovu hesla.';
   if (rows.length === 0) {
     sendJson(response, 200, { ok: true, message });
     return;
   }
-  const token = crypto.randomBytes(32).toString('base64url');
-  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-  await query('DELETE FROM password_resets WHERE user_id = ? OR expires_at < NOW() OR used_at IS NOT NULL', [rows[0].id]);
-  await query(
-    `INSERT INTO password_resets (id, user_id, token_hash, expires_at)
-     VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))`,
-    [randomId(), rows[0].id, tokenHash]
-  );
-  const bodyResponse = {
-    ok: true,
-    message,
-    expiresInMinutes: 60
-  };
-  if (process.env.NODE_ENV !== 'production' || process.env.RESET_TOKEN_IN_RESPONSE === '1') {
-    bodyResponse.resetToken = token;
-    bodyResponse.resetUrl = `#/reset-hesla?token=${encodeURIComponent(token)}`;
-  }
-  sendJson(response, 200, bodyResponse);
+  const reset = await createPasswordResetForUser(rows[0], request);
+  sendJson(response, 200, { ...reset, message });
 }
 
 async function confirmPasswordReset(request, response) {
@@ -992,6 +1209,66 @@ async function updateUser(request, response, userId) {
   sendJson(response, 200, { user: publicManagedUser(rows[0]) });
 }
 
+async function resetUserPassword(request, response, userId) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const rows = await query(
+    'SELECT id, role, name, email, is_active FROM users WHERE id = ? LIMIT 1',
+    [userId]
+  );
+  if (rows.length === 0) {
+    sendJson(response, 404, { error: 'User not found.' });
+    return;
+  }
+  if (!rows[0].is_active) {
+    sendJson(response, 409, { error: 'Inactive users must be activated before password reset.' });
+    return;
+  }
+  const reset = await createPasswordResetForUser(rows[0], request);
+  await createSystemNotification({
+    recipientId: userId,
+    title: 'Reset hesla připraven',
+    body: reset.emailSent
+      ? 'Administrátor vám odeslal odkaz pro obnovu hesla.'
+      : 'Administrátor připravil reset hesla. Kontaktujte ho pro další postup.',
+    tone: 'info',
+    category: 'Bezpečnost',
+    linkHref: '#/klient',
+    createdBy: admin.id
+  });
+  sendJson(response, 200, { ...reset, email: rows[0].email });
+}
+
+async function deleteUser(request, response, userId) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  if (admin.id === userId) {
+    sendJson(response, 400, { error: 'You cannot delete your own account.' });
+    return;
+  }
+  const rows = await query('SELECT id, role, name, email, is_active FROM users WHERE id = ? LIMIT 1', [userId]);
+  if (rows.length === 0) {
+    sendJson(response, 404, { error: 'User not found.' });
+    return;
+  }
+  if (rows[0].role === 'admin' && rows[0].is_active) {
+    const activeAdmins = await query("SELECT COUNT(*) AS count FROM users WHERE role = 'admin' AND is_active = 1");
+    if (Number(activeAdmins[0]?.count || 0) <= 1) {
+      sendJson(response, 409, { error: 'Cannot delete the last active admin account.' });
+      return;
+    }
+  }
+  await query('DELETE FROM users WHERE id = ?', [userId]);
+  await createSystemNotification({
+    title: 'Uživatel smazán',
+    body: `${rows[0].name} (${rows[0].email}) byl/a smazán/a administrátorem.`,
+    tone: 'warning',
+    category: 'Bezpečnost',
+    createdBy: admin.id
+  });
+  sendJson(response, 200, { ok: true, id: userId });
+}
+
 function publicMedia(row) {
   return {
     id: row.id,
@@ -1416,6 +1693,8 @@ async function createApp(request, response) {
       });
       return;
     }
+    if (request.method === 'GET' && url.pathname === '/api/auth/google/start') return await startGoogleLogin(request, response, url);
+    if (request.method === 'GET' && url.pathname === '/api/auth/google/callback') return await finishGoogleLogin(request, response, url);
     if (request.method === 'POST' && url.pathname === '/api/auth/register') return await registerClient(request, response);
     if (request.method === 'POST' && url.pathname === '/api/auth/login') return await login(request, response);
     if (request.method === 'GET' && url.pathname === '/api/auth/me') return await me(request, response);
@@ -1440,8 +1719,11 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/clients') return await createClient(request, response);
     if (request.method === 'GET' && url.pathname === '/api/forms/templates') return await listFormTemplates(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/users') return await listUsers(request, response);
+    const userResetMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)\/reset-password$/);
+    if (request.method === 'POST' && userResetMatch) return await resetUserPassword(request, response, userResetMatch[1]);
     const userMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)$/);
     if (request.method === 'PATCH' && userMatch) return await updateUser(request, response, userMatch[1]);
+    if (request.method === 'DELETE' && userMatch) return await deleteUser(request, response, userMatch[1]);
     if (request.method === 'GET' && url.pathname === '/api/media/public') return await listPublicMedia(request, response);
     if (request.method === 'GET' && url.pathname === '/api/media') return await listMedia(request, response);
     if (request.method === 'POST' && url.pathname === '/api/media') return await saveMedia(request, response);

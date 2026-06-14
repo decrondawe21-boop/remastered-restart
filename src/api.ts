@@ -147,6 +147,12 @@ export type ApiPasswordResetRequest = {
   resetUrl?: string;
 };
 
+export type ApiRegistrationResponse = {
+  user: ApiUser;
+  pendingVerification?: boolean;
+  message?: string;
+};
+
 export class ApiRequestError extends Error {
   status: number;
 
@@ -187,11 +193,10 @@ export async function loginUser(email: string, password: string, role: ApiRole) 
 }
 
 export async function registerClient(name: string, email: string, phone: string, password: string) {
-  const body = await request<{ user: ApiUser }>('/api/auth/register', {
+  return request<ApiRegistrationResponse>('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify({ name, email, phone, password })
   });
-  return body.user;
 }
 
 export async function logoutUser() {

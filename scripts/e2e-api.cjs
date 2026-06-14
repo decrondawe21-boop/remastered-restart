@@ -94,28 +94,29 @@ async function request(path, options = {}) {
         password
       })
     });
-    if (!registered.response.ok || registered.body.user.email !== email || registered.body.user.role !== 'client') {
+    if (
+      !registered.response.ok ||
+      registered.body.user.email !== email ||
+      registered.body.user.role !== 'client' ||
+      registered.body.user.isActive !== false ||
+      registered.body.pendingVerification !== true
+    ) {
       throw new Error(`Client registration failed: ${JSON.stringify(registered.body)}`);
     }
-    const cookie = registered.response.headers.get('set-cookie');
-    if (!cookie || !cookie.includes('restart_session=')) {
-      throw new Error('Registration should set an HttpOnly session cookie.');
+    const registrationCookie = registered.response.headers.get('set-cookie');
+    if (registrationCookie && registrationCookie.includes('restart_session=')) {
+      throw new Error('Pending registration should not set a session cookie.');
     }
 
-    const me = await request('/api/auth/me', {
-      headers: { cookie }
-    });
-    if (!me.response.ok || me.body.user.email !== email) {
-      throw new Error(`Session lookup failed: ${JSON.stringify(me.body)}`);
-    }
-
-    const logout = await request('/api/auth/logout', {
+    const pendingLogin = await request('/api/auth/login', {
       method: 'POST',
-      headers: { cookie }
+      body: JSON.stringify({ email, password, role: 'client' })
     });
-    if (!logout.response.ok) {
-      throw new Error(`Logout failed: ${JSON.stringify(logout.body)}`);
+    if (pendingLogin.response.status !== 403 || !String(pendingLogin.body.error || '').includes('ověření')) {
+      throw new Error(`Inactive client login should wait for verification: ${JSON.stringify(pendingLogin.body)}`);
     }
+
+    await query('UPDATE users SET is_active = 1 WHERE email = ?', [email]);
 
     const login = await request('/api/auth/login', {
       method: 'POST',
@@ -127,6 +128,21 @@ async function request(path, options = {}) {
     const loginCookie = login.response.headers.get('set-cookie');
     if (!loginCookie || !loginCookie.includes('restart_session=')) {
       throw new Error('Login should set an HttpOnly session cookie.');
+    }
+
+    const me = await request('/api/auth/me', {
+      headers: { cookie: loginCookie }
+    });
+    if (!me.response.ok || me.body.user.email !== email) {
+      throw new Error(`Session lookup failed: ${JSON.stringify(me.body)}`);
+    }
+
+    const logout = await request('/api/auth/logout', {
+      method: 'POST',
+      headers: { cookie: loginCookie }
+    });
+    if (!logout.response.ok) {
+      throw new Error(`Logout failed: ${JSON.stringify(logout.body)}`);
     }
 
     const reset = await request('/api/auth/reset', {
@@ -233,6 +249,7 @@ async function request(path, options = {}) {
           [likedNewsId, email]
         ).catch(() => undefined);
       }
+      await query('DELETE FROM notifications WHERE recipient_id = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM notifications WHERE created_by = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM notifications WHERE body LIKE ? OR title LIKE ?', [`%${email}%`, '%API test aktualita%']).catch(() => undefined);
       await query('DELETE FROM users WHERE email = ?', [email]).catch(() => undefined);

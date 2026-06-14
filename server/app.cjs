@@ -125,7 +125,7 @@ async function currentUser(request) {
   const payload = readSessionToken(cookies[sessionCookieName]);
   if (!payload) return null;
   const rows = await query(
-    'SELECT id, role, name, email, phone, created_at FROM users WHERE id = ? AND is_active = 1 LIMIT 1',
+    'SELECT id, role, name, email, phone, is_active, created_at FROM users WHERE id = ? AND is_active = 1 LIMIT 1',
     [payload.id]
   );
   return rows[0] || null;
@@ -191,22 +191,26 @@ async function registerClient(request, response) {
   const id = randomId();
   const email = body.email.trim().toLowerCase();
   await query(
-    `INSERT INTO users (id, role, name, email, phone, password_hash, password_algo)
-     VALUES (?, 'client', ?, ?, ?, ?, 'scrypt')`,
+    `INSERT INTO users (id, role, name, email, phone, password_hash, password_algo, is_active)
+     VALUES (?, 'client', ?, ?, ?, ?, 'scrypt', 0)`,
     [id, body.name.trim(), email, String(body.phone || '').trim(), hashPassword(body.password)]
   );
 
-  const rows = await query('SELECT id, role, name, email, phone, created_at FROM users WHERE id = ? LIMIT 1', [id]);
+  const rows = await query('SELECT id, role, name, email, phone, is_active, created_at FROM users WHERE id = ? LIMIT 1', [id]);
   const user = rows[0];
   await createSystemNotification({
-    title: 'Nová registrace klienta',
-    body: `${user.name} (${user.email}) vytvořil/a klientský účet.`,
-    tone: 'success',
-    category: 'Registrace',
+    title: 'Nový účet čeká na ověření',
+    body: `${user.name} (${user.email}) vytvořil/a klientský účet. Aktivujte ho v administraci uživatelů.`,
+    tone: 'warning',
+    category: 'Ověření účtu',
     linkHref: `#/admin?tab=users&user=${encodeURIComponent(user.id)}`,
     createdBy: user.id
   });
-  sendJson(response, 201, { user: publicUser(user) }, { 'set-cookie': sessionCookie(createSessionToken(user)) });
+  sendJson(response, 201, {
+    user: publicUser(user),
+    pendingVerification: true,
+    message: 'Registrace byla přijata. Účet čeká na ověření administrátorem.'
+  });
 }
 
 async function login(request, response) {
@@ -220,15 +224,19 @@ async function login(request, response) {
   const role = body.role === 'admin' ? 'admin' : body.role === 'client' ? 'client' : null;
   const params = role ? [body.email.trim().toLowerCase(), role] : [body.email.trim().toLowerCase()];
   const rows = await query(
-    `SELECT id, role, name, email, phone, password_hash, created_at
+    `SELECT id, role, name, email, phone, password_hash, is_active, created_at
      FROM users
-     WHERE email = ? ${role ? 'AND role = ?' : ''} AND is_active = 1
+     WHERE email = ? ${role ? 'AND role = ?' : ''}
      LIMIT 1`,
     params
   );
   const user = rows[0];
   if (!user || !verifyPassword(body.password, user.password_hash)) {
     sendJson(response, 401, { error: 'Invalid credentials.' });
+    return;
+  }
+  if (!user.is_active) {
+    sendJson(response, 403, { error: 'Účet čeká na ověření nebo aktivaci administrátorem.' });
     return;
   }
 
@@ -948,6 +956,12 @@ async function updateUser(request, response, userId) {
     sendJson(response, 400, { error: 'Valid role is required.' });
     return;
   }
+  const currentRows = await query('SELECT id, role, name, email, is_active FROM users WHERE id = ? LIMIT 1', [userId]);
+  if (currentRows.length === 0) {
+    sendJson(response, 404, { error: 'User not found.' });
+    return;
+  }
+  const wasActive = Boolean(currentRows[0].is_active);
   await query('UPDATE users SET role = ?, is_active = ? WHERE id = ?', [role, isActive, userId]);
   const rows = await query(
     `SELECT
@@ -964,9 +978,16 @@ async function updateUser(request, response, userId) {
      LIMIT 1`,
     [userId]
   );
-  if (rows.length === 0) {
-    sendJson(response, 404, { error: 'User not found.' });
-    return;
+  if (!wasActive && isActive === 1) {
+    await createSystemNotification({
+      recipientId: userId,
+      title: 'Účet ověřen',
+      body: 'Váš klientský účet byl ověřen administrátorem. Nyní se můžete přihlásit do klientské zóny.',
+      tone: 'success',
+      category: 'Ověření účtu',
+      linkHref: '#/klient',
+      createdBy: user.id
+    });
   }
   sendJson(response, 200, { user: publicManagedUser(rows[0]) });
 }

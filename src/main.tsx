@@ -3925,15 +3925,22 @@ function AuthScreen({
         if (error instanceof ApiRequestError && [400, 401, 403].includes(error.status)) {
           setIsSubmitting(false);
           setMessageTone('error');
+          const apiMessage = error.status === 403 && error.message ? error.message : '';
           setMessage(
-            role === 'client'
+            role === 'client' && apiMessage
+              ? apiMessage
+              : role === 'client'
               ? 'Přihlášení se nepodařilo. Zkontrolujte e-mail, heslo a zda nejste v klientské zóně s admin účtem.'
               : 'Přihlášení se nepodařilo. Použijte aktivní administrátorský účet uložený v databázi.'
           );
           onNotify(
-            'error',
+            role === 'client' && apiMessage ? 'warning' : 'error',
             'Přihlášení se nepodařilo',
-            role === 'client' ? 'Pro admin účet použijte vstup do administrace.' : 'Zkontrolujte e-mail, heslo a zda je účet aktivní v DB.'
+            role === 'client' && apiMessage
+              ? apiMessage
+              : role === 'client'
+                ? 'Pro admin účet použijte vstup do administrace.'
+                : 'Zkontrolujte e-mail, heslo a zda je účet aktivní v DB.'
           );
           return;
         }
@@ -3990,10 +3997,18 @@ function AuthScreen({
           onLogin(apiAccount);
           return;
         }
+        setIsSubmitting(false);
+        setMessageTone('success');
+        setMessage('Registrace byla přijata a čeká na ověření administrátorem. Jakmile ji admin aktivuje, půjde se přihlásit.');
+        return;
       } catch (error) {
         setMessageTone('warning');
         setMessage(error instanceof Error ? error.message : 'Registrace se nepodařila. Zkuste to prosím znovu.');
         onNotify('warning', 'Registrace se nepodařila', 'Zkontrolujte údaje a zkuste formulář odeslat znovu.');
+        if (error instanceof ApiRequestError && [400, 401, 403, 409].includes(error.status)) {
+          setIsSubmitting(false);
+          return;
+        }
       }
     }
     const existing = accounts.some((item) => item.email.toLowerCase() === email.trim().toLowerCase());
@@ -5036,6 +5051,9 @@ function App() {
       const user = await loginUser(email, password, role as ApiRole);
       return fromApiUser(user);
     } catch (error) {
+      if (role === 'client' && error instanceof ApiRequestError && error.status === 403) {
+        throw error;
+      }
       if (role === 'client' && error instanceof ApiRequestError && [400, 401, 403].includes(error.status)) {
         const user = await loginUser(email, password, 'admin');
         return fromApiUser(user);
@@ -5044,8 +5062,16 @@ function App() {
     }
   };
   const registerViaApi = async ({ name, email, phone, password }: RegisterRequest) => {
-    const user = await registerClientAccount(name, email, phone, password);
-    return fromApiUser(user);
+    const registration = await registerClientAccount(name, email, phone, password);
+    if (registration.pendingVerification || registration.user.isActive === false) {
+      notify(
+        'success',
+        'Registrace přijata',
+        registration.message || 'Účet čeká na ověření administrátorem.'
+      );
+      return null;
+    }
+    return fromApiUser(registration.user);
   };
   const resetViaApi = (email: string) => requestPasswordReset(email);
   const confirmResetViaApi = ({ token, password }: ResetConfirmRequest) => confirmPasswordReset(token, password);

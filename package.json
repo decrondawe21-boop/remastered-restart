@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/prerender-seo.cjs",
     "preview": "vite preview",
     "test:copy": "node scripts/validate-copy.cjs",
     "test:navigation": "node scripts/e2e-navigation.cjs",

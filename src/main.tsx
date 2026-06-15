@@ -121,13 +121,13 @@ import {
 import './styles.css';
 
 const navItems = [
-  { href: '#/co-delame', label: 'Co děláme' },
-  { href: '#/programy', label: 'Programy' },
-  { href: '#/aktuality', label: 'Aktuality' },
-  { href: '#/zapojeni', label: 'Zapojení' },
-  { href: '#/povinne-zverejnovani', label: 'Transparentnost' },
-  { href: '#/kontakt', label: 'Kontakt' },
-  { href: '#/klient', label: 'Klientská zóna' }
+  { href: '/co-delame', label: 'Co děláme' },
+  { href: '/programy', label: 'Programy' },
+  { href: '/aktuality', label: 'Aktuality' },
+  { href: '/zapojeni', label: 'Zapojení' },
+  { href: '/povinne-zverejnovani', label: 'Transparentnost' },
+  { href: '/kontakt', label: 'Kontakt' },
+  { href: '/klient', label: 'Klientská zóna' }
 ];
 
 const routeLabels: Record<string, string> = {
@@ -151,22 +151,22 @@ const footerNavGroups = [
   {
     title: 'Navigace',
     links: [
-      { href: '#/', label: 'Domů' },
-      { href: '#/co-delame', label: 'Co děláme' },
-      { href: '#/programy', label: 'Programy' },
-      { href: '#/aktuality', label: 'Aktuality' },
-      { href: '#/zapojeni', label: 'Zapojení' },
-      { href: '#/kontakt', label: 'Kontakt' }
+      { href: '/', label: 'Domů' },
+      { href: '/co-delame', label: 'Co děláme' },
+      { href: '/programy', label: 'Programy' },
+      { href: '/aktuality', label: 'Aktuality' },
+      { href: '/zapojeni', label: 'Zapojení' },
+      { href: '/kontakt', label: 'Kontakt' }
     ]
   },
   {
     title: 'Projekt',
     links: [
-      { href: '#/pro-firmy', label: 'Pro firmy' },
-      { href: '#/media', label: 'Média' },
-      { href: '#/povinne-zverejnovani', label: 'Povinné zveřejňování' },
-      { href: '#/webove-gdpr', label: 'Webové GDPR' },
-      { href: '#/zasady-ochrany-osobnich-udaju', label: 'Zásady ochrany osobních údajů' }
+      { href: '/pro-firmy', label: 'Pro firmy' },
+      { href: '/media', label: 'Média' },
+      { href: '/povinne-zverejnovani', label: 'Povinné zveřejňování' },
+      { href: '/webove-gdpr', label: 'Webové GDPR' },
+      { href: '/zasady-ochrany-osobnich-udaju', label: 'Zásady ochrany osobních údajů' }
     ]
   }
 ];
@@ -283,6 +283,19 @@ const normalizePath = (value: string) => {
 
 const localAuthFallbackEnabled = () =>
   ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) || window.location.protocol === 'file:';
+
+const currentBrowserPath = () => {
+  if (window.location.hash.startsWith('#/')) return normalizePath(window.location.hash);
+  return normalizePath(`${window.location.pathname}${window.location.search}`);
+};
+
+const internalHrefPath = (href: string) => normalizePath(href.replace(/^#/, ''));
+
+const navigateToPath = (path: string) => {
+  const nextPath = normalizePath(path);
+  window.history.pushState(null, '', nextPath);
+  window.dispatchEvent(new Event('popstate'));
+};
 
 type ClientRecord = {
   id: string;
@@ -1111,7 +1124,7 @@ const starterSlides: HomeSlide[] = [
     subtitle: 'Výkon trestu odnětí svobody a návrat ven: svoboda potřebuje strukturu, práci a konkrétní plán.',
     imageUrl: '/images/program-pillars/jailbreak-skica.png',
     ctaLabel: 'O programu',
-    ctaHref: '#/programy/jailbreak',
+    ctaHref: '/programy/jailbreak',
     sortOrder: 10,
     isActive: true
   },
@@ -1121,7 +1134,7 @@ const starterSlides: HomeSlide[] = [
     subtitle: 'Závislosti, krize a ztracený režim: důstojný restart přes terapii, komunitu a bezpečný každodenní rytmus.',
     imageUrl: '/images/program-pillars/reset-skica.png',
     ctaLabel: 'O programu',
-    ctaHref: '#/programy/reset',
+    ctaHref: '/programy/reset',
     sortOrder: 20,
     isActive: true
   },
@@ -1131,7 +1144,7 @@ const starterSlides: HomeSlide[] = [
     subtitle: 'Dlouhodobě nezaměstnaní a lidé s bariérami: pracovní restart, rekvalifikace a férový návrat do praxe.',
     imageUrl: '/images/program-pillars/rework-skica.png',
     ctaLabel: 'O programu',
-    ctaHref: '#/programy/rework',
+    ctaHref: '/programy/rework',
     sortOrder: 30,
     isActive: true
   },
@@ -1141,7 +1154,7 @@ const starterSlides: HomeSlide[] = [
     subtitle: 'Lidé bez domova a mimo dosah systému: nízkoprahové zázemí, terén a první bezpečný krok.',
     imageUrl: '/images/program-pillars/streetwise-skica.png',
     ctaLabel: 'O programu',
-    ctaHref: '#/programy/streetwise',
+    ctaHref: '/programy/streetwise',
     sortOrder: 40,
     isActive: true
   },
@@ -1151,7 +1164,7 @@ const starterSlides: HomeSlide[] = [
     subtitle: 'Děti z dětských domovů a mladí lidé po ústavní péči: přechod do samostatnosti, vztahů a vlastního směru.',
     imageUrl: '/images/program-pillars/bod-zlomu-skica.png',
     ctaLabel: 'O programu',
-    ctaHref: '#/programy/bod-zlomu',
+    ctaHref: '/programy/bod-zlomu',
     sortOrder: 50,
     isActive: true
   },
@@ -1161,7 +1174,7 @@ const starterSlides: HomeSlide[] = [
     subtitle: 'Konečný podpůrný program: udržet změnu v bydlení, práci, režimu, komunitě a běžném životě.',
     imageUrl: '/images/program-pillars/stabilizace-skica.png',
     ctaLabel: 'O programu',
-    ctaHref: '#/programy/stabilizace',
+    ctaHref: '/programy/stabilizace',
     sortOrder: 60,
     isActive: true
   }
@@ -1697,15 +1710,19 @@ function useStoredState<T>(key: string, initialValue: T) {
 }
 
 function useHashPath() {
-  const [path, setPath] = React.useState(() => normalizePath(window.location.hash));
+  const [path, setPath] = React.useState(() => currentBrowserPath());
 
   React.useEffect(() => {
-    const onHashChange = () => {
-      setPath(normalizePath(window.location.hash));
+    const onRouteChange = () => {
+      setPath(currentBrowserPath());
       window.scrollTo({ top: 0, behavior: 'instant' });
     };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener('hashchange', onRouteChange);
+    window.addEventListener('popstate', onRouteChange);
+    return () => {
+      window.removeEventListener('hashchange', onRouteChange);
+      window.removeEventListener('popstate', onRouteChange);
+    };
   }, []);
 
   return path;
@@ -1755,12 +1772,12 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
 
 function Header({ currentPath, account, onNotify }: { currentPath: string; account: AuthAccount | null; onNotify: NotifyFn }) {
   const [open, setOpen] = React.useState(false);
-  const visibleNavItems = navItems.filter((item) => item.href !== '#/klient' || account?.role === 'client' || account?.role === 'admin');
+  const visibleNavItems = navItems.filter((item) => item.href !== '/klient' || account?.role === 'client' || account?.role === 'admin');
 
   return (
     <>
       <header className="site-header">
-        <a className="brand" href="#/" aria-label="REST ART Integrace domů">
+        <a className="brand" href="/" aria-label="REST ART Integrace domů">
         <img src="/images/sponsor-logo.png" alt="" />
         </a>
         <button className="menu-button" type="button" aria-label="Otevřít menu" onClick={() => setOpen(true)}>
@@ -1772,14 +1789,14 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
             <div className="auth-actions" aria-label="Přístup k účtu">
               <a
                 className="signin-icon tooltip-link"
-                href={account?.role === 'client' ? '#/klient' : '#/admin'}
+                href={account?.role === 'client' ? '/klient' : '/admin'}
                 aria-label={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
                 data-tooltip={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
               >
                 <UserRound size={19} />
               </a>
               {!account && (
-                <a className="signup-link" href="#/klient" aria-label="Sign up">
+                <a className="signup-link" href="/klient" aria-label="Sign up">
                   Sign up
                 </a>
               )}
@@ -1791,8 +1808,8 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
                 key={item.href}
                 href={item.href}
                 className={
-                  currentPath === item.href.slice(1) ||
-                  (item.href === '#/programy' && currentPath.startsWith('/programy/'))
+                  currentPath === internalHrefPath(item.href) ||
+                  (item.href === '/programy' && currentPath.startsWith('/programy/'))
                     ? 'active'
                     : ''
                 }
@@ -1802,7 +1819,7 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
             ))}
           </nav>
         </div>
-        <a className="header-cta" href="#/kontakt">
+        <a className="header-cta" href="/kontakt">
           Napište nám
         </a>
       </header>
@@ -1818,16 +1835,16 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
             </a>
           ))}
           <div className="mobile-auth-actions">
-            <a href={account?.role === 'client' ? '#/klient' : '#/admin'} onClick={() => setOpen(false)}>
+            <a href={account?.role === 'client' ? '/klient' : '/admin'} onClick={() => setOpen(false)}>
               <UserRound size={18} /> {account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
             </a>
             {!account && (
-              <a href="#/klient" onClick={() => setOpen(false)}>
+              <a href="/klient" onClick={() => setOpen(false)}>
                 Sign up
               </a>
             )}
           </div>
-          <a className="mobile-cta" href="#/kontakt" onClick={() => setOpen(false)}>
+          <a className="mobile-cta" href="/kontakt" onClick={() => setOpen(false)}>
             Napište nám
           </a>
         </div>
@@ -1841,30 +1858,30 @@ function Breadcrumb({ path }: { path: string }) {
   const crumbs =
     programDetail
       ? [
-          { label: 'Domů', href: '#/' },
-          { label: 'Programy', href: '#/programy' },
+          { label: 'Domů', href: '/' },
+          { label: 'Programy', href: '/programy' },
           { label: programDetail.title }
         ]
       : path === '/kontakt'
       ? [
-          { label: 'Domů', href: '#/' },
-          { label: 'Kontakt', href: '#/kontakt' },
+          { label: 'Domů', href: '/' },
+          { label: 'Kontakt', href: '/kontakt' },
           { label: 'Formulář' }
         ]
       : path === '/klient'
         ? [
-            { label: 'Domů', href: '#/' },
+            { label: 'Domů', href: '/' },
             { label: 'Klientský profil' }
           ]
       : path === '/admin'
         ? [
-            { label: 'Domů', href: '#/' },
+            { label: 'Domů', href: '/' },
             { label: 'Administrace' }
           ]
         : path === '/'
           ? [{ label: 'Domů' }]
           : [
-              { label: 'Domů', href: '#/' },
+              { label: 'Domů', href: '/' },
               { label: getRouteLabel(path) }
             ];
 
@@ -1966,7 +1983,7 @@ function ProgramsList() {
                   <li key={activity}>{activity}</li>
                 ))}
               </ul>
-              <a className="program-link" href={`#/programy/${programSlug(program.title)}`}>
+              <a className="program-link" href={`/programy/${programSlug(program.title)}`}>
                 Detail programu <ArrowRight size={17} />
               </a>
             </div>
@@ -1997,7 +2014,7 @@ function ProgramPillarMap() {
         {programs.map((program) => {
           const visual = getProgramPillarVisual(program.title);
           return (
-            <a key={program.title} className="program-pillar-card" href={`#/programy/${programSlug(program.title)}`}>
+            <a key={program.title} className="program-pillar-card" href={`/programy/${programSlug(program.title)}`}>
               {visual ? <img src={visual.src} alt={visual.alt} loading="lazy" /> : null}
               <div>
                 <span>{visual?.shortLabel ?? program.audience}</span>
@@ -2248,7 +2265,7 @@ function NewsDiscussionPanel({
             </form>
           ) : (
             <p className="comment-login-note">
-              Pro komentování nebo lajkování se prosím <a href="#/klient">přihlaste do klientské zóny</a>.
+              Pro komentování nebo lajkování se prosím <a href="/klient">přihlaste do klientské zóny</a>.
             </p>
           )}
         </div>
@@ -2352,7 +2369,7 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
                 {activeSlide.ctaLabel} <ArrowRight size={18} />
               </a>
             )}
-            <a className="button inverse ghost" href="#/programy">
+            <a className="button inverse ghost" href="/programy">
               Zobrazit programy
             </a>
           </div>
@@ -2495,7 +2512,7 @@ function HomePage({
             REST||ART Integrace vzniká stejně jako naše bouda: z nalezeného materiálu, práce, trpělivosti a víry, že
             i to, co bylo odepsané, může znovu sloužit.
           </p>
-          <a className="button primary" href="#/programy/streetwise">
+          <a className="button primary" href="/programy/streetwise">
             STREETWISE <ArrowRight size={18} />
           </a>
         </article>
@@ -2531,7 +2548,7 @@ function HomePage({
           <p>Začít znovu není selhání, je to síla.</p>
           <span>Mentoring, práce, bydlení a stabilizace v jednom srozumitelném systému podpory.</span>
         </div>
-        <a className="button inverse" href="#/co-delame">
+        <a className="button inverse" href="/co-delame">
           Jak pracujeme
         </a>
       </section>
@@ -2619,10 +2636,10 @@ function HomePage({
             kde může člověk začít znovu.
           </p>
           <div className="inline-actions">
-            <a className="button primary" href="#/zapojeni">
+            <a className="button primary" href="/zapojeni">
               Chci být partner <ArrowRight size={18} />
             </a>
-            <a className="button secondary" href="#/darujte">
+            <a className="button secondary" href="/darujte">
               Podpořit projekt
             </a>
           </div>
@@ -2637,10 +2654,10 @@ function HomePage({
         />
         <div className="home-link-grid">
           {[
-            { href: '#/co-delame', title: 'Co děláme', text: 'Mentoring, práce, bydlení a stabilizace.' },
-            { href: '#/programy', title: 'Programy', text: 'JAILBREAK, RESET, REWORK, STREETWISE, BOD ZLOMU a STABILIZACE.' },
-            { href: '#/aktuality', title: 'Aktuality', text: 'Krátké zprávy a veřejné novinky projektu.' },
-            { href: '#/kontakt', title: 'Kontakt', text: 'Rychlý kontakt, e-mail, telefon a formulář.' }
+            { href: '/co-delame', title: 'Co děláme', text: 'Mentoring, práce, bydlení a stabilizace.' },
+            { href: '/programy', title: 'Programy', text: 'JAILBREAK, RESET, REWORK, STREETWISE, BOD ZLOMU a STABILIZACE.' },
+            { href: '/aktuality', title: 'Aktuality', text: 'Krátké zprávy a veřejné novinky projektu.' },
+            { href: '/kontakt', title: 'Kontakt', text: 'Rychlý kontakt, e-mail, telefon a formulář.' }
           ].map((item) => (
             <a className="home-link" href={item.href} key={item.href}>
               <strong>{item.title}</strong>
@@ -2760,7 +2777,7 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
     <>
       <section className={`program-detail-hero${heroImage ? ' has-image' : ''}`}>
         <div className="program-detail-copy">
-          <a className="back-link" href="#/programy">
+          <a className="back-link" href="/programy">
             <ChevronLeft size={18} /> Zpět na programy
           </a>
           <p className="section-label">Program</p>
@@ -2783,10 +2800,10 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
             </blockquote>
           ) : null}
           <div className="program-detail-actions">
-            <a className="button primary" href="#/kontakt">
+            <a className="button primary" href="/kontakt">
               Napište nám <ArrowRight size={18} />
             </a>
-            <a className="button secondary" href="#/zapojeni">
+            <a className="button secondary" href="/zapojeni">
               Chci pomoci
             </a>
           </div>
@@ -2981,7 +2998,7 @@ function SupportPage() {
             <a className="button primary" href="https://donate.stripe.com/8x23cv0HAdIg8dibnF3ks03?locale=cs&prefilled_email=kozakdavid%40dk-i.cz" target="_blank" rel="noreferrer">
               <Heart size={18} /> Darovat přes Stripe
             </a>
-            <a className="button secondary" href="#/kontakt">
+            <a className="button secondary" href="/kontakt">
               Chci být partner
             </a>
           </div>
@@ -3896,7 +3913,8 @@ function AuthScreen({
   const [newPassword, setNewPassword] = React.useState('');
 
   React.useEffect(() => {
-    const query = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '';
+    const hashQuery = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '';
+    const query = window.location.search ? window.location.search.slice(1) : hashQuery;
     if (!query) return;
     const params = new URLSearchParams(query);
     const tokenFromLink = params.get('resetToken');
@@ -5071,14 +5089,14 @@ function App() {
       setSessionId(account.id);
       setApiAccount(null);
       if (account.role === 'admin' && currentPath !== '/admin') {
-        window.location.hash = '#/admin';
+        navigateToPath('/admin');
       }
       return;
     }
     setApiAccount(account);
     setSessionId(null);
     if (account.role === 'admin' && currentPath !== '/admin') {
-      window.location.hash = '#/admin';
+      navigateToPath('/admin');
     }
   };
   const logout = () => {
@@ -5464,7 +5482,7 @@ function AdminWorkspace({
     subtitle: '',
     imageUrl: '/images/slides/restart-tree.jpg',
     ctaLabel: '',
-    ctaHref: '#/kontakt',
+    ctaHref: '/kontakt',
     sortOrder: 40,
     isActive: true
   });
@@ -6066,7 +6084,7 @@ function AdminWorkspace({
       subtitle: '',
       imageUrl: '/images/slides/restart-tree.jpg',
       ctaLabel: '',
-      ctaHref: '#/kontakt',
+      ctaHref: '/kontakt',
       sortOrder: 40,
       isActive: true
     });
@@ -6619,8 +6637,11 @@ function AdminWorkspace({
       const notification = notifications.find((item) => item.id === target.notificationId);
       if (notification) openNotificationDialog(notification);
     }
-    if (target.href && !target.href.startsWith('#/admin') && target.href.startsWith('#/')) {
-      window.location.hash = target.href;
+    if (target.href) {
+      const nextPath = target.href.replace(/^#/, '');
+      if (!nextPath.startsWith('/admin') && nextPath.startsWith('/')) {
+        navigateToPath(nextPath);
+      }
     }
     onNotify('info', 'Aktivita otevřena', label);
   };
@@ -7341,7 +7362,7 @@ function AdminWorkspace({
                     <p className="empty-note">Zatím není zapsaný žádný formulář.</p>
                   ) : (
                     selectedClientDocuments.slice(0, 4).map((document) => (
-                      <a key={document.id} href={resolvePublicFileUrl(document.fileUrl) || '#/admin'} target={document.fileUrl ? '_blank' : undefined} rel="noreferrer">
+                      <a key={document.id} href={resolvePublicFileUrl(document.fileUrl) || '/admin'} target={document.fileUrl ? '_blank' : undefined} rel="noreferrer">
                         {document.title}
                       </a>
                     ))

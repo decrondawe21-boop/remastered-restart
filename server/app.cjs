@@ -201,7 +201,7 @@ function resetRouteForRole(role) {
 }
 
 function buildResetUrl(request, token, role) {
-  return `${publicBaseUrl(request)}/#${resetRouteForRole(role)}?resetToken=${encodeURIComponent(token)}`;
+  return `${publicBaseUrl(request)}${resetRouteForRole(role)}?resetToken=${encodeURIComponent(token)}`;
 }
 
 let mailTransporter = null;
@@ -303,7 +303,7 @@ function googleOAuthConfig(request) {
 
 function googleRedirect(request, target, reason = '') {
   const path = target === 'admin' ? '/admin' : '/klient';
-  return `${publicBaseUrl(request)}/#${path}${reason ? `?auth=${encodeURIComponent(reason)}` : ''}`;
+  return `${publicBaseUrl(request)}${path}${reason ? `?auth=${encodeURIComponent(reason)}` : ''}`;
 }
 
 async function registerClient(request, response) {

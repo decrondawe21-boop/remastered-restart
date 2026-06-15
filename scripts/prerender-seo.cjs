@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const baseUrl = 'https://restartintegrace.dk-i.cz';
-const ogImage = `${baseUrl}/images/slides/restart-og01.png`;
+const ogImage = `${baseUrl}/images/og/restart-integrace-og-1200x630.png`;
 const today = '2026-06-15';
 
 const routes = [

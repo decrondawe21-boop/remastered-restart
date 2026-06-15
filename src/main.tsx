@@ -387,6 +387,18 @@ const seededTransparentDocuments: MediaFile[] = [
     altText: '',
     uploadedBy: null,
     createdAt: '2026-06-11'
+  },
+  {
+    id: 'rest-art-one-page-projekt-2026-v1-5',
+    title: 'REST||ART One page projektu 2026',
+    fileName: 'RAI-DOC-PROJ-001_ONE_PAGE_PROJEKT_2026_v1_5_CONTENT_LOCKED.pdf',
+    fileUrl: '/documents/transparency/RAI-DOC-PROJ-001_ONE_PAGE_PROJEKT_2026_v1_5_CONTENT_LOCKED.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 95148,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: 'Veřejný one-page dokument projektu REST||ART Integrace',
+    uploadedBy: null,
+    createdAt: '2026-06-15'
   }
 ];
 

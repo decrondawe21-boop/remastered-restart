@@ -1,0 +1,13 @@
+REST||ART INTEGRACE - CHANGELOG v1.1 -> v1.2 BARCODE
+Datum: 2026-06-13 22:29
+
+Změny:
+- Do ne-GDPR finálních formulářů byl doplněn čárový kód Code 128 podle hodnoty form_uid.
+- U GDPR formulářů byl ponechán stávající barcode z v1.3 zdroje, aby nevznikly duplicity.
+- Pod každým nově vloženým barcode je čitelný text ID formuláře.
+- Umístění: hlavní portrétní formuláře vpravo nahoře, landscape/doplňkové/all-in-one/metodické dokumenty vlevo dole nad footerem.
+- Formulářová PDF pole byla zachována.
+
+Poznámka:
+- Barcode obsahuje pouze ID formuláře, nikoliv osobní údaje klienta.
+- Nejsou přiloženy fontové soubory.

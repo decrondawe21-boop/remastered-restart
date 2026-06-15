@@ -1084,6 +1084,8 @@ async function listFormTemplates(request, response) {
          source_note AS sourceNote
        FROM rest_art_document_files
        WHERE file_type = 'pdf'
+         AND status = 'active'
+         AND is_current = 1
        ORDER BY is_current DESC, category_code ASC, sort_order ASC, title ASC
        LIMIT 500`
     );

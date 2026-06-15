@@ -17,6 +17,7 @@
     "db:migrate": "node scripts/migrate-db.cjs",
     "db:import-forms": "node scripts/import-form-package.cjs",
     "db:import-release-v1.1": "node scripts/import-release-v1-1.cjs",
+    "db:import-release-v1.2": "node scripts/import-release-v1-2.cjs",
     "db:cleanup-test-data": "node scripts/cleanup-test-data.cjs"
   },
   "dependencies": {

@@ -1,0 +1,11 @@
+REST||ART INTEGRACE - changelog v1.0 -> v1.1
+Release v1.1 uzavírá provozní sadu formulářů po otestování a doplnění chybějících prvků.
+
+Hlavní změny
+Doplněn JAILBREAK dotazník v1.5. GDPR formuláře v release jsou vedené s RAI-FRM-GDPR ID a čárovými kódy. Doplněn manifest a SQL import pro novou verzi.
+
+Databáze
+Document_code je použit jako hlavní ID formuláře. Volitelný SQL soubor umožňuje doplnit samostatný sloupec form_uid.
+
+Pravidla provozu
+Starší v1.0 označit jako archived/legacy. Nové klienty vést přes v1.1. Krizovou dokumentaci držet odděleně. Reporting pouze anonymizovaně.

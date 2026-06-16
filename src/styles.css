@@ -2028,10 +2028,24 @@ h3 {
   color: #33483b;
 }
 
+.news-body h1,
 .news-body h2,
 .news-body h3 {
   margin: 6px 0 0;
-  font-size: 1.18rem;
+  color: #102018;
+  line-height: 1.16;
+}
+
+.news-body h1 {
+  font-size: clamp(1.5rem, 2.6vw, 2.05rem);
+}
+
+.news-body h2 {
+  font-size: clamp(1.24rem, 2vw, 1.55rem);
+}
+
+.news-body h3 {
+  font-size: 1.08rem;
 }
 
 .news-body p,
@@ -2047,6 +2061,22 @@ h3 {
   color: var(--green-dark);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.news-body .align-left {
+  text-align: left;
+}
+
+.news-body .align-center {
+  text-align: center;
+}
+
+.news-body .align-right {
+  text-align: right;
+}
+
+.news-body .align-justify {
+  text-align: justify;
 }
 
 .news-body figure {
@@ -4788,11 +4818,49 @@ h3 {
 }
 
 .mini-word-toolbar {
+  display: flex;
   flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #f7fbf8;
+}
+
+.mini-word-toolbar .text-tool {
+  min-width: 38px;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--green-dark);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+}
+
+.mini-word-toolbar .text-tool:hover,
+.mini-word-toolbar .text-tool:focus-visible {
+  border-color: var(--green);
+  outline: none;
+  background: #e8f4eb;
+}
+
+.mini-word-toolbar .toolbar-divider {
+  width: 1px;
+  height: 28px;
+  background: #cfdcd1;
+}
+
+.mini-word-toolbar .align-icon {
+  display: block;
+  width: 17px;
+  color: currentColor;
+  font-size: 0.74rem;
+  font-weight: var(--weight-bold);
+  line-height: 1;
 }
 
 .editor-body-grid {

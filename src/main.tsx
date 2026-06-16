@@ -12,7 +12,6 @@ import {
   ClipboardList,
   Copy,
   Download,
-  Heading1,
   Eye,
   EyeOff,
   FileStack,
@@ -962,11 +961,17 @@ const clientStatusClass = (status: string) => {
   return 'is-default';
 };
 
-const newsHtmlTags = new Set(['A', 'B', 'BLOCKQUOTE', 'BR', 'EM', 'H2', 'H3', 'H4', 'I', 'IFRAME', 'IMG', 'LI', 'OL', 'P', 'STRONG', 'U', 'UL']);
+const newsHtmlTags = new Set(['A', 'B', 'BLOCKQUOTE', 'BR', 'EM', 'H1', 'H2', 'H3', 'H4', 'I', 'IFRAME', 'IMG', 'LI', 'OL', 'P', 'STRONG', 'U', 'UL']);
+const newsAlignmentClasses = new Set(['align-left', 'align-center', 'align-right', 'align-justify']);
 const newsHtmlAttrs = new Map([
   ['A', new Set(['href', 'target', 'rel', 'title'])],
+  ['H1', new Set(['class'])],
+  ['H2', new Set(['class'])],
+  ['H3', new Set(['class'])],
+  ['H4', new Set(['class'])],
   ['IMG', new Set(['src', 'alt', 'title', 'loading'])],
-  ['IFRAME', new Set(['src', 'title', 'allow', 'allowfullscreen', 'loading'])]
+  ['IFRAME', new Set(['src', 'title', 'allow', 'allowfullscreen', 'loading'])],
+  ['P', new Set(['class'])]
 ]);
 
 function isSafeNewsUrl(tagName: string, attrName: string, value: string) {
@@ -1021,6 +1026,15 @@ function cleanNewsHtml(value = '') {
       const allowedAttrs = newsHtmlAttrs.get(tagName) || new Set<string>();
       for (const attribute of Array.from(element.attributes)) {
         const attrName = attribute.name.toLowerCase();
+        if (attrName === 'class' && allowedAttrs.has(attrName)) {
+          const safeClasses = attribute.value.split(/\s+/).filter((className) => newsAlignmentClasses.has(className));
+          if (safeClasses.length > 0) {
+            element.setAttribute('class', safeClasses.join(' '));
+          } else {
+            element.removeAttribute(attribute.name);
+          }
+          continue;
+        }
         if (!allowedAttrs.has(attrName) || !isSafeNewsUrl(tagName, attrName, attribute.value)) {
           element.removeAttribute(attribute.name);
         }
@@ -3034,7 +3048,7 @@ function NewsPage({
       <PageHeader
         label="Aktuality"
         title="Co se v projektu děje"
-        text="Krátké zprávy z příprav, programu a spolupráce. Aktuality se dají doplňovat přímo v administraci."
+        text="Novinky z projektu, příběhy z praxe a důležité informace o podpoře, programech a komunitní spolupráci."
       />
       <section className="content-section">
         <NewsGrid
@@ -7838,9 +7852,35 @@ function AdminWorkspace({
                   </div>
 
                   <div className="mini-word-toolbar" aria-label="Nástroje editoru">
-                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Nadpis" aria-label="Vložit nadpis" onClick={() => insertNewsBody('<h2>', '</h2>', 'Nadpis sekce')}>
-                      <Heading1 size={17} />
+                    <button className="text-tool tooltip-link" type="button" data-tooltip="Hlavní nadpis" aria-label="Vložit hlavní nadpis" onClick={() => insertNewsBody('<h1>', '</h1>', 'Hlavní nadpis')}>
+                      H1
                     </button>
+                    <button className="text-tool tooltip-link" type="button" data-tooltip="Nadpis sekce" aria-label="Vložit nadpis sekce" onClick={() => insertNewsBody('<h2>', '</h2>', 'Nadpis sekce')}>
+                      H2
+                    </button>
+                    <button className="text-tool tooltip-link" type="button" data-tooltip="Podnadpis" aria-label="Vložit podnadpis" onClick={() => insertNewsBody('<h3>', '</h3>', 'Podnadpis')}>
+                      H3
+                    </button>
+                    <button className="text-tool tooltip-link" type="button" data-tooltip="Odstavec" aria-label="Vložit odstavec" onClick={() => insertNewsBody('<p>', '</p>', 'Text odstavce')}>
+                      P
+                    </button>
+                    <button className="text-tool tooltip-link" type="button" data-tooltip="Zalomení řádku" aria-label="Vložit zalomení řádku" onClick={() => insertNewsBody('', '<br />\n', '')}>
+                      BR
+                    </button>
+                    <span className="toolbar-divider" aria-hidden="true" />
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Zarovnat vlevo" aria-label="Zarovnat vlevo" onClick={() => insertNewsBody('<p class="align-left">', '</p>', 'Text zarovnaný vlevo')}>
+                      <span className="align-icon align-left-icon">L</span>
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Zarovnat na střed" aria-label="Zarovnat na střed" onClick={() => insertNewsBody('<p class="align-center">', '</p>', 'Text zarovnaný na střed')}>
+                      <span className="align-icon align-center-icon">C</span>
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Zarovnat vpravo" aria-label="Zarovnat vpravo" onClick={() => insertNewsBody('<p class="align-right">', '</p>', 'Text zarovnaný vpravo')}>
+                      <span className="align-icon align-right-icon">R</span>
+                    </button>
+                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Do bloku" aria-label="Zarovnat do bloku" onClick={() => insertNewsBody('<p class="align-justify">', '</p>', 'Text zarovnaný do bloku')}>
+                      <span className="align-icon align-justify-icon">J</span>
+                    </button>
+                    <span className="toolbar-divider" aria-hidden="true" />
                     <button className="icon-tool tooltip-link" type="button" data-tooltip="Tučně" aria-label="Tučný text" onClick={() => insertNewsBody('<strong>', '</strong>', 'tučný text')}>
                       <Bold size={17} />
                     </button>

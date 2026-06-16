@@ -3236,22 +3236,28 @@ function TransparencyDocumentsPage({ documents }: { documents: MediaFile[] }) {
         <h1>Povinné zveřejňování</h1>
         <p>Zveřejňujeme dokumenty pro transparentnost projektových aktivit, financování a veřejných podkladů.</p>
       </div>
-      <div className="client-document-list">
+      <div className="client-document-list transparency-document-list">
         {sorted.length === 0 ? (
           <p className="empty-note">Zatím nejsou žádné zveřejněné transparentní dokumenty. Přidejte je prosím v administraci v sekci Média.</p>
         ) : (
           sorted.map((document) => {
             const publicUrl = resolvePublicFileUrl(document.fileUrl);
+            const documentTitle = document.title || document.fileName;
+            const documentType = (document.fileName.split('.').pop() || 'PDF').toUpperCase();
             return (
-              <article key={document.id}>
-                <div>
-                  <strong>{document.title || document.fileName}</strong>
-                  <span>{document.fileName}</span>
+              <article key={document.id} title={document.fileName}>
+                <span className="document-thumb" aria-hidden="true">
+                  <FileText size={22} />
+                  <em>{documentType}</em>
+                </span>
+                <div className="document-card-copy">
+                  <strong>{documentTitle}</strong>
                   <small>
-                    {new Date(document.createdAt).toLocaleDateString('cs-CZ')} · {readableBytes(document.fileSize)} · {document.mimeType || 'soubor'}
+                    {new Date(document.createdAt).toLocaleDateString('cs-CZ')} · {readableBytes(document.fileSize)}
                   </small>
                 </div>
-                <a className="button secondary" href={publicUrl} target="_blank" rel="noreferrer">
+                <span className="document-file-chip" aria-label={`Typ souboru ${documentType}`}>{documentType}</span>
+                <a className="button secondary" href={publicUrl} target="_blank" rel="noreferrer" aria-label={`Otevřít dokument ${documentTitle}`}>
                   <Download size={18} /> Otevřít PDF
                 </a>
               </article>

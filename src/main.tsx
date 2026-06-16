@@ -3244,11 +3244,29 @@ function TransparencyDocumentsPage({ documents }: { documents: MediaFile[] }) {
             const publicUrl = resolvePublicFileUrl(document.fileUrl);
             const documentTitle = document.title || document.fileName;
             const documentType = (document.fileName.split('.').pop() || 'PDF').toUpperCase();
+            const fileBaseName = document.fileName.replace(/\.[^.]+$/, '');
+            const thumbnailUrl = /\.pdf$/i.test(document.fileName) && document.fileUrl.startsWith('/documents/transparency/')
+              ? `/documents/transparency/thumbnails/${fileBaseName}.png`
+              : '';
             return (
               <article key={document.id} title={document.fileName}>
-                <span className="document-thumb" aria-hidden="true">
-                  <FileText size={22} />
-                  <em>{documentType}</em>
+                <span className="document-thumb document-thumb-preview" aria-hidden="true">
+                  {thumbnailUrl && (
+                    <img
+                      src={thumbnailUrl}
+                      alt=""
+                      loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.style.display = 'none';
+                        const fallback = event.currentTarget.nextElementSibling as HTMLElement | null;
+                        fallback?.removeAttribute('hidden');
+                      }}
+                    />
+                  )}
+                  <span className="document-thumb-fallback" hidden={Boolean(thumbnailUrl)}>
+                    <FileText size={22} />
+                    <em>{documentType}</em>
+                  </span>
                 </span>
                 <div className="document-card-copy">
                   <strong>{documentTitle}</strong>

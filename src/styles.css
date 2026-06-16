@@ -3749,14 +3749,14 @@ h3 {
 }
 
 .client-document-list.transparency-document-list {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
 
 .client-document-list.transparency-document-list article {
   position: relative;
-  grid-template-columns: 54px minmax(0, 1fr);
-  min-height: 164px;
+  grid-template-columns: 86px minmax(0, 1fr);
+  min-height: 188px;
   align-items: start;
   padding: 14px;
   overflow: hidden;
@@ -3765,16 +3765,31 @@ h3 {
 .transparency-document-list .document-thumb {
   display: grid;
   place-items: center;
-  gap: 3px;
-  width: 48px;
-  height: 58px;
+  width: 78px;
+  height: 110px;
   border: 1px solid #bed6c4;
   border-radius: 6px;
   background: linear-gradient(160deg, #f3fbf5 0%, #ffffff 100%);
   color: var(--green-dark);
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(12, 32, 20, 0.09);
 }
 
-.transparency-document-list .document-thumb em {
+.transparency-document-list .document-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.transparency-document-list .document-thumb-fallback {
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  width: 100%;
+  height: 100%;
+}
+
+.transparency-document-list .document-thumb-fallback em {
   font-size: 0.62rem;
   font-style: normal;
   font-weight: var(--weight-bold);
@@ -3789,11 +3804,8 @@ h3 {
 }
 
 .transparency-document-list .document-card-copy strong {
-  display: -webkit-box;
-  min-height: 2.7em;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  display: block;
+  overflow: visible;
   line-height: 1.35;
 }
 

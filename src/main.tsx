@@ -399,6 +399,30 @@ const seededTransparentDocuments: MediaFile[] = [
     altText: 'Veřejný one-page dokument projektu REST||ART Integrace',
     uploadedBy: null,
     createdAt: '2026-06-15'
+  },
+  {
+    id: 'rest-art-public-rai-met-jb-001',
+    title: 'Metodika JAILBREAK',
+    fileName: 'RAI-MET-JB-001_METODIKA_JAILBREAK_v1_5_CONTENT_LOCKED.pdf',
+    fileUrl: '/documents/transparency/RAI-MET-JB-001_METODIKA_JAILBREAK_v1_5_CONTENT_LOCKED.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 94629,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: 'Veřejná metodika programu REST||ART Integrace',
+    uploadedBy: null,
+    createdAt: '2026-06-16'
+  },
+  {
+    id: 'rest-art-gdpr-odvolani-omezeni-souhlasu',
+    title: 'GDPR - Odvolání nebo omezení souhlasu',
+    fileName: 'RAI-FRM-GDPR-013_ODVOLANI_NEBO_OMEZENI_SOUHLASU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    fileUrl: '/documents/transparency/RAI-FRM-GDPR-013_ODVOLANI_NEBO_OMEZENI_SOUHLASU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 109920,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: 'Veřejný formulář pro odvolání nebo omezení souhlasu se zpracováním osobních údajů',
+    uploadedBy: null,
+    createdAt: '2026-06-16'
   }
 ];
 

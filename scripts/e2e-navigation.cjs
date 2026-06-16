@@ -1,8 +1,7 @@
 const { chromium } = require('playwright');
+const { withPreviewServer } = require('./e2e-preview-server.cjs');
 
-const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
-
-(async () => {
+(async () => withPreviewServer(async (baseUrl) => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
@@ -16,8 +15,8 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
     throw new Error('Klientská zóna should be hidden from the anonymous main navigation.');
   }
   const signIn = page.getByRole('link', { name: 'Sign in', exact: true });
-  if ((await signIn.getAttribute('href')) !== '#/admin') {
-    throw new Error('Sign in icon should point to #/admin.');
+  if ((await signIn.getAttribute('href')) !== '/admin') {
+    throw new Error('Sign in icon should point to /admin.');
   }
   const tooltipPosition = await signIn.evaluate((element) => {
     const style = window.getComputedStyle(element, '::after');
@@ -27,8 +26,8 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
     throw new Error('Sign in tooltip should open below the icon so it stays inside the viewport.');
   }
   const signUp = page.getByRole('link', { name: 'Sign up', exact: true });
-  if ((await signUp.getAttribute('href')) !== '#/klient') {
-    throw new Error('Sign up should point to #/klient.');
+  if ((await signUp.getAttribute('href')) !== '/klient') {
+    throw new Error('Sign up should point to /klient.');
   }
 
   const kontaktLink = mainNav.getByRole('link', {
@@ -36,12 +35,12 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
     exact: true
   });
   const kontaktHref = await kontaktLink.getAttribute('href');
-  if (kontaktHref !== '#/kontakt') {
-    throw new Error(`Kontakt link should point to #/kontakt, got ${kontaktHref}`);
+  if (kontaktHref !== '/kontakt') {
+    throw new Error(`Kontakt link should point to /kontakt, got ${kontaktHref}`);
   }
 
   await kontaktLink.click();
-  await page.waitForURL('**/#/kontakt');
+  await page.waitForURL('**/kontakt');
 
   const bodyText = await page.locator('body').innerText();
   if (!bodyText.includes('Nacházíte se:')) {
@@ -65,7 +64,7 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
 
   await browser.close();
   console.log('Navigation validation passed.');
-})().catch(async (error) => {
+}))().catch(async (error) => {
   console.error(error.message);
   process.exit(1);
 });

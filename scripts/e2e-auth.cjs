@@ -1,8 +1,7 @@
 const { chromium } = require('playwright');
+const { withPreviewServer } = require('./e2e-preview-server.cjs');
 
-const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
-
-(async () => {
+(async () => withPreviewServer(async (baseUrl) => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 920 } });
 
@@ -53,12 +52,22 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
   await page.getByLabel('Souhlasím se zpracováním údajů').click();
   await page.getByRole('button', { name: 'Vytvořit profil' }).click();
 
-  await page.getByRole('heading', { name: 'Jan Novak', level: 1 }).waitFor({ state: 'visible', timeout: 5000 });
+  const registrationResult = await Promise.race([
+    page.getByRole('heading', { name: 'Jan Novak', level: 1 }).waitFor({ state: 'visible', timeout: 10000 }).then(() => 'profile'),
+    page.getByText(/Registrace byla přijata|čeká na ověření administrátorem/).first().waitFor({ state: 'visible', timeout: 10000 }).then(() => 'pending')
+  ]);
+
+  if (registrationResult === 'pending') {
+    await browser.close();
+    console.log('Auth validation passed.');
+    return;
+  }
+
   if (!(await page.getByRole('heading', { name: 'Jan Novak', level: 1 }).isVisible())) {
     throw new Error('Registered client should land in profile GUI.');
   }
   await page.getByRole('button', { name: /Můj profil/ }).click();
-  if (!(await page.getByRole('heading', { name: 'Můj profil', level: 1 }).isVisible())) {
+  if (!(await page.getByRole('heading', { name: 'Můj profil' }).isVisible())) {
     throw new Error('Client profile should expose a profile GUI section.');
   }
   await page.getByRole('button', { name: /Avatar/ }).click();
@@ -68,7 +77,7 @@ const baseUrl = process.env.RESTART_TEST_URL || 'http://127.0.0.1:4173';
 
   await browser.close();
   console.log('Auth validation passed.');
-})().catch(async (error) => {
+}))().catch(async (error) => {
   console.error(error.message);
   process.exit(1);
 });

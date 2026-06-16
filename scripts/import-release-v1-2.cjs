@@ -22,6 +22,7 @@ const PUBLIC_RELEASE_ROOT = path.join(process.cwd(), 'public', 'documents', 'rel
 const TEMP_ROOT = path.join(process.cwd(), '.tmp-form-release-v1-2');
 const required = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
 const PROJECT_ONE_PAGE_UID = 'RAI-DOC-PROJ-001';
+const GDPR_WITHDRAWAL_UID = 'RAI-FRM-GDPR-013';
 
 function fail(message) {
   console.error(message);
@@ -90,6 +91,39 @@ function isAllInOne(file) {
 
 function isProjectOnePage(file) {
   return file.form_uid === PROJECT_ONE_PAGE_UID || /ONE_PAGE_PROJEKT/i.test(file.file_name || '');
+}
+
+function isPublicMethodology(file) {
+  return String(file.form_uid || '').startsWith('RAI-MET-') || /METODIKA/i.test(file.file_name || '');
+}
+
+function isPublicGdprWithdrawal(file) {
+  return file.form_uid === GDPR_WITHDRAWAL_UID || /ODVOLANI_NEBO_OMEZENI_SOUHLASU/i.test(file.file_name || '');
+}
+
+function publicDocumentDefinition(file) {
+  if (isProjectOnePage(file)) {
+    return {
+      id: 'rest-art-one-page-projekt-2026-v1-5',
+      title: 'REST||ART One page projektu 2026',
+      altText: 'Veřejný one-page dokument projektu REST||ART Integrace'
+    };
+  }
+  if (isPublicMethodology(file)) {
+    return {
+      id: `rest-art-public-${toSlug(file.form_uid || file.file_name)}`,
+      title: file.title || 'REST||ART metodika programu',
+      altText: 'Veřejná metodika programu REST||ART Integrace'
+    };
+  }
+  if (isPublicGdprWithdrawal(file)) {
+    return {
+      id: 'rest-art-gdpr-odvolani-omezeni-souhlasu',
+      title: 'GDPR - Odvolání nebo omezení souhlasu',
+      altText: 'Veřejný formulář pro odvolání nebo omezení souhlasu se zpracováním osobních údajů'
+    };
+  }
+  return null;
 }
 
 async function clearDirectory(targetPath, label) {
@@ -352,8 +386,9 @@ async function copyPublicForms(manifest, extractedRoot) {
   return copied;
 }
 
-async function copyProjectOnePage(file, extractedRoot) {
-  if (!file) return null;
+async function copyPublicDocument(file, extractedRoot) {
+  const definition = publicDocumentDefinition(file);
+  if (!definition) return null;
 
   const relativePath = safeRelativePath(file.relative_path);
   const source = path.join(extractedRoot, ...relativePath.split('/'));
@@ -365,18 +400,18 @@ async function copyProjectOnePage(file, extractedRoot) {
 
   const stats = await fs.stat(target);
   return {
-    id: 'rest-art-one-page-projekt-2026-v1-5',
-    title: 'REST||ART One page projektu 2026',
+    id: definition.id,
+    title: definition.title,
     fileName: file.file_name,
     fileUrl: `/documents/transparency/${file.file_name}`,
     mimeType: 'application/pdf',
     fileSize: Number(file.size_bytes || stats.size || 0),
     category: 'transparency',
-    altText: 'Veřejný one-page dokument projektu REST||ART Integrace'
+    altText: definition.altText
   };
 }
 
-async function upsertProjectOnePageMedia(media) {
+async function upsertPublicMedia(media) {
   if (!media) return false;
 
   await query(
@@ -428,17 +463,23 @@ async function copyReleaseArchive(extractedRoot) {
   if (!Array.isArray(manifest) || manifest.length === 0) {
     fail('Release manifest is empty or invalid.');
   }
-  const projectOnePage = manifest.find(isProjectOnePage) || null;
-  const operationalForms = manifest.filter((file) => !isAllInOne(file) && !isProjectOnePage(file));
+  const publicDocuments = manifest.filter((file) => isProjectOnePage(file) || isPublicMethodology(file) || isPublicGdprWithdrawal(file));
+  const operationalForms = manifest.filter((file) => !isAllInOne(file) && !isProjectOnePage(file) && !isPublicMethodology(file));
 
   await copyReleaseArchive(extractedRoot);
   const copied = await copyPublicForms(operationalForms, extractedRoot);
-  const publicOnePage = await copyProjectOnePage(projectOnePage, extractedRoot);
+  const publicMediaItems = [];
+  for (const file of publicDocuments) {
+    const media = await copyPublicDocument(file, extractedRoot);
+    if (media) publicMediaItems.push(media);
+  }
 
   await ensureSchema();
   const releaseId = await upsertRelease();
   await archiveAllDocuments();
-  await upsertProjectOnePageMedia(publicOnePage);
+  for (const media of publicMediaItems) {
+    await upsertPublicMedia(media);
+  }
 
   let imported = 0;
   for (const [index, file] of operationalForms.entries()) {
@@ -452,7 +493,7 @@ async function copyReleaseArchive(extractedRoot) {
   console.log(`Release imported: ${RELEASE_NAME}`);
   console.log(`Public forms replaced: ${copied}`);
   console.log(`All-in-one files excluded: ${manifest.filter(isAllInOne).length}`);
-  console.log(`Project one-page moved to public documents: ${publicOnePage ? publicOnePage.fileUrl : 'not found'}`);
+  console.log(`Public documents copied: ${publicMediaItems.map((item) => item.fileUrl).join(', ') || 'none'}`);
   console.log(`Database rows active/current: ${imported}`);
   console.log(`Release id: ${releaseId}`);
 })()

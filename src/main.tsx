@@ -1127,6 +1127,56 @@ const cleanPrintableFormTitle = (title: string) =>
     .replace(/\bKazuistika\b/gi, 'kazuistika')
     .replace(/\bMlcenlivost\b/gi, 'mlčenlivost');
 
+const normalizeAutofillText = (value: string) => stripDiacritics(value).toLowerCase();
+
+const clientFullName = (client: ClientRecord) => `${client.firstName} ${client.lastName}`.trim();
+
+const clientFormAutofillValue = (field: FormTemplate['fields'][number], client: ClientRecord) => {
+  const haystack = normalizeAutofillText(`${field.key} ${field.label}`);
+  const contactLine = [client.phone, client.email, client.address].filter(Boolean).join(' | ');
+
+  if (/datum.*narozeni|narozeni|birth/.test(haystack)) return client.birthDate || '';
+  if (/interni.*id|operational|kod.*klienta|cislo.*klienta|client.*id/.test(haystack)) return client.operationalId || '';
+  if (/telefon|phone/.test(haystack)) return client.phone || '';
+  if (/e-mail|email|mail/.test(haystack)) return client.email || '';
+  if (/adresa|address/.test(haystack)) return client.address || '';
+  if (/kontakt|contact/.test(haystack)) return contactLine;
+  if (/program/.test(haystack)) return client.program || '';
+  if (/cilova.*skupina|target.*group/.test(haystack)) return client.targetGroup || '';
+  if (/stav|status/.test(haystack)) return client.status || '';
+  if (/(^| )(klient|client|jmeno|name)( |$)/.test(haystack) && !/podpis|prohlaseni|poznamka|souhlas|kontakt|adresa/.test(haystack)) {
+    return clientFullName(client);
+  }
+
+  return '';
+};
+
+const mergeClientAutofillDraft = (
+  template: FormTemplate,
+  client: ClientRecord,
+  currentDraft: FormDraft,
+  previousClient: ClientRecord | null
+) => {
+  let changed = false;
+  const nextDraft = { ...currentDraft };
+
+  template.fields.forEach((field) => {
+    const nextValue = clientFormAutofillValue(field, client);
+    if (!nextValue) return;
+
+    const currentValue = String(nextDraft[field.key] ?? '');
+    const previousValue = previousClient ? clientFormAutofillValue(field, previousClient) : '';
+    const canReplace = currentValue.trim() === '' || Boolean(previousValue && currentValue.trim() === previousValue.trim());
+
+    if (canReplace && currentValue !== nextValue) {
+      nextDraft[field.key] = nextValue;
+      changed = true;
+    }
+  });
+
+  return changed ? nextDraft : currentDraft;
+};
+
 const starterAccounts: AuthAccount[] = [];
 
 const starterSlides: HomeSlide[] = [
@@ -1577,8 +1627,16 @@ const dateToInputValue = (value?: string) => {
   return Number.isNaN(parsed.getTime()) ? todayIso() : parsed.toISOString().slice(0, 10);
 };
 
-const clientSequenceNumber = (clients: Pick<ClientRecord, 'id'>[], clientId?: string) => {
-  const index = clientId ? clients.findIndex((client) => client.id === clientId) : -1;
+const clientSequenceNumber = (clients: Pick<ClientRecord, 'id' | 'createdAt'>[], clientId?: string) => {
+  const orderedClients = clients
+    .map((client, index) => ({ client, index }))
+    .sort((left, right) => {
+      const leftTime = Date.parse(left.client.createdAt || '') || 0;
+      const rightTime = Date.parse(right.client.createdAt || '') || 0;
+      if (leftTime !== rightTime) return leftTime - rightTime;
+      return right.index - left.index;
+    });
+  const index = clientId ? orderedClients.findIndex(({ client }) => client.id === clientId) : -1;
   return Math.max(1, index >= 0 ? index + 1 : clients.length + 1);
 };
 
@@ -5562,6 +5620,7 @@ function AdminWorkspace({
   });
 
   const selectedClient = clients.find((client) => client.id === selectedClientId) ?? clients[0] ?? null;
+  const previousAutofillClientRef = React.useRef<ClientRecord | null>(null);
   const selectedToolsClient = selectedClientId ? clients.find((client) => client.id === selectedClientId) ?? null : null;
   const toolsClientHasOperationalId = Boolean(selectedToolsClient?.operationalId?.trim());
   const toolsClientSequence = clientSequenceNumber(clients, selectedToolsClient?.id);
@@ -5612,6 +5671,13 @@ function AdminWorkspace({
   }, [activeTab, filteredClients, selectedClientId]);
   const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
   const selectedTemplateFileUrl = resolvePublicFileUrl(selectedTemplate.fileUrl || selectedTemplate.sourceNote, selectedTemplate);
+  React.useEffect(() => {
+    if (!selectedClient || !selectedTemplate) return;
+
+    setDraft((current) => mergeClientAutofillDraft(selectedTemplate, selectedClient, current, previousAutofillClientRef.current));
+    previousAutofillClientRef.current = selectedClient;
+  }, [selectedClient?.id, selectedTemplate?.id]);
+
   const templateCategories = Array.from(new Set(formTemplates.map((template) => template.folder || 'bez-kategorie'))).sort((left, right) =>
     formCategoryTitle(left).localeCompare(formCategoryTitle(right), 'cs')
   );

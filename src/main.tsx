@@ -1136,6 +1136,7 @@ const clientFormAutofillValue = (field: FormTemplate['fields'][number], client: 
   const contactLine = [client.phone, client.email, client.address].filter(Boolean).join(' | ');
 
   if (/datum.*narozeni|narozeni|birth/.test(haystack)) return client.birthDate || '';
+  if (/datum.*kontaktu|datum.*zpracovani|processing.*date|contact.*date/.test(haystack)) return todayIso();
   if (/interni.*id|operational|kod.*klienta|cislo.*klienta|client.*id/.test(haystack)) return client.operationalId || '';
   if (/telefon|phone/.test(haystack)) return client.phone || '';
   if (/e-mail|email|mail/.test(haystack)) return client.email || '';

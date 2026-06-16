@@ -1091,24 +1091,37 @@ async function listFormTemplates(request, response) {
     );
     if (documentRows.length > 0) {
       sendJson(response, 200, {
-        templates: documentRows.map((row) => ({
-          id: `rest-art-doc-${row.id}`,
-          title: row.documentCode ? `${row.documentCode} - ${row.title}` : row.title,
-          description: `${row.categoryTitle || row.categoryCode || 'Formulář'}${row.version ? `, ${row.version}` : ''}. ${row.notes || ''}`.trim(),
-          fields: [
-            { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
-            { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
-          ],
-          fileUrl: row.filePath || '',
-          folder: row.categoryCode || '',
-          formUid: row.formUid || '',
-          formGroup: row.formGroup || '',
-          status: row.status || 'active',
-          isCurrent: Boolean(row.isCurrent),
-          sourceNote: [row.fileName, row.sensitivity ? `citlivost: ${row.sensitivity}` : '', row.sourceNote || ''].filter(Boolean).join(' | '),
-          sizeBytes: Number(row.sizeBytes || 0),
-          isActive: row.status === 'active' && Boolean(row.isCurrent)
-        }))
+        templates: documentRows.map((row) => {
+          const isProgramQuestionnaire = row.categoryCode === '11_PROGRAMOVE_DOTAZNIKY';
+          return {
+            id: `rest-art-doc-${row.id}`,
+            title: row.documentCode ? `${row.documentCode} - ${row.title}` : row.title,
+            description: `${row.categoryTitle || row.categoryCode || 'Formulář'}${row.version ? `, ${row.version}` : ''}. ${row.notes || ''}`.trim(),
+            fields: isProgramQuestionnaire
+              ? [
+                  { key: 'internalId', label: 'Interní ID klienta', rows: 1 },
+                  { key: 'clientName', label: 'Jméno klienta', rows: 1 },
+                  { key: 'birthDate', label: 'Datum narození', rows: 1 },
+                  { key: 'program', label: 'Program / vazba na podporu', rows: 1 },
+                  { key: 'contact', label: 'Kontakt a adresa', rows: 2 },
+                  { key: 'processingDate', label: 'Datum kontaktu / zpracování', rows: 1 },
+                  { key: 'workerNote', label: 'Poznámka pracovníka k dotazníku', rows: 3 }
+                ]
+              : [
+                  { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
+                  { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
+                ],
+            fileUrl: row.filePath || '',
+            folder: row.categoryCode || '',
+            formUid: row.formUid || '',
+            formGroup: row.formGroup || '',
+            status: row.status || 'active',
+            isCurrent: Boolean(row.isCurrent),
+            sourceNote: [row.fileName, row.sensitivity ? `citlivost: ${row.sensitivity}` : '', row.sourceNote || ''].filter(Boolean).join(' | '),
+            sizeBytes: Number(row.sizeBytes || 0),
+            isActive: row.status === 'active' && Boolean(row.isCurrent)
+          };
+        })
       });
       return;
     }

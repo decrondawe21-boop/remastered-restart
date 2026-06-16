@@ -1,0 +1,964 @@
+release;form_uid;program;page;pdf_field_name;visible_label;field_type
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_interni_id;Interní ID klienta;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_program;Program / vazba na podporu;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_datum;Datum kontaktu / zpracování;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_pracovnik;Pracovník / mentor;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_misto;Místo / prostředí;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_kontakt;Kontakt / bezpečný kanál;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_duvod_vstupu;Důvod vstupu / zakázka klienta;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;1;p1_ocekavani;Očekávání klienta od podpory;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_current_1_bydleni_po_propusteni;Bydlení po propuštění;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_current_2_doklady_urady;Doklady / úřady;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_current_3_prace_prijem;Práce / příjem;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_current_4_dluhy_exekuce;Dluhy / exekuce;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_current_5_rodina_podpurna_sit;Rodina / podpůrná síť;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_current_6_pms_navazne_sluzby;PMS / návazné služby;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_nejvetsi_problem;Co je dnes největší problém klienta;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;2;p2_co_funguje;Co už funguje / na čem lze stavět;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;3;p3_spec_1_za_jakou_trestnou_cinnost_je_klient_ve_vtos_byl_odsouze;Za jakou trestnou činnost je klient ve VTOS / byl odsouzen;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;3;p3_spec_2_pocet_vykonu_trestu;Počet výkonů trestu;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;3;p3_spec_3_kolik_let_celkem_ve_vykonu_trestu;Kolik let celkem ve výkonu trestu;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;3;p3_spec_4_planovane_probehle_propusteni;Plánované / proběhlé propuštění;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;3;p3_spec_5_je_klient_poprve_ve_vtos_nebo_opakovane;Je klient poprvé ve VTOS nebo opakovaně;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;3;p3_spec_6_vnima_klient_odpovednost_za_trestnou_cinnost;Vnímá klient odpovědnost za trestnou činnost;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;3;p3_spec_poznamka;Poznámka pracovníka / důležité souvislosti;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;4;p4_spec_1_citi_se_klient_vinen;Cítí se klient vinen;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;4;p4_spec_2_co_povazuje_za_vlastni_podil;Co považuje za vlastní podíl;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;4;p4_spec_3_co_povazuje_za_vliv_okoli_systemu;Co považuje za vliv okolí / systému;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;4;p4_spec_4_co_by_dnes_udelal_jinak;Co by dnes udělal jinak;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;4;p4_spec_5_kde_vidi_riziko_opakovani;Kde vidí riziko opakování;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;4;p4_spec_poznamka;Doplnění / citlivé sdělení klienta;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;5;p5_spec_1_proc_doslo_k_navratu_k_trestne_cinnosti;Proč došlo k návratu k trestné činnosti;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;5;p5_spec_2_co_bylo_spoustecem;Co bylo spouštěčem;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;5;p5_spec_3_jake_situace_predchazely_selhani;Jaké situace předcházely selhání;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;5;p5_spec_4_co_se_musi_zmenit_po_propusteni;Co se musí změnit po propuštění;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;5;p5_spec_5_co_uz_klient_nechce_opakovat;Co už klient nechce opakovat;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;5;p5_spec_poznamka;Pracovní závěr z programového screeningu;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_1_ztrata_bydleni_bezpecneho_mista;ztráta bydlení / bezpečného místa;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_2_ztrata_kontaktu;ztráta kontaktu;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_3_dluhy_exekuce;dluhy / exekuce;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_4_relaps_intoxikace;relaps / intoxikace;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_5_recidiva_poruseni_dohody;recidiva / porušení dohody;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_6_akutni_psychicka_krize;akutní psychická krize;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_7_konflikt_nasili_vyhruzky;konflikt / násilí / výhrůžky;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_8_nizka_motivace;nízká motivace;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_9_rizikove_prostredi_osoby;rizikové prostředí / osoby;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_10_nedostatek_podpurne_site;nedostatek podpůrné sítě;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;6;p6_risk_detail;Konkretizace rizik / kdy se riziko zvyšuje;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_1_bezpecna_osoba;bezpečná osoba;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_2_stabilni_kontakt_s_pracovnikem;stabilní kontakt s pracovníkem;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_3_motivace_pokracovat;motivace pokračovat;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_4_pracovni_denni_rezim;pracovní / denní režim;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_5_bydleni_bezpecne_misto;bydlení / bezpečné místo;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_6_navazna_sluzba;návazná služba;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_7_abstinencni_krizovy_plan;abstinenční / krizový plán;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_8_rodina_komunita;rodina / komunita;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_9_doklady_uredni_veci_v_reseni;doklady / úřední věci v řešení;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_10_konkretni_cil_na_30_dni;konkrétní cíl na 30 dní;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;7;p7_protect_detail;Konkretizace ochranných faktorů / kdo a co pomáhá;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;8;p8_motivace_zmena;Proč chce klient změnu právě teď;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;8;p8_cile;Tři konkrétní cíle klienta;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;8;p8_obavy;Čeho se klient obává / co může změnu ohrozit;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;8;p8_vlastni_zavazek;Vlastní závazek klienta do příštího kontaktu;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_1_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_1_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_1_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_1_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_1_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_2_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_2_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_2_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_2_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_2_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_3_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_3_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_3_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_3_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_3_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_4_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_4_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_4_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_4_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_4_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_5_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_5_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_5_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_5_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_5_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_6_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_6_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_6_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_6_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_6_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_7_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_7_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_7_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_7_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_7_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_8_1;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_8_2;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_8_3;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_8_4;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_score_8_5;;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_celkove_skore;Celkové skóre / odhad 0-100;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_rizikova_uroven;Riziková úroveň / priorita;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;9;p9_interpretace;Interpretace scoringu;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_1_bezny_kontakt;běžný kontakt;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_2_kontakt_do_72_h;kontakt do 72 h;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_3_kontakt_do_24_h;kontakt do 24 h;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_4_krizovy_rezim;krizový režim;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_5_predani_navazne_sluzbe;předání návazné službě;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_6_mentor_peer_podpora;mentor / peer podpora;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_7_komunitni_aktivita;komunitní aktivita;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_intenzita_8_individualni_plan_podpory;individuální plán podpory;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;10;p10_oduvodneni;Odůvodnění doporučené intenzity;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_0_krok;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_0_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_0_stav;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_1_krok;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_1_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_1_stav;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_2_krok;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_2_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_2_stav;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_3_krok;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_3_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_3_stav;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_4_krok;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_4_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_4_stav;;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;11;p11_plan_poznamka;Poznámka k plánu / kontrola proveditelnosti;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;12;p12_link_reset;RESET;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;12;p12_link_rework;REWORK;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;12;p12_link_streetwise;STREETWISE;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;12;p12_link_stabilizace;STABILIZACE;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;12;p12_link_bod_zlomu;BOD ZLOMU;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;12;p12_duvod_navaznosti;Proč je návazný program vhodný / co má řešit;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;12;p12_predani;Komu a kdy předat / kontakt / další krok;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;13;p13_zaver;Závěr: co je hlavní zakázka, riziko a další postup;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;13;p13_doporuceni;Doporučení pro tým / koordinaci / supervizi;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_gdpr_vazba;Číslo / ID souhlasu nebo poznámka ke GDPR vazbě;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_klient_jmeno;Klient - jméno;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_klient_podpis;Klient - podpis;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_klient_datum;Datum;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_prac_jmeno;Pracovník - jméno;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_prac_podpis;Pracovník - podpis;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_prac_datum;Datum;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_peer_jmeno;Koordinátor / peer - jméno;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_peer_podpis;Koordinátor / peer - podpis;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;14;p14_peer_datum;Datum;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;15;p15_pokracovani_1;Doplnění záznamu / poznámky;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;15;p15_pokracovani_2;Další poznámky / návazné kroky;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;15;p15_pokracovani_3;Kontrolní poznámka / review;textarea
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_review_1_formular_zkontrolovan;formulář zkontrolován;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_review_2_klicova_rizika_prenesena_do_knihy_klienta;klíčová rizika přenesena do knihy klienta;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_review_3_navaznost_na_intervenci_zapsana;návaznost na intervenci zapsána;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_review_4_scoring_stabilizacni_index_aktualizovan;scoring / Stabilizační index aktualizován;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_review_5_gdpr_vazba_zkontrolovana;GDPR vazba zkontrolována;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_review_6_follow_up_termin_nastaven;follow-up termín nastaven;checkbox
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_archivace;Umístění dokumentace / CRM / složka;text
+v2.0 RC1;RAI-FRM-JB-001;JAILBREAK;16;p16_review_poznamka;Poznámka k uzavření / další kontrola;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_interni_id;Interní ID klienta;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_program;Program / vazba na podporu;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_datum;Datum kontaktu / zpracování;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_pracovnik;Pracovník / mentor;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_misto;Místo / prostředí;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_kontakt;Kontakt / bezpečný kanál;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_duvod_vstupu;Důvod vstupu / zakázka klienta;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;1;p1_ocekavani;Očekávání klienta od podpory;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_current_1_abstinence;Abstinence;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_current_2_bydleni;Bydlení;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_current_3_zdravi_psychika;Zdraví / psychika;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_current_4_dluhy;Dluhy;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_current_5_rodina_vztahy;Rodina / vztahy;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_current_6_denni_rezim;Denní režim;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_nejvetsi_problem;Co je dnes největší problém klienta;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;2;p2_co_funguje;Co už funguje / na čem lze stavět;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;3;p3_spec_1_hlavni_navykova_latka_chovani;Hlavní návyková látka / chování;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;3;p3_spec_2_delka_uzivani;Délka užívání;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;3;p3_spec_3_aktualni_abstinence;Aktuální abstinence;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;3;p3_spec_4_predchozi_pokusy_prestat;Předchozí pokusy přestat;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;3;p3_spec_5_co_pomahalo;Co pomáhalo;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;3;p3_spec_6_co_opakovane_selhavalo;Co opakovaně selhávalo;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;3;p3_spec_poznamka;Poznámka pracovníka / důležité souvislosti;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;4;p4_spec_1_kdy_doslo_k_poslednimu_relapsu;Kdy došlo k poslednímu relapsu;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;4;p4_spec_2_co_bylo_spoustecem;Co bylo spouštěčem;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;4;p4_spec_3_jak_klient_relaps_vysvetluje;Jak klient relaps vysvětluje;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;4;p4_spec_4_ktere_situace_jsou_nejrizikovejsi;Které situace jsou nejrizikovější;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;4;p4_spec_5_kdo_co_pomuze_v_krizi;Kdo / co pomůže v krizi;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;4;p4_spec_poznamka;Doplnění / citlivé sdělení klienta;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;5;p5_spec_1_prvni_kontakt_pri_chutich;První kontakt při chutích;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;5;p5_spec_2_bezpecna_osoba;Bezpečná osoba;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;5;p5_spec_3_rizikova_mista_osoby;Riziková místa / osoby;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;5;p5_spec_4_rezim_dne;Režim dne;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;5;p5_spec_5_navazna_odborna_pomoc;Návazná odborná pomoc;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;5;p5_spec_6_plan_pri_poruseni_abstinence;Plán při porušení abstinence;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;5;p5_spec_poznamka;Pracovní závěr z programového screeningu;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_1_ztrata_bydleni_bezpecneho_mista;ztráta bydlení / bezpečného místa;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_2_ztrata_kontaktu;ztráta kontaktu;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_3_dluhy_exekuce;dluhy / exekuce;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_4_relaps_intoxikace;relaps / intoxikace;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_5_recidiva_poruseni_dohody;recidiva / porušení dohody;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_6_akutni_psychicka_krize;akutní psychická krize;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_7_konflikt_nasili_vyhruzky;konflikt / násilí / výhrůžky;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_8_nizka_motivace;nízká motivace;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_9_rizikove_prostredi_osoby;rizikové prostředí / osoby;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_10_nedostatek_podpurne_site;nedostatek podpůrné sítě;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;6;p6_risk_detail;Konkretizace rizik / kdy se riziko zvyšuje;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_1_bezpecna_osoba;bezpečná osoba;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_2_stabilni_kontakt_s_pracovnikem;stabilní kontakt s pracovníkem;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_3_motivace_pokracovat;motivace pokračovat;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_4_pracovni_denni_rezim;pracovní / denní režim;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_5_bydleni_bezpecne_misto;bydlení / bezpečné místo;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_6_navazna_sluzba;návazná služba;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_7_abstinencni_krizovy_plan;abstinenční / krizový plán;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_8_rodina_komunita;rodina / komunita;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_9_doklady_uredni_veci_v_reseni;doklady / úřední věci v řešení;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_10_konkretni_cil_na_30_dni;konkrétní cíl na 30 dní;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;7;p7_protect_detail;Konkretizace ochranných faktorů / kdo a co pomáhá;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;8;p8_motivace_zmena;Proč chce klient změnu právě teď;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;8;p8_cile;Tři konkrétní cíle klienta;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;8;p8_obavy;Čeho se klient obává / co může změnu ohrozit;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;8;p8_vlastni_zavazek;Vlastní závazek klienta do příštího kontaktu;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_1_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_1_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_1_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_1_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_1_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_2_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_2_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_2_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_2_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_2_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_3_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_3_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_3_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_3_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_3_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_4_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_4_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_4_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_4_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_4_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_5_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_5_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_5_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_5_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_5_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_6_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_6_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_6_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_6_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_6_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_7_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_7_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_7_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_7_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_7_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_8_1;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_8_2;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_8_3;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_8_4;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_score_8_5;;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_celkove_skore;Celkové skóre / odhad 0-100;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_rizikova_uroven;Riziková úroveň / priorita;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;9;p9_interpretace;Interpretace scoringu;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_1_bezny_kontakt;běžný kontakt;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_2_kontakt_do_72_h;kontakt do 72 h;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_3_kontakt_do_24_h;kontakt do 24 h;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_4_krizovy_rezim;krizový režim;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_5_predani_navazne_sluzbe;předání návazné službě;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_6_mentor_peer_podpora;mentor / peer podpora;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_7_komunitni_aktivita;komunitní aktivita;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_intenzita_8_individualni_plan_podpory;individuální plán podpory;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;10;p10_oduvodneni;Odůvodnění doporučené intenzity;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_0_krok;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_0_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_0_stav;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_1_krok;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_1_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_1_stav;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_2_krok;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_2_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_2_stav;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_3_krok;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_3_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_3_stav;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_4_krok;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_4_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_4_stav;;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;11;p11_plan_poznamka;Poznámka k plánu / kontrola proveditelnosti;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;12;p12_link_stabilizace;STABILIZACE;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;12;p12_link_jailbreak;JAILBREAK;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;12;p12_link_rework;REWORK;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;12;p12_link_streetwise;STREETWISE;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;12;p12_link_bod_zlomu;BOD ZLOMU;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;12;p12_duvod_navaznosti;Proč je návazný program vhodný / co má řešit;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;12;p12_predani;Komu a kdy předat / kontakt / další krok;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;13;p13_zaver;Závěr: co je hlavní zakázka, riziko a další postup;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;13;p13_doporuceni;Doporučení pro tým / koordinaci / supervizi;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_gdpr_vazba;Číslo / ID souhlasu nebo poznámka ke GDPR vazbě;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_klient_jmeno;Klient - jméno;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_klient_podpis;Klient - podpis;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_klient_datum;Datum;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_prac_jmeno;Pracovník - jméno;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_prac_podpis;Pracovník - podpis;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_prac_datum;Datum;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_peer_jmeno;Koordinátor / peer - jméno;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_peer_podpis;Koordinátor / peer - podpis;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;14;p14_peer_datum;Datum;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;15;p15_pokracovani_1;Doplnění záznamu / poznámky;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;15;p15_pokracovani_2;Další poznámky / návazné kroky;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;15;p15_pokracovani_3;Kontrolní poznámka / review;textarea
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_review_1_formular_zkontrolovan;formulář zkontrolován;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_review_2_klicova_rizika_prenesena_do_knihy_klienta;klíčová rizika přenesena do knihy klienta;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_review_3_navaznost_na_intervenci_zapsana;návaznost na intervenci zapsána;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_review_4_scoring_stabilizacni_index_aktualizovan;scoring / Stabilizační index aktualizován;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_review_5_gdpr_vazba_zkontrolovana;GDPR vazba zkontrolována;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_review_6_follow_up_termin_nastaven;follow-up termín nastaven;checkbox
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_archivace;Umístění dokumentace / CRM / složka;text
+v2.0 RC1;RAI-FRM-RESET-001;RESET;16;p16_review_poznamka;Poznámka k uzavření / další kontrola;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_interni_id;Interní ID klienta;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_program;Program / vazba na podporu;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_datum;Datum kontaktu / zpracování;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_pracovnik;Pracovník / mentor;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_misto;Místo / prostředí;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_kontakt;Kontakt / bezpečný kanál;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_duvod_vstupu;Důvod vstupu / zakázka klienta;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;1;p1_ocekavani;Očekávání klienta od podpory;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_current_1_pracovni_historie;Pracovní historie;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_current_2_dochazka_rezim;Docházka / režim;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_current_3_kompetence;Kompetence;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_current_4_dluhy_exekuce;Dluhy / exekuce;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_current_5_zdravotni_limity;Zdravotní limity;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_current_6_kontakt_se_zamestnavatelem;Kontakt se zaměstnavatelem;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_nejvetsi_problem;Co je dnes největší problém klienta;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;2;p2_co_funguje;Co už funguje / na čem lze stavět;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;3;p3_spec_1_posledni_zamestnani;Poslední zaměstnání;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;3;p3_spec_2_delka_nezamestnanosti;Délka nezaměstnanosti;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;3;p3_spec_3_proc_prace_skoncila;Proč práce skončila;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;3;p3_spec_4_dovednosti_a_kvalifikace;Dovednosti a kvalifikace;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;3;p3_spec_5_zdravotni_osobni_limity;Zdravotní / osobní limity;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;3;p3_spec_6_co_klient_umi_nabidnout;Co klient umí nabídnout;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;3;p3_spec_poznamka;Poznámka pracovníka / důležité souvislosti;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;4;p4_spec_1_dochvilnost;Dochvilnost;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;4;p4_spec_2_dochazka;Docházka;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;4;p4_spec_3_komunikace_s_autoritou;Komunikace s autoritou;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;4;p4_spec_4_schopnost_dodrzet_dohodu;Schopnost dodržet dohodu;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;4;p4_spec_5_reakce_na_stres;Reakce na stres;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;4;p4_spec_6_pracovni_motivace;Pracovní motivace;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;4;p4_spec_poznamka;Doplnění / citlivé sdělení klienta;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;5;p5_spec_1_vhodny_typ_prace;Vhodný typ práce;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;5;p5_spec_2_prvni_krok_do_7_dni;První krok do 7 dní;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;5;p5_spec_3_nutne_doklady_urady;Nutné doklady / úřady;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;5;p5_spec_4_trenink_rekvalifikace;Trénink / rekvalifikace;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;5;p5_spec_5_kontakt_se_zamestnavatelem;Kontakt se zaměstnavatelem;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;5;p5_spec_6_riziko_predcasneho_ukonceni;Riziko předčasného ukončení;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;5;p5_spec_poznamka;Pracovní závěr z programového screeningu;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_1_ztrata_bydleni_bezpecneho_mista;ztráta bydlení / bezpečného místa;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_2_ztrata_kontaktu;ztráta kontaktu;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_3_dluhy_exekuce;dluhy / exekuce;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_4_relaps_intoxikace;relaps / intoxikace;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_5_recidiva_poruseni_dohody;recidiva / porušení dohody;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_6_akutni_psychicka_krize;akutní psychická krize;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_7_konflikt_nasili_vyhruzky;konflikt / násilí / výhrůžky;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_8_nizka_motivace;nízká motivace;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_9_rizikove_prostredi_osoby;rizikové prostředí / osoby;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_10_nedostatek_podpurne_site;nedostatek podpůrné sítě;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;6;p6_risk_detail;Konkretizace rizik / kdy se riziko zvyšuje;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_1_bezpecna_osoba;bezpečná osoba;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_2_stabilni_kontakt_s_pracovnikem;stabilní kontakt s pracovníkem;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_3_motivace_pokracovat;motivace pokračovat;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_4_pracovni_denni_rezim;pracovní / denní režim;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_5_bydleni_bezpecne_misto;bydlení / bezpečné místo;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_6_navazna_sluzba;návazná služba;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_7_abstinencni_krizovy_plan;abstinenční / krizový plán;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_8_rodina_komunita;rodina / komunita;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_9_doklady_uredni_veci_v_reseni;doklady / úřední věci v řešení;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_10_konkretni_cil_na_30_dni;konkrétní cíl na 30 dní;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;7;p7_protect_detail;Konkretizace ochranných faktorů / kdo a co pomáhá;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;8;p8_motivace_zmena;Proč chce klient změnu právě teď;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;8;p8_cile;Tři konkrétní cíle klienta;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;8;p8_obavy;Čeho se klient obává / co může změnu ohrozit;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;8;p8_vlastni_zavazek;Vlastní závazek klienta do příštího kontaktu;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_1_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_1_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_1_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_1_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_1_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_2_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_2_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_2_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_2_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_2_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_3_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_3_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_3_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_3_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_3_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_4_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_4_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_4_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_4_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_4_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_5_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_5_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_5_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_5_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_5_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_6_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_6_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_6_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_6_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_6_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_7_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_7_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_7_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_7_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_7_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_8_1;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_8_2;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_8_3;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_8_4;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_score_8_5;;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_celkove_skore;Celkové skóre / odhad 0-100;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_rizikova_uroven;Riziková úroveň / priorita;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;9;p9_interpretace;Interpretace scoringu;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_1_bezny_kontakt;běžný kontakt;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_2_kontakt_do_72_h;kontakt do 72 h;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_3_kontakt_do_24_h;kontakt do 24 h;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_4_krizovy_rezim;krizový režim;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_5_predani_navazne_sluzbe;předání návazné službě;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_6_mentor_peer_podpora;mentor / peer podpora;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_7_komunitni_aktivita;komunitní aktivita;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_intenzita_8_individualni_plan_podpory;individuální plán podpory;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;10;p10_oduvodneni;Odůvodnění doporučené intenzity;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_0_krok;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_0_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_0_stav;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_1_krok;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_1_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_1_stav;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_2_krok;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_2_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_2_stav;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_3_krok;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_3_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_3_stav;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_4_krok;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_4_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_4_stav;;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;11;p11_plan_poznamka;Poznámka k plánu / kontrola proveditelnosti;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;12;p12_link_stabilizace;STABILIZACE;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;12;p12_link_reset;RESET;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;12;p12_link_jailbreak;JAILBREAK;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;12;p12_link_streetwise;STREETWISE;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;12;p12_link_bod_zlomu;BOD ZLOMU;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;12;p12_duvod_navaznosti;Proč je návazný program vhodný / co má řešit;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;12;p12_predani;Komu a kdy předat / kontakt / další krok;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;13;p13_zaver;Závěr: co je hlavní zakázka, riziko a další postup;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;13;p13_doporuceni;Doporučení pro tým / koordinaci / supervizi;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_gdpr_vazba;Číslo / ID souhlasu nebo poznámka ke GDPR vazbě;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_klient_jmeno;Klient - jméno;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_klient_podpis;Klient - podpis;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_klient_datum;Datum;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_prac_jmeno;Pracovník - jméno;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_prac_podpis;Pracovník - podpis;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_prac_datum;Datum;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_peer_jmeno;Koordinátor / peer - jméno;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_peer_podpis;Koordinátor / peer - podpis;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;14;p14_peer_datum;Datum;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;15;p15_pokracovani_1;Doplnění záznamu / poznámky;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;15;p15_pokracovani_2;Další poznámky / návazné kroky;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;15;p15_pokracovani_3;Kontrolní poznámka / review;textarea
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_review_1_formular_zkontrolovan;formulář zkontrolován;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_review_2_klicova_rizika_prenesena_do_knihy_klienta;klíčová rizika přenesena do knihy klienta;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_review_3_navaznost_na_intervenci_zapsana;návaznost na intervenci zapsána;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_review_4_scoring_stabilizacni_index_aktualizovan;scoring / Stabilizační index aktualizován;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_review_5_gdpr_vazba_zkontrolovana;GDPR vazba zkontrolována;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_review_6_follow_up_termin_nastaven;follow-up termín nastaven;checkbox
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_archivace;Umístění dokumentace / CRM / složka;text
+v2.0 RC1;RAI-FRM-REWORK-001;REWORK;16;p16_review_poznamka;Poznámka k uzavření / další kontrola;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_interni_id;Interní ID klienta;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_program;Program / vazba na podporu;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_datum;Datum kontaktu / zpracování;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_pracovnik;Pracovník / mentor;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_misto;Místo / prostředí;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_kontakt;Kontakt / bezpečný kanál;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_duvod_vstupu;Důvod vstupu / zakázka klienta;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;1;p1_ocekavani;Očekávání klienta od podpory;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_current_1_misto_pobytu;Místo pobytu;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_current_2_bezpeci;Bezpečí;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_current_3_doklady;Doklady;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_current_4_zdravi;Zdraví;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_current_5_strava_hygiena;Strava / hygiena;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_current_6_kontaktni_osoba;Kontaktní osoba;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_nejvetsi_problem;Co je dnes největší problém klienta;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;2;p2_co_funguje;Co už funguje / na čem lze stavět;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;3;p3_spec_1_kde_klient_aktualne_prebyva;Kde klient aktuálně přebývá;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;3;p3_spec_2_je_misto_bezpecne;Je místo bezpečné;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;3;p3_spec_3_ma_pristup_k_hygiene_jidlu;Má přístup k hygieně / jídlu;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;3;p3_spec_4_ma_doklady;Má doklady;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;3;p3_spec_5_ma_kontaktni_telefon;Má kontaktní telefon;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;3;p3_spec_6_je_v_kontaktu_s_nejakou_sluzbou;Je v kontaktu s nějakou službou;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;3;p3_spec_poznamka;Poznámka pracovníka / důležité souvislosti;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;4;p4_spec_1_nasili_vyhruzky;Násilí / výhrůžky;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;4;p4_spec_2_zima_zdravotni_stav;Zima / zdravotní stav;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;4;p4_spec_3_ztrata_kontaktu;Ztráta kontaktu;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;4;p4_spec_4_zavislost_intoxikace;Závislost / intoxikace;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;4;p4_spec_5_dluhy_policie_urady;Dluhy / policie / úřady;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;4;p4_spec_6_zneuzivani_nebo_tlak_okoli;Zneužívání nebo tlak okolí;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;4;p4_spec_poznamka;Doplnění / citlivé sdělení klienta;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;5;p5_spec_1_bezpecne_misto;Bezpečné místo;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;5;p5_spec_2_kontakt_do_24_72_h;Kontakt do 24/72 h;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;5;p5_spec_3_potrebne_doklady;Potřebné doklady;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;5;p5_spec_4_zdravotni_socialni_sluzba;Zdravotní / sociální služba;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;5;p5_spec_5_kdo_muze_doprovodit;Kdo může doprovodit;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;5;p5_spec_6_co_je_realny_dalsi_krok;Co je reálný další krok;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;5;p5_spec_poznamka;Pracovní závěr z programového screeningu;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_1_ztrata_bydleni_bezpecneho_mista;ztráta bydlení / bezpečného místa;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_2_ztrata_kontaktu;ztráta kontaktu;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_3_dluhy_exekuce;dluhy / exekuce;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_4_relaps_intoxikace;relaps / intoxikace;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_5_recidiva_poruseni_dohody;recidiva / porušení dohody;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_6_akutni_psychicka_krize;akutní psychická krize;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_7_konflikt_nasili_vyhruzky;konflikt / násilí / výhrůžky;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_8_nizka_motivace;nízká motivace;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_9_rizikove_prostredi_osoby;rizikové prostředí / osoby;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_10_nedostatek_podpurne_site;nedostatek podpůrné sítě;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;6;p6_risk_detail;Konkretizace rizik / kdy se riziko zvyšuje;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_1_bezpecna_osoba;bezpečná osoba;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_2_stabilni_kontakt_s_pracovnikem;stabilní kontakt s pracovníkem;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_3_motivace_pokracovat;motivace pokračovat;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_4_pracovni_denni_rezim;pracovní / denní režim;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_5_bydleni_bezpecne_misto;bydlení / bezpečné místo;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_6_navazna_sluzba;návazná služba;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_7_abstinencni_krizovy_plan;abstinenční / krizový plán;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_8_rodina_komunita;rodina / komunita;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_9_doklady_uredni_veci_v_reseni;doklady / úřední věci v řešení;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_10_konkretni_cil_na_30_dni;konkrétní cíl na 30 dní;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;7;p7_protect_detail;Konkretizace ochranných faktorů / kdo a co pomáhá;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;8;p8_motivace_zmena;Proč chce klient změnu právě teď;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;8;p8_cile;Tři konkrétní cíle klienta;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;8;p8_obavy;Čeho se klient obává / co může změnu ohrozit;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;8;p8_vlastni_zavazek;Vlastní závazek klienta do příštího kontaktu;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_1_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_1_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_1_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_1_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_1_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_2_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_2_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_2_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_2_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_2_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_3_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_3_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_3_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_3_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_3_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_4_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_4_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_4_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_4_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_4_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_5_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_5_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_5_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_5_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_5_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_6_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_6_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_6_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_6_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_6_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_7_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_7_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_7_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_7_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_7_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_8_1;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_8_2;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_8_3;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_8_4;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_score_8_5;;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_celkove_skore;Celkové skóre / odhad 0-100;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_rizikova_uroven;Riziková úroveň / priorita;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;9;p9_interpretace;Interpretace scoringu;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_1_bezny_kontakt;běžný kontakt;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_2_kontakt_do_72_h;kontakt do 72 h;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_3_kontakt_do_24_h;kontakt do 24 h;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_4_krizovy_rezim;krizový režim;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_5_predani_navazne_sluzbe;předání návazné službě;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_6_mentor_peer_podpora;mentor / peer podpora;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_7_komunitni_aktivita;komunitní aktivita;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_intenzita_8_individualni_plan_podpory;individuální plán podpory;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;10;p10_oduvodneni;Odůvodnění doporučené intenzity;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_0_krok;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_0_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_0_stav;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_1_krok;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_1_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_1_stav;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_2_krok;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_2_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_2_stav;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_3_krok;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_3_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_3_stav;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_4_krok;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_4_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_4_stav;;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;11;p11_plan_poznamka;Poznámka k plánu / kontrola proveditelnosti;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;12;p12_link_stabilizace;STABILIZACE;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;12;p12_link_reset;RESET;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;12;p12_link_rework;REWORK;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;12;p12_link_jailbreak;JAILBREAK;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;12;p12_link_bod_zlomu;BOD ZLOMU;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;12;p12_duvod_navaznosti;Proč je návazný program vhodný / co má řešit;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;12;p12_predani;Komu a kdy předat / kontakt / další krok;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;13;p13_zaver;Závěr: co je hlavní zakázka, riziko a další postup;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;13;p13_doporuceni;Doporučení pro tým / koordinaci / supervizi;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_gdpr_vazba;Číslo / ID souhlasu nebo poznámka ke GDPR vazbě;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_klient_jmeno;Klient - jméno;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_klient_podpis;Klient - podpis;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_klient_datum;Datum;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_prac_jmeno;Pracovník - jméno;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_prac_podpis;Pracovník - podpis;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_prac_datum;Datum;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_peer_jmeno;Koordinátor / peer - jméno;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_peer_podpis;Koordinátor / peer - podpis;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;14;p14_peer_datum;Datum;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;15;p15_pokracovani_1;Doplnění záznamu / poznámky;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;15;p15_pokracovani_2;Další poznámky / návazné kroky;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;15;p15_pokracovani_3;Kontrolní poznámka / review;textarea
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_review_1_formular_zkontrolovan;formulář zkontrolován;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_review_2_klicova_rizika_prenesena_do_knihy_klienta;klíčová rizika přenesena do knihy klienta;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_review_3_navaznost_na_intervenci_zapsana;návaznost na intervenci zapsána;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_review_4_scoring_stabilizacni_index_aktualizovan;scoring / Stabilizační index aktualizován;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_review_5_gdpr_vazba_zkontrolovana;GDPR vazba zkontrolována;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_review_6_follow_up_termin_nastaven;follow-up termín nastaven;checkbox
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_archivace;Umístění dokumentace / CRM / složka;text
+v2.0 RC1;RAI-FRM-SW-001;STREETWISE;16;p16_review_poznamka;Poznámka k uzavření / další kontrola;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_interni_id;Interní ID klienta;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_program;Program / vazba na podporu;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_datum;Datum kontaktu / zpracování;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_pracovnik;Pracovník / mentor;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_misto;Místo / prostředí;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_kontakt;Kontakt / bezpečný kanál;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_duvod_vstupu;Důvod vstupu / zakázka klienta;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;1;p1_ocekavani;Očekávání klienta od podpory;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_current_1_bydleni;Bydlení;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_current_2_prace_prijem;Práce / příjem;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_current_3_kontakt;Kontakt;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_current_4_zdravi_abstinence;Zdraví / abstinence;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_current_5_vztahy;Vztahy;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_current_6_stabilizacni_index;Stabilizační index;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_nejvetsi_problem;Co je dnes největší problém klienta;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;2;p2_co_funguje;Co už funguje / na čem lze stavět;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;3;p3_spec_1_co_se_podarilo_udrzet;Co se podařilo udržet;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;3;p3_spec_2_kde_doslo_ke_zhorseni;Kde došlo ke zhoršení;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;3;p3_spec_3_je_klient_v_kontaktu;Je klient v kontaktu;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;3;p3_spec_4_funguje_bydleni;Funguje bydlení;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;3;p3_spec_5_funguje_prace_prijem;Funguje práce / příjem;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;3;p3_spec_6_je_dodrzovan_plan;Je dodržován plán;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;3;p3_spec_poznamka;Poznámka pracovníka / důležité souvislosti;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;4;p4_spec_1_pokles_stabilizacniho_indexu;Pokles Stabilizačního indexu;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;4;p4_spec_2_ztrata_rezimu;Ztráta režimu;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;4;p4_spec_3_ztrata_kontaktu;Ztráta kontaktu;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;4;p4_spec_4_relaps_recidiva;Relaps / recidiva;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;4;p4_spec_5_konflikt_krize;Konflikt / krize;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;4;p4_spec_6_ztrata_bydleni_prace;Ztráta bydlení / práce;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;4;p4_spec_poznamka;Doplnění / citlivé sdělení klienta;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;5;p5_spec_1_kontakt_30_dni;Kontakt 30 dní;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;5;p5_spec_2_kontakt_90_dni;Kontakt 90 dní;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;5;p5_spec_3_kontakt_180_dni;Kontakt 180 dní;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;5;p5_spec_4_kontakt_365_dni;Kontakt 365 dní;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;5;p5_spec_5_kdy_vratit_klienta_do_vyssi_podpory;Kdy vrátit klienta do vyšší podpory;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;5;p5_spec_6_kdo_za_follow_up_odpovida;Kdo za follow-up odpovídá;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;5;p5_spec_poznamka;Pracovní závěr z programového screeningu;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_1_ztrata_bydleni_bezpecneho_mista;ztráta bydlení / bezpečného místa;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_2_ztrata_kontaktu;ztráta kontaktu;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_3_dluhy_exekuce;dluhy / exekuce;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_4_relaps_intoxikace;relaps / intoxikace;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_5_recidiva_poruseni_dohody;recidiva / porušení dohody;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_6_akutni_psychicka_krize;akutní psychická krize;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_7_konflikt_nasili_vyhruzky;konflikt / násilí / výhrůžky;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_8_nizka_motivace;nízká motivace;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_9_rizikove_prostredi_osoby;rizikové prostředí / osoby;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_10_nedostatek_podpurne_site;nedostatek podpůrné sítě;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;6;p6_risk_detail;Konkretizace rizik / kdy se riziko zvyšuje;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_1_bezpecna_osoba;bezpečná osoba;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_2_stabilni_kontakt_s_pracovnikem;stabilní kontakt s pracovníkem;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_3_motivace_pokracovat;motivace pokračovat;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_4_pracovni_denni_rezim;pracovní / denní režim;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_5_bydleni_bezpecne_misto;bydlení / bezpečné místo;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_6_navazna_sluzba;návazná služba;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_7_abstinencni_krizovy_plan;abstinenční / krizový plán;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_8_rodina_komunita;rodina / komunita;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_9_doklady_uredni_veci_v_reseni;doklady / úřední věci v řešení;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_10_konkretni_cil_na_30_dni;konkrétní cíl na 30 dní;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;7;p7_protect_detail;Konkretizace ochranných faktorů / kdo a co pomáhá;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;8;p8_motivace_zmena;Proč chce klient změnu právě teď;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;8;p8_cile;Tři konkrétní cíle klienta;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;8;p8_obavy;Čeho se klient obává / co může změnu ohrozit;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;8;p8_vlastni_zavazek;Vlastní závazek klienta do příštího kontaktu;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_1_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_1_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_1_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_1_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_1_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_2_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_2_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_2_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_2_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_2_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_3_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_3_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_3_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_3_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_3_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_4_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_4_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_4_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_4_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_4_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_5_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_5_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_5_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_5_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_5_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_6_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_6_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_6_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_6_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_6_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_7_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_7_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_7_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_7_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_7_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_8_1;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_8_2;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_8_3;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_8_4;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_score_8_5;;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_celkove_skore;Celkové skóre / odhad 0-100;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_rizikova_uroven;Riziková úroveň / priorita;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;9;p9_interpretace;Interpretace scoringu;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_1_bezny_kontakt;běžný kontakt;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_2_kontakt_do_72_h;kontakt do 72 h;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_3_kontakt_do_24_h;kontakt do 24 h;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_4_krizovy_rezim;krizový režim;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_5_predani_navazne_sluzbe;předání návazné službě;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_6_mentor_peer_podpora;mentor / peer podpora;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_7_komunitni_aktivita;komunitní aktivita;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_intenzita_8_individualni_plan_podpory;individuální plán podpory;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;10;p10_oduvodneni;Odůvodnění doporučené intenzity;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_0_krok;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_0_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_0_stav;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_1_krok;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_1_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_1_stav;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_2_krok;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_2_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_2_stav;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_3_krok;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_3_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_3_stav;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_4_krok;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_4_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_4_stav;;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;11;p11_plan_poznamka;Poznámka k plánu / kontrola proveditelnosti;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;12;p12_link_reset;RESET;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;12;p12_link_rework;REWORK;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;12;p12_link_streetwise;STREETWISE;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;12;p12_link_jailbreak;JAILBREAK;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;12;p12_link_bod_zlomu;BOD ZLOMU;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;12;p12_duvod_navaznosti;Proč je návazný program vhodný / co má řešit;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;12;p12_predani;Komu a kdy předat / kontakt / další krok;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;13;p13_zaver;Závěr: co je hlavní zakázka, riziko a další postup;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;13;p13_doporuceni;Doporučení pro tým / koordinaci / supervizi;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_gdpr_vazba;Číslo / ID souhlasu nebo poznámka ke GDPR vazbě;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_klient_jmeno;Klient - jméno;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_klient_podpis;Klient - podpis;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_klient_datum;Datum;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_prac_jmeno;Pracovník - jméno;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_prac_podpis;Pracovník - podpis;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_prac_datum;Datum;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_peer_jmeno;Koordinátor / peer - jméno;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_peer_podpis;Koordinátor / peer - podpis;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;14;p14_peer_datum;Datum;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;15;p15_pokracovani_1;Doplnění záznamu / poznámky;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;15;p15_pokracovani_2;Další poznámky / návazné kroky;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;15;p15_pokracovani_3;Kontrolní poznámka / review;textarea
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_review_1_formular_zkontrolovan;formulář zkontrolován;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_review_2_klicova_rizika_prenesena_do_knihy_klienta;klíčová rizika přenesena do knihy klienta;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_review_3_navaznost_na_intervenci_zapsana;návaznost na intervenci zapsána;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_review_4_scoring_stabilizacni_index_aktualizovan;scoring / Stabilizační index aktualizován;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_review_5_gdpr_vazba_zkontrolovana;GDPR vazba zkontrolována;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_review_6_follow_up_termin_nastaven;follow-up termín nastaven;checkbox
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_archivace;Umístění dokumentace / CRM / složka;text
+v2.0 RC1;RAI-FRM-STAB-001;STABILIZACE;16;p16_review_poznamka;Poznámka k uzavření / další kontrola;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_interni_id;Interní ID klienta;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_program;Program / vazba na podporu;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_datum;Datum kontaktu / zpracování;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_pracovnik;Pracovník / mentor;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_misto;Místo / prostředí;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_kontakt;Kontakt / bezpečný kanál;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_duvod_vstupu;Důvod vstupu / zakázka klienta;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;1;p1_ocekavani;Očekávání klienta od podpory;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_current_1_bydleni_zarizeni;Bydlení / zařízení;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_current_2_skola_prace;Škola / práce;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_current_3_rodina_vztahy;Rodina / vztahy;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_current_4_bezpeci;Bezpečí;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_current_5_dobrovolnik_mentor;Dobrovolník / mentor;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_current_6_souhlasy_safeguarding;Souhlasy / safeguarding;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_nejvetsi_problem;Co je dnes největší problém klienta;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;2;p2_co_funguje;Co už funguje / na čem lze stavět;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;3;p3_spec_1_aktualni_bydleni_zarizeni;Aktuální bydlení / zařízení;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;3;p3_spec_2_skola_prace_priprava;Škola / práce / příprava;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;3;p3_spec_3_vztahy_a_podpurna_osoba;Vztahy a podpůrná osoba;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;3;p3_spec_4_rizikove_kontakty;Rizikové kontakty;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;3;p3_spec_5_financni_gramotnost;Finanční gramotnost;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;3;p3_spec_6_duvod_vstupu_do_podpory;Důvod vstupu do podpory;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;3;p3_spec_poznamka;Poznámka pracovníka / důležité souvislosti;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;4;p4_spec_1_je_potreba_souhlas_zastupce;Je potřeba souhlas zástupce;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;4;p4_spec_2_jsou_vysvetleny_hranice_kontaktu;Jsou vysvětleny hranice kontaktu;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;4;p4_spec_3_riziko_manipulace_zneuziti;Riziko manipulace / zneužití;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;4;p4_spec_4_kontakt_mimo_program;Kontakt mimo program;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;4;p4_spec_5_dobrovolnik_mentor;Dobrovolník / mentor;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;4;p4_spec_6_incidenty_a_hlaseni;Incidenty a hlášení;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;4;p4_spec_poznamka;Doplnění / citlivé sdělení klienta;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;5;p5_spec_1_co_se_musi_stat_hned;Co se musí stát hned;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;5;p5_spec_2_co_je_cil_do_30_dni;Co je cíl do 30 dní;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;5;p5_spec_3_kdo_je_odpovedna_osoba;Kdo je odpovědná osoba;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;5;p5_spec_4_jak_se_bude_merit_posun;Jak se bude měřit posun;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;5;p5_spec_5_co_je_hranice_podpory;Co je hranice podpory;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;5;p5_spec_6_kam_navazat_pri_krizi;Kam navázat při krizi;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;5;p5_spec_poznamka;Pracovní závěr z programového screeningu;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_1_ztrata_bydleni_bezpecneho_mista;ztráta bydlení / bezpečného místa;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_2_ztrata_kontaktu;ztráta kontaktu;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_3_dluhy_exekuce;dluhy / exekuce;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_4_relaps_intoxikace;relaps / intoxikace;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_5_recidiva_poruseni_dohody;recidiva / porušení dohody;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_6_akutni_psychicka_krize;akutní psychická krize;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_7_konflikt_nasili_vyhruzky;konflikt / násilí / výhrůžky;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_8_nizka_motivace;nízká motivace;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_9_rizikove_prostredi_osoby;rizikové prostředí / osoby;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_10_nedostatek_podpurne_site;nedostatek podpůrné sítě;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;6;p6_risk_detail;Konkretizace rizik / kdy se riziko zvyšuje;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_1_bezpecna_osoba;bezpečná osoba;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_2_stabilni_kontakt_s_pracovnikem;stabilní kontakt s pracovníkem;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_3_motivace_pokracovat;motivace pokračovat;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_4_pracovni_denni_rezim;pracovní / denní režim;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_5_bydleni_bezpecne_misto;bydlení / bezpečné místo;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_6_navazna_sluzba;návazná služba;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_7_abstinencni_krizovy_plan;abstinenční / krizový plán;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_8_rodina_komunita;rodina / komunita;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_9_doklady_uredni_veci_v_reseni;doklady / úřední věci v řešení;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_10_konkretni_cil_na_30_dni;konkrétní cíl na 30 dní;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;7;p7_protect_detail;Konkretizace ochranných faktorů / kdo a co pomáhá;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;8;p8_motivace_zmena;Proč chce klient změnu právě teď;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;8;p8_cile;Tři konkrétní cíle klienta;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;8;p8_obavy;Čeho se klient obává / co může změnu ohrozit;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;8;p8_vlastni_zavazek;Vlastní závazek klienta do příštího kontaktu;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_1_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_1_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_1_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_1_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_1_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_2_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_2_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_2_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_2_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_2_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_3_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_3_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_3_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_3_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_3_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_4_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_4_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_4_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_4_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_4_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_5_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_5_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_5_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_5_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_5_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_6_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_6_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_6_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_6_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_6_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_7_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_7_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_7_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_7_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_7_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_8_1;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_8_2;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_8_3;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_8_4;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_score_8_5;;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_celkove_skore;Celkové skóre / odhad 0-100;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_rizikova_uroven;Riziková úroveň / priorita;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;9;p9_interpretace;Interpretace scoringu;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_1_bezny_kontakt;běžný kontakt;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_2_kontakt_do_72_h;kontakt do 72 h;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_3_kontakt_do_24_h;kontakt do 24 h;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_4_krizovy_rezim;krizový režim;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_5_predani_navazne_sluzbe;předání návazné službě;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_6_mentor_peer_podpora;mentor / peer podpora;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_7_komunitni_aktivita;komunitní aktivita;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_intenzita_8_individualni_plan_podpory;individuální plán podpory;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;10;p10_oduvodneni;Odůvodnění doporučené intenzity;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_0_krok;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_0_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_0_stav;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_1_krok;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_1_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_1_stav;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_2_krok;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_2_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_2_stav;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_3_krok;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_3_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_3_stav;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_4_krok;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_4_odpovednost;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_4_stav;;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;11;p11_plan_poznamka;Poznámka k plánu / kontrola proveditelnosti;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;12;p12_link_stabilizace;STABILIZACE;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;12;p12_link_rework;REWORK;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;12;p12_link_reset;RESET;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;12;p12_link_streetwise;STREETWISE;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;12;p12_link_jailbreak;JAILBREAK;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;12;p12_duvod_navaznosti;Proč je návazný program vhodný / co má řešit;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;12;p12_predani;Komu a kdy předat / kontakt / další krok;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;13;p13_zaver;Závěr: co je hlavní zakázka, riziko a další postup;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;13;p13_doporuceni;Doporučení pro tým / koordinaci / supervizi;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_gdpr_vazba;Číslo / ID souhlasu nebo poznámka ke GDPR vazbě;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_klient_jmeno;Klient - jméno;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_klient_podpis;Klient - podpis;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_klient_datum;Datum;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_prac_jmeno;Pracovník - jméno;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_prac_podpis;Pracovník - podpis;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_prac_datum;Datum;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_peer_jmeno;Koordinátor / peer - jméno;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_peer_podpis;Koordinátor / peer - podpis;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;14;p14_peer_datum;Datum;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;15;p15_pokracovani_1;Doplnění záznamu / poznámky;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;15;p15_pokracovani_2;Další poznámky / návazné kroky;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;15;p15_pokracovani_3;Kontrolní poznámka / review;textarea
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_review_1_formular_zkontrolovan;formulář zkontrolován;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_review_2_klicova_rizika_prenesena_do_knihy_klienta;klíčová rizika přenesena do knihy klienta;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_review_3_navaznost_na_intervenci_zapsana;návaznost na intervenci zapsána;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_review_4_scoring_stabilizacni_index_aktualizovan;scoring / Stabilizační index aktualizován;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_review_5_gdpr_vazba_zkontrolovana;GDPR vazba zkontrolována;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_review_6_follow_up_termin_nastaven;follow-up termín nastaven;checkbox
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_archivace;Umístění dokumentace / CRM / složka;text
+v2.0 RC1;RAI-FRM-BZ-001;BOD ZLOMU;16;p16_review_poznamka;Poznámka k uzavření / další kontrola;textarea

@@ -38,6 +38,22 @@ function sendRedirect(response, location, headers = {}) {
 }
 
 const publicRoot = path.resolve(__dirname, '..', 'public');
+const portalRoles = ['applicant', 'client', 'volunteer', 'investor', 'patron', 'contributor', 'donor', 'user'];
+const assignableRoles = ['admin', 'editor', ...portalRoles];
+const applicationRoles = ['client', 'volunteer', 'investor', 'patron', 'contributor', 'donor'];
+const applicationStatuses = ['pending', 'approved', 'rejected'];
+const roleLabels = {
+  admin: 'Administrátor',
+  editor: 'Editor',
+  applicant: 'Uchazeč',
+  client: 'Klient',
+  volunteer: 'Dobrovolník',
+  investor: 'Investor',
+  patron: 'Mecenáš',
+  contributor: 'Přispěvatel',
+  donor: 'Jednorázový dárce',
+  user: 'Uživatel'
+};
 const documentMimeTypes = {
   '.pdf': 'application/pdf',
   '.jpg': 'image/jpeg',
@@ -47,6 +63,8 @@ const documentMimeTypes = {
   '.doc': 'application/msword',
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 };
+
+const isPortalRole = (role) => portalRoles.includes(String(role || ''));
 
 async function servePublicDocument(request, response, url) {
   if (!['GET', 'HEAD'].includes(request.method) || !url.pathname.startsWith('/documents/')) {
@@ -324,25 +342,25 @@ async function registerClient(request, response) {
   const email = body.email.trim().toLowerCase();
   await query(
     `INSERT INTO users (id, role, name, email, phone, password_hash, password_algo, is_active)
-     VALUES (?, 'client', ?, ?, ?, ?, 'scrypt', 0)`,
+     VALUES (?, 'applicant', ?, ?, ?, ?, 'scrypt', 1)`,
     [id, body.name.trim(), email, String(body.phone || '').trim(), hashPassword(body.password)]
   );
 
   const rows = await query('SELECT id, role, name, email, phone, is_active, created_at FROM users WHERE id = ? LIMIT 1', [id]);
   const user = rows[0];
   await createSystemNotification({
-    title: 'Nový účet čeká na ověření',
-    body: `${user.name} (${user.email}) vytvořil/a klientský účet. Aktivujte ho v administraci uživatelů.`,
-    tone: 'warning',
-    category: 'Ověření účtu',
+    title: 'Nový uchazeč se zaregistroval',
+    body: `${user.name} (${user.email}) vytvořil/a profil uchazeče. Dalším krokem je žádost o vstup do projektu.`,
+    tone: 'info',
+    category: 'Registrace',
     linkHref: `#/admin?tab=users&user=${encodeURIComponent(user.id)}`,
     createdBy: user.id
   });
   sendJson(response, 201, {
     user: publicUser(user),
-    pendingVerification: true,
-    message: 'Registrace byla přijata. Účet čeká na ověření administrátorem.'
-  });
+    pendingVerification: false,
+    message: 'Profil uchazeče byl vytvořen. Teď můžete podat žádost o vstup do projektu.'
+  }, { 'set-cookie': sessionCookie(createSessionToken(user)) });
 }
 
 async function login(request, response) {
@@ -353,12 +371,21 @@ async function login(request, response) {
     return;
   }
 
-  const role = body.role === 'admin' ? 'admin' : body.role === 'client' ? 'client' : null;
-  const params = role ? [body.email.trim().toLowerCase(), role] : [body.email.trim().toLowerCase()];
+  const requestedRole = String(body.role || '').trim();
+  const email = body.email.trim().toLowerCase();
+  let roleClause = '';
+  let params = [email];
+  if (requestedRole === 'admin') {
+    roleClause = 'AND role = ?';
+    params = [email, 'admin'];
+  } else if (requestedRole === 'client' || isPortalRole(requestedRole)) {
+    roleClause = `AND role IN (${portalRoles.map(() => '?').join(', ')})`;
+    params = [email, ...portalRoles];
+  }
   const rows = await query(
     `SELECT id, role, name, email, phone, password_hash, is_active, created_at
      FROM users
-     WHERE email = ? ${role ? 'AND role = ?' : ''}
+     WHERE email = ? ${roleClause}
      LIMIT 1`,
     params
   );
@@ -453,7 +480,7 @@ async function finishGoogleLogin(request, response, url) {
       const name = String(payload.name || email).trim();
       await query(
         `INSERT INTO users (id, role, name, email, phone, password_hash, password_algo, is_active)
-         VALUES (?, 'client', ?, ?, '', ?, 'scrypt', 0)`,
+         VALUES (?, 'applicant', ?, ?, '', ?, 'scrypt', 1)`,
         [id, name, email, hashPassword(crypto.randomBytes(32).toString('base64url'))]
       );
       const createdRows = await query(
@@ -462,18 +489,25 @@ async function finishGoogleLogin(request, response, url) {
       );
       user = createdRows[0];
       await createSystemNotification({
-        title: 'Nový Google účet čeká na ověření',
-        body: `${user.name} (${user.email}) se registroval/a přes Google. Aktivujte účet v administraci uživatelů.`,
-        tone: 'warning',
-        category: 'Ověření účtu',
+        title: 'Nový Google uchazeč',
+        body: `${user.name} (${user.email}) se registroval/a přes Google. Dalším krokem je žádost o vstup do projektu.`,
+        tone: 'info',
+        category: 'Registrace',
         linkHref: `#/admin?tab=users&user=${encodeURIComponent(user.id)}`,
         createdBy: user.id
       });
-      sendRedirect(response, googleRedirect(request, target, 'google-pending'), { 'set-cookie': clearOAuthStateCookie() });
+      await query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
+      sendRedirect(response, googleRedirect(request, target), {
+        'set-cookie': [clearOAuthStateCookie(), sessionCookie(createSessionToken(user))]
+      });
       return;
     }
     if (target === 'admin' && user.role !== 'admin') {
       sendRedirect(response, googleRedirect(request, target, 'google-admin-denied'), { 'set-cookie': clearOAuthStateCookie() });
+      return;
+    }
+    if (target !== 'admin' && user.role !== 'admin' && !isPortalRole(user.role)) {
+      sendRedirect(response, googleRedirect(request, target, 'google-role-denied'), { 'set-cookie': clearOAuthStateCookie() });
       return;
     }
     if (!user.is_active) {
@@ -1157,6 +1191,246 @@ function publicManagedUser(row) {
   };
 }
 
+function publicProjectApplication(row) {
+  return {
+    id: row.id,
+    userId: row.userId || row.user_id,
+    userName: row.userName || row.user_name || '',
+    userEmail: row.userEmail || row.user_email || '',
+    requestedRole: row.requestedRole || row.requested_role,
+    status: row.status,
+    phone: row.phone || '',
+    motivation: row.motivation || '',
+    availability: row.availability || '',
+    contribution: row.contribution || '',
+    note: row.note || '',
+    adminNote: row.adminNote || row.admin_note || '',
+    reviewedBy: row.reviewedBy || row.reviewed_by || null,
+    reviewedAt: row.reviewedAt || row.reviewed_at || null,
+    createdAt: row.createdAt || row.created_at
+  };
+}
+
+async function listMyProjectApplications(request, response) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const rows = await query(
+    `SELECT
+       applications.id,
+       applications.user_id AS userId,
+       users.name AS userName,
+       users.email AS userEmail,
+       applications.requested_role AS requestedRole,
+       applications.status,
+       applications.phone,
+       applications.motivation,
+       applications.availability,
+       applications.contribution,
+       applications.note,
+       applications.admin_note AS adminNote,
+       applications.reviewed_by AS reviewedBy,
+       applications.reviewed_at AS reviewedAt,
+       applications.created_at AS createdAt
+     FROM project_applications applications
+     JOIN users ON users.id = applications.user_id
+     WHERE applications.user_id = ?
+     ORDER BY applications.created_at DESC
+     LIMIT 20`,
+    [user.id]
+  );
+  sendJson(response, 200, { applications: rows.map(publicProjectApplication) });
+}
+
+async function submitProjectApplication(request, response) {
+  const user = await currentUser(request);
+  if (!user || (!isPortalRole(user.role) && user.role !== 'admin')) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const body = await readBody(request);
+  const requestedRole = String(body.requestedRole || '').trim();
+  if (!applicationRoles.includes(requestedRole)) {
+    sendJson(response, 400, { error: 'Valid requested role is required.' });
+    return;
+  }
+  const pendingRows = await query(
+    'SELECT id FROM project_applications WHERE user_id = ? AND status = ? LIMIT 1',
+    [user.id, 'pending']
+  );
+  if (pendingRows.length > 0) {
+    sendJson(response, 409, { error: 'Už máte jednu žádost čekající na vyřízení.' });
+    return;
+  }
+  const id = randomId();
+  await query(
+    `INSERT INTO project_applications
+       (id, user_id, requested_role, phone, motivation, availability, contribution, note)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      user.id,
+      requestedRole,
+      String(body.phone || user.phone || '').trim(),
+      String(body.motivation || '').trim(),
+      String(body.availability || '').trim(),
+      String(body.contribution || '').trim(),
+      String(body.note || '').trim()
+    ]
+  );
+  const rows = await query(
+    `SELECT
+       applications.id,
+       applications.user_id AS userId,
+       users.name AS userName,
+       users.email AS userEmail,
+       applications.requested_role AS requestedRole,
+       applications.status,
+       applications.phone,
+       applications.motivation,
+       applications.availability,
+       applications.contribution,
+       applications.note,
+       applications.admin_note AS adminNote,
+       applications.reviewed_by AS reviewedBy,
+       applications.reviewed_at AS reviewedAt,
+       applications.created_at AS createdAt
+     FROM project_applications applications
+     JOIN users ON users.id = applications.user_id
+     WHERE applications.id = ?
+     LIMIT 1`,
+    [id]
+  );
+  await createSystemNotification({
+    title: 'Nová žádost o vstup do projektu',
+    body: `${user.name || user.email} žádá o roli ${roleLabels[requestedRole] || requestedRole}.`,
+    tone: 'warning',
+    category: 'Žádosti',
+    linkHref: `#/admin?tab=users&application=${encodeURIComponent(id)}`,
+    createdBy: user.id
+  });
+  sendJson(response, 201, { application: publicProjectApplication(rows[0]) });
+}
+
+async function listProjectApplications(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const rows = await query(
+    `SELECT
+       applications.id,
+       applications.user_id AS userId,
+       users.name AS userName,
+       users.email AS userEmail,
+       applications.requested_role AS requestedRole,
+       applications.status,
+       applications.phone,
+       applications.motivation,
+       applications.availability,
+       applications.contribution,
+       applications.note,
+       applications.admin_note AS adminNote,
+       applications.reviewed_by AS reviewedBy,
+       applications.reviewed_at AS reviewedAt,
+       applications.created_at AS createdAt
+     FROM project_applications applications
+     JOIN users ON users.id = applications.user_id
+     ORDER BY FIELD(applications.status, 'pending', 'approved', 'rejected'), applications.created_at DESC
+     LIMIT 300`
+  );
+  sendJson(response, 200, { applications: rows.map(publicProjectApplication) });
+}
+
+async function reviewProjectApplication(request, response, applicationId) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const body = await readBody(request);
+  const status = applicationStatuses.includes(body.status) ? body.status : null;
+  if (!status || status === 'pending') {
+    sendJson(response, 400, { error: 'Use approved or rejected status.' });
+    return;
+  }
+  const rows = await query(
+    `SELECT applications.id, applications.user_id, applications.requested_role, applications.status, users.role AS user_role, users.name, users.email
+     FROM project_applications applications
+     JOIN users ON users.id = applications.user_id
+     WHERE applications.id = ?
+     LIMIT 1`,
+    [applicationId]
+  );
+  if (rows.length === 0) {
+    sendJson(response, 404, { error: 'Application not found.' });
+    return;
+  }
+  const requestedRole = String(body.approvedRole || rows[0].requested_role || '').trim();
+  const approvedRole = applicationRoles.includes(requestedRole) ? requestedRole : null;
+  if (status === 'approved' && !approvedRole) {
+    sendJson(response, 400, { error: 'Approved role is required.' });
+    return;
+  }
+  await query(
+    `UPDATE project_applications
+     SET status = ?, admin_note = ?, reviewed_by = ?, reviewed_at = NOW()
+     WHERE id = ?`,
+    [status, String(body.adminNote || '').trim(), admin.id, applicationId]
+  );
+  if (status === 'approved') {
+    await query('UPDATE users SET role = ?, is_active = 1 WHERE id = ?', [approvedRole, rows[0].user_id]);
+  }
+  await createSystemNotification({
+    recipientId: rows[0].user_id,
+    title: status === 'approved' ? 'Žádost byla schválena' : 'Žádost byla uzavřena',
+    body:
+      status === 'approved'
+        ? `Váš účet byl schválen jako ${roleLabels[approvedRole] || approvedRole}.`
+        : 'Vaše žádost byla uzavřena. Detail najdete v klientském portálu.',
+    tone: status === 'approved' ? 'success' : 'warning',
+    category: 'Žádosti',
+    linkHref: '#/klient',
+    createdBy: admin.id
+  });
+  const updatedRows = await query(
+    `SELECT
+       applications.id,
+       applications.user_id AS userId,
+       users.name AS userName,
+       users.email AS userEmail,
+       applications.requested_role AS requestedRole,
+       applications.status,
+       applications.phone,
+       applications.motivation,
+       applications.availability,
+       applications.contribution,
+       applications.note,
+       applications.admin_note AS adminNote,
+       applications.reviewed_by AS reviewedBy,
+       applications.reviewed_at AS reviewedAt,
+       applications.created_at AS createdAt
+     FROM project_applications applications
+     JOIN users ON users.id = applications.user_id
+     WHERE applications.id = ?
+     LIMIT 1`,
+    [applicationId]
+  );
+  const userRows = await query(
+    `SELECT
+       id,
+       role,
+       name,
+       email,
+       phone,
+       is_active AS isActive,
+       last_login_at AS lastLoginAt,
+       created_at AS createdAt
+     FROM users
+     WHERE id = ?
+     LIMIT 1`,
+    [rows[0].user_id]
+  );
+  sendJson(response, 200, { application: publicProjectApplication(updatedRows[0]), user: publicManagedUser(userRows[0]) });
+}
+
 async function listUsers(request, response) {
   const user = await requireAdmin(request, response);
   if (!user) return;
@@ -1181,7 +1455,7 @@ async function updateUser(request, response, userId) {
   const user = await requireAdmin(request, response);
   if (!user) return;
   const body = await readBody(request);
-  const allowedRoles = new Set(['admin', 'editor', 'client', 'user']);
+  const allowedRoles = new Set(assignableRoles);
   const role = allowedRoles.has(body.role) ? body.role : null;
   const isActive = body.isActive === false ? 0 : 1;
   if (!role) {
@@ -1214,7 +1488,7 @@ async function updateUser(request, response, userId) {
     await createSystemNotification({
       recipientId: userId,
       title: 'Účet ověřen',
-      body: 'Váš klientský účet byl ověřen administrátorem. Nyní se můžete přihlásit do klientské zóny.',
+      body: `Váš účet byl ověřen administrátorem. Aktuální role: ${roleLabels[role] || role}.`,
       tone: 'success',
       category: 'Ověření účtu',
       linkHref: '#/klient',
@@ -1716,6 +1990,8 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/auth/logout') return await logout(request, response);
     if (request.method === 'POST' && url.pathname === '/api/auth/reset') return await resetPassword(request, response);
     if (request.method === 'POST' && url.pathname === '/api/auth/reset/confirm') return await confirmPasswordReset(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/applications/me') return await listMyProjectApplications(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/applications') return await submitProjectApplication(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news') return await listNews(request, response);
     if (request.method === 'POST' && url.pathname === '/api/news') return await saveNews(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news/discussion') return await listNewsDiscussion(request, response);
@@ -1734,6 +2010,9 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/clients') return await createClient(request, response);
     if (request.method === 'GET' && url.pathname === '/api/forms/templates') return await listFormTemplates(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/users') return await listUsers(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/admin/applications') return await listProjectApplications(request, response);
+    const projectApplicationMatch = url.pathname.match(/^\/api\/admin\/applications\/([^/]+)$/);
+    if (request.method === 'PATCH' && projectApplicationMatch) return await reviewProjectApplication(request, response, projectApplicationMatch[1]);
     const userResetMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)\/reset-password$/);
     if (request.method === 'POST' && userResetMatch) return await resetUserPassword(request, response, userResetMatch[1]);
     const userMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)$/);

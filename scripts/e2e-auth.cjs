@@ -37,10 +37,10 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
 
   await page.goto(`${baseUrl}/#/klient`, { waitUntil: 'networkidle' });
   const testEmail = `jan-${Date.now()}@example.test`;
-  if (!(await page.getByRole('heading', { name: 'Klientský profil' }).isVisible())) {
+  if (!(await page.getByRole('heading', { name: 'Klientský portál' }).isVisible())) {
     throw new Error('Client route should show client profile authentication.');
   }
-  await page.getByRole('button', { name: 'Registrace klienta' }).click();
+  await page.getByRole('button', { name: 'Registrace uchazeče' }).click();
   await page.getByLabel('Jméno a příjmení').fill('Jan Novak');
   await page.getByLabel('E-mail').fill(testEmail);
   await page.getByLabel('Telefon').fill('+420 777 111 222');
@@ -70,9 +70,9 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   if (!(await page.getByRole('heading', { name: 'Můj profil', level: 1 }).isVisible())) {
     throw new Error('Client profile should expose a profile GUI section.');
   }
-  await page.getByRole('button', { name: /Avatar/ }).click();
-  if (!(await page.getByRole('heading', { name: 'Avatar editor' }).isVisible())) {
-    throw new Error('Client profile should expose the avatar editor.');
+  await page.getByRole('button', { name: /Žádost o vstup/ }).click();
+  if (!(await page.getByRole('heading', { name: 'Žádost o vstup do projektu' }).isVisible())) {
+    throw new Error('Applicant profile should expose the project application form.');
   }
 
   await browser.close();

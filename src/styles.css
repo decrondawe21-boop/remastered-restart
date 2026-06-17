@@ -3602,6 +3602,83 @@ h3 {
   color: var(--green-dark);
 }
 
+.project-application-card {
+  gap: 18px;
+}
+
+.application-status-panel {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid #cfe0d2;
+  border-radius: 8px;
+  background: #f7fbf6;
+}
+
+.application-status-panel span,
+.application-status-panel small {
+  color: var(--muted);
+}
+
+.application-status-panel strong {
+  color: var(--green-dark);
+}
+
+.application-form {
+  display: grid;
+  gap: 14px;
+}
+
+.application-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.application-role-grid legend {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: var(--green-dark);
+  font-weight: var(--weight-semibold);
+}
+
+.application-role-grid label {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  padding: 14px 14px 14px 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.application-role-grid label.selected {
+  border-color: var(--green);
+  background: #edf6ef;
+  box-shadow: 0 10px 25px rgba(26, 51, 36, 0.06);
+}
+
+.application-role-grid input {
+  position: absolute;
+  top: 18px;
+  left: 14px;
+  accent-color: var(--green);
+}
+
+.application-role-grid strong,
+.application-role-grid span {
+  margin: 0;
+}
+
+.application-role-grid span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .client-wide-card,
 .client-progress-card {
   grid-column: 1 / -1;
@@ -4549,6 +4626,59 @@ h3 {
   opacity: 0.42;
 }
 
+.application-review-card {
+  grid-column: 1 / -1;
+}
+
+.application-review-list {
+  display: grid;
+  gap: 10px;
+}
+
+.application-review-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfb;
+}
+
+.application-review-row.status-pending {
+  border-color: #d9c78f;
+  background: #fffdf5;
+}
+
+.application-review-row > div:first-child {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.application-review-row strong,
+.application-review-row span,
+.application-review-row small,
+.application-review-row p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.application-review-row span,
+.application-review-row small,
+.application-review-row p {
+  color: var(--muted);
+}
+
+.application-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .icon-tool.wide {
   width: auto;
   padding: 0 14px;
@@ -5477,6 +5607,8 @@ h3 {
   .client-dashboard,
   .client-workflow-list,
   .client-detail-grid,
+  .application-role-grid,
+  .application-review-row,
   .client-filter-grid,
   .contact-section,
   .static-info-grid,

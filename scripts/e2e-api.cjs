@@ -97,26 +97,32 @@ async function request(path, options = {}) {
     if (
       !registered.response.ok ||
       registered.body.user.email !== email ||
-      registered.body.user.role !== 'client' ||
-      registered.body.user.isActive !== false ||
-      registered.body.pendingVerification !== true
+      registered.body.user.role !== 'applicant' ||
+      registered.body.user.isActive !== true ||
+      registered.body.pendingVerification !== false
     ) {
-      throw new Error(`Client registration failed: ${JSON.stringify(registered.body)}`);
+      throw new Error(`Applicant registration failed: ${JSON.stringify(registered.body)}`);
     }
     const registrationCookie = registered.response.headers.get('set-cookie');
-    if (registrationCookie && registrationCookie.includes('restart_session=')) {
-      throw new Error('Pending registration should not set a session cookie.');
+    if (!registrationCookie || !registrationCookie.includes('restart_session=')) {
+      throw new Error('Applicant registration should set a session cookie.');
     }
 
-    const pendingLogin = await request('/api/auth/login', {
+    const application = await request('/api/applications', {
       method: 'POST',
-      body: JSON.stringify({ email, password, role: 'client' })
+      headers: { cookie: registrationCookie },
+      body: JSON.stringify({
+        requestedRole: 'client',
+        phone: '+420 777 111 222',
+        motivation: 'Chci se zapojit do projektu.',
+        availability: 'Podle domluvy',
+        contribution: 'Testovací žádost',
+        note: 'E2E'
+      })
     });
-    if (pendingLogin.response.status !== 403 || !String(pendingLogin.body.error || '').includes('ověření')) {
-      throw new Error(`Inactive client login should wait for verification: ${JSON.stringify(pendingLogin.body)}`);
+    if (!application.response.ok || application.body.application.status !== 'pending' || application.body.application.requestedRole !== 'client') {
+      throw new Error(`Project application failed: ${JSON.stringify(application.body)}`);
     }
-
-    await query('UPDATE users SET is_active = 1 WHERE email = ?', [email]);
 
     const login = await request('/api/auth/login', {
       method: 'POST',
@@ -252,6 +258,7 @@ async function request(path, options = {}) {
       await query('DELETE FROM notifications WHERE recipient_id = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM notifications WHERE created_by = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM notifications WHERE body LIKE ? OR title LIKE ?', [`%${email}%`, '%API test aktualita%']).catch(() => undefined);
+      await query('DELETE FROM project_applications WHERE user_id = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM users WHERE email = ?', [email]).catch(() => undefined);
       if (testNewsId) await query('DELETE FROM news WHERE id = ?', [testNewsId]).catch(() => undefined);
       await getPool().end().catch(() => undefined);

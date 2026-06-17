@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
   id CHAR(36) PRIMARY KEY,
-  role ENUM('admin', 'editor', 'client', 'user') NOT NULL,
+  role ENUM('admin', 'editor', 'applicant', 'client', 'volunteer', 'investor', 'patron', 'contributor', 'donor', 'user') NOT NULL,
   name VARCHAR(180) NOT NULL,
   email VARCHAR(190) NOT NULL,
   phone VARCHAR(50) NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE users
-  MODIFY role ENUM('admin', 'editor', 'client', 'user') NOT NULL;
+  MODIFY role ENUM('admin', 'editor', 'applicant', 'client', 'volunteer', 'investor', 'patron', 'contributor', 'donor', 'user') NOT NULL;
 
 CREATE TABLE IF NOT EXISTS clients (
   id CHAR(36) PRIMARY KEY,
@@ -48,6 +48,28 @@ ALTER TABLE clients
   ADD COLUMN IF NOT EXISTS operational_id VARCHAR(64) NULL AFTER notes;
 
 CREATE UNIQUE INDEX IF NOT EXISTS clients_operational_id_unique ON clients (operational_id);
+
+CREATE TABLE IF NOT EXISTS project_applications (
+  id CHAR(36) PRIMARY KEY,
+  user_id CHAR(36) NOT NULL,
+  requested_role ENUM('client', 'volunteer', 'investor', 'patron', 'contributor', 'donor') NOT NULL,
+  status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+  phone VARCHAR(50) NULL,
+  motivation TEXT NULL,
+  availability TEXT NULL,
+  contribution TEXT NULL,
+  note TEXT NULL,
+  admin_note TEXT NULL,
+  reviewed_by CHAR(36) NULL,
+  reviewed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT project_applications_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT project_applications_reviewed_by_fk FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL,
+  KEY project_applications_user_status_idx (user_id, status, created_at),
+  KEY project_applications_status_idx (status, created_at),
+  KEY project_applications_requested_role_idx (requested_role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS client_notes (
   id CHAR(36) PRIMARY KEY,

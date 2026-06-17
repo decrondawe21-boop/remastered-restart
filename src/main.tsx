@@ -83,6 +83,8 @@ import {
   listNews,
   listNewsDiscussion,
   listNotifications,
+  listMyProjectApplications,
+  listProjectApplications,
   listPublicMedia,
   listSlides,
   listUsers,
@@ -92,6 +94,7 @@ import {
   markNotificationRead as markNotificationReadRecord,
   registerClient as registerClientAccount,
   requestPasswordReset,
+  reviewProjectApplication as reviewProjectApplicationRecord,
   resetUserPassword as resetUserPasswordRecord,
   saveClient as saveClientRecord,
   saveDocument as saveDocumentRecord,
@@ -99,6 +102,7 @@ import {
   saveNews as saveNewsRecord,
   saveNotification as saveNotificationRecord,
   saveSlide as saveSlideRecord,
+  submitProjectApplication,
   toggleNewsLike,
   updateNewsComment,
   updateUser as updateUserRecord,
@@ -114,6 +118,8 @@ import {
   type ApiHomeSlide,
   type ApiNotification,
   type ApiPasswordResetRequest,
+  type ApiProjectApplication,
+  type ApiProjectApplicationType,
   type ApiRole,
   type ApiUser
 } from './api';
@@ -346,9 +352,33 @@ type FormTemplate = {
 };
 
 type ManagedUser = ApiManagedUser;
+type ProjectApplication = ApiProjectApplication;
 type MediaFile = ApiMediaFile;
 type ClientDocument = ApiClientDocument;
 type NotificationItem = ApiNotification;
+const roleLabels: Record<ApiRole, string> = {
+  admin: 'Administrátor',
+  editor: 'Editor',
+  applicant: 'Uchazeč',
+  client: 'Klient',
+  volunteer: 'Dobrovolník',
+  investor: 'Investor',
+  patron: 'Mecenáš',
+  contributor: 'Přispěvatel',
+  donor: 'Jednorázový dárce',
+  user: 'Uživatel'
+};
+const portalRoles: ApiRole[] = ['applicant', 'client', 'volunteer', 'investor', 'patron', 'contributor', 'donor', 'user'];
+const applicationRoleOptions: Array<{ value: ApiProjectApplicationType; label: string; description: string }> = [
+  { value: 'client', label: 'Klient', description: 'Žádám o podporu, práci s plánem a zapojení do programu.' },
+  { value: 'volunteer', label: 'Dobrovolník', description: 'Chci pomáhat časem, dovedností nebo doprovodem lidí.' },
+  { value: 'investor', label: 'Investor', description: 'Chci podpořit rozvoj projektu dlouhodobě nebo strategicky.' },
+  { value: 'patron', label: 'Mecenáš', description: 'Chci být stabilní oporou projektu a jeho zázemí.' },
+  { value: 'contributor', label: 'Přispěvatel', description: 'Chci přispívat opakovaně nebo podle možností.' },
+  { value: 'donor', label: 'Jednorázový dárce', description: 'Chci poslat jednorázový dar nebo konkrétní podporu.' }
+];
+const adminRoleOptions: ApiRole[] = ['admin', 'editor', 'applicant', ...applicationRoleOptions.map((item) => item.value), 'user'];
+const isPortalRole = (role?: ApiRole) => Boolean(role && portalRoles.includes(role));
 const TRANSPARENCY_DOCUMENT_CATEGORY = 'transparency';
 const seededTransparentDocuments: MediaFile[] = [
   {
@@ -513,6 +543,15 @@ type ClientSettingsDraft = {
   twoFactorEnabled: boolean;
 };
 
+type ProjectApplicationDraft = {
+  requestedRole: ApiProjectApplicationType;
+  phone: string;
+  motivation: string;
+  availability: string;
+  contribution: string;
+  note: string;
+};
+
 type AdminToolsDraft = {
   firstName: string;
   lastName: string;
@@ -657,6 +696,7 @@ type AdminSection =
 type ClientSection =
   | 'dashboard'
   | 'profile'
+  | 'application'
   | 'avatar'
   | 'documents'
   | 'activity'
@@ -766,6 +806,7 @@ const getAdminActivityQueryParam = (href: string | undefined, key: string) => {
 const clientNavItems: Array<WorkspaceNavItem<ClientSection>> = [
   { id: 'dashboard', label: 'Dashboard', text: 'Stav účtu a přehled', icon: LayoutDashboard },
   { id: 'profile', label: 'Můj profil', text: 'Jméno, kontakty, bio', icon: UserRound },
+  { id: 'application', label: 'Žádost o vstup', text: 'Klient, dobrovolník, podpora', icon: ClipboardList },
   { id: 'avatar', label: 'Avatar / profilovka', text: 'Upload, ořez, náhled', icon: ImageIcon },
   { id: 'documents', label: 'Moje dokumenty', text: 'Soubory a formuláře', icon: FolderOpen },
   { id: 'activity', label: 'Moje aktivita', text: 'Historie změn', icon: ClipboardList },
@@ -1881,7 +1922,7 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
 
 function Header({ currentPath, account, onNotify }: { currentPath: string; account: AuthAccount | null; onNotify: NotifyFn }) {
   const [open, setOpen] = React.useState(false);
-  const visibleNavItems = navItems.filter((item) => item.href !== '/klient' || account?.role === 'client' || account?.role === 'admin');
+  const visibleNavItems = navItems.filter((item) => item.href !== '/klient' || account?.role === 'admin' || isPortalRole(account?.role));
 
   return (
     <>
@@ -1898,9 +1939,9 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
             <div className="auth-actions" aria-label="Přístup k účtu">
               <a
                 className="signin-icon tooltip-link"
-                href={account?.role === 'client' ? '/klient' : '/admin'}
-                aria-label={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
-                data-tooltip={account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
+                href={isPortalRole(account?.role) ? '/klient' : '/admin'}
+                aria-label={isPortalRole(account?.role) ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
+                data-tooltip={isPortalRole(account?.role) ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
               >
                 <UserRound size={19} />
               </a>
@@ -1944,8 +1985,8 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
             </a>
           ))}
           <div className="mobile-auth-actions">
-            <a href={account?.role === 'client' ? '/klient' : '/admin'} onClick={() => setOpen(false)}>
-              <UserRound size={18} /> {account?.role === 'client' ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
+            <a href={isPortalRole(account?.role) ? '/klient' : '/admin'} onClick={() => setOpen(false)}>
+              <UserRound size={18} /> {isPortalRole(account?.role) ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
             </a>
             {!account && (
               <a href="/klient" onClick={() => setOpen(false)}>
@@ -4079,7 +4120,7 @@ function AuthScreen({
     setMessage('');
     const labels: Record<AuthMode, string> = {
       login: 'Přihlášení',
-      register: 'Registrace klienta',
+      register: 'Registrace uchazeče',
       reset: 'Obnova hesla',
       'reset-confirm': 'Nové heslo'
     };
@@ -4173,7 +4214,7 @@ function AuthScreen({
     }
     setIsSubmitting(true);
     setMessageTone('info');
-    setMessage('Zakládám klientský profil...');
+    setMessage('Zakládám profil uchazeče...');
     if (onRegisterRequest) {
       try {
         const apiAccount = await onRegisterRequest({
@@ -4183,7 +4224,7 @@ function AuthScreen({
           password
         });
         if (apiAccount) {
-          onNotify('success', 'Registrace je hotová', 'Klientský profil byl vytvořen a uživatel je přihlášen.');
+          onNotify('success', 'Registrace je hotová', 'Profil uchazeče byl vytvořen.');
           onLogin(apiAccount);
           return;
         }
@@ -4211,7 +4252,7 @@ function AuthScreen({
     }
     const account: AuthAccount = {
       id: crypto.randomUUID(),
-      role: 'client',
+      role: 'applicant',
       name: name.trim(),
       email: email.trim(),
       phone: phone.trim(),
@@ -4291,7 +4332,7 @@ function AuthScreen({
               {mode === 'login'
                 ? 'Přihlášení'
                 : mode === 'register'
-                  ? 'Registrace klienta'
+                  ? 'Registrace uchazeče'
                   : mode === 'reset-confirm'
                     ? 'Nové heslo'
                     : 'Obnova hesla'}
@@ -4311,7 +4352,7 @@ function AuthScreen({
                 className={mode === 'register' ? 'active' : ''}
                 onClick={() => switchMode('register')}
               >
-                Registrace klienta
+                Registrace uchazeče
               </button>
             )}
           </div>
@@ -4444,7 +4485,9 @@ function ClientProfile({
   account,
   clientDocuments,
   notifications,
+  projectApplications,
   onNotificationReadRequest,
+  onProjectApplicationSubmit,
   onPasswordResetRequest,
   onLogout,
   onNotify
@@ -4452,7 +4495,9 @@ function ClientProfile({
   account: AuthAccount;
   clientDocuments: ClientDocument[];
   notifications: NotificationItem[];
+  projectApplications: ProjectApplication[];
   onNotificationReadRequest?: (notificationId: string) => Promise<void>;
+  onProjectApplicationSubmit?: (application: ProjectApplicationDraft) => Promise<ProjectApplication>;
   onPasswordResetRequest?: (email: string) => Promise<ApiPasswordResetRequest | null>;
   onLogout: () => void;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
@@ -4477,6 +4522,16 @@ function ClientProfile({
     commentEmails: true,
     twoFactorEnabled: false
   });
+  const [applicationDraft, setApplicationDraft] = useStoredState<ProjectApplicationDraft>(`restart-client-application-${account.id}`, {
+    requestedRole: 'client',
+    phone: account.phone,
+    motivation: '',
+    availability: '',
+    contribution: '',
+    note: ''
+  });
+  const [applicationMessage, setApplicationMessage] = React.useState('');
+  const [isSubmittingApplication, setIsSubmittingApplication] = React.useState(false);
   const [passwordResetMessage, setPasswordResetMessage] = React.useState('');
   const [isRequestingPasswordReset, setIsRequestingPasswordReset] = React.useState(false);
   const [previousAvatarDraft, setPreviousAvatarDraft] = React.useState<Pick<
@@ -4486,8 +4541,16 @@ function ClientProfile({
   const displayName = profile.name.trim() || account.name;
   const displayPhone = profile.phone.trim() || account.phone;
   const isAdminProfile = account.role === 'admin';
-  const workspaceBadge = isAdminProfile ? 'Admin profil' : 'Klientská zóna';
-  const workspaceTitle = isAdminProfile ? 'Profil administrátora' : 'Přihlášený klient';
+  const isApplicantProfile = account.role === 'applicant';
+  const workspaceBadge = isAdminProfile ? 'Admin profil' : roleLabels[account.role] || 'Klientská zóna';
+  const workspaceTitle = isAdminProfile ? 'Profil administrátora' : isApplicantProfile ? 'Profil uchazeče' : roleLabels[account.role] || 'Přihlášený uživatel';
+  const applicantSections = new Set<ClientSection>(['dashboard', 'profile', 'application', 'notifications', 'settings']);
+  const visibleClientNavItems = isApplicantProfile ? clientNavItems.filter((item) => applicantSections.has(item.id)) : clientNavItems;
+  React.useEffect(() => {
+    if (isApplicantProfile && !applicantSections.has(activeSection)) {
+      setActiveSection('dashboard');
+    }
+  }, [activeSection, isApplicantProfile]);
   const profileCompletion = Math.round(
     ([
       Boolean(displayName),
@@ -4536,11 +4599,29 @@ function ClientProfile({
   const pendingClientDocuments = visibleDocuments.filter(
     (document) => !document.signedAt && ['prepared', 'pending', 'draft'].includes(document.status.toLowerCase())
   );
+  const sortedProjectApplications = projectApplications
+    .filter((application) => isAdminProfile || application.userId === account.id)
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+  const latestApplication = sortedProjectApplications[0];
+  const pendingApplication = sortedProjectApplications.find((application) => application.status === 'pending');
+  const applicationStatusTone: FeedbackTone =
+    latestApplication?.status === 'approved' ? 'success' : latestApplication?.status === 'rejected' ? 'warning' : latestApplication ? 'info' : 'warning';
   const clientWorkflow = [
     {
       title: 'Profil',
       text: profileCompletion >= 80 ? 'Profil je pro pracovníka dobře čitelný.' : 'Doplňte telefon, poznámku nebo profilovou fotku.',
       tone: profileCompletion >= 80 ? 'success' : 'warning'
+    },
+    {
+      title: 'Žádost',
+      text: latestApplication
+        ? latestApplication.status === 'pending'
+          ? `Žádost o roli ${roleLabels[latestApplication.requestedRole]} čeká na schválení.`
+          : latestApplication.status === 'approved'
+            ? `Žádost byla schválena jako ${roleLabels[latestApplication.requestedRole]}.`
+            : 'Žádost byla uzavřena, můžete podat novou po domluvě s týmem.'
+        : 'Podejte žádost o vstup jako klient, dobrovolník nebo podporovatel.',
+      tone: latestApplication?.status === 'approved' ? 'success' : 'warning'
     },
     {
       title: 'Dokumenty',
@@ -4695,6 +4776,45 @@ function ClientProfile({
     onNotify('success', 'Nastavení účtu uloženo', 'Předvolby soukromí a upozornění jsou uložené v profilu.');
   };
 
+  const updateApplicationDraft = <K extends keyof ProjectApplicationDraft>(key: K, value: ProjectApplicationDraft[K]) => {
+    setApplicationDraft((current) => ({ ...current, [key]: value }));
+    setApplicationMessage('');
+  };
+
+  const submitApplication = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!onProjectApplicationSubmit) {
+      onNotify('warning', 'Žádost teď nejde odeslat', 'Zkuste to prosím znovu později.');
+      return;
+    }
+    if (pendingApplication) {
+      setApplicationMessage('Už máte žádost čekající na vyřízení.');
+      onNotify('warning', 'Žádost už čeká', 'Nejdřív ji musí administrátor vyřídit.');
+      return;
+    }
+    if (!applicationDraft.motivation.trim()) {
+      setApplicationMessage('Doplňte prosím krátké zdůvodnění žádosti.');
+      onNotify('warning', 'Chybí zdůvodnění', 'Napište pár vět, proč se chcete zapojit.');
+      return;
+    }
+    setIsSubmittingApplication(true);
+    setApplicationMessage('Odesílám žádost...');
+    try {
+      const saved = await onProjectApplicationSubmit({
+        ...applicationDraft,
+        phone: applicationDraft.phone || displayPhone
+      });
+      setApplicationMessage(`Žádost o roli ${roleLabels[saved.requestedRole]} byla odeslána a čeká na schválení.`);
+      onNotify('success', 'Žádost odeslána', 'Administrátor ji uvidí v přehledu žádostí.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Žádost se nepodařilo odeslat.';
+      setApplicationMessage(message);
+      onNotify('error', 'Žádost se nepodařilo odeslat', message);
+    } finally {
+      setIsSubmittingApplication(false);
+    }
+  };
+
   const requestPasswordResetFromProfile = async () => {
     if (!onPasswordResetRequest) {
       onNotify('warning', 'Reset hesla není dostupný', 'Zkuste akci zopakovat později.');
@@ -4733,7 +4853,7 @@ function ClientProfile({
     window.location.href = `mailto:restartintegrace@dk-i.cz?subject=${subject}&body=${body}`;
   };
 
-  const currentClientNav = clientNavItems.find((item) => item.id === activeSection) ?? clientNavItems[0];
+  const currentClientNav = visibleClientNavItems.find((item) => item.id === activeSection) ?? visibleClientNavItems[0];
   const avatarEditor = (
     <article className="avatar-editor">
       <h2>Avatar editor</h2>
@@ -4828,7 +4948,7 @@ function ClientProfile({
   return (
     <section className="client-section">
       <div className="workspace-layout client-workspace">
-        <WorkspaceSidebar title="Uživatelské menu" items={clientNavItems} active={activeSection} onSelect={setActiveSection} />
+        <WorkspaceSidebar title="Uživatelské menu" items={visibleClientNavItems} active={activeSection} onSelect={setActiveSection} />
         <div className="workspace-main">
           <WorkspaceTopbar
             title={activeSection === 'dashboard' ? displayName : currentClientNav.label}
@@ -4849,7 +4969,7 @@ function ClientProfile({
                 <p>{account.email}</p>
                 <div className="status-line">
                   <span>Stav účtu</span>
-                  <strong><Badge tone="warning">Čeká na ověření</Badge></strong>
+                  <strong><Badge tone={isApplicantProfile ? applicationStatusTone : 'success'}>{roleLabels[account.role] || account.role}</Badge></strong>
                 </div>
               </article>
               <article>
@@ -4921,9 +5041,10 @@ function ClientProfile({
                 <h2>Rychlé akce</h2>
                 <div className="quick-action-grid">
                   <button type="button" onClick={() => setActiveSection('profile')}>Upravit profil</button>
-                  <button type="button" onClick={() => setActiveSection('avatar')}>Změnit avatar</button>
-                  <button type="button" onClick={() => setActiveSection('documents')}>Moje dokumenty</button>
-                  <button type="button" onClick={requestClientDocument}>Požádat o formulář</button>
+                  <button type="button" onClick={() => setActiveSection('application')}>Žádost o vstup</button>
+                  {!isApplicantProfile && <button type="button" onClick={() => setActiveSection('avatar')}>Změnit avatar</button>}
+                  {!isApplicantProfile && <button type="button" onClick={() => setActiveSection('documents')}>Moje dokumenty</button>}
+                  {!isApplicantProfile && <button type="button" onClick={requestClientDocument}>Požádat o formulář</button>}
                 </div>
               </article>
             </div>
@@ -4966,6 +5087,74 @@ function ClientProfile({
                     <dd>{new Date(account.createdAt).toLocaleDateString('cs-CZ')}</dd>
                   </div>
                 </dl>
+              </article>
+            </div>
+          )}
+
+          {activeSection === 'application' && (
+            <div className="client-dashboard">
+              <article className="client-wide-card project-application-card">
+                <div className="client-card-heading">
+                  <div>
+                    <h2>Žádost o vstup do projektu</h2>
+                    <p>Vyberte, jak se chcete zapojit. Žádost po odeslání zkontroluje administrátor a schválí cílovou roli účtu.</p>
+                  </div>
+                  <Badge tone={applicationStatusTone}>
+                    {latestApplication ? latestApplication.status === 'pending' ? 'Čeká na schválení' : latestApplication.status === 'approved' ? 'Schváleno' : 'Uzavřeno' : 'Nová žádost'}
+                  </Badge>
+                </div>
+                {latestApplication && (
+                  <div className="application-status-panel">
+                    <span>Poslední žádost</span>
+                    <strong>{roleLabels[latestApplication.requestedRole]} - {latestApplication.status === 'pending' ? 'čeká' : latestApplication.status === 'approved' ? 'schválena' : 'zamítnuta'}</strong>
+                    <p>{latestApplication.adminNote || latestApplication.note || 'Bez doplňující poznámky.'}</p>
+                    <small>{new Date(latestApplication.createdAt).toLocaleString('cs-CZ')}</small>
+                  </div>
+                )}
+                <form className="profile-editor application-form" onSubmit={submitApplication}>
+                  <fieldset className="application-role-grid" disabled={Boolean(pendingApplication) || isSubmittingApplication}>
+                    <legend>Chci se zapojit jako</legend>
+                    {applicationRoleOptions.map((option) => (
+                      <label key={option.value} className={applicationDraft.requestedRole === option.value ? 'selected' : ''}>
+                        <input
+                          type="radio"
+                          name="requestedRole"
+                          value={option.value}
+                          checked={applicationDraft.requestedRole === option.value}
+                          onChange={() => updateApplicationDraft('requestedRole', option.value)}
+                        />
+                        <strong>{option.label}</strong>
+                        <span>{option.description}</span>
+                      </label>
+                    ))}
+                  </fieldset>
+                  <label>
+                    Telefon pro domluvu
+                    <input value={applicationDraft.phone} onChange={(event) => updateApplicationDraft('phone', event.target.value)} placeholder={displayPhone || '+420 ...'} />
+                  </label>
+                  <label>
+                    Proč se chcete zapojit?
+                    <textarea rows={4} value={applicationDraft.motivation} onChange={(event) => updateApplicationDraft('motivation', event.target.value)} required />
+                  </label>
+                  <label>
+                    Časové možnosti / forma zapojení
+                    <textarea rows={3} value={applicationDraft.availability} onChange={(event) => updateApplicationDraft('availability', event.target.value)} />
+                  </label>
+                  <label>
+                    Jakou podporu můžete nabídnout nebo potřebujete?
+                    <textarea rows={3} value={applicationDraft.contribution} onChange={(event) => updateApplicationDraft('contribution', event.target.value)} />
+                  </label>
+                  <label>
+                    Poznámka
+                    <textarea rows={3} value={applicationDraft.note} onChange={(event) => updateApplicationDraft('note', event.target.value)} />
+                  </label>
+                  <div className="form-actions">
+                    <button className="button primary" type="submit" disabled={Boolean(pendingApplication) || isSubmittingApplication}>
+                      <Mail size={18} /> {isSubmittingApplication ? 'Odesílám...' : pendingApplication ? 'Žádost čeká' : 'Odeslat žádost'}
+                    </button>
+                  </div>
+                  {applicationMessage && <p className="auth-message">{applicationMessage}</p>}
+                </form>
               </article>
             </div>
           )}
@@ -5128,6 +5317,7 @@ function App() {
   const [formTemplates, setFormTemplates] = useStoredState<FormTemplate[]>('restart-form-templates', fallbackFormTemplates);
   const [accounts, setAccounts] = useStoredState<AuthAccount[]>('restart-auth-accounts', starterAccounts);
   const [managedUsers, setManagedUsers] = React.useState<ManagedUser[]>([]);
+  const [projectApplications, setProjectApplications] = React.useState<ProjectApplication[]>([]);
   const [mediaFiles, setMediaFiles] = React.useState<MediaFile[]>([]);
   const [publicMediaFiles, setPublicMediaFiles] = React.useState<MediaFile[]>(seededTransparentDocuments);
   const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
@@ -5206,6 +5396,9 @@ function App() {
     listUsers()
       .then(setManagedUsers)
       .catch(() => undefined);
+    listProjectApplications()
+      .then(setProjectApplications)
+      .catch(() => undefined);
     listMedia()
       .then(setMediaFiles)
       .catch(() => undefined);
@@ -5216,6 +5409,13 @@ function App() {
       .then(setNotifications)
       .catch(() => undefined);
   }, [currentAccount?.id, currentAccount?.role, setClients, setFormTemplates]);
+
+  React.useEffect(() => {
+    if (!currentAccount || currentAccount.role === 'admin') return;
+    listMyProjectApplications()
+      .then(setProjectApplications)
+      .catch(() => undefined);
+  }, [currentAccount?.id, currentAccount?.role]);
 
   const login = (account: AuthAccount) => {
     if (account.password) {
@@ -5311,6 +5511,19 @@ function App() {
     setManagedUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
     return saved;
   };
+  const submitProjectApplicationViaApi = async (application: ProjectApplicationDraft) => {
+    const saved = await submitProjectApplication(application);
+    setProjectApplications((current) => [saved, ...current.filter((item) => item.id !== saved.id)]);
+    return saved;
+  };
+  const reviewProjectApplicationViaApi = async (applicationId: string, status: 'approved' | 'rejected', approvedRole: ApiRole, adminNote = '') => {
+    const result = await reviewProjectApplicationRecord(applicationId, status, approvedRole, adminNote);
+    setProjectApplications((current) => current.map((item) => (item.id === result.application.id ? result.application : item)));
+    if (result.user) {
+      setManagedUsers((current) => current.map((item) => (item.id === result.user?.id ? result.user : item)));
+    }
+    return result.application;
+  };
   const resetManagedUserPasswordViaApi = (userId: string) => resetUserPasswordRecord(userId);
   const deleteManagedUserViaApi = async (userId: string) => {
     await deleteUserRecord(userId);
@@ -5404,12 +5617,14 @@ function App() {
     ) : staticPage ? (
       <StaticInfoPage page={staticPage} />
     ) : currentPath === '/klient' ? (
-      currentAccount?.role === 'client' || currentAccount?.role === 'admin' ? (
+      currentAccount && (currentAccount.role === 'admin' || isPortalRole(currentAccount.role)) ? (
         <ClientProfile
           account={currentAccount}
           clientDocuments={clientDocuments}
           notifications={notifications}
+          projectApplications={projectApplications}
           onNotificationReadRequest={markNotificationReadViaApi}
+          onProjectApplicationSubmit={submitProjectApplicationViaApi}
           onPasswordResetRequest={requestPasswordReset}
           onLogout={logout}
           onNotify={notify}
@@ -5417,8 +5632,8 @@ function App() {
       ) : (
         <AuthScreen
           role="client"
-          title="Klientský profil"
-          text="Klientský profil je chráněný registrací a přihlášením. Po vytvoření profilu se klient dostane ke svým údajům a dokumentům."
+          title="Klientský portál"
+          text="Po registraci vznikne profil uchazeče. V portálu pak můžete podat žádost o vstup jako klient, dobrovolník nebo podporovatel projektu."
           accounts={accounts}
           onLogin={login}
           onRegister={registerClient}
@@ -5438,6 +5653,7 @@ function App() {
           slides={slides}
           formTemplates={formTemplates}
           managedUsers={managedUsers}
+          projectApplications={projectApplications}
           mediaFiles={mediaFiles}
           clientDocuments={clientDocuments}
           notifications={notifications}
@@ -5455,6 +5671,7 @@ function App() {
           onNotificationSaveRequest={saveNotificationViaApi}
           onNotificationReadRequest={markNotificationReadViaApi}
           onUserUpdateRequest={updateManagedUserViaApi}
+          onProjectApplicationReviewRequest={reviewProjectApplicationViaApi}
           onUserResetPasswordRequest={resetManagedUserPasswordViaApi}
           onUserDeleteRequest={deleteManagedUserViaApi}
           account={currentAccount}
@@ -5534,6 +5751,7 @@ function AdminWorkspace({
   slides,
   formTemplates,
   managedUsers,
+  projectApplications,
   mediaFiles,
   clientDocuments,
   notifications,
@@ -5551,6 +5769,7 @@ function AdminWorkspace({
   onNotificationSaveRequest,
   onNotificationReadRequest,
   onUserUpdateRequest,
+  onProjectApplicationReviewRequest,
   onUserResetPasswordRequest,
   onUserDeleteRequest,
   account,
@@ -5562,6 +5781,7 @@ function AdminWorkspace({
   slides: HomeSlide[];
   formTemplates: FormTemplate[];
   managedUsers: ManagedUser[];
+  projectApplications: ProjectApplication[];
   mediaFiles: MediaFile[];
   clientDocuments: ClientDocument[];
   notifications: NotificationItem[];
@@ -5581,6 +5801,7 @@ function AdminWorkspace({
   ) => Promise<NotificationItem>;
   onNotificationReadRequest?: (notificationId: string) => Promise<void>;
   onUserUpdateRequest?: (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => Promise<ManagedUser>;
+  onProjectApplicationReviewRequest?: (applicationId: string, status: 'approved' | 'rejected', approvedRole: ApiRole, adminNote?: string) => Promise<ProjectApplication>;
   onUserResetPasswordRequest?: (userId: string) => Promise<ApiAdminPasswordResetResponse>;
   onUserDeleteRequest?: (userId: string) => Promise<void>;
   account: AuthAccount;
@@ -5841,7 +6062,8 @@ function AdminWorkspace({
       .filter(Boolean)
   );
   const notifiedUserIds = new Set(notificationTargets.map(({ target }) => target?.userId).filter(Boolean));
-  const registrationUsers = managedUsers.filter((user) => user.role === 'client');
+  const registrationUsers = managedUsers.filter((user) => user.role === 'applicant');
+  const pendingProjectApplications = projectApplications.filter((application) => application.status === 'pending');
   const interactionActivityCount = Object.values(discussion.likes).reduce((sum, item) => sum + Number(item.count || 0), 0) + discussion.comments.length;
   const adminActivityItems: AdminActivityItem[] = [
     ...notifications.slice(0, 18).map((notification) => ({
@@ -6442,6 +6664,19 @@ function AdminWorkspace({
     const source = managedUsers.find((user) => user.id === managedUserForm.id) ?? managedUserForm;
     await updateManagedUser(source, { role: managedUserForm.role, isActive: managedUserForm.isActive });
     setAdminDialog((current) => (current?.type === 'user' ? { type: 'user', user: { ...source, role: managedUserForm.role, isActive: managedUserForm.isActive } } : current));
+  };
+
+  const reviewApplication = async (application: ProjectApplication, status: 'approved' | 'rejected', approvedRole: ApiRole = application.requestedRole) => {
+    if (!onProjectApplicationReviewRequest) {
+      onNotify('warning', 'Schvalování není dostupné', 'Zkuste akci zopakovat později.');
+      return;
+    }
+    try {
+      const saved = await onProjectApplicationReviewRequest(application.id, status, approvedRole, status === 'approved' ? `Schváleno jako ${roleLabels[approvedRole]}.` : 'Žádost uzavřena administrátorem.');
+      onNotify(status === 'approved' ? 'success' : 'warning', status === 'approved' ? 'Žádost schválena' : 'Žádost uzavřena', `${saved.userName} - ${roleLabels[saved.requestedRole]}`);
+    } catch (error) {
+      onNotify('error', 'Žádost se nepodařilo vyřídit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
   };
 
   const openNotificationDialog = (notification?: NotificationItem) => {
@@ -8078,6 +8313,38 @@ function AdminWorkspace({
 
         {activeTab === 'users' && (
           <div className="admin-grid">
+            <article className="admin-card application-review-card">
+              <h3>Žádosti o vstup ({pendingProjectApplications.length})</h3>
+              <p className="form-help">Schválením žádosti se uchazeči nastaví cílová role účtu.</p>
+              <div className="application-review-list">
+                {projectApplications.length === 0 && <p className="empty-note">Zatím není podaná žádná žádost.</p>}
+                {projectApplications.slice(0, 12).map((application) => (
+                  <article key={application.id} className={`application-review-row status-${application.status}`}>
+                    <div>
+                      <Badge tone={application.status === 'approved' ? 'success' : application.status === 'rejected' ? 'warning' : 'info'}>
+                        {application.status === 'pending' ? 'čeká' : application.status === 'approved' ? 'schváleno' : 'uzavřeno'}
+                      </Badge>
+                      <strong>{application.userName}</strong>
+                      <span>{application.userEmail}</span>
+                      <small>{roleLabels[application.requestedRole]} · {new Date(application.createdAt).toLocaleString('cs-CZ')}</small>
+                      {application.motivation && <p>{application.motivation}</p>}
+                    </div>
+                    {application.status === 'pending' ? (
+                      <div className="application-review-actions">
+                        <button className="button primary" type="button" onClick={() => reviewApplication(application, 'approved', application.requestedRole)}>
+                          Schválit jako {roleLabels[application.requestedRole]}
+                        </button>
+                        <button className="button secondary" type="button" onClick={() => reviewApplication(application, 'rejected', application.requestedRole)}>
+                          Uzavřít
+                        </button>
+                      </div>
+                    ) : (
+                      <small>{application.adminNote || 'Vyřízeno'}</small>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </article>
             <article className="admin-card">
               <h3>Uživatelé</h3>
               <p className="form-help">Role a aktivace účtů. Změny se ukládají přes admin API.</p>
@@ -8091,9 +8358,9 @@ function AdminWorkspace({
                       <small>{user.lastLoginAt ? `poslední přihlášení ${new Date(user.lastLoginAt).toLocaleDateString('cs-CZ')}` : 'bez posledního přihlášení'}</small>
                     </button>
                     <select value={user.role} onChange={(event) => updateManagedUser(user, { role: event.target.value as ApiRole })}>
-                      <option value="admin">admin</option>
-                      <option value="editor">editor</option>
-                      <option value="client">client</option>
+                      {adminRoleOptions.map((role) => (
+                        <option key={role} value={role}>{roleLabels[role]}</option>
+                      ))}
                     </select>
                     <label className="switch-row">
                       <input type="checkbox" checked={user.isActive} onChange={(event) => updateManagedUser(user, { isActive: event.target.checked })} />
@@ -8109,9 +8376,11 @@ function AdminWorkspace({
             <article className="admin-card">
               <h3>Role</h3>
               <div className="table-lite">
-                <div><strong>Admin</strong><span>plný přístup k administraci, klientům, formulářům a nastavení</span></div>
-                <div><strong>Editor</strong><span>obsah, aktuality a média bez správy rolí</span></div>
-                <div><strong>Client</strong><span>klientská zóna, profil a vlastní dokumenty</span></div>
+                <div><strong>Uchazeč</strong><span>základní profil, komentáře a žádost o vstup do projektu</span></div>
+                <div><strong>Klient</strong><span>klientská zóna, profil a vlastní dokumenty</span></div>
+                <div><strong>Dobrovolník</strong><span>portál a komunikace k zapojení do pomoci</span></div>
+                <div><strong>Investor / mecenáš / dárce</strong><span>portál podporovatele a komunikace k podpoře projektu</span></div>
+                <div><strong>Admin / Editor</strong><span>správa projektu, obsahu a uživatelských rolí podle oprávnění</span></div>
               </div>
             </article>
           </div>
@@ -8464,9 +8733,9 @@ function AdminDetailDialog({
             <label>
               Role
               <select value={managedUserForm.role} onChange={(event) => setManagedUserForm((current) => ({ ...current, role: event.target.value as ApiRole }))}>
-                <option value="admin">admin</option>
-                <option value="editor">editor</option>
-                <option value="client">client</option>
+                {adminRoleOptions.map((role) => (
+                  <option key={role} value={role}>{roleLabels[role]}</option>
+                ))}
               </select>
             </label>
             <label className="checkbox-field">

@@ -1,4 +1,4 @@
-export type ApiRole = 'admin' | 'editor' | 'client' | 'user';
+export type ApiRole = 'admin' | 'editor' | 'applicant' | 'client' | 'volunteer' | 'investor' | 'patron' | 'contributor' | 'donor' | 'user';
 
 export type ApiUser = {
   id: string;
@@ -139,6 +139,27 @@ export type ApiNotification = {
   createdAt: string;
 };
 
+export type ApiProjectApplicationStatus = 'pending' | 'approved' | 'rejected';
+export type ApiProjectApplicationType = 'client' | 'volunteer' | 'investor' | 'patron' | 'contributor' | 'donor';
+
+export type ApiProjectApplication = {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  requestedRole: ApiProjectApplicationType;
+  status: ApiProjectApplicationStatus;
+  phone: string;
+  motivation: string;
+  availability: string;
+  contribution: string;
+  note: string;
+  adminNote: string;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+};
+
 export type ApiPasswordResetRequest = {
   ok: boolean;
   message: string;
@@ -202,6 +223,19 @@ export async function registerClient(name: string, email: string, phone: string,
     method: 'POST',
     body: JSON.stringify({ name, email, phone, password })
   });
+}
+
+export async function listMyProjectApplications() {
+  const body = await request<{ applications: ApiProjectApplication[] }>('/api/applications/me');
+  return body.applications;
+}
+
+export async function submitProjectApplication(application: Pick<ApiProjectApplication, 'requestedRole' | 'phone' | 'motivation' | 'availability' | 'contribution' | 'note'>) {
+  const body = await request<{ application: ApiProjectApplication }>('/api/applications', {
+    method: 'POST',
+    body: JSON.stringify(application)
+  });
+  return body.application;
 }
 
 export async function logoutUser() {
@@ -309,6 +343,19 @@ export async function listFormTemplates() {
 export async function listUsers() {
   const body = await request<{ users: ApiManagedUser[] }>('/api/admin/users');
   return body.users;
+}
+
+export async function listProjectApplications() {
+  const body = await request<{ applications: ApiProjectApplication[] }>('/api/admin/applications');
+  return body.applications;
+}
+
+export async function reviewProjectApplication(applicationId: string, status: ApiProjectApplicationStatus, approvedRole: ApiRole, adminNote = '') {
+  const body = await request<{ application: ApiProjectApplication; user?: ApiManagedUser }>(`/api/admin/applications/${encodeURIComponent(applicationId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, approvedRole, adminNote })
+  });
+  return body;
 }
 
 export async function updateUser(user: Pick<ApiManagedUser, 'id' | 'role' | 'isActive'>) {

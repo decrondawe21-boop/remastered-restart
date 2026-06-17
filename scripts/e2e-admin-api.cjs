@@ -69,8 +69,11 @@ async function request(path, options = {}) {
   const stampText = String(stamp);
   const adminId = randomId();
   const managedUserId = randomId();
+  const applicantUserId = randomId();
+  const applicationId = randomId();
   const adminEmail = `admin.${stamp}@example.test`;
   const managedUserEmail = `managed.${stamp}@example.test`;
+  const applicantEmail = `applicant.${stamp}@example.test`;
   const adminPassword = 'AdminTestHeslo123';
   let createdClientId = null;
   let createdNewsId = null;
@@ -109,6 +112,31 @@ async function request(path, options = {}) {
        VALUES (?, 'client', 'E2E Managed Client', ?, ?, 1)`,
       [managedUserId, managedUserEmail, hashPassword('ManagedClientHeslo123')]
     );
+
+    await query(
+      `INSERT INTO users (id, role, name, email, password_hash, is_active)
+       VALUES (?, 'applicant', 'E2E Applicant', ?, ?, 1)`,
+      [applicantUserId, applicantEmail, hashPassword('ApplicantHeslo123')]
+    );
+    await query(
+      `INSERT INTO project_applications (id, user_id, requested_role, status, motivation)
+       VALUES (?, ?, 'volunteer', 'pending', 'Chci pomoci jako dobrovolník.')`,
+      [applicationId, applicantUserId]
+    );
+
+    const applications = await request('/api/admin/applications', { headers: { cookie } });
+    if (!applications.response.ok || !applications.body.applications.some((item) => item.id === applicationId && item.status === 'pending')) {
+      throw new Error(`Admin applications list failed: ${JSON.stringify(applications.body)}`);
+    }
+
+    const reviewedApplication = await request(`/api/admin/applications/${encodeURIComponent(applicationId)}`, {
+      method: 'PATCH',
+      headers: { cookie },
+      body: JSON.stringify({ status: 'approved', approvedRole: 'volunteer', adminNote: 'E2E schválení.' })
+    });
+    if (!reviewedApplication.response.ok || reviewedApplication.body.application.status !== 'approved' || reviewedApplication.body.user.role !== 'volunteer') {
+      throw new Error(`Admin application review failed: ${JSON.stringify(reviewedApplication.body)}`);
+    }
 
     const resetManaged = await request(`/api/admin/users/${encodeURIComponent(managedUserId)}/reset-password`, {
       method: 'POST',
@@ -277,9 +305,12 @@ async function request(path, options = {}) {
     await query('DELETE FROM media_files WHERE id = ?', [createdMediaId]);
     await query('DELETE FROM notifications WHERE id = ?', [createdNotificationId]);
     await query('DELETE FROM notifications WHERE recipient_id = ? OR created_by = ?', [managedUserId, managedUserId]);
+    await query('DELETE FROM notifications WHERE recipient_id = ? OR created_by = ?', [applicantUserId, applicantUserId]);
     await query('DELETE FROM notifications WHERE body LIKE ?', [`%${managedUserEmail}%`]);
+    await query('DELETE FROM project_applications WHERE id = ?', [applicationId]);
     await query('DELETE FROM password_resets WHERE user_id = ?', [managedUserId]);
     await query('DELETE FROM users WHERE id = ?', [managedUserId]);
+    await query('DELETE FROM users WHERE id = ?', [applicantUserId]);
     await query('DELETE FROM users WHERE id = ?', [adminId]);
     await getPool().end();
   }

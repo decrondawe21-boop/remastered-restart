@@ -67,7 +67,7 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error('Registered client should land in profile GUI.');
   }
   await page.getByRole('button', { name: /Můj profil/ }).click();
-  if (!(await page.getByRole('heading', { name: 'Můj profil' }).isVisible())) {
+  if (!(await page.getByRole('heading', { name: 'Můj profil', level: 1 }).isVisible())) {
     throw new Error('Client profile should expose a profile GUI section.');
   }
   await page.getByRole('button', { name: /Avatar/ }).click();

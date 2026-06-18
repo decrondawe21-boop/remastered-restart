@@ -31,6 +31,7 @@ import {
   Mail,
   MessageCircle,
   Menu,
+  MoreHorizontal,
   Newspaper,
   Phone,
   Plus,
@@ -614,6 +615,15 @@ type ToastMessage = {
 };
 
 type NotifyFn = (tone: FeedbackTone, title: string, text?: string) => void;
+
+type AdminContextMenuItem = {
+  label: string;
+  text?: string;
+  icon?: React.ReactNode;
+  tone?: 'default' | 'success' | 'danger';
+  disabled?: boolean;
+  onSelect: () => void;
+};
 
 type ModalState = {
   title: string;
@@ -2405,21 +2415,27 @@ function NewsDiscussionPanel({
               <Reply size={15} /> Odpovědět
             </button>
             {canManage && (
-              <>
-                <button
-                  className="mini-action ghost"
-                  type="button"
-                  onClick={() => {
-                    setEditingId(comment.id);
-                    setEditDraft(comment.body);
-                  }}
-                >
-                  Upravit
-                </button>
-                <button className="mini-action danger" type="button" onClick={() => onDeleteComment(comment.id)}>
-                  <Trash2 size={15} /> Smazat
-                </button>
-              </>
+              <AdminContextMenu
+                label={`Akce komentáře od ${comment.authorName}`}
+                items={[
+                  {
+                    label: 'Upravit',
+                    text: 'Otevřít inline editaci',
+                    icon: <FileText size={16} />,
+                    onSelect: () => {
+                      setEditingId(comment.id);
+                      setEditDraft(comment.body);
+                    }
+                  },
+                  {
+                    label: 'Smazat',
+                    text: 'Odstranit komentář',
+                    icon: <Trash2 size={16} />,
+                    tone: 'danger',
+                    onSelect: () => onDeleteComment(comment.id)
+                  }
+                ]}
+              />
             )}
           </div>
         </article>
@@ -3571,6 +3587,76 @@ function SectionDivider({ children }: { children: React.ReactNode }) {
 
 function Badge({ tone = 'info', children }: { tone?: FeedbackTone; children: React.ReactNode }) {
   return <span className={`ui-badge ${tone}`}>{children}</span>;
+}
+
+function AdminContextMenu({ label = 'Admin akce', items }: { label?: string; items: AdminContextMenuItem[] }) {
+  const [open, setOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="admin-context-menu" ref={menuRef}>
+      <button
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label={label}
+        className="icon-tool admin-context-trigger"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <MoreHorizontal size={18} />
+      </button>
+      {open && (
+        <div aria-label={label} className="admin-context-popover" role="menu">
+          {items.map((item) => (
+            <button
+              key={item.label}
+              className={`admin-context-item ${item.tone === 'danger' ? 'danger' : ''} ${
+                item.tone === 'success' ? 'success' : ''
+              }`}
+              disabled={item.disabled}
+              role="menuitem"
+              type="button"
+              onClick={() => {
+                if (item.disabled) return;
+                setOpen(false);
+                item.onSelect();
+              }}
+            >
+              {item.icon}
+              <span>
+                <strong>{item.label}</strong>
+                {item.text && <small>{item.text}</small>}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function AppCheckbox({
@@ -8171,12 +8257,24 @@ function AdminWorkspace({
                       <span>{item.excerpt}</span>
                     </button>
                     <div className="news-row-actions" aria-label={`Akce pro aktualitu ${item.title}`}>
-                      <button className="icon-tool tooltip-link" type="button" data-tooltip="Upravit" aria-label="Upravit aktualitu" onClick={() => editNews(item)}>
-                        <FileText size={17} />
-                      </button>
-                      <button className="icon-tool tooltip-link danger" type="button" data-tooltip="Smazat" aria-label="Smazat aktualitu" onClick={() => deleteNews(item)}>
-                        <Trash2 size={17} />
-                      </button>
+                      <AdminContextMenu
+                        label={`Akce aktuality ${item.title}`}
+                        items={[
+                          {
+                            label: 'Upravit',
+                            text: 'Otevřít editor aktuality',
+                            icon: <FileText size={16} />,
+                            onSelect: () => editNews(item)
+                          },
+                          {
+                            label: 'Smazat',
+                            text: 'Odstranit aktualitu z webu',
+                            icon: <Trash2 size={16} />,
+                            tone: 'danger',
+                            onSelect: () => deleteNews(item)
+                          }
+                        ]}
+                      />
                     </div>
                   </article>
                 ))}
@@ -8221,9 +8319,18 @@ function AdminWorkspace({
                     </div>
                     <div className="editor-title-actions">
                       {newsForm.id && (
-                        <button className="icon-tool tooltip-link danger" type="button" data-tooltip="Smazat" aria-label="Smazat aktualitu" onClick={() => deleteNews(newsForm)}>
-                          <Trash2 size={18} />
-                        </button>
+                        <AdminContextMenu
+                          label={`Akce aktuality ${newsForm.title || 'bez názvu'}`}
+                          items={[
+                            {
+                              label: 'Smazat aktualitu',
+                              text: 'Odstranit z veřejného webu',
+                              icon: <Trash2 size={16} />,
+                              tone: 'danger',
+                              onSelect: () => deleteNews(newsForm)
+                            }
+                          ]}
+                        />
                       )}
                       <button className="icon-tool tooltip-link" type="button" data-tooltip="Zavřít" aria-label="Zavřít editor" onClick={closeNewsDialog}>
                         <X size={18} />
@@ -8467,12 +8574,25 @@ function AdminWorkspace({
                     </div>
                     {application.status === 'pending' ? (
                       <div className="application-review-actions">
-                        <button className="button primary" type="button" onClick={() => reviewApplication(application, 'approved', application.requestedRole)}>
-                          Schválit jako {roleLabels[application.requestedRole]}
-                        </button>
-                        <button className="button secondary" type="button" onClick={() => reviewApplication(application, 'rejected', application.requestedRole)}>
-                          Uzavřít
-                        </button>
+                        <AdminContextMenu
+                          label={`Akce žádosti ${application.userName}`}
+                          items={[
+                            {
+                              label: `Schválit jako ${roleLabels[application.requestedRole]}`,
+                              text: 'Potvrdit roli a účet',
+                              icon: <CheckCircle2 size={16} />,
+                              tone: 'success',
+                              onSelect: () => reviewApplication(application, 'approved', application.requestedRole)
+                            },
+                            {
+                              label: 'Uzavřít / zamítnout',
+                              text: 'Poslat informaci žadateli',
+                              icon: <X size={16} />,
+                              tone: 'danger',
+                              onSelect: () => reviewApplication(application, 'rejected', application.requestedRole)
+                            }
+                          ]}
+                        />
                       </div>
                     ) : (
                       <small>{application.adminNote || 'Vyřízeno'}</small>
@@ -8502,9 +8622,30 @@ function AdminWorkspace({
                       <input type="checkbox" checked={user.isActive} onChange={(event) => updateManagedUser(user, { isActive: event.target.checked })} />
                       Aktivní
                     </label>
-                    <button className="icon-tool tooltip-link" type="button" data-tooltip="Detail uživatele" aria-label="Detail uživatele" onClick={() => openUserDialog(user)}>
-                      <UserCog size={16} />
-                    </button>
+                    <AdminContextMenu
+                      label={`Akce uživatele ${user.name}`}
+                      items={[
+                        {
+                          label: 'Detail / role',
+                          text: 'Otevřít správu účtu',
+                          icon: <UserCog size={16} />,
+                          onSelect: () => openUserDialog(user)
+                        },
+                        {
+                          label: 'Reset hesla',
+                          text: 'Vygenerovat reset hesla',
+                          icon: <KeyRound size={16} />,
+                          onSelect: () => resetManagedUserPassword(user)
+                        },
+                        {
+                          label: 'Smazat účet',
+                          text: 'Odstranit uživatele',
+                          icon: <Trash2 size={16} />,
+                          tone: 'danger',
+                          onSelect: () => deleteManagedUser(user)
+                        }
+                      ]}
+                    />
                   </article>
                 ))}
               </div>
@@ -8545,19 +8686,38 @@ function AdminWorkspace({
                       <span>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</span>
                     </button>
                     <div className="notification-actions">
-                      <button className="icon-tool tooltip-link" type="button" data-tooltip="Detail notifikace" aria-label="Detail notifikace" onClick={() => openNotificationDialog(notification)}>
-                        <FileText size={16} />
-                      </button>
-                      {!notification.readAt && (
-                        <button className="icon-tool tooltip-link" type="button" data-tooltip="Označit přečtené" aria-label="Označit přečtené" onClick={() => markNotificationRead(notification)}>
-                          <CheckCircle2 size={16} />
-                        </button>
-                      )}
-                      {notification.linkHref && (
-                        <button className="text-link-button" type="button" onClick={() => openNotificationTarget(notification)}>
-                          Otevřít
-                        </button>
-                      )}
+                      <AdminContextMenu
+                        label={`Akce notifikace ${notification.title}`}
+                        items={[
+                          {
+                            label: 'Detail',
+                            text: 'Upravit notifikaci',
+                            icon: <FileText size={16} />,
+                            onSelect: () => openNotificationDialog(notification)
+                          },
+                          ...(!notification.readAt
+                            ? [
+                                {
+                                  label: 'Označit přečtené',
+                                  text: 'Archivovat jako vyřízené',
+                                  icon: <CheckCircle2 size={16} />,
+                                  tone: 'success' as const,
+                                  onSelect: () => markNotificationRead(notification)
+                                }
+                              ]
+                            : []),
+                          ...(notification.linkHref
+                            ? [
+                                {
+                                  label: 'Otevřít cíl',
+                                  text: 'Přejít na související místo',
+                                  icon: <ArrowRight size={16} />,
+                                  onSelect: () => openNotificationTarget(notification)
+                                }
+                              ]
+                            : [])
+                        ]}
+                      />
                     </div>
                   </article>
                 ))}

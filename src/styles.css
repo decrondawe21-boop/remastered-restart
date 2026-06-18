@@ -5616,6 +5616,86 @@ h3 {
   align-items: center;
 }
 
+.admin-context-menu {
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-end;
+}
+
+.admin-context-trigger {
+  min-width: 38px;
+}
+
+.admin-context-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  display: grid;
+  gap: 4px;
+  min-width: 230px;
+  max-width: min(280px, calc(100vw - 32px));
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 20px 52px rgba(17, 34, 24, 0.16);
+}
+
+.admin-context-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-context-item:hover,
+.admin-context-item:focus-visible {
+  background: var(--green-soft);
+  outline: 0;
+}
+
+.admin-context-item.danger {
+  color: #a33939;
+}
+
+.admin-context-item.danger:hover,
+.admin-context-item.danger:focus-visible {
+  background: #fff4f4;
+}
+
+.admin-context-item.success {
+  color: var(--green-dark);
+}
+
+.admin-context-item span {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-context-item strong {
+  font-size: 0.9rem;
+}
+
+.admin-context-item small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.admin-context-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .detail-meta-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

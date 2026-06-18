@@ -5622,6 +5622,10 @@ h3 {
   justify-content: flex-end;
 }
 
+.admin-context-menu:has(.admin-context-popover) {
+  z-index: 400;
+}
+
 .admin-context-trigger {
   min-width: 38px;
 }
@@ -5630,7 +5634,7 @@ h3 {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  z-index: 60;
+  z-index: 420;
   display: grid;
   gap: 4px;
   min-width: 230px;
@@ -5694,6 +5698,30 @@ h3 {
 .admin-context-item:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.news-admin-list,
+.application-review-list,
+.user-admin-list,
+.notification-admin-list,
+.comment-list {
+  overflow: visible;
+}
+
+.news-admin-row,
+.application-review-row,
+.user-admin-row,
+.notification-admin-list article,
+.comment-card {
+  position: relative;
+}
+
+.news-admin-row:has(.admin-context-popover),
+.application-review-row:has(.admin-context-popover),
+.user-admin-row:has(.admin-context-popover),
+.notification-admin-list article:has(.admin-context-popover),
+.comment-card:has(.admin-context-popover) {
+  z-index: 300;
 }
 
 .detail-meta-grid {

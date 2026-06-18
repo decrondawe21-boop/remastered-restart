@@ -6091,6 +6091,7 @@ function AdminWorkspace({
   const [activeTab, setActiveTab] = React.useState<AdminSection>('dashboard');
   const [focusedNewsId, setFocusedNewsId] = React.useState('');
   const [focusedActivityId, setFocusedActivityId] = React.useState('');
+  const [notificationSearch, setNotificationSearch] = React.useState('');
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
   const [selectedClientId, setSelectedClientId] = React.useState('');
   const [clientQuery, setClientQuery] = React.useState('');
@@ -8733,17 +8734,58 @@ function AdminWorkspace({
                   <Plus size={18} />
                 </button>
               </div>
-              <div className="notification-admin-list">
-                {notifications.length === 0 && <p className="empty-note">Zatím nejsou uložená žádná upozornění.</p>}
-                {notifications.map((notification) => (
-                  <article key={notification.id} className={notification.readAt ? 'read' : ''}>
+              <div className="notification-toolbar">
+                <label className="notification-search">
+                  <Search size={16} aria-hidden="true" />
+                  <input
+                    type="search"
+                    value={notificationSearch}
+                    aria-label="Hledat v notifikacích"
+                    placeholder="Hledat podle názvu, typu, textu nebo data"
+                    onChange={(event) => setNotificationSearch(event.target.value)}
+                  />
+                  {notificationSearch && (
+                    <button type="button" aria-label="Vymazat hledání" onClick={() => setNotificationSearch('')}>
+                      <X size={15} />
+                    </button>
+                  )}
+                </label>
+              </div>
+              {(() => {
+                const searchValue = notificationSearch.trim().toLocaleLowerCase('cs-CZ');
+                const matchesNotification = (notification: NotificationItem) => {
+                  if (!searchValue) return true;
+                  const createdAt = new Date(notification.createdAt);
+                  const readAt = notification.readAt ? new Date(notification.readAt) : null;
+                  const searchableText = [
+                    notification.title,
+                    notification.body,
+                    notification.category,
+                    notification.tone,
+                    notification.linkHref || '',
+                    createdAt.toLocaleString('cs-CZ'),
+                    createdAt.toISOString(),
+                    readAt ? readAt.toLocaleString('cs-CZ') : '',
+                    readAt ? readAt.toISOString() : ''
+                  ]
+                    .join(' ')
+                    .toLocaleLowerCase('cs-CZ');
+                  return searchableText.includes(searchValue);
+                };
+                const activeAdminNotifications = notifications.filter((notification) => !notification.readAt && matchesNotification(notification));
+                const archivedAdminNotifications = notifications.filter((notification) => notification.readAt && matchesNotification(notification));
+                const renderNotificationRow = (notification: NotificationItem, archive = false) => (
+                  <article key={`${archive ? 'archive' : 'active'}-${notification.id}`} className={`compact ${notification.readAt ? 'read' : ''}`}>
                     <Badge tone={toFeedbackTone(notification.tone)}>{notification.category}</Badge>
                     <CursorCard
                       trigger={
-                        <button className="notification-admin-main" type="button" onClick={() => openNotificationTarget(notification)}>
+                        <button
+                          className="notification-admin-main compact"
+                          type="button"
+                          aria-label={`${notification.title}. Detail je dostupný v náhledu nebo přes menu.`}
+                          onClick={() => openNotificationTarget(notification)}
+                        >
                           <strong>{notification.title}</strong>
-                          <p>{notification.body}</p>
-                          <span>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</span>
                         </button>
                       }
                       overlay={
@@ -8794,8 +8836,41 @@ function AdminWorkspace({
                       />
                     </div>
                   </article>
-                ))}
-              </div>
+                );
+
+                return (
+                  <>
+                    <div className="notification-section-label">
+                      <span>Aktivní notifikace</span>
+                      <small>{activeAdminNotifications.length} čeká na reakci</small>
+                    </div>
+                    <div className="notification-admin-list compact">
+                      {activeAdminNotifications.length === 0 && (
+                        <p className="empty-note">
+                          {notificationSearch ? 'Pro hledání nejsou žádné aktivní notifikace.' : 'Žádné aktivní notifikace nečekají na reakci.'}
+                        </p>
+                      )}
+                      {activeAdminNotifications.map((notification) => renderNotificationRow(notification))}
+                    </div>
+
+                    <div className="notification-section-label archive">
+                      <span>Auditní archiv</span>
+                      <small>{archivedAdminNotifications.length} vyřízených záznamů ve výběru</small>
+                    </div>
+                    <div className="notification-admin-list compact archive-list">
+                      {archivedAdminNotifications.length === 0 && (
+                        <p className="empty-note">
+                          {notificationSearch ? 'V archivu pro hledání nic není.' : 'Archiv je zatím prázdný.'}
+                        </p>
+                      )}
+                      {archivedAdminNotifications.slice(0, 24).map((notification) => renderNotificationRow(notification, true))}
+                      {archivedAdminNotifications.length > 24 && (
+                        <p className="empty-note">Zobrazeno prvních 24 záznamů. Zúžte výběr přes hledání podle názvu, typu nebo data.</p>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
             </article>
             <article className="admin-card">
               <h3>Systémové události</h3>

@@ -1939,14 +1939,20 @@ function Header({
   onNotify: NotifyFn;
 }) {
   const [open, setOpen] = React.useState(false);
-  const visibleNavItems = navItems.filter((item) => item.href !== '/klient' || account?.role === 'admin' || isPortalRole(account?.role));
+  const isAdminAccount = account?.role === 'admin';
+  const visibleNavItems = [
+    ...navItems.filter((item) => item.href !== '/klient' || isAdminAccount || isPortalRole(account?.role)),
+    ...(isAdminAccount ? [{ href: '/admin', label: 'Administrace' }] : [])
+  ];
   const unreadNotificationCount = account
     ? notifications.filter((notification) =>
-        !notification.readAt && (account.role === 'admin' || !notification.recipientId || notification.recipientId === account.id)
+        !notification.readAt && (isAdminAccount || !notification.recipientId || notification.recipientId === account.id)
       ).length
     : 0;
-  const profileHref = '/klient';
-  const notificationHref = account?.role === 'admin' ? '/admin' : '/klient';
+  const profileHref = isAdminAccount ? '/admin' : '/klient';
+  const profileLabel = isAdminAccount ? 'Administrace' : 'Profil';
+  const profileAriaLabel = isAdminAccount ? 'Otevřít administraci' : `Otevřít profil ${account?.name ?? ''}`;
+  const notificationHref = isAdminAccount ? '/admin' : '/klient';
   const headerAvatarSrc = React.useMemo(() => {
     if (!account) return '';
     try {
@@ -1988,7 +1994,7 @@ function Header({
                     <Bell size={17} />
                     {unreadNotificationCount > 0 && <span>{unreadNotificationCount}</span>}
                   </a>
-                  <a className="header-avatar-link tooltip-link" href={profileHref} aria-label={`Otevřít profil ${account.name}`} data-tooltip="Profil">
+                  <a className="header-avatar-link tooltip-link" href={profileHref} aria-label={profileAriaLabel} data-tooltip={profileLabel}>
                     {headerAvatar}
                   </a>
                 </>
@@ -2048,7 +2054,7 @@ function Header({
                   <Bell size={18} /> Notifikace {unreadNotificationCount > 0 ? `(${unreadNotificationCount})` : ''}
                 </a>
                 <a href={profileHref} onClick={() => setOpen(false)}>
-                  {headerAvatar} Profil
+                  {headerAvatar} {profileLabel}
                 </a>
               </>
             ) : (

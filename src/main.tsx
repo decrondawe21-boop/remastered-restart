@@ -5029,7 +5029,7 @@ function ClientProfile({
                 <div className="client-notification-list compact">
                   {visibleNotifications.length === 0 && <p className="empty-note">Zatím tu nejsou žádné zprávy.</p>}
                   {visibleNotifications.slice(0, 3).map((notification) => (
-                    <button key={notification.id} type="button" className={notification.readAt ? 'read' : ''} onClick={() => markClientNotificationRead(notification)}>
+                    <button key={notification.id} type="button" className={`${notification.readAt ? 'read' : ''} tone-${toFeedbackTone(notification.tone)}`} onClick={() => markClientNotificationRead(notification)}>
                       <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
                       <strong>{notification.title}</strong>
                       <span>{notification.body}</span>
@@ -5242,7 +5242,7 @@ function ClientProfile({
                     </div>
                   )}
                   {visibleNotifications.map((notification) => (
-                    <button key={notification.id} type="button" className={notification.readAt ? 'read' : ''} onClick={() => markClientNotificationRead(notification)}>
+                    <button key={notification.id} type="button" className={`${notification.readAt ? 'read' : ''} tone-${toFeedbackTone(notification.tone)}`} onClick={() => markClientNotificationRead(notification)}>
                       <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
                       <strong>{notification.title}</strong>
                       <span>{notification.body}</span>

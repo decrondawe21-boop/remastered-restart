@@ -1380,12 +1380,12 @@ async function reviewProjectApplication(request, response, applicationId) {
   }
   await createSystemNotification({
     recipientId: rows[0].user_id,
-    title: status === 'approved' ? 'Žádost byla schválena' : 'Žádost byla uzavřena',
+    title: status === 'approved' ? 'Žádost byla schválena' : 'Žádost zatím nemůžeme schválit',
     body:
       status === 'approved'
-        ? `Váš účet byl schválen jako ${roleLabels[approvedRole] || approvedRole}.`
-        : 'Vaše žádost byla uzavřena. Detail najdete v klientském portálu.',
-    tone: status === 'approved' ? 'success' : 'warning',
+        ? `Dobrá zpráva: vaše žádost byla schválena. Účet je nyní vedený jako ${roleLabels[approvedRole] || approvedRole}. V portálu můžete pokračovat dalším krokem podle instrukcí týmu REST||ART Integrace.`
+        : 'Bohužel vaši žádost nyní nemůžeme schválit z kapacitních důvodů. Děkujeme za pochopení. Pokud se možnosti projektu rozšíří, můžeme se k žádosti vrátit.',
+    tone: status === 'approved' ? 'success' : 'error',
     category: 'Žádosti',
     linkHref: '#/klient',
     createdBy: admin.id

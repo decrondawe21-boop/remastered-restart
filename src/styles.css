@@ -3794,6 +3794,24 @@ h3 {
   opacity: 0.72;
 }
 
+.client-notification-list button.tone-error {
+  border-color: #efb8b8;
+  background: #fff4f4;
+  box-shadow: inset 4px 0 0 #b33a3a;
+}
+
+.client-notification-list button.tone-success {
+  border-color: #b8d8be;
+  background: #f3fbf5;
+  box-shadow: inset 4px 0 0 var(--green);
+}
+
+.client-notification-list button.tone-warning {
+  border-color: #ead99b;
+  background: #fffdf2;
+  box-shadow: inset 4px 0 0 var(--gold);
+}
+
 .client-notification-list button:hover,
 .client-notification-list button:focus-visible,
 .client-document-list article:hover {

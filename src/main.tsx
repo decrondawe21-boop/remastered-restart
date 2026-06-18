@@ -73,6 +73,7 @@ import {
   getSession,
   addNewsComment,
   confirmPasswordReset,
+  deleteNotification as deleteNotificationRecord,
   deleteUser as deleteUserRecord,
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
@@ -4487,6 +4488,7 @@ function ClientProfile({
   notifications,
   projectApplications,
   onNotificationReadRequest,
+  onNotificationDeleteRequest,
   onProjectApplicationSubmit,
   onPasswordResetRequest,
   onLogout,
@@ -4497,6 +4499,7 @@ function ClientProfile({
   notifications: NotificationItem[];
   projectApplications: ProjectApplication[];
   onNotificationReadRequest?: (notificationId: string) => Promise<void>;
+  onNotificationDeleteRequest?: (notificationId: string) => Promise<void>;
   onProjectApplicationSubmit?: (application: ProjectApplicationDraft) => Promise<ProjectApplication>;
   onPasswordResetRequest?: (email: string) => Promise<ApiPasswordResetRequest | null>;
   onLogout: () => void;
@@ -4769,6 +4772,23 @@ function ClientProfile({
       onNotify('success', 'Notifikace označena', notification.title);
     } catch (error) {
       onNotify('error', 'Notifikace se nepodařila uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
+  };
+
+  const deleteClientNotification = async (notification: NotificationItem) => {
+    if (!notification.readAt) {
+      onNotify('warning', 'Nejdřív ji otevřete', 'Mazat lze až notifikace, které už máte označené jako přečtené.');
+      return;
+    }
+    if (!onNotificationDeleteRequest) {
+      onNotify('warning', 'Notifikace nejde smazat', 'Zkuste akci zopakovat později.');
+      return;
+    }
+    try {
+      await onNotificationDeleteRequest(notification.id);
+      onNotify('info', 'Notifikace smazána', notification.title);
+    } catch (error) {
+      onNotify('error', 'Notifikaci se nepodařilo smazat', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
     }
   };
 
@@ -5242,12 +5262,27 @@ function ClientProfile({
                     </div>
                   )}
                   {visibleNotifications.map((notification) => (
-                    <button key={notification.id} type="button" className={`${notification.readAt ? 'read' : ''} tone-${toFeedbackTone(notification.tone)}`} onClick={() => markClientNotificationRead(notification)}>
-                      <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
-                      <strong>{notification.title}</strong>
-                      <span>{notification.body}</span>
-                      <small>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</small>
-                    </button>
+                    <article key={notification.id} className={`client-notification-item ${notification.readAt ? 'read' : ''} tone-${toFeedbackTone(notification.tone)}`}>
+                      <button className="client-notification-main" type="button" onClick={() => markClientNotificationRead(notification)}>
+                        <span className="client-notification-meta">
+                          <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
+                          <small>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</small>
+                        </span>
+                        <strong>{notification.title}</strong>
+                        <span className="client-notification-body">{notification.body}</span>
+                      </button>
+                      {notification.readAt && (
+                        <button
+                          className="notification-dismiss-button icon-tool tooltip-link danger"
+                          type="button"
+                          data-tooltip="Smazat přečtenou notifikaci"
+                          aria-label={`Smazat notifikaci ${notification.title}`}
+                          onClick={() => deleteClientNotification(notification)}
+                        >
+                          <X size={15} />
+                        </button>
+                      )}
+                    </article>
                   ))}
                 </div>
               </article>
@@ -5506,6 +5541,10 @@ function App() {
     const readAt = new Date().toISOString();
     setNotifications((current) => current.map((item) => (item.id === notificationId ? { ...item, readAt } : item)));
   };
+  const deleteNotificationViaApi = async (notificationId: string) => {
+    await deleteNotificationRecord(notificationId);
+    setNotifications((current) => current.filter((item) => item.id !== notificationId));
+  };
   const updateManagedUserViaApi = async (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => {
     const saved = await updateUserRecord(user);
     setManagedUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
@@ -5624,6 +5663,7 @@ function App() {
           notifications={notifications}
           projectApplications={projectApplications}
           onNotificationReadRequest={markNotificationReadViaApi}
+          onNotificationDeleteRequest={deleteNotificationViaApi}
           onProjectApplicationSubmit={submitProjectApplicationViaApi}
           onPasswordResetRequest={requestPasswordReset}
           onLogout={logout}

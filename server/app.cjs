@@ -1964,6 +1964,30 @@ async function markNotificationRead(request, response, notificationId) {
   sendJson(response, 200, { ok: true, id: notificationId });
 }
 
+async function deleteNotification(request, response, notificationId) {
+  const user = await currentUser(request);
+  if (!user) {
+    sendJson(response, 401, { error: 'Login required.' });
+    return;
+  }
+  const isAdmin = user.role === 'admin';
+  const params = isAdmin ? [notificationId] : [notificationId, user.id];
+  const existing = await query(
+    `SELECT id, read_at AS readAt FROM notifications WHERE id = ? ${isAdmin ? '' : 'AND recipient_id = ?'} LIMIT 1`,
+    params
+  );
+  if (existing.length === 0) {
+    sendJson(response, 404, { error: 'Notification not found.' });
+    return;
+  }
+  if (!isAdmin && !existing[0].readAt) {
+    sendJson(response, 409, { error: 'Nejdřív notifikaci označte jako přečtenou.' });
+    return;
+  }
+  await query('DELETE FROM notifications WHERE id = ?', [notificationId]);
+  sendJson(response, 200, { ok: true, id: notificationId });
+}
+
 async function createApp(request, response) {
   try {
     const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
@@ -2028,6 +2052,8 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/notifications') return await saveNotification(request, response);
     const notificationMatch = url.pathname.match(/^\/api\/notifications\/([^/]+)\/read$/);
     if (request.method === 'PATCH' && notificationMatch) return await markNotificationRead(request, response, notificationMatch[1]);
+    const notificationDeleteMatch = url.pathname.match(/^\/api\/notifications\/([^/]+)$/);
+    if (request.method === 'DELETE' && notificationDeleteMatch) return await deleteNotification(request, response, notificationDeleteMatch[1]);
     sendJson(response, 404, { error: 'Not found.' });
   } catch (error) {
     sendJson(response, 500, { error: error.message || 'Server error.' });

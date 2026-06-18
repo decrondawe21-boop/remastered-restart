@@ -452,3 +452,9 @@ export async function markNotificationRead(notificationId: string) {
     method: 'PATCH'
   });
 }
+
+export async function deleteNotification(notificationId: string) {
+  await request<{ ok: boolean; id: string }>(`/api/notifications/${encodeURIComponent(notificationId)}`, {
+    method: 'DELETE'
+  });
+}

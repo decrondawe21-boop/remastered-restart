@@ -75,6 +75,7 @@ async function request(path, options = {}) {
   let replyId = '';
   let likedNewsId = '';
   let testNewsId = '';
+  let notificationId = '';
   try {
     await waitForServer();
     email = `client.${Date.now()}@example.test`;
@@ -142,6 +143,35 @@ async function request(path, options = {}) {
     if (!me.response.ok || me.body.user.email !== email) {
       throw new Error(`Session lookup failed: ${JSON.stringify(me.body)}`);
     }
+
+    notificationId = randomId();
+    await query(
+      `INSERT INTO notifications (id, recipient_id, title, body, tone, category)
+       SELECT ?, id, ?, ?, 'info', 'Test' FROM users WHERE email = ? LIMIT 1`,
+      [notificationId, 'Test notifikace', `Mazání notifikace pro ${email}`, email]
+    );
+    const prematureNotificationDelete = await request(`/api/notifications/${encodeURIComponent(notificationId)}`, {
+      method: 'DELETE',
+      headers: { cookie: loginCookie }
+    });
+    if (prematureNotificationDelete.response.status !== 409) {
+      throw new Error(`Unread notification delete should be blocked: ${JSON.stringify(prematureNotificationDelete.body)}`);
+    }
+    const notificationRead = await request(`/api/notifications/${encodeURIComponent(notificationId)}/read`, {
+      method: 'PATCH',
+      headers: { cookie: loginCookie }
+    });
+    if (!notificationRead.response.ok || notificationRead.body.ok !== true) {
+      throw new Error(`Notification read failed: ${JSON.stringify(notificationRead.body)}`);
+    }
+    const notificationDelete = await request(`/api/notifications/${encodeURIComponent(notificationId)}`, {
+      method: 'DELETE',
+      headers: { cookie: loginCookie }
+    });
+    if (!notificationDelete.response.ok || notificationDelete.body.ok !== true) {
+      throw new Error(`Notification delete failed: ${JSON.stringify(notificationDelete.body)}`);
+    }
+    notificationId = '';
 
     const logout = await request('/api/auth/logout', {
       method: 'POST',
@@ -255,6 +285,7 @@ async function request(path, options = {}) {
           [likedNewsId, email]
         ).catch(() => undefined);
       }
+      if (notificationId) await query('DELETE FROM notifications WHERE id = ?', [notificationId]).catch(() => undefined);
       await query('DELETE FROM notifications WHERE recipient_id = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM notifications WHERE created_by = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM notifications WHERE body LIKE ? OR title LIKE ?', [`%${email}%`, '%API test aktualita%']).catch(() => undefined);

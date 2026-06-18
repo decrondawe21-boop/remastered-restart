@@ -73,7 +73,6 @@ import {
   getSession,
   addNewsComment,
   confirmPasswordReset,
-  deleteNotification as deleteNotificationRecord,
   deleteUser as deleteUserRecord,
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
@@ -4550,7 +4549,6 @@ function ClientProfile({
   notifications,
   projectApplications,
   onNotificationReadRequest,
-  onNotificationDeleteRequest,
   onProjectApplicationSubmit,
   onPasswordResetRequest,
   onLogout,
@@ -4561,7 +4559,6 @@ function ClientProfile({
   notifications: NotificationItem[];
   projectApplications: ProjectApplication[];
   onNotificationReadRequest?: (notificationId: string) => Promise<void>;
-  onNotificationDeleteRequest?: (notificationId: string) => Promise<void>;
   onProjectApplicationSubmit?: (application: ProjectApplicationDraft) => Promise<ProjectApplication>;
   onPasswordResetRequest?: (email: string) => Promise<ApiPasswordResetRequest | null>;
   onLogout: () => void;
@@ -4597,6 +4594,7 @@ function ClientProfile({
   });
   const [applicationMessage, setApplicationMessage] = React.useState('');
   const [isSubmittingApplication, setIsSubmittingApplication] = React.useState(false);
+  const [notificationAuditSearch, setNotificationAuditSearch] = React.useState('');
   const [passwordResetMessage, setPasswordResetMessage] = React.useState('');
   const [isRequestingPasswordReset, setIsRequestingPasswordReset] = React.useState(false);
   const [previousAvatarDraft, setPreviousAvatarDraft] = React.useState<Pick<
@@ -4637,6 +4635,8 @@ function ClientProfile({
   const visibleNotifications = notifications
     .filter((notification) => isAdminProfile || !notification.recipientId || notification.recipientId === account.id)
     .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+  const activeNotifications = visibleNotifications.filter((notification) => !notification.readAt);
+  const archivedNotifications = visibleNotifications.filter((notification) => notification.readAt);
   const unreadNotifications = visibleNotifications.filter((notification) => !notification.readAt);
   const activityItems = [
     ...visibleDocuments.slice(0, 5).map((document) => ({
@@ -4837,20 +4837,20 @@ function ClientProfile({
     }
   };
 
-  const deleteClientNotification = async (notification: NotificationItem) => {
-    if (!notification.readAt) {
-      onNotify('warning', 'Nejdřív ji otevřete', 'Mazat lze až notifikace, které už máte označené jako přečtené.');
+  const archiveClientNotification = async (notification: NotificationItem) => {
+    if (notification.readAt) {
+      onNotify('info', 'Notifikace je v audit logu', notification.title);
       return;
     }
-    if (!onNotificationDeleteRequest) {
-      onNotify('warning', 'Notifikace nejde smazat', 'Zkuste akci zopakovat později.');
+    if (!onNotificationReadRequest) {
+      onNotify('warning', 'Notifikace nejde archivovat', 'Zkuste akci zopakovat později.');
       return;
     }
     try {
-      await onNotificationDeleteRequest(notification.id);
-      onNotify('info', 'Notifikace smazána', notification.title);
+      await onNotificationReadRequest(notification.id);
+      onNotify('success', 'Přesunuto do audit logu', notification.title);
     } catch (error) {
-      onNotify('error', 'Notifikaci se nepodařilo smazat', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+      onNotify('error', 'Notifikaci se nepodařilo archivovat', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
     }
   };
 
@@ -4936,6 +4936,12 @@ function ClientProfile({
   };
 
   const currentClientNav = visibleClientNavItems.find((item) => item.id === activeSection) ?? visibleClientNavItems[0];
+  const normalizedNotificationAuditSearch = notificationAuditSearch.trim().toLowerCase();
+  const filteredArchivedNotifications = archivedNotifications.filter((notification) => {
+    if (!normalizedNotificationAuditSearch) return true;
+    const haystack = `${notification.title} ${notification.body} ${notification.category} ${new Date(notification.createdAt).toLocaleString('cs-CZ')}`.toLowerCase();
+    return haystack.includes(normalizedNotificationAuditSearch);
+  });
   const avatarEditor = (
     <article className="avatar-editor">
       <h2>Avatar editor</h2>
@@ -5315,15 +5321,15 @@ function ClientProfile({
                   </button>
                 </div>
                 <div className="client-notification-list">
-                  {visibleNotifications.length === 0 && (
+                  {activeNotifications.length === 0 && (
                     <div className="empty-action-state">
-                      <p className="empty-note">Zatím nemáte žádné notifikace. Pokud čekáte na dokument nebo potvrzení, můžete pracovníkovi poslat krátkou žádost.</p>
+                      <p className="empty-note">Nemáte žádné aktivní notifikace. Vyřízené zprávy najdete níže v audit logu.</p>
                       <button className="button primary" type="button" onClick={requestClientDocument}>
                         <Mail size={18} /> Poslat žádost
                       </button>
                     </div>
                   )}
-                  {visibleNotifications.map((notification) => (
+                  {activeNotifications.map((notification) => (
                     <article key={notification.id} className={`client-notification-item ${notification.readAt ? 'read' : ''} tone-${toFeedbackTone(notification.tone)}`}>
                       <button className="client-notification-main" type="button" onClick={() => markClientNotificationRead(notification)}>
                         <span className="client-notification-meta">
@@ -5333,19 +5339,52 @@ function ClientProfile({
                         <strong>{notification.title}</strong>
                         <span className="client-notification-body">{notification.body}</span>
                       </button>
-                      {notification.readAt && (
-                        <button
-                          className="notification-dismiss-button icon-tool tooltip-link danger"
-                          type="button"
-                          data-tooltip="Smazat přečtenou notifikaci"
-                          aria-label={`Smazat notifikaci ${notification.title}`}
-                          onClick={() => deleteClientNotification(notification)}
-                        >
-                          <X size={15} />
-                        </button>
-                      )}
+                      <aside className="notification-cursor-card" aria-hidden="true">
+                        <strong>{notification.title}</strong>
+                        <span>{notification.body}</span>
+                      </aside>
+                      <button
+                        className="notification-dismiss-button icon-tool tooltip-link danger"
+                        type="button"
+                        data-tooltip="Vyřídit a archivovat"
+                        aria-label={`Vyřídit a archivovat notifikaci ${notification.title}`}
+                        onClick={() => archiveClientNotification(notification)}
+                      >
+                        <X size={15} />
+                      </button>
                     </article>
                   ))}
+                </div>
+                <div className="notification-audit-panel">
+                  <div className="notification-audit-head">
+                    <div>
+                      <h3>Audit log notifikací</h3>
+                      <p className="form-help">{archivedNotifications.length} archivovaných záznamů pro dohledání historie.</p>
+                    </div>
+                    <label className="notification-audit-search">
+                      <Search size={15} />
+                      <input
+                        value={notificationAuditSearch}
+                        onChange={(event) => setNotificationAuditSearch(event.target.value)}
+                        placeholder="Hledat v audit logu"
+                      />
+                    </label>
+                  </div>
+                  <div className="notification-audit-list">
+                    {filteredArchivedNotifications.length === 0 && (
+                      <p className="empty-note">V audit logu není žádný odpovídající záznam.</p>
+                    )}
+                    {filteredArchivedNotifications.map((notification) => (
+                      <article key={`audit-${notification.id}`} className={`notification-audit-item tone-${toFeedbackTone(notification.tone)}`}>
+                        <Badge tone={(notification.tone as FeedbackTone) || 'info'}>{notification.category}</Badge>
+                        <strong>{notification.title}</strong>
+                        <span>{notification.body}</span>
+                        <small>
+                          Archivováno {notification.readAt ? new Date(notification.readAt).toLocaleString('cs-CZ') : new Date(notification.createdAt).toLocaleString('cs-CZ')}
+                        </small>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               </article>
             </div>
@@ -5603,10 +5642,6 @@ function App() {
     const readAt = new Date().toISOString();
     setNotifications((current) => current.map((item) => (item.id === notificationId ? { ...item, readAt } : item)));
   };
-  const deleteNotificationViaApi = async (notificationId: string) => {
-    await deleteNotificationRecord(notificationId);
-    setNotifications((current) => current.filter((item) => item.id !== notificationId));
-  };
   const updateManagedUserViaApi = async (user: Pick<ManagedUser, 'id' | 'role' | 'isActive'>) => {
     const saved = await updateUserRecord(user);
     setManagedUsers((current) => current.map((item) => (item.id === saved.id ? saved : item)));
@@ -5725,7 +5760,6 @@ function App() {
           notifications={notifications}
           projectApplications={projectApplications}
           onNotificationReadRequest={markNotificationReadViaApi}
-          onNotificationDeleteRequest={deleteNotificationViaApi}
           onProjectApplicationSubmit={submitProjectApplicationViaApi}
           onPasswordResetRequest={requestPasswordReset}
           onLogout={logout}

@@ -1694,6 +1694,12 @@ const initialsFromName = (firstName: string, lastName: string) => {
   return initials.padEnd(2, 'X').slice(0, Math.max(2, initials.length));
 };
 
+const initialsFromDisplayName = (value: string) => {
+  const words = stripDiacritics(value).replace(/[^a-zA-Z\s]/g, ' ').trim().split(/\s+/).filter(Boolean);
+  const initials = `${words[0]?.[0] ?? 'R'}${words[1]?.[0] ?? words[0]?.[1] ?? 'I'}`.toUpperCase();
+  return initials.slice(0, 2);
+};
+
 const dateToCompactId = (isoDate: string) => {
   const date = isoDate ? new Date(`${isoDate}T00:00:00`) : new Date();
   if (Number.isNaN(date.getTime())) return dateToCompactId(todayIso());
@@ -1921,9 +1927,42 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
   );
 }
 
-function Header({ currentPath, account, onNotify }: { currentPath: string; account: AuthAccount | null; onNotify: NotifyFn }) {
+function Header({
+  currentPath,
+  account,
+  notifications,
+  onNotify
+}: {
+  currentPath: string;
+  account: AuthAccount | null;
+  notifications: NotificationItem[];
+  onNotify: NotifyFn;
+}) {
   const [open, setOpen] = React.useState(false);
   const visibleNavItems = navItems.filter((item) => item.href !== '/klient' || account?.role === 'admin' || isPortalRole(account?.role));
+  const unreadNotificationCount = account
+    ? notifications.filter((notification) =>
+        !notification.readAt && (account.role === 'admin' || !notification.recipientId || notification.recipientId === account.id)
+      ).length
+    : 0;
+  const profileHref = '/klient';
+  const notificationHref = account?.role === 'admin' ? '/admin' : '/klient';
+  const headerAvatarSrc = React.useMemo(() => {
+    if (!account) return '';
+    try {
+      const stored = window.localStorage.getItem(`restart-client-profile-${account.id}`);
+      if (!stored) return '';
+      const parsed = JSON.parse(stored) as Partial<ClientProfileDraft>;
+      return typeof parsed.avatar === 'string' && parsed.avatar ? parsed.avatar : '';
+    } catch {
+      return '';
+    }
+  }, [account?.id]);
+  const headerAvatar = account ? (
+    <span className="header-avatar" aria-hidden="true">
+      {headerAvatarSrc ? <img src={headerAvatarSrc} alt="" /> : <span>{initialsFromDisplayName(account.name)}</span>}
+    </span>
+  ) : null;
 
   return (
     <>
@@ -1938,18 +1977,35 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
           <div className="header-tools">
             <PageSearch onNotify={onNotify} />
             <div className="auth-actions" aria-label="Přístup k účtu">
-              <a
-                className="signin-icon tooltip-link"
-                href={isPortalRole(account?.role) ? '/klient' : '/admin'}
-                aria-label={isPortalRole(account?.role) ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
-                data-tooltip={isPortalRole(account?.role) ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
-              >
-                <UserRound size={19} />
-              </a>
-              {!account && (
-                <a className="signup-link" href="/klient" aria-label="Sign up">
-                  Sign up
-                </a>
+              {account ? (
+                <>
+                  <a
+                    className="header-bell tooltip-link"
+                    href={notificationHref}
+                    aria-label={unreadNotificationCount > 0 ? `Notifikace: ${unreadNotificationCount} nepřečtené` : 'Notifikace'}
+                    data-tooltip="Notifikace"
+                  >
+                    <Bell size={17} />
+                    {unreadNotificationCount > 0 && <span>{unreadNotificationCount}</span>}
+                  </a>
+                  <a className="header-avatar-link tooltip-link" href={profileHref} aria-label={`Otevřít profil ${account.name}`} data-tooltip="Profil">
+                    {headerAvatar}
+                  </a>
+                </>
+              ) : (
+                <>
+                  <a
+                    className="signin-icon tooltip-link"
+                    href="/admin"
+                    aria-label="Sign in"
+                    data-tooltip="Sign in"
+                  >
+                    <UserRound size={19} />
+                  </a>
+                  <a className="signup-link" href="/klient" aria-label="Sign up">
+                    Sign up
+                  </a>
+                </>
               )}
             </div>
           </div>
@@ -1986,13 +2042,24 @@ function Header({ currentPath, account, onNotify }: { currentPath: string; accou
             </a>
           ))}
           <div className="mobile-auth-actions">
-            <a href={isPortalRole(account?.role) ? '/klient' : '/admin'} onClick={() => setOpen(false)}>
-              <UserRound size={18} /> {isPortalRole(account?.role) ? 'Profil' : account?.role === 'admin' ? 'Admin' : 'Sign in'}
-            </a>
-            {!account && (
-              <a href="/klient" onClick={() => setOpen(false)}>
-                Sign up
-              </a>
+            {account ? (
+              <>
+                <a href={notificationHref} onClick={() => setOpen(false)}>
+                  <Bell size={18} /> Notifikace {unreadNotificationCount > 0 ? `(${unreadNotificationCount})` : ''}
+                </a>
+                <a href={profileHref} onClick={() => setOpen(false)}>
+                  {headerAvatar} Profil
+                </a>
+              </>
+            ) : (
+              <>
+                <a href="/admin" onClick={() => setOpen(false)}>
+                  <UserRound size={18} /> Sign in
+                </a>
+                <a href="/klient" onClick={() => setOpen(false)}>
+                  Sign up
+                </a>
+              </>
             )}
           </div>
           <a className="mobile-cta" href="/kontakt" onClick={() => setOpen(false)}>
@@ -3982,9 +4049,7 @@ function WorkspaceTopbar({
   account,
   badge,
   onLogout,
-  quickAction,
-  notificationCount = 0,
-  onNotificationsClick
+  quickAction
 }: {
   title: string;
   text: string;
@@ -4004,15 +4069,6 @@ function WorkspaceTopbar({
       </div>
       <div className="workspace-actions">
         {quickAction}
-        <button
-          className="icon-action"
-          type="button"
-          aria-label={notificationCount > 0 ? `Notifikace: ${notificationCount} nepřečtené` : 'Notifikace'}
-          onClick={onNotificationsClick}
-        >
-          <Bell size={18} />
-          {notificationCount > 0 && <span>{notificationCount}</span>}
-        </button>
         <div className="session-chip">
           <UserRound size={16} />
           <span>{account.name}</span>
@@ -5749,7 +5805,7 @@ function App() {
   return (
     <>
       <WeatherLeaves />
-      <Header currentPath={currentPath} account={currentAccount} onNotify={notify} />
+      <Header currentPath={currentPath} account={currentAccount} notifications={notifications} onNotify={notify} />
       <Breadcrumb path={currentPath} />
       <main id="top">
         <RevealFx key={currentPath} className="page-reveal" delay={70}>

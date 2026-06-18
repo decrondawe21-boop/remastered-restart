@@ -3659,6 +3659,64 @@ function AdminContextMenu({ label = 'Admin akce', items }: { label?: string; ite
   );
 }
 
+function CursorCard({
+  trigger,
+  overlay,
+  className = ''
+}: {
+  trigger: React.ReactNode;
+  overlay: React.ReactNode;
+  className?: string;
+}) {
+  const [isHovering, setIsHovering] = React.useState(false);
+  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+  const [isTouchDevice, setIsTouchDevice] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (isTouchDevice) return;
+    setPosition({ x: event.clientX, y: event.clientY });
+    setIsHovering(true);
+  };
+
+  const floatingStyle = {
+    left:
+      typeof window === 'undefined'
+        ? position.x + 18
+        : Math.max(12, Math.min(position.x + 18, window.innerWidth - 340)),
+    top:
+      typeof window === 'undefined'
+        ? position.y + 18
+        : Math.max(12, Math.min(position.y + 18, window.innerHeight - 220))
+  } as React.CSSProperties;
+
+  return (
+    <>
+      <div
+        className={`cursor-card-trigger${className ? ` ${className}` : ''}`}
+        onMouseEnter={handleMouseMove}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setIsHovering(false)}
+        onFocus={() => setIsHovering(false)}
+      >
+        {trigger}
+      </div>
+      {isHovering &&
+        !isTouchDevice &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div className="cursor-card-floating" style={floatingStyle}>
+            {overlay}
+          </div>,
+          document.body
+        )}
+    </>
+  );
+}
+
 function AppCheckbox({
   id,
   checked,
@@ -8680,11 +8738,27 @@ function AdminWorkspace({
                 {notifications.map((notification) => (
                   <article key={notification.id} className={notification.readAt ? 'read' : ''}>
                     <Badge tone={toFeedbackTone(notification.tone)}>{notification.category}</Badge>
-                    <button className="notification-admin-main" type="button" onClick={() => openNotificationTarget(notification)}>
-                      <strong>{notification.title}</strong>
-                      <p>{notification.body}</p>
-                      <span>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</span>
-                    </button>
+                    <CursorCard
+                      trigger={
+                        <button className="notification-admin-main" type="button" onClick={() => openNotificationTarget(notification)}>
+                          <strong>{notification.title}</strong>
+                          <p>{notification.body}</p>
+                          <span>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</span>
+                        </button>
+                      }
+                      overlay={
+                        <div className={`cursor-card-panel tone-${toFeedbackTone(notification.tone)}`}>
+                          <Badge tone={toFeedbackTone(notification.tone)}>{notification.category}</Badge>
+                          <strong>{notification.title}</strong>
+                          <p>{notification.body}</p>
+                          <span className="cursor-card-meta">
+                            <small>{notification.readAt ? 'Archivováno / přečteno' : 'Čeká na reakci'}</small>
+                            <small>{new Date(notification.createdAt).toLocaleString('cs-CZ')}</small>
+                          </span>
+                          {notification.linkHref && <small className="cursor-card-link">Má navázaný cíl: otevřít lze přes menu.</small>}
+                        </div>
+                      }
+                    />
                     <div className="notification-actions">
                       <AdminContextMenu
                         label={`Akce notifikace ${notification.title}`}

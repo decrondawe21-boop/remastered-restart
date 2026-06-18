@@ -5700,6 +5700,72 @@ h3 {
   opacity: 0.45;
 }
 
+.cursor-card-trigger {
+  min-width: 0;
+}
+
+.cursor-card-floating {
+  position: fixed;
+  z-index: 900;
+  width: min(320px, calc(100vw - 24px));
+  pointer-events: none;
+  animation: cursor-card-in 0.14s ease-out;
+}
+
+.cursor-card-panel {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(31, 119, 68, 0.22);
+  border-left: 5px solid var(--green);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 20px 55px rgba(20, 45, 28, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.cursor-card-panel .ui-badge {
+  justify-self: start;
+}
+
+.cursor-card-panel strong {
+  color: var(--text);
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.cursor-card-panel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.cursor-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+}
+
+.cursor-card-link {
+  color: var(--green-dark);
+  font-weight: var(--weight-medium);
+}
+
+@keyframes cursor-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .news-admin-list,
 .application-review-list,
 .user-admin-list,

@@ -1,7 +1,7 @@
 {
-  "name": "REST||ART Integrace",
-  "short_name": "REST||ART",
-  "description": "Projekt druhých šancí: stabilizace, práce, bydlení a důstojný návrat do společnosti.",
+  "name": "RESTART Integrace",
+  "short_name": "RESTART",
+  "description": "Oficiální web RESTART Integrace (REST||ART): projekt druhých šancí, stabilizace, práce, bydlení a důstojný návrat do společnosti.",
   "lang": "cs-CZ",
   "start_url": "/",
   "scope": "/",

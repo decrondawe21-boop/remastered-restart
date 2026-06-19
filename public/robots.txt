@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /klient
 
 Sitemap: https://restartintegrace.dk-i.cz/sitemap.xml

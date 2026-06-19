@@ -1337,6 +1337,39 @@ const designedTextSlidePattern = /^\/images\/\d{2}\.png$/i;
 const sketchPillarSlidePattern =
   /^\/images\/program-pillars\/(?:jailbreak|reset|rework|streetwise|bod-zlomu|stabilizace)-skica\.png$/i;
 
+const programHeroStories: Record<string, { label: string; motto: string; text: string }> = {
+  'pillar-jailbreak': {
+    label: 'Program návratu',
+    motto: 'Svoboda bez plánu je jen další zkouška.',
+    text: 'JAILBREAK staví první bezpečný most mezi výkonem trestu a životem venku: režim, práce, vztahy a konkrétní kroky místo prázdných slibů.'
+  },
+  'pillar-reset': {
+    label: 'Program stabilizace',
+    motto: 'Restart nezačíná velkým gestem, ale prvním zvládnutým dnem.',
+    text: 'RESET pomáhá lidem v závislosti, krizi nebo rozpadu rytmu znovu postavit denní strukturu, bezpečné zázemí a podporu, která vydrží.'
+  },
+  'pillar-rework': {
+    label: 'Program práce',
+    motto: 'Práce není jen výplata. Je to návrat důvěry v sebe.',
+    text: 'REWORK propojuje pracovní restart, rekvalifikaci a férové šance pro lidi, kteří dlouho stáli mimo běžný pracovní život.'
+  },
+  'pillar-streetwise': {
+    label: 'Nízkoprahový program',
+    motto: 'První krok musí být dosažitelný i pro člověka bez pevné půdy pod nohama.',
+    text: 'STREETWISE začíná tam, kde lidé skutečně jsou: v terénu, v nejistotě, mimo systém. Dává zázemí, kontakt a první bezpečný bod.'
+  },
+  'pillar-bod-zlomu': {
+    label: 'Program mladé dospělosti',
+    motto: 'Samostatnost se nedá nařídit. Musí se bezpečně natrénovat.',
+    text: 'BOD ZLOMU podporuje mladé lidi po ústavní péči při přechodu do vztahů, práce, bydlení a vlastního směru bez náhlého pádu do prázdna.'
+  },
+  'pillar-stabilizace': {
+    label: 'Program udržení změny',
+    motto: 'Změna má hodnotu až tehdy, když se dá unést i v obyčejném týdnu.',
+    text: 'STABILIZACE drží člověka po prvním restartu: bydlení, práce, komunita, režim a drobná rozhodnutí, která z velké změny udělají život.'
+  }
+};
+
 const practicePhotoSlides = [
   {
     id: 'practice-rose-arch',
@@ -2519,8 +2552,10 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const manualPauseUntil = React.useRef(0);
   const swipeStartX = React.useRef<number | null>(null);
   const activeSlide = visibleSlides[activeIndex] ?? visibleSlides[0] ?? starterSlides[0];
-  const activeSlideHasDesignedText =
-    designedTextSlidePattern.test(activeSlide.imageUrl) || sketchPillarSlidePattern.test(activeSlide.imageUrl);
+  const activeSlideHasDesignedText = designedTextSlidePattern.test(activeSlide.imageUrl);
+  const activeSlideIsProgramStory = sketchPillarSlidePattern.test(activeSlide.imageUrl);
+  const activeSlideHasContainedImage = activeSlideHasDesignedText || activeSlideIsProgramStory;
+  const activeProgramStory = programHeroStories[activeSlide.id];
   const slideCount = visibleSlides.length;
   const wrapIndex = (index: number) => {
     if (!slideCount) return 0;
@@ -2589,19 +2624,28 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
       onKeyDown={handleKeyDown}
     >
       <div
-        className={`hero-banner${activeSlideHasDesignedText ? ' designed-slide' : ''}`}
+        className={`hero-banner${activeSlideHasContainedImage ? ' designed-slide' : ''}${
+          activeSlideIsProgramStory ? ' program-story-slide' : ''
+        }`}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={() => {
           swipeStartX.current = null;
         }}
       >
-        {activeSlideHasDesignedText && <img className="hero-banner-bg" src={activeSlide.imageUrl} alt="" aria-hidden="true" />}
+        {activeSlideHasContainedImage && <img className="hero-banner-bg" src={activeSlide.imageUrl} alt="" aria-hidden="true" />}
         <img className="hero-banner-main" src={activeSlide.imageUrl} alt="" />
         <div className={`hero-banner-overlay${activeSlideHasDesignedText ? ' visually-hidden' : ''}`} aria-live="polite">
-          <p className="quiet-label">Projekt druhých šancí</p>
+          <p className="quiet-label">{activeProgramStory?.label ?? 'Projekt druhých šancí'}</p>
           <h1>{activeSlide.title}</h1>
-          <p className="hero-text">{activeSlide.subtitle}</p>
+          {activeProgramStory ? (
+            <>
+              <p className="hero-program-motto">{activeProgramStory.motto}</p>
+              <p className="hero-text">{activeProgramStory.text}</p>
+            </>
+          ) : (
+            <p className="hero-text">{activeSlide.subtitle}</p>
+          )}
           <div className="hero-actions">
             {activeSlide.ctaLabel && activeSlide.ctaHref && (
               <a className="button inverse" href={activeSlide.ctaHref}>

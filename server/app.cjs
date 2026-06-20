@@ -1227,6 +1227,18 @@ function safePdfFileName(value) {
     .slice(0, 120) || 'restart-formular';
 }
 
+function isPdfClientNameField(normalizedFieldName) {
+  const normalized = String(normalizedFieldName || '').trim().replace(/\s+/g, ' ');
+  const compact = normalized.replace(/\s+/g, '_');
+
+  if (/^(p\d+_)?klient_jmeno$/.test(compact)) return true;
+  if (/^(gdpr_\d+_)?jmeno_(prezdivka_)?subjekt(.*)?$/.test(compact)) return true;
+  if (/^(klient|client|subjekt|subjekt_udaju|jmeno|full_name)$/.test(compact)) return true;
+  if (/jmeno.*(prijmeni|prezdivka|subjekt|klient)|client.*name|full.*name/.test(normalized)) return true;
+
+  return false;
+}
+
 function pdfAutofillValue(fieldName, payload) {
   const normalized = stripPdfDiacritics(fieldName).replace(/[_-]+/g, ' ');
   if (/podpis/.test(normalized)) return null;
@@ -1249,7 +1261,7 @@ function pdfAutofillValue(fieldName, payload) {
   if (/kontakt/.test(normalized)) return contact;
   if (/adresa|address|misto/.test(normalized)) return address;
   if (/program|oblast/.test(normalized)) return values.program || client.program || '';
-  if (/jmeno.*prijmeni|jmeno.*prezdivka|jmeno.*subjekt|subjekt|klient/.test(normalized)) return fullName;
+  if (isPdfClientNameField(normalized)) return fullName;
   if (/datum|date/.test(normalized)) return printDate;
   if (/pracovnik|koordinator|odpovedny/.test(normalized)) return values.workerName || '';
   if (/duvod|ocekavani|poznamka/.test(normalized)) return workerNote;

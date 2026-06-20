@@ -1,4 +1,5 @@
 const { spawn } = require('node:child_process');
+const { PDFDocument } = require('pdf-lib');
 const { loadDotEnv } = require('../server/env.cjs');
 const { getPool, query } = require('../server/db.cjs');
 const { hashPassword, randomId } = require('../server/security.cjs');
@@ -201,6 +202,47 @@ async function requestRaw(path, options = {}) {
     if (!filledPdf.ok || !String(filledPdf.headers.get('content-type') || '').includes('application/pdf')) {
       const text = await filledPdf.text().catch(() => '');
       throw new Error(`Filled PDF endpoint failed: ${filledPdf.status} ${text}`);
+    }
+    const filledGdprDoc = await PDFDocument.load(Buffer.from(await filledPdf.arrayBuffer()));
+    const filledGdprName = filledGdprDoc.getForm().getTextField('gdpr_00_jmeno_prezdivka_subjekt').getText();
+    if (filledGdprName !== 'Andrea Testova') {
+      throw new Error(`Filled GDPR client name mismatch: ${filledGdprName || '(empty)'}`);
+    }
+
+    const filledQuestionnaire = await requestRaw('/api/forms/fill-pdf', {
+      method: 'POST',
+      headers: { cookie },
+      body: JSON.stringify({
+        fileUrl: '/documents/forms/11_PROGRAMOVE_DOTAZNIKY/RAI-FRM-JB-001_JAILBREAK_DOTAZNIK_REINTEGRACE_PO_VTOS_v2_0_RC1_POPPINS_FILLABLE.pdf',
+        templateId: 'e2e-jailbreak-questionnaire',
+        formUid: 'RAI-FRM-JB-001',
+        templateTitle: 'JAILBREAK dotaznik reintegrace po VTOS',
+        client: {
+          firstName: 'Andrea',
+          lastName: 'Testova',
+          birthDate: '1990-01-02',
+          phone: '+420 777 333 444',
+          email: `pdf-questionnaire-${stamp}@restart.test`,
+          address: 'Testovaci 1',
+          program: 'JAILBREAK',
+          operationalId: `AT-${stampText.slice(-6)}-1234-001`
+        },
+        draft: {}
+      })
+    });
+    if (!filledQuestionnaire.ok || !String(filledQuestionnaire.headers.get('content-type') || '').includes('application/pdf')) {
+      const text = await filledQuestionnaire.text().catch(() => '');
+      throw new Error(`Filled questionnaire endpoint failed: ${filledQuestionnaire.status} ${text}`);
+    }
+    const questionnaireDoc = await PDFDocument.load(Buffer.from(await filledQuestionnaire.arrayBuffer()));
+    const questionnaireForm = questionnaireDoc.getForm();
+    const questionnaireClientName = questionnaireForm.getTextField('p14_klient_jmeno').getText();
+    const questionnaireOpenQuestion = questionnaireForm.getTextField('p3_spec_5_je_klient_poprve_ve_vtos_nebo_opakovane').getText();
+    if (questionnaireClientName !== 'Andrea Testova') {
+      throw new Error(`Filled questionnaire client name mismatch: ${questionnaireClientName || '(empty)'}`);
+    }
+    if (questionnaireOpenQuestion === 'Andrea Testova') {
+      throw new Error('Open questionnaire field was incorrectly filled with the client name.');
     }
 
     const created = await request('/api/clients', {

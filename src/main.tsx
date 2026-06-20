@@ -1241,6 +1241,23 @@ const clientFormAutofillValue = (field: FormTemplate['fields'][number], client: 
   return '';
 };
 
+const clientFormAutofillIsSystemField = (field: FormTemplate['fields'][number]) => {
+  const haystack = normalizeAutofillText(`${field.key} ${field.label}`);
+  return (
+    /datum.*narozeni|narozeni|birth/.test(haystack) ||
+    /datum.*kontaktu|datum.*zpracovani|processing.*date|contact.*date/.test(haystack) ||
+    /interni.*id|operational|kod.*klienta|cislo.*klienta|client.*id/.test(haystack) ||
+    /telefon|phone/.test(haystack) ||
+    /e-mail|email|mail/.test(haystack) ||
+    /adresa|address/.test(haystack) ||
+    /kontakt|contact/.test(haystack) ||
+    /program/.test(haystack) ||
+    /cilova.*skupina|target.*group/.test(haystack) ||
+    /stav|status/.test(haystack) ||
+    (/(^| )(klient|client|jmeno|name)( |$)/.test(haystack) && !/podpis|prohlaseni|poznamka|souhlas|kontakt|adresa/.test(haystack))
+  );
+};
+
 const mergeClientAutofillDraft = (
   template: FormTemplate,
   client: ClientRecord,
@@ -1252,11 +1269,12 @@ const mergeClientAutofillDraft = (
 
   template.fields.forEach((field) => {
     const nextValue = clientFormAutofillValue(field, client);
-    if (!nextValue) return;
+    const isSystemField = clientFormAutofillIsSystemField(field);
+    if (!nextValue && !isSystemField) return;
 
     const currentValue = String(nextDraft[field.key] ?? '');
     const previousValue = previousClient ? clientFormAutofillValue(field, previousClient) : '';
-    const canReplace = currentValue.trim() === '' || Boolean(previousValue && currentValue.trim() === previousValue.trim());
+    const canReplace = isSystemField || currentValue.trim() === '' || Boolean(previousValue && currentValue.trim() === previousValue.trim());
 
     if (canReplace && currentValue !== nextValue) {
       nextDraft[field.key] = nextValue;
@@ -6325,6 +6343,15 @@ function AdminWorkspace({
     setSelectedClientId(filteredClients[0].id);
   }, [activeTab, filteredClients, selectedClientId]);
   const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
+  const previousFormClientRef = React.useRef<ClientRecord | null>(null);
+  React.useEffect(() => {
+    if (!selectedClient) {
+      previousFormClientRef.current = null;
+      return;
+    }
+    setDraft((currentDraft) => mergeClientAutofillDraft(selectedTemplate, selectedClient, currentDraft, previousFormClientRef.current));
+    previousFormClientRef.current = selectedClient;
+  }, [selectedClient, selectedTemplate]);
   const selectedTemplateFileUrl = resolvePublicFileUrl(selectedTemplate.fileUrl || selectedTemplate.sourceNote, selectedTemplate);
   React.useEffect(() => {
     if (!selectedClient || !selectedTemplate) return;

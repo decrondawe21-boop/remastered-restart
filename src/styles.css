@@ -870,6 +870,115 @@ h1 {
   outline-offset: 5px;
 }
 
+.hero-autoscroll {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 30px rgba(26, 51, 36, 0.08);
+}
+
+.hero-autoscroll::before,
+.hero-autoscroll::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: clamp(34px, 8vw, 120px);
+  pointer-events: none;
+  content: "";
+}
+
+.hero-autoscroll::before {
+  left: 0;
+  background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0));
+}
+
+.hero-autoscroll::after {
+  right: 0;
+  background: linear-gradient(270deg, #fff, rgba(255, 255, 255, 0));
+}
+
+.hero-autoscroll-track {
+  display: flex;
+  width: max-content;
+  min-width: 200%;
+  gap: 10px;
+  padding: 8px;
+  animation: hero-autoscroll 54s linear infinite;
+  will-change: transform;
+}
+
+.hero-autoscroll:hover .hero-autoscroll-track,
+.hero-autoscroll:focus-within .hero-autoscroll-track {
+  animation-play-state: paused;
+}
+
+.hero-autoscroll-item {
+  display: inline-grid;
+  min-width: clamp(260px, 29vw, 430px);
+  gap: 3px;
+  padding: 10px 18px;
+  border: 1px solid rgba(31, 119, 68, 0.16);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(231, 244, 233, 0.95), rgba(255, 250, 238, 0.88));
+  color: var(--text);
+  text-decoration: none;
+}
+
+.hero-autoscroll-item:hover,
+.hero-autoscroll-item:focus-visible {
+  border-color: var(--green);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(31, 119, 68, 0.12);
+}
+
+.hero-autoscroll-item span {
+  color: var(--green-dark);
+  font-size: 0.78rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-autoscroll-item small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes hero-autoscroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-autoscroll {
+    border-radius: 18px;
+  }
+
+  .hero-autoscroll-track {
+    width: auto;
+    min-width: 0;
+    overflow-x: auto;
+    animation: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .hero-autoscroll-item {
+    scroll-snap-align: start;
+  }
+}
+
 .slide-arrow {
   position: absolute;
   top: 50%;
@@ -6361,6 +6470,22 @@ h3 {
 
   .slideshow-hero {
     padding-block: 22px 30px;
+  }
+
+  .hero-autoscroll {
+    border-radius: 18px;
+  }
+
+  .hero-autoscroll-track {
+    gap: 8px;
+    padding: 7px;
+    animation-duration: 68s;
+  }
+
+  .hero-autoscroll-item {
+    min-width: min(78vw, 320px);
+    padding: 9px 14px;
+    border-radius: 16px;
   }
 
   .hero-banner {

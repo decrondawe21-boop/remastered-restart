@@ -1370,6 +1370,13 @@ const programHeroStories: Record<string, { label: string; motto: string; text: s
   }
 };
 
+const heroAutoScrollItems = starterSlides.map((slide) => ({
+  id: slide.id,
+  title: slide.title,
+  motto: programHeroStories[slide.id]?.motto ?? slide.subtitle,
+  href: slide.ctaHref || '/programy'
+}));
+
 const practicePhotoSlides = [
   {
     id: 'practice-rose-arch',
@@ -2546,6 +2553,32 @@ function NewsDiscussionPanel({
   );
 }
 
+function HeroAutoScroll({ items }: { items: typeof heroAutoScrollItems }) {
+  const repeatedItems = [...items, ...items];
+
+  return (
+    <div className="hero-autoscroll" aria-label="Programy RESTART Integrace">
+      <div className="hero-autoscroll-track">
+        {repeatedItems.map((item, index) => {
+          const isDuplicate = index >= items.length;
+          return (
+            <a
+              key={`${item.id}-${index}`}
+              href={item.href}
+              className="hero-autoscroll-item"
+              aria-hidden={isDuplicate || undefined}
+              tabIndex={isDuplicate ? -1 : undefined}
+            >
+              <span>{item.title}</span>
+              <small>{item.motto}</small>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const visibleSlides = slides.filter((slide) => slide.isActive).sort((left, right) => left.sortOrder - right.sortOrder);
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -2673,6 +2706,7 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
           </span>
         )}
       </div>
+      <HeroAutoScroll items={heroAutoScrollItems} />
       {visibleSlides.length > 1 && (
         <div className="slide-dots" aria-label="Výběr slidu">
           {visibleSlides.map((slide, index) => (

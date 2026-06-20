@@ -5727,6 +5727,14 @@ h3 {
   color: var(--muted);
 }
 
+.user-admin-row select {
+  min-width: 148px;
+  min-height: 38px;
+  padding: 8px 32px 8px 12px;
+  font-size: 0.86rem;
+  line-height: 1.2;
+}
+
 .switch-row {
   display: flex !important;
   grid-template-columns: none !important;

@@ -179,6 +179,16 @@ export type ApiRegistrationResponse = {
   message?: string;
 };
 
+export type ApiFillPdfPayload = {
+  fileUrl: string;
+  templateId: string;
+  formUid?: string;
+  templateTitle: string;
+  client: Partial<ApiClientRecord>;
+  draft: Record<string, string>;
+  values?: Record<string, string>;
+};
+
 export class ApiRequestError extends Error {
   status: number;
 
@@ -338,6 +348,28 @@ export async function saveClient(client: Omit<ApiClientRecord, 'createdAt'> & { 
 export async function listFormTemplates() {
   const body = await request<{ templates: ApiFormTemplate[] }>('/api/forms/templates');
   return body.templates;
+}
+
+export async function fillFormPdf(payload: ApiFillPdfPayload) {
+  const response = await fetch('/api/forms/fill-pdf', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new ApiRequestError(body?.error || `PDF fill failed: ${response.status}`, response.status);
+  }
+  const disposition = response.headers.get('content-disposition') || '';
+  const fileNameMatch = disposition.match(/filename="([^"]+)"/i);
+  return {
+    blob: await response.blob(),
+    fileName: fileNameMatch?.[1] || 'restart-formular-vyplneno.pdf',
+    filledFields: Number(response.headers.get('x-rest-art-filled-fields') || 0)
+  };
 }
 
 export async function listUsers() {

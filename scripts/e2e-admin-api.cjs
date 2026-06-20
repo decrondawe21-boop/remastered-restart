@@ -64,6 +64,16 @@ async function request(path, options = {}) {
   return { response, body };
 }
 
+async function requestRaw(path, options = {}) {
+  return fetch(`${baseUrl}${path}`, {
+    ...options,
+    headers: {
+      'content-type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+}
+
 (async () => {
   const stamp = Date.now();
   const stampText = String(stamp);
@@ -165,6 +175,32 @@ async function request(path, options = {}) {
     const templates = await request('/api/forms/templates', { headers: { cookie } });
     if (!templates.response.ok || !Array.isArray(templates.body.templates) || templates.body.templates.length === 0) {
       throw new Error(`Form templates endpoint failed: ${JSON.stringify(templates.body)}`);
+    }
+
+    const filledPdf = await requestRaw('/api/forms/fill-pdf', {
+      method: 'POST',
+      headers: { cookie },
+      body: JSON.stringify({
+        fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-001_KRYCI_LIST_GDPR_BALICKU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+        templateId: 'e2e-gdpr-cover',
+        formUid: 'RAI-FRM-GDPR-001',
+        templateTitle: 'Krycí list GDPR balíčku',
+        client: {
+          firstName: 'Andrea',
+          lastName: 'Testova',
+          birthDate: '1990-01-02',
+          phone: '+420 777 333 444',
+          email: `pdf-${stamp}@restart.test`,
+          address: 'Testovaci 1',
+          program: 'REWORK',
+          operationalId: `AT-${stampText.slice(-6)}-1234-001`
+        },
+        draft: {}
+      })
+    });
+    if (!filledPdf.ok || !String(filledPdf.headers.get('content-type') || '').includes('application/pdf')) {
+      const text = await filledPdf.text().catch(() => '');
+      throw new Error(`Filled PDF endpoint failed: ${filledPdf.status} ${text}`);
     }
 
     const created = await request('/api/clients', {

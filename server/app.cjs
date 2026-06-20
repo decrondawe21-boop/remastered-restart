@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const nodemailer = require('nodemailer');
 const { OAuth2Client } = require('google-auth-library');
+const { PDFBool, PDFDocument, PDFName } = require('pdf-lib');
 const {
   clearOAuthStateCookie,
   clearSessionCookie,
@@ -35,6 +36,16 @@ function sendRedirect(response, location, headers = {}) {
     ...headers
   });
   response.end();
+}
+
+function sendPdf(response, statusCode, buffer, fileName) {
+  response.writeHead(statusCode, {
+    'content-type': 'application/pdf',
+    'content-length': buffer.length,
+    'content-disposition': `attachment; filename="${fileName.replace(/"/g, '')}"`,
+    'cache-control': 'no-store'
+  });
+  response.end(buffer);
 }
 
 const publicRoot = path.resolve(__dirname, '..', 'public');
@@ -1179,6 +1190,115 @@ async function listFormTemplates(request, response) {
   sendJson(response, 200, { templates: rows.map(publicFormTemplate) });
 }
 
+function stripPdfDiacritics(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function safePdfFormPath(fileUrl) {
+  const rawValue = String(fileUrl || '').trim();
+  if (!rawValue) throw new Error('PDF fileUrl is required.');
+  const pathname = new URL(rawValue, 'http://restart.local').pathname;
+  const decodedPath = decodeURIComponent(pathname);
+  if (!decodedPath.startsWith('/documents/forms/') || path.extname(decodedPath).toLowerCase() !== '.pdf') {
+    throw new Error('Only operational form PDFs can be prefilled.');
+  }
+  const filePath = path.resolve(publicRoot, `.${decodedPath}`);
+  if (!filePath.startsWith(`${publicRoot}${path.sep}`)) {
+    throw new Error('Invalid PDF path.');
+  }
+  return filePath;
+}
+
+function czechDate(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('cs-CZ');
+}
+
+function safePdfFileName(value) {
+  return String(value || 'restart-formular')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9._-]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 120) || 'restart-formular';
+}
+
+function pdfAutofillValue(fieldName, payload) {
+  const normalized = stripPdfDiacritics(fieldName).replace(/[_-]+/g, ' ');
+  if (/podpis/.test(normalized)) return null;
+
+  const client = payload.client || {};
+  const draft = payload.draft || {};
+  const values = payload.values || {};
+  const fullName = values.clientName || [client.firstName, client.lastName].filter(Boolean).join(' ').trim();
+  const phone = values.phone || client.phone || '';
+  const email = values.email || client.email || '';
+  const address = values.address || client.address || '';
+  const contact = values.contact || [phone, email, address].filter(Boolean).join(' | ');
+  const printDate = values.printDate || czechDate();
+  const workerNote = values.workerNote || draft.workerNote || draft.handoverNote || '';
+
+  if (/interni.*id|operational.*id|client.*id/.test(normalized) || normalized === 'p1 interni id') return values.internalId || client.operationalId || '';
+  if (/datum.*narozeni|narozeni|birth/.test(normalized)) return values.birthDate || client.birthDate || '';
+  if (/e mail|email/.test(normalized)) return email;
+  if (/telefon|phone/.test(normalized)) return phone;
+  if (/kontakt/.test(normalized)) return contact;
+  if (/adresa|address|misto/.test(normalized)) return address;
+  if (/program|oblast/.test(normalized)) return values.program || client.program || '';
+  if (/jmeno.*prijmeni|jmeno.*prezdivka|jmeno.*subjekt|subjekt|klient/.test(normalized)) return fullName;
+  if (/datum|date/.test(normalized)) return printDate;
+  if (/pracovnik|koordinator|odpovedny/.test(normalized)) return values.workerName || '';
+  if (/duvod|ocekavani|poznamka/.test(normalized)) return workerNote;
+
+  return null;
+}
+
+async function fillFormPdf(request, response) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const body = await readBody(request);
+  const filePath = safePdfFormPath(body.fileUrl);
+  const sourceBytes = await fs.promises.readFile(filePath);
+  const pdfDoc = await PDFDocument.load(sourceBytes);
+  const form = pdfDoc.getForm();
+  let filledCount = 0;
+
+  for (const field of form.getFields()) {
+    if (typeof field.setText !== 'function') continue;
+    const value = pdfAutofillValue(field.getName(), body);
+    if (value === null || value === undefined) continue;
+    field.setText(String(value));
+    filledCount += 1;
+  }
+
+  try {
+    const acroForm = pdfDoc.catalog.lookup(PDFName.of('AcroForm'));
+    if (acroForm && typeof acroForm.set === 'function') {
+      acroForm.set(PDFName.of('NeedAppearances'), PDFBool.True);
+    }
+  } catch {
+    // Some PDFs may not expose the AcroForm dictionary directly; filled values still remain in the field data.
+  }
+
+  const pdfBytes = await pdfDoc.save({ updateFieldAppearances: false });
+  const client = body.client || {};
+  const baseName = safePdfFileName(
+    [
+      body.formUid || body.templateId || 'formular',
+      client.operationalId || [client.firstName, client.lastName].filter(Boolean).join('_') || 'klient',
+      'vyplneno'
+    ]
+      .filter(Boolean)
+      .join('_')
+  );
+  response.setHeader('x-rest-art-filled-fields', String(filledCount));
+  sendPdf(response, 200, Buffer.from(pdfBytes), `${baseName}.pdf`);
+}
+
 function publicManagedUser(row) {
   return {
     id: row.id,
@@ -2036,6 +2156,7 @@ async function createApp(request, response) {
     if (request.method === 'GET' && url.pathname === '/api/clients') return await listClients(request, response);
     if (request.method === 'POST' && url.pathname === '/api/clients') return await createClient(request, response);
     if (request.method === 'GET' && url.pathname === '/api/forms/templates') return await listFormTemplates(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/forms/fill-pdf') return await fillFormPdf(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/users') return await listUsers(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/applications') return await listProjectApplications(request, response);
     const projectApplicationMatch = url.pathname.match(/^\/api\/admin\/applications\/([^/]+)$/);

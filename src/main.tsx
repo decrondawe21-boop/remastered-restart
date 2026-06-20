@@ -77,6 +77,7 @@ import {
   deleteUser as deleteUserRecord,
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
+  fillFormPdf,
   listClients,
   listDocuments,
   listFormTemplates,
@@ -6343,15 +6344,6 @@ function AdminWorkspace({
     setSelectedClientId(filteredClients[0].id);
   }, [activeTab, filteredClients, selectedClientId]);
   const selectedTemplate = formTemplates.find((template) => template.id === selectedTemplateId) ?? formTemplates[0] ?? fallbackFormTemplates[0];
-  const previousFormClientRef = React.useRef<ClientRecord | null>(null);
-  React.useEffect(() => {
-    if (!selectedClient) {
-      previousFormClientRef.current = null;
-      return;
-    }
-    setDraft((currentDraft) => mergeClientAutofillDraft(selectedTemplate, selectedClient, currentDraft, previousFormClientRef.current));
-    previousFormClientRef.current = selectedClient;
-  }, [selectedClient, selectedTemplate]);
   const selectedTemplateFileUrl = resolvePublicFileUrl(selectedTemplate.fileUrl || selectedTemplate.sourceNote, selectedTemplate);
   React.useEffect(() => {
     if (!selectedClient || !selectedTemplate) return;
@@ -6867,6 +6859,50 @@ function AdminWorkspace({
     }
     onNotify('info', 'Připravuji tisk', `${selectedTemplate.title} pro klienta ${selectedClient.firstName} ${selectedClient.lastName}.`);
     window.print();
+  };
+
+  const downloadFilledPdf = async () => {
+    if (!selectedClient) {
+      onNotify('warning', 'PDF nejde vyplnit', 'Nejdřív vyberte klienta.');
+      return;
+    }
+    if (!selectedTemplateFileUrl) {
+      onNotify('warning', 'PDF není k dispozici', 'Šablona nemá navázaný soubor PDF.');
+      return;
+    }
+    try {
+      const result = await fillFormPdf({
+        fileUrl: selectedTemplateFileUrl,
+        templateId: selectedTemplate.id,
+        formUid: selectedTemplate.formUid,
+        templateTitle: selectedTemplate.title,
+        client: selectedClient,
+        draft,
+        values: {
+          internalId: selectedClient.operationalId || '',
+          clientName: clientFullName(selectedClient),
+          birthDate: selectedClient.birthDate || '',
+          phone: selectedClient.phone || '',
+          email: selectedClient.email || '',
+          address: selectedClient.address || '',
+          contact: [selectedClient.phone, selectedClient.email, selectedClient.address].filter(Boolean).join(' | '),
+          program: selectedClient.program || '',
+          printDate: new Date().toLocaleDateString('cs-CZ'),
+          workerNote: draft.workerNote || draft.handoverNote || ''
+        }
+      });
+      const objectUrl = URL.createObjectURL(result.blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = result.fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      onNotify('success', 'Vyplněné PDF připraveno', `${result.filledFields} polí bylo předvyplněno.`);
+    } catch (error) {
+      onNotify('error', 'PDF se nepodařilo vyplnit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
   };
 
   const registerPreparedDocument = async () => {
@@ -8160,6 +8196,9 @@ function AdminWorkspace({
                 <button className="button primary" type="button" onClick={printForm} disabled={!selectedClient}>
                   <Printer size={18} /> Tisknout k podpisu
                 </button>
+                <button className="button secondary" type="button" onClick={downloadFilledPdf} disabled={!selectedClient || !selectedTemplateFileUrl}>
+                  <Download size={18} /> Stáhnout vyplněné PDF
+                </button>
                 <button className="button secondary" type="button" onClick={registerPreparedDocument} disabled={!selectedClient}>
                   <ClipboardList size={18} /> Zapsat do dokumentů
                 </button>
@@ -9112,6 +9151,7 @@ function AdminWorkspace({
           onClose={() => setAdminDialog(null)}
           onSelectTemplate={selectTemplateForForm}
           onPrintForm={printForm}
+          onDownloadFilledPdf={downloadFilledPdf}
           onRegisterDocument={registerPreparedDocument}
           onSaveMedia={saveMediaDialog}
           onSaveUser={saveUserDialog}
@@ -9142,6 +9182,7 @@ function AdminDetailDialog({
   onClose,
   onSelectTemplate,
   onPrintForm,
+  onDownloadFilledPdf,
   onRegisterDocument,
   onSaveMedia,
   onSaveUser,
@@ -9165,6 +9206,7 @@ function AdminDetailDialog({
   onClose: () => void;
   onSelectTemplate: (templateId: string) => void;
   onPrintForm: () => void;
+  onDownloadFilledPdf: () => void;
   onRegisterDocument: () => void;
   onSaveMedia: (event: React.FormEvent) => void;
   onSaveUser: (event: React.FormEvent) => void;
@@ -9242,6 +9284,9 @@ function AdminDetailDialog({
             </button>
             <button className="button secondary" type="button" onClick={onPrintForm} disabled={!selectedClient}>
               <Printer size={18} /> Tisknout k podpisu
+            </button>
+            <button className="button secondary" type="button" onClick={onDownloadFilledPdf} disabled={!selectedClient || !templateFileUrl}>
+              <Download size={18} /> Stáhnout vyplněné PDF
             </button>
             <button className="button secondary" type="button" onClick={onRegisterDocument} disabled={!selectedClient}>
               <FileText size={18} /> Zapsat do dokumentů

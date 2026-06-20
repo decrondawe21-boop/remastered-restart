@@ -8176,9 +8176,18 @@ function AdminWorkspace({
                   <span>{readableBytes(selectedTemplate.sizeBytes)}</span>
                   {selectedTemplate.sourceNote && <span>{selectedTemplate.sourceNote}</span>}
                   {selectedTemplateFileUrl && (
-                    <a href={selectedTemplateFileUrl} target="_blank" rel="noreferrer">
-                      Otevřít PDF
-                    </a>
+                    <>
+                      {selectedClient ? (
+                        <button className="text-link-button" type="button" onClick={downloadFilledPdf}>
+                          Stáhnout vyplněné PDF
+                        </button>
+                      ) : (
+                        <span>Vyberte klienta pro vyplnění PDF</span>
+                      )}
+                      <a href={selectedTemplateFileUrl} target="_blank" rel="noreferrer">
+                        Otevřít originál
+                      </a>
+                    </>
                   )}
                 </div>
               )}

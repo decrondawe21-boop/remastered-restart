@@ -1116,12 +1116,13 @@ async function listFormTemplates(request, response) {
          sort_order AS sortOrder,
          size_bytes AS sizeBytes,
          source_note AS sourceNote
-       FROM rest_art_document_files
-       WHERE file_type = 'pdf'
-         AND status = 'active'
-         AND is_current = 1
-       ORDER BY is_current DESC, category_code ASC, sort_order ASC, title ASC
-       LIMIT 500`
+        FROM rest_art_document_files
+        WHERE file_type = 'pdf'
+          AND status = 'active'
+          AND is_current = 1
+          AND category_code NOT IN ('99_ALL_IN_ONE_VOLITELNE', '10_METODIKY_A_PODKLADY')
+        ORDER BY is_current DESC, category_code ASC, sort_order ASC, title ASC
+        LIMIT 500`
     );
     if (documentRows.length > 0) {
       sendJson(response, 200, {

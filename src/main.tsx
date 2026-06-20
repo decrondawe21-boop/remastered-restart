@@ -1490,7 +1490,7 @@ const productionGdprFormTemplates: FormTemplate[] = [
       { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
       { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
     ],
-    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-003-INFORMOVANY-SOUHLAS_GDPR.pdf',
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-003_INFORMOVANY_SOUHLAS_GDPR_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
     folder: '01_GDPR_A_SOUHLASY',
     sourceNote: 'RAI-FRM-GDPR-003-INFORMOVANY-SOUHLAS_GDPR.pdf | ostrý provoz',
     sizeBytes: 98773,
@@ -1588,7 +1588,7 @@ const productionGdprFormTemplates: FormTemplate[] = [
       { key: 'handoverNote', label: 'Poznámka k vyplnění / předání', rows: 3 },
       { key: 'signatureNote', label: 'Poznámka k podpisu nebo archivaci', rows: 3 }
     ],
-    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-0010_DOBROVOLNIK_OSOBNI_UDAJE_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
+    fileUrl: '/documents/forms/01_GDPR_A_SOUHLASY/RAI-FRM-GDPR-010_DOBROVOLNIK_OSOBNI_UDAJE_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
     folder: '01_GDPR_A_SOUHLASY',
     sourceNote: 'RAI-FRM-GDPR-0010_DOBROVOLNIK_OSOBNI_UDAJE_FILLABLE_v1_3_CONTENT_LOCKED.pdf | ostrý provoz',
     sizeBytes: 109758,

@@ -7031,8 +7031,16 @@ function AdminWorkspace({
       return;
     }
     try {
-      const saved = await onProjectApplicationReviewRequest(application.id, status, approvedRole, status === 'approved' ? `Schváleno jako ${roleLabels[approvedRole]}.` : 'Žádost uzavřena administrátorem.');
-      onNotify(status === 'approved' ? 'success' : 'warning', status === 'approved' ? 'Žádost schválena' : 'Žádost uzavřena', `${saved.userName} - ${roleLabels[saved.requestedRole]}`);
+      const adminNote =
+        status === 'approved'
+          ? `Schváleno jako ${roleLabels[approvedRole]}. Žadateli byla odeslána potvrzovací notifikace.`
+          : 'Bohužel žádost nyní nemůžeme schválit z kapacitních důvodů. Děkujeme za pochopení. Pokud se možnosti projektu rozšíří, můžeme se k žádosti vrátit.';
+      const saved = await onProjectApplicationReviewRequest(application.id, status, approvedRole, adminNote);
+      onNotify(
+        status === 'approved' ? 'success' : 'warning',
+        status === 'approved' ? 'Žádost schválena' : 'Žádost zamítnuta',
+        `${saved.userName} - žadateli byla odeslána notifikace.`
+      );
     } catch (error) {
       onNotify('error', 'Žádost se nepodařilo vyřídit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
     }
@@ -8722,14 +8730,14 @@ function AdminWorkspace({
           <div className="admin-grid">
             <article className="admin-card application-review-card">
               <h3>Žádosti o vstup ({pendingProjectApplications.length})</h3>
-              <p className="form-help">Schválením žádosti se uchazeči nastaví cílová role účtu.</p>
+              <p className="form-help">Schválením se uchazeči nastaví cílová role účtu. Zamítnutí pošle žadateli kapacitní zprávu do notifikací.</p>
               <div className="application-review-list">
                 {projectApplications.length === 0 && <p className="empty-note">Zatím není podaná žádná žádost.</p>}
                 {projectApplications.slice(0, 12).map((application) => (
                   <article key={application.id} className={`application-review-row status-${application.status}`}>
                     <div>
-                      <Badge tone={application.status === 'approved' ? 'success' : application.status === 'rejected' ? 'warning' : 'info'}>
-                        {application.status === 'pending' ? 'čeká' : application.status === 'approved' ? 'schváleno' : 'uzavřeno'}
+                      <Badge tone={application.status === 'approved' ? 'success' : application.status === 'rejected' ? 'error' : 'info'}>
+                        {application.status === 'pending' ? 'čeká' : application.status === 'approved' ? 'schváleno' : 'zamítnuto'}
                       </Badge>
                       <strong>{application.userName}</strong>
                       <span>{application.userEmail}</span>
@@ -8749,8 +8757,8 @@ function AdminWorkspace({
                               onSelect: () => reviewApplication(application, 'approved', application.requestedRole)
                             },
                             {
-                              label: 'Uzavřít / zamítnout',
-                              text: 'Poslat informaci žadateli',
+                              label: 'Zamítnout kapacitně',
+                              text: 'Poslat červenou zprávu žadateli',
                               icon: <X size={16} />,
                               tone: 'danger',
                               onSelect: () => reviewApplication(application, 'rejected', application.requestedRole)

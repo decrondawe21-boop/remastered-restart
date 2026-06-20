@@ -1378,13 +1378,15 @@ async function reviewProjectApplication(request, response, applicationId) {
   if (status === 'approved') {
     await query('UPDATE users SET role = ?, is_active = 1 WHERE id = ?', [approvedRole, rows[0].user_id]);
   }
+  const adminNote = String(body.adminNote || '').trim();
+  const approvedMessage = `Dobrá zpráva: vaše žádost byla schválena. Účet je nyní vedený jako ${roleLabels[approvedRole] || approvedRole}. V portálu můžete pokračovat dalším krokem podle instrukcí týmu REST||ART Integrace.`;
+  const rejectedMessage =
+    adminNote ||
+    'Bohužel vaši žádost nyní nemůžeme schválit z kapacitních důvodů. Děkujeme za pochopení. Pokud se možnosti projektu rozšíří, můžeme se k žádosti vrátit.';
   await createSystemNotification({
     recipientId: rows[0].user_id,
     title: status === 'approved' ? 'Žádost byla schválena' : 'Žádost zatím nemůžeme schválit',
-    body:
-      status === 'approved'
-        ? `Dobrá zpráva: vaše žádost byla schválena. Účet je nyní vedený jako ${roleLabels[approvedRole] || approvedRole}. V portálu můžete pokračovat dalším krokem podle instrukcí týmu REST||ART Integrace.`
-        : 'Bohužel vaši žádost nyní nemůžeme schválit z kapacitních důvodů. Děkujeme za pochopení. Pokud se možnosti projektu rozšíří, můžeme se k žádosti vrátit.',
+    body: status === 'approved' ? approvedMessage : rejectedMessage,
     tone: status === 'approved' ? 'success' : 'error',
     category: 'Žádosti',
     linkHref: '#/klient',

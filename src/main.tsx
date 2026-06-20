@@ -7095,12 +7095,39 @@ function AdminWorkspace({
       await onNotificationReadRequest(notification.id);
       const readAt = new Date().toISOString();
       const nextNotification = { ...notification, readAt };
-      setNotificationForm(nextNotification);
-      setAdminDialog({ type: 'notification', notification: nextNotification });
-      onNotify('success', 'Notifikace označena', 'Upozornění je vedené jako přečtené.');
+      setNotificationForm((current) => (current.id === notification.id ? nextNotification : current));
+      setAdminDialog((current) =>
+        current?.type === 'notification' && current.notification.id === notification.id
+          ? { type: 'notification', notification: nextNotification }
+          : current
+      );
+      onNotify('success', 'Notifikace archivována', 'Upozornění je vedené jako vyřízené v auditním archivu.');
     } catch (error) {
       onNotify('error', 'Stav notifikace se nepodařilo uložit', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
     }
+  };
+
+  const markNotificationsReadBatch = async (items: NotificationItem[]) => {
+    const unreadItems = items.filter((item) => !item.readAt);
+    if (!unreadItems.length) {
+      onNotify('info', 'Inbox je prázdný', 'Ve výběru nejsou žádné aktivní notifikace k archivaci.');
+      return;
+    }
+    if (!onNotificationReadRequest) {
+      onNotify('warning', 'Stav notifikací nejde změnit', 'Akci zkuste zopakovat později.');
+      return;
+    }
+    const results = await Promise.allSettled(unreadItems.map((item) => onNotificationReadRequest(item.id)));
+    const failedCount = results.filter((result) => result.status === 'rejected').length;
+    if (failedCount > 0) {
+      onNotify(
+        'warning',
+        'Část notifikací zůstala aktivní',
+        `${unreadItems.length - failedCount} archivováno, ${failedCount} se nepodařilo uložit.`
+      );
+      return;
+    }
+    onNotify('success', 'Aktivní notifikace archivovány', `${unreadItems.length} upozornění je přesunuté do auditního archivu.`);
   };
 
   const loadClientIntoTools = (clientId: string) => {
@@ -8920,7 +8947,14 @@ function AdminWorkspace({
                   <>
                     <div className="notification-section-label">
                       <span>Aktivní notifikace</span>
-                      <small>{activeAdminNotifications.length} čeká na reakci</small>
+                      <span className="notification-section-actions">
+                        <small>{activeAdminNotifications.length} čeká na reakci</small>
+                        {activeAdminNotifications.length > 0 && (
+                          <button className="notification-section-button" type="button" onClick={() => markNotificationsReadBatch(activeAdminNotifications)}>
+                            Archivovat výběr
+                          </button>
+                        )}
+                      </span>
                     </div>
                     <div className="notification-admin-list compact">
                       {activeAdminNotifications.length === 0 && (
@@ -8931,21 +8965,28 @@ function AdminWorkspace({
                       {activeAdminNotifications.map((notification) => renderNotificationRow(notification))}
                     </div>
 
-                    <div className="notification-section-label archive">
-                      <span>Auditní archiv</span>
-                      <small>{archivedAdminNotifications.length} vyřízených záznamů ve výběru</small>
-                    </div>
-                    <div className="notification-admin-list compact archive-list">
-                      {archivedAdminNotifications.length === 0 && (
-                        <p className="empty-note">
-                          {notificationSearch ? 'V archivu pro hledání nic není.' : 'Archiv je zatím prázdný.'}
-                        </p>
-                      )}
-                      {archivedAdminNotifications.slice(0, 24).map((notification) => renderNotificationRow(notification, true))}
-                      {archivedAdminNotifications.length > 24 && (
-                        <p className="empty-note">Zobrazeno prvních 24 záznamů. Zúžte výběr přes hledání podle názvu, typu nebo data.</p>
-                      )}
-                    </div>
+                    <details className="notification-archive-panel" open={Boolean(notificationSearch)}>
+                      <summary>
+                        <div className="notification-section-label archive">
+                          <span>Auditní archiv</span>
+                          <small>
+                            {archivedAdminNotifications.length} vyřízených záznamů ve výběru
+                            {notificationSearch ? ' - otevřeno kvůli hledání' : ''}
+                          </small>
+                        </div>
+                      </summary>
+                      <div className="notification-admin-list compact archive-list">
+                        {archivedAdminNotifications.length === 0 && (
+                          <p className="empty-note">
+                            {notificationSearch ? 'V archivu pro hledání nic není.' : 'Archiv je zatím prázdný.'}
+                          </p>
+                        )}
+                        {archivedAdminNotifications.slice(0, 24).map((notification) => renderNotificationRow(notification, true))}
+                        {archivedAdminNotifications.length > 24 && (
+                          <p className="empty-note">Zobrazeno prvních 24 záznamů. Zúžte výběr přes hledání podle názvu, typu nebo data.</p>
+                        )}
+                      </div>
+                    </details>
                   </>
                 );
               })()}

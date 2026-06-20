@@ -5853,8 +5853,67 @@ h3 {
   text-transform: none;
 }
 
+.notification-section-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  text-transform: none;
+}
+
+.notification-section-button {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border: 1px solid rgba(31, 119, 68, 0.24);
+  border-radius: 999px;
+  background: rgba(31, 119, 68, 0.08);
+  color: var(--green-dark);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.notification-section-button:hover,
+.notification-section-button:focus-visible {
+  border-color: rgba(31, 119, 68, 0.38);
+  background: rgba(31, 119, 68, 0.14);
+}
+
 .notification-section-label.archive {
   margin-top: 22px;
+}
+
+.notification-archive-panel {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(245, 250, 246, 0.72), rgba(255, 255, 255, 0.92));
+}
+
+.notification-archive-panel summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.notification-archive-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.notification-archive-panel .notification-section-label.archive {
+  margin: 0;
+  padding: 12px 14px;
+  border-bottom: 0;
+}
+
+.notification-archive-panel[open] .notification-section-label.archive {
+  border-bottom: 1px solid var(--line);
 }
 
 .notification-admin-list.compact {

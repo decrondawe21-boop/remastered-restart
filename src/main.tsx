@@ -2001,7 +2001,7 @@ function Header({
   const profileHref = isAdminAccount ? '/admin' : '/klient';
   const profileLabel = isAdminAccount ? 'Administrace' : 'Profil';
   const profileAriaLabel = isAdminAccount ? 'Otevřít administraci' : `Otevřít profil ${account?.name ?? ''}`;
-  const notificationHref = isAdminAccount ? '/admin' : '/klient';
+  const notificationHref = isAdminAccount ? '/admin?tab=notifications' : '/klient?section=notifications';
   const headerAvatarSrc = React.useMemo(() => {
     if (!account) return '';
     try {
@@ -4832,6 +4832,12 @@ function ClientProfile({
   const applicantSections = new Set<ClientSection>(['dashboard', 'profile', 'application', 'notifications', 'settings']);
   const visibleClientNavItems = isApplicantProfile ? clientNavItems.filter((item) => applicantSections.has(item.id)) : clientNavItems;
   React.useEffect(() => {
+    const sectionParam = new URLSearchParams(window.location.search).get('section') as ClientSection | null;
+    if (!sectionParam || !clientNavItems.some((item) => item.id === sectionParam)) return;
+    if (isApplicantProfile && !applicantSections.has(sectionParam)) return;
+    setActiveSection(sectionParam);
+  }, [isApplicantProfile]);
+  React.useEffect(() => {
     if (isApplicantProfile && !applicantSections.has(activeSection)) {
       setActiveSection('dashboard');
     }
@@ -6170,6 +6176,12 @@ function AdminWorkspace({
   const [focusedNewsId, setFocusedNewsId] = React.useState('');
   const [focusedActivityId, setFocusedActivityId] = React.useState('');
   const [notificationSearch, setNotificationSearch] = React.useState('');
+  React.useEffect(() => {
+    const tabParam = new URLSearchParams(window.location.search).get('tab') as AdminSection | null;
+    if (tabParam && adminSectionIds.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, []);
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
   const [selectedClientId, setSelectedClientId] = React.useState('');
   const [clientQuery, setClientQuery] = React.useState('');

@@ -74,6 +74,7 @@ import {
   getSession,
   addNewsComment,
   confirmPasswordReset,
+  deleteClient as deleteClientRecord,
   deleteUser as deleteUserRecord,
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
@@ -5886,6 +5887,12 @@ function App() {
     const saved = await saveClientRecord(client);
     return fromApiClient(saved);
   };
+  const deleteClientViaApi = async (clientId: string) => {
+    const result = await deleteClientRecord(clientId);
+    setClients((current) => current.filter((item) => item.id !== clientId));
+    setClientDocuments((current) => current.map((document) => (document.clientId === clientId ? { ...document, clientId: null } : document)));
+    return result;
+  };
   const saveNewsViaApi = (item: NewsItem) => saveNewsRecord(item);
   const deleteNewsViaApi = (id: string) => deleteNewsRecord(id);
   const saveSlideViaApi = (item: HomeSlide) => saveSlideRecord(item);
@@ -6076,6 +6083,7 @@ function App() {
           onNewsChange={setNews}
           onSlidesChange={setSlides}
           onClientSaveRequest={saveClientViaApi}
+          onClientDeleteRequest={deleteClientViaApi}
           onNewsSaveRequest={saveNewsViaApi}
           onNewsDeleteRequest={deleteNewsViaApi}
           onSlideSaveRequest={saveSlideViaApi}
@@ -6174,6 +6182,7 @@ function AdminWorkspace({
   onNewsChange,
   onSlidesChange,
   onClientSaveRequest,
+  onClientDeleteRequest,
   onNewsSaveRequest,
   onNewsDeleteRequest,
   onSlideSaveRequest,
@@ -6204,6 +6213,7 @@ function AdminWorkspace({
   onNewsChange: React.Dispatch<React.SetStateAction<NewsItem[]>>;
   onSlidesChange: React.Dispatch<React.SetStateAction<HomeSlide[]>>;
   onClientSaveRequest?: (client: ClientRecord) => Promise<ClientRecord>;
+  onClientDeleteRequest?: (clientId: string) => Promise<{ ok: boolean; id: string; detachedDocuments: number }>;
   onNewsSaveRequest?: (item: NewsItem) => Promise<NewsItem>;
   onNewsDeleteRequest?: (id: string) => Promise<void>;
   onSlideSaveRequest?: (item: HomeSlide) => Promise<HomeSlide>;
@@ -6705,6 +6715,37 @@ function AdminWorkspace({
   const clearClientForm = () => {
     setClientForm(emptyClient);
     onNotify('info', 'Formulář klienta vyčištěn', 'Můžete zadat nový kontakt.');
+  };
+
+  const deleteClient = async (client: ClientRecord) => {
+    if (!onClientDeleteRequest) {
+      onNotify('warning', 'Mazání klientů není dostupné', 'Akci zkuste zopakovat později.');
+      return;
+    }
+    const relatedDocuments = clientDocuments.filter((document) => document.clientId === client.id).length;
+    const confirmed = window.confirm(
+      `Opravdu smazat klienta ${client.firstName} ${client.lastName}?` +
+        (relatedDocuments > 0
+          ? ` Navázané dokumenty (${relatedDocuments}) zůstanou v evidenci, jen se odpojí od této klientské karty.`
+          : '') +
+        ' Tato akce nejde vrátit zpět.'
+    );
+    if (!confirmed) return;
+    try {
+      const result = await onClientDeleteRequest(client.id);
+      onClientsChange((current) => current.filter((item) => item.id !== client.id));
+      setSelectedClientId((current) => (current === client.id ? '' : current));
+      setClientForm((current) => (current.id === client.id ? emptyClient : current));
+      onNotify(
+        'success',
+        'Klient smazán',
+        result.detachedDocuments > 0
+          ? `Klientská karta byla odstraněna. Dokumenty ponechány v evidenci: ${result.detachedDocuments}.`
+          : 'Duplicitní klientská karta byla odstraněna.'
+      );
+    } catch (error) {
+      onNotify('error', 'Klienta se nepodařilo smazat', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+    }
   };
 
   const openNewsDialog = (item?: NewsItem) => {
@@ -8102,6 +8143,9 @@ function AdminWorkspace({
                       }}
                     >
                       <Barcode size={18} /> ID / kódy
+                    </button>
+                    <button className="button danger" type="button" onClick={() => deleteClient(clientPanelClient)}>
+                      <Trash2 size={18} /> Smazat klienta
                     </button>
                   </div>
                   <div className="client-detail-documents">

@@ -345,6 +345,12 @@ export async function saveClient(client: Omit<ApiClientRecord, 'createdAt'> & { 
   return body.client;
 }
 
+export async function deleteClient(clientId: string) {
+  return request<{ ok: boolean; id: string; detachedDocuments: number }>(`/api/clients/${encodeURIComponent(clientId)}`, {
+    method: 'DELETE'
+  });
+}
+
 export async function listFormTemplates() {
   const body = await request<{ templates: ApiFormTemplate[] }>('/api/forms/templates');
   return body.templates;

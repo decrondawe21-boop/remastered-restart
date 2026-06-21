@@ -1063,6 +1063,38 @@ async function createClient(request, response) {
   sendJson(response, 200, { client: rows[0] });
 }
 
+async function deleteClient(request, response, clientId) {
+  const user = await requireAdmin(request, response);
+  if (!user) return;
+  const rows = await query(
+    `SELECT
+       id,
+       first_name AS firstName,
+       last_name AS lastName,
+       email
+     FROM clients
+     WHERE id = ?
+     LIMIT 1`,
+    [clientId]
+  );
+  if (rows.length === 0) {
+    sendJson(response, 404, { error: 'Client not found.' });
+    return;
+  }
+  const documentRows = await query('SELECT COUNT(*) AS count FROM client_documents WHERE client_id = ?', [clientId]);
+  const detachedDocuments = Number(documentRows[0]?.count || 0);
+  await query('UPDATE client_documents SET client_id = NULL WHERE client_id = ?', [clientId]);
+  await query('DELETE FROM clients WHERE id = ?', [clientId]);
+  await createSystemNotification({
+    title: 'Klient smazán',
+    body: `${rows[0].firstName} ${rows[0].lastName}${rows[0].email ? ` (${rows[0].email})` : ''} byl/a odstraněn/a z registru klientů. Navázané dokumenty ponechány: ${detachedDocuments}.`,
+    tone: 'warning',
+    category: 'Klienti',
+    createdBy: user.id
+  });
+  sendJson(response, 200, { ok: true, id: clientId, detachedDocuments });
+}
+
 function parseJsonValue(value, fallback) {
   if (value === null || value === undefined) return fallback;
   if (typeof value === 'string') {
@@ -2241,6 +2273,8 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/slides') return await saveSlide(request, response);
     if (request.method === 'GET' && url.pathname === '/api/clients') return await listClients(request, response);
     if (request.method === 'POST' && url.pathname === '/api/clients') return await createClient(request, response);
+    const clientMatch = url.pathname.match(/^\/api\/clients\/([^/]+)$/);
+    if (request.method === 'DELETE' && clientMatch) return await deleteClient(request, response, decodeURIComponent(clientMatch[1]));
     if (request.method === 'GET' && url.pathname === '/api/forms/templates') return await listFormTemplates(request, response);
     if (request.method === 'POST' && url.pathname === '/api/forms/fill-pdf') return await fillFormPdf(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/users') return await listUsers(request, response);

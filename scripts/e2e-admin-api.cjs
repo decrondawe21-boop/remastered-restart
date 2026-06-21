@@ -91,6 +91,7 @@ async function requestRaw(path, options = {}) {
   let createdMediaId = null;
   let createdDocumentId = null;
   let createdNotificationId = null;
+  let duplicateClientId = null;
 
   try {
     await query(
@@ -324,6 +325,37 @@ async function requestRaw(path, options = {}) {
     ) {
       throw new Error(`Created client is missing from database list: ${JSON.stringify(list.body)}`);
     }
+
+    const duplicate = await request('/api/clients', {
+      method: 'POST',
+      headers: { cookie },
+      body: JSON.stringify({
+        firstName: 'Duplicitni',
+        lastName: `Klient ${stamp}`,
+        birthDate: '1991-01-02',
+        phone: '+420 777 000 111',
+        email: `duplicate-client-${stamp}@restart.test`,
+        program: 'RESET',
+        status: 'Nový kontakt',
+        notes: 'Dočasný duplicitní klient pro test mazání.'
+      })
+    });
+    if (!duplicate.response.ok || !duplicate.body.client.id) {
+      throw new Error(`Duplicate client creation failed: ${JSON.stringify(duplicate.body)}`);
+    }
+    duplicateClientId = duplicate.body.client.id;
+    const deletedClient = await request(`/api/clients/${encodeURIComponent(duplicateClientId)}`, {
+      method: 'DELETE',
+      headers: { cookie }
+    });
+    if (!deletedClient.response.ok || deletedClient.body.id !== duplicateClientId) {
+      throw new Error(`Client deletion failed: ${JSON.stringify(deletedClient.body)}`);
+    }
+    const listAfterDelete = await request('/api/clients', { headers: { cookie } });
+    if (!listAfterDelete.response.ok || listAfterDelete.body.clients.some((client) => client.id === duplicateClientId)) {
+      throw new Error(`Deleted client is still present in database list: ${JSON.stringify(listAfterDelete.body)}`);
+    }
+    duplicateClientId = null;
     const newsTitle = `Aktualita databaze ${stamp}`;
     const createdNews = await request('/api/news', {
       method: 'POST',
@@ -430,6 +462,8 @@ async function requestRaw(path, options = {}) {
   } finally {
     server.kill();
     await query('DELETE FROM news WHERE id = ?', [createdNewsId]);
+    await query('DELETE FROM notifications WHERE title = ? AND body LIKE ?', ['Klient smazán', `%duplicate-client-${stamp}@restart.test%`]);
+    await query('DELETE FROM clients WHERE id = ?', [duplicateClientId]);
     await query('DELETE FROM clients WHERE id = ?', [createdClientId]);
     await query('DELETE FROM client_documents WHERE id = ?', [createdDocumentId]);
     await query('DELETE FROM media_files WHERE id = ?', [createdMediaId]);

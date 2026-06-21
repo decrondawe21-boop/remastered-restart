@@ -420,6 +420,18 @@ const seededTransparentDocuments: MediaFile[] = [
     createdAt: '2026-06-21'
   },
   {
+    id: 'fallback-kapitola-institucionalni-partnerstvi',
+    title: 'REST||ART Kapitola - Institucionální partnerství',
+    fileName: 'REST_ART_KAPITOLA_INSTITUCIONALNI_PARTNERSTVI_v1.pdf',
+    fileUrl: '/documents/transparency/REST_ART_KAPITOLA_INSTITUCIONALNI_PARTNERSTVI_v1.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 490487,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: 'Veřejný dokument projektu REST||ART Integrace k institucionálnímu partnerství',
+    uploadedBy: null,
+    createdAt: '2026-06-21'
+  },
+  {
     id: 'fallback-opz-051-59',
     title: 'REST||ART Podklad ke konzultaci OPZ 051/59',
     fileName: 'REST_ART_PODKLAD_KONZULTACE_OPZ_051_59_v1.pdf',

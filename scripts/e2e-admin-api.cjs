@@ -245,6 +245,58 @@ async function requestRaw(path, options = {}) {
       throw new Error('Open questionnaire field was incorrectly filled with the client name.');
     }
 
+    const filledClientBook = await requestRaw('/api/forms/fill-pdf', {
+      method: 'POST',
+      headers: { cookie },
+      body: JSON.stringify({
+        fileUrl: '/documents/forms/02_KLIENTSKA_SLOZKA/RAI-FRM-KLI-002_KNIHA_KLIENTA_v2_0_RC1_REBUILD_FROM_ZERO_FILLABLE.pdf',
+        templateId: 'e2e-client-book',
+        formUid: 'RAI-FRM-KLI-002',
+        templateTitle: 'Kniha klienta',
+        client: {
+          firstName: 'Miroslav',
+          lastName: 'Reidl',
+          birthDate: '1985-05-06',
+          phone: '+420735975108',
+          email: `reidlmiroslav-${stamp}@restart.test`,
+          address: 'Testovaci 2',
+          program: 'BOD ZLOMU',
+          operationalId: `MR-${stampText.slice(-6)}-4321-001`
+        },
+        draft: {}
+      })
+    });
+    if (!filledClientBook.ok || !String(filledClientBook.headers.get('content-type') || '').includes('application/pdf')) {
+      const text = await filledClientBook.text().catch(() => '');
+      throw new Error(`Filled client book endpoint failed: ${filledClientBook.status} ${text}`);
+    }
+    const clientBookDoc = await PDFDocument.load(Buffer.from(await filledClientBook.arrayBuffer()));
+    const clientBookForm = clientBookDoc.getForm();
+    const clientBookInternalId = clientBookForm.getTextField('RAI-FRM-KLI-002_intern_id_klienta_001').getText();
+    const clientBookProgram = clientBookForm.getTextField('RAI-FRM-KLI-002_program_hlavn_pil_002').getText();
+    const clientBookPhone = clientBookForm.getTextField('RAI-FRM-KLI-002_telefon_kontakt_007').getText();
+    const clientBookEmail = clientBookForm.getTextField('RAI-FRM-KLI-002_e_mail_alternativn_kontakt_008').getText();
+    const clientBookName = clientBookForm.getTextField('RAI-FRM-KLI-002_jm_no_p_ezd_vka_060').getText();
+    const clientBookBirth = clientBookForm.getTextField('RAI-FRM-KLI-002_datum_narozen_v_k_061').getText();
+    const clientBookAddress = clientBookForm.getTextField('RAI-FRM-KLI-002_adresa_kontaktn_m_sto_062').getText();
+    const clientBookInterventionDate = clientBookForm.getTextField('RAI-FRM-KLI-002_interv_01_01').getText();
+    const clientBookInterventionContact = clientBookForm.getTextField('RAI-FRM-KLI-002_interv_01_02').getText();
+    const clientBookInterventionProgram = clientBookForm.getTextField('RAI-FRM-KLI-002_interv_01_03').getText();
+    const clientBookFollowUpContact = clientBookForm.getTextField('RAI-FRM-KLI-002_follow_01_01').getText();
+    const clientBookExitDate = clientBookForm.getTextField('RAI-FRM-KLI-002_datum_ukon_en_p_evodu_360').getText();
+    if (!clientBookInternalId || clientBookProgram !== 'BOD ZLOMU' || clientBookPhone !== '+420735975108' || clientBookEmail !== `reidlmiroslav-${stamp}@restart.test`) {
+      throw new Error('Filled client book header fields did not match expected client values.');
+    }
+    if (clientBookName !== 'Miroslav Reidl') {
+      throw new Error(`Filled client book client name mismatch: ${clientBookName || '(empty)'}`);
+    }
+    if (clientBookBirth !== '1985-05-06' || clientBookAddress !== 'Testovaci 2') {
+      throw new Error('Filled client book identity fields did not match expected client values.');
+    }
+    if (clientBookInterventionDate || clientBookInterventionContact || clientBookInterventionProgram || clientBookFollowUpContact || clientBookExitDate) {
+      throw new Error('Client book operational tables were incorrectly prefilled.');
+    }
+
     const created = await request('/api/clients', {
       method: 'POST',
       headers: { cookie },

@@ -1227,11 +1227,49 @@ function safePdfFileName(value) {
     .slice(0, 120) || 'restart-formular';
 }
 
+function compactPdfFieldName(normalizedFieldName) {
+  return String(normalizedFieldName || '').trim().replace(/\s+/g, '_');
+}
+
+function isPdfInternalIdField(normalizedFieldName, compactFieldName) {
+  return /interni.*id|intern.*id|operational.*id|client.*id/.test(normalizedFieldName) || compactFieldName === 'p1_interni_id';
+}
+
+function isPdfBirthDateField(normalizedFieldName, compactFieldName) {
+  return /datum.*narozeni|datum.*narozen|birth/.test(normalizedFieldName) || /(^|_)narozeni?($|_vek|_v_k)/.test(compactFieldName);
+}
+
+function isPdfEmailField(compactFieldName) {
+  return ['email', 'e_mail', 'kk01_email'].includes(compactFieldName) || /(^|_)e_mail_alternativn_kontakt_\d+$/.test(compactFieldName);
+}
+
+function isPdfPhoneField(compactFieldName) {
+  return ['telefon', 'phone', 'kk01_telefon'].includes(compactFieldName) || /(^|_)telefon_kontakt_\d+$/.test(compactFieldName);
+}
+
+function isPdfContactField(compactFieldName) {
+  return ['kontakt', 'p1_kontakt', 'gdpr_00_kontakt'].includes(compactFieldName);
+}
+
+function isPdfAddressField(compactFieldName) {
+  return compactFieldName === 'adresa'
+    || compactFieldName === 'address'
+    || compactFieldName.endsWith('_adresa')
+    || /(^|_)adresa_kontaktn_m_sto_\d+$/.test(compactFieldName);
+}
+
+function isPdfProgramField(compactFieldName) {
+  return ['program', 'p1_program', 'program_oblast', 'gdpr_00_program_oblast', 'kk01_program_hlavni_pilir'].includes(compactFieldName)
+    || /(^|_)program_hlavn_pil_\d+$/.test(compactFieldName);
+}
+
 function isPdfClientNameField(normalizedFieldName) {
   const normalized = String(normalizedFieldName || '').trim().replace(/\s+/g, ' ');
-  const compact = normalized.replace(/\s+/g, '_');
+  const compact = compactPdfFieldName(normalized);
 
   if (/^(p\d+_)?klient_jmeno$/.test(compact)) return true;
+  if (/^(kk\d+_)?jmeno$/.test(compact)) return true;
+  if (/(^|_)jm_no_p_ezd_vka_\d+$/.test(compact)) return true;
   if (/^(gdpr_\d+_)?jmeno_(prezdivka_)?subjekt(.*)?$/.test(compact)) return true;
   if (/^(klient|client|subjekt|subjekt_udaju|jmeno|full_name)$/.test(compact)) return true;
   if (/jmeno.*(prijmeni|prezdivka|subjekt|klient)|client.*name|full.*name/.test(normalized)) return true;
@@ -1239,8 +1277,37 @@ function isPdfClientNameField(normalizedFieldName) {
   return false;
 }
 
+function isPdfPrintDateField(compactFieldName) {
+  return [
+    'datum',
+    'date',
+    'p1_datum',
+    'datum_tisku',
+    'datum_zaznamu',
+    'gdpr_00_datum_zaznamu',
+    'gdpr_00_datum_kontroly',
+    'print_date'
+  ].includes(compactFieldName);
+}
+
+function isPdfWorkerField(compactFieldName) {
+  return [
+    'p1_pracovnik',
+    'pracovnik',
+    'pracovnik_projektu',
+    'gdpr_00_pracovnik_projektu',
+    'gdpr_00_odpovedny_pracovnik',
+    'kk01_klicovy_pracovnik'
+  ].includes(compactFieldName);
+}
+
+function isPdfWorkerNoteField(compactFieldName) {
+  return ['gdpr_00_poznamka_balicku'].includes(compactFieldName);
+}
+
 function pdfAutofillValue(fieldName, payload) {
   const normalized = stripPdfDiacritics(fieldName).replace(/[_-]+/g, ' ');
+  const compact = compactPdfFieldName(normalized);
   if (/podpis/.test(normalized)) return null;
 
   const client = payload.client || {};
@@ -1254,17 +1321,17 @@ function pdfAutofillValue(fieldName, payload) {
   const printDate = values.printDate || czechDate();
   const workerNote = values.workerNote || draft.workerNote || draft.handoverNote || '';
 
-  if (/interni.*id|operational.*id|client.*id/.test(normalized) || normalized === 'p1 interni id') return values.internalId || client.operationalId || '';
-  if (/datum.*narozeni|narozeni|birth/.test(normalized)) return values.birthDate || client.birthDate || '';
-  if (/e mail|email/.test(normalized)) return email;
-  if (/telefon|phone/.test(normalized)) return phone;
-  if (/kontakt/.test(normalized)) return contact;
-  if (/adresa|address|misto/.test(normalized)) return address;
-  if (/program|oblast/.test(normalized)) return values.program || client.program || '';
+  if (isPdfInternalIdField(normalized, compact)) return values.internalId || client.operationalId || '';
+  if (isPdfBirthDateField(normalized, compact)) return values.birthDate || client.birthDate || '';
+  if (isPdfEmailField(compact)) return email;
+  if (isPdfPhoneField(compact)) return phone;
+  if (isPdfContactField(compact)) return contact;
+  if (isPdfAddressField(compact)) return address;
+  if (isPdfProgramField(compact)) return values.program || client.program || '';
   if (isPdfClientNameField(normalized)) return fullName;
-  if (/datum|date/.test(normalized)) return printDate;
-  if (/pracovnik|koordinator|odpovedny/.test(normalized)) return values.workerName || '';
-  if (/duvod|ocekavani|poznamka/.test(normalized)) return workerNote;
+  if (isPdfPrintDateField(compact)) return printDate;
+  if (isPdfWorkerField(compact)) return values.workerName || '';
+  if (isPdfWorkerNoteField(compact)) return workerNote;
 
   return null;
 }

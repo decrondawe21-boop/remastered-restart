@@ -408,6 +408,18 @@ const seededTransparentDocuments: MediaFile[] = [
     createdAt: '2026-06-11'
   },
   {
+    id: 'fallback-kpz-opz-051-realizacni-faze',
+    title: 'REST||ART KPZ OPZ 051 - Realizační fáze',
+    fileName: 'REST_ART_KPZ_OPZ_051_REALIZACNI_FAZE_v1.pdf',
+    fileUrl: '/documents/transparency/REST_ART_KPZ_OPZ_051_REALIZACNI_FAZE_v1.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 194631,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: 'Veřejný KPZ dokument projektu REST||ART Integrace pro realizační fázi OPZ 051',
+    uploadedBy: null,
+    createdAt: '2026-06-21'
+  },
+  {
     id: 'fallback-opz-051-59',
     title: 'REST||ART Podklad ke konzultaci OPZ 051/59',
     fileName: 'REST_ART_PODKLAD_KONZULTACE_OPZ_051_59_v1.pdf',

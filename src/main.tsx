@@ -1190,17 +1190,24 @@ const publicFormFolder = (template?: Pick<FormTemplate, 'title' | 'folder' | 'so
   return formFolderHints.find(([pattern]) => pattern.test(source))?.[1] || '';
 };
 
+const legacyPublicFileUrls: Record<string, string> = {
+  '/documents/forms/02_KLIENTSKA_SLOZKA/RAI-FRM-KLI-002_KNIHA_KLIENTA_FILLABLE_v1_6_COMPACT_CONTENT_LOCKED.pdf':
+    '/documents/forms/02_KLIENTSKA_SLOZKA/RAI-FRM-KLI-002_KNIHA_KLIENTA_v2_0_RC1_REBUILD_FROM_ZERO_FILLABLE.pdf'
+};
+
+const normalizeLegacyPublicFileUrl = (value: string) => legacyPublicFileUrls[value] || value;
+
 const resolvePublicFileUrl = (value?: string, template?: Pick<FormTemplate, 'title' | 'folder' | 'sourceNote'>) => {
   const trimmed = value?.trim() || '';
   if (!trimmed) return '';
   if (/^(https?:|data:|blob:)/i.test(trimmed)) return trimmed;
-  if (trimmed.startsWith('/documents/') || trimmed.startsWith('/images/')) return trimmed;
+  if (trimmed.startsWith('/documents/') || trimmed.startsWith('/images/')) return normalizeLegacyPublicFileUrl(trimmed);
 
   const fileName = fileNameFromPath(trimmed) || fileNameFromPath(template?.sourceNote);
   if (!fileName || !/\.pdf$/i.test(fileName)) return trimmed;
 
   const folder = publicFormFolder(template, fileName);
-  return folder ? `/documents/forms/${folder}/${fileName}` : trimmed;
+  return normalizeLegacyPublicFileUrl(folder ? `/documents/forms/${folder}/${fileName}` : trimmed);
 };
 
 const formSensitivity = (template: FormTemplate) => {

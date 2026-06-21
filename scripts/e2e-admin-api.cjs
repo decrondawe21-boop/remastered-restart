@@ -249,7 +249,7 @@ async function requestRaw(path, options = {}) {
       method: 'POST',
       headers: { cookie },
       body: JSON.stringify({
-        fileUrl: '/documents/forms/02_KLIENTSKA_SLOZKA/RAI-FRM-KLI-002_KNIHA_KLIENTA_v2_0_RC1_REBUILD_FROM_ZERO_FILLABLE.pdf',
+        fileUrl: '/documents/forms/02_KLIENTSKA_SLOZKA/RAI-FRM-KLI-002_KNIHA_KLIENTA_FILLABLE_v1_6_COMPACT_CONTENT_LOCKED.pdf',
         templateId: 'e2e-client-book',
         formUid: 'RAI-FRM-KLI-002',
         templateTitle: 'Kniha klienta',

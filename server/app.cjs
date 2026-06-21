@@ -1197,11 +1197,18 @@ function stripPdfDiacritics(value) {
     .toLowerCase();
 }
 
+const legacyPdfFormPaths = new Map([
+  [
+    '/documents/forms/02_KLIENTSKA_SLOZKA/RAI-FRM-KLI-002_KNIHA_KLIENTA_FILLABLE_v1_6_COMPACT_CONTENT_LOCKED.pdf',
+    '/documents/forms/02_KLIENTSKA_SLOZKA/RAI-FRM-KLI-002_KNIHA_KLIENTA_v2_0_RC1_REBUILD_FROM_ZERO_FILLABLE.pdf'
+  ]
+]);
+
 function safePdfFormPath(fileUrl) {
   const rawValue = String(fileUrl || '').trim();
   if (!rawValue) throw new Error('PDF fileUrl is required.');
   const pathname = new URL(rawValue, 'http://restart.local').pathname;
-  const decodedPath = decodeURIComponent(pathname);
+  const decodedPath = legacyPdfFormPaths.get(decodeURIComponent(pathname)) || decodeURIComponent(pathname);
   if (!decodedPath.startsWith('/documents/forms/') || path.extname(decodedPath).toLowerCase() !== '.pdf') {
     throw new Error('Only operational form PDFs can be prefilled.');
   }

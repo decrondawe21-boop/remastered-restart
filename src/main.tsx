@@ -2846,6 +2846,46 @@ function PracticePhotoSlideshow() {
   );
 }
 
+function ProjectRevealMini() {
+  return (
+    <section className="project-reveal-section" aria-labelledby="project-reveal-title">
+      <div className="project-reveal-copy">
+        <p className="section-label">O projektu</p>
+        <h2 id="project-reveal-title">Krátká animace, která drží atmosféru druhé šance.</h2>
+        <p>
+          Logo reveal používáme jako jemný brand moment: ne jako zdržující intro, ale jako krátký vizuální podpis
+          projektu tam, kde má návštěvník rychle pochopit, že REST||ART Integrace má vlastní tvář.
+        </p>
+        <div className="project-reveal-points" aria-label="Využití animace">
+          <span>O projektu</span>
+          <span>Partnerům</span>
+          <span>Video intro</span>
+        </div>
+        <a className="button primary" href="/co-delame">
+          Projít metodu práce <ArrowRight size={18} />
+        </a>
+      </div>
+      <figure className="project-reveal-card">
+        <div className="project-reveal-video-frame">
+          <video
+            controls
+            preload="metadata"
+            poster="/images/video/restart-logo-reveal-preview.png"
+            aria-label="Mini animace loga REST ART Integrace"
+          >
+            <source src="/videos/restart-logo-reveal.mp4" type="video/mp4" />
+            Váš prohlížeč neumí přehrát vložené video.
+          </video>
+        </div>
+        <figcaption>
+          <Video size={18} />
+          <span>Mini animace projektu druhých šancí</span>
+        </figcaption>
+      </figure>
+    </section>
+  );
+}
+
 function HomePage({
   news,
   slides,
@@ -2920,6 +2960,8 @@ function HomePage({
           Jak pracujeme
         </a>
       </section>
+
+      <ProjectRevealMini />
 
       <section className="split-section">
         <div>

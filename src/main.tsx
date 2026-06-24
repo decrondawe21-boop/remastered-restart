@@ -2784,8 +2784,10 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
           swipeStartX.current = null;
         }}
       >
-        {activeSlideHasContainedImage && <img className="hero-banner-bg" src={activeSlide.imageUrl} alt="" aria-hidden="true" />}
-        <img className="hero-banner-main" src={activeSlide.imageUrl} alt="" />
+        {activeSlideHasContainedImage && (
+          <img className="hero-banner-bg" src={activeSlide.imageUrl} alt="" aria-hidden="true" loading="eager" fetchPriority="high" decoding="async" />
+        )}
+        <img className="hero-banner-main" src={activeSlide.imageUrl} alt="" loading="eager" fetchPriority="high" decoding="async" />
         <div className={`hero-banner-overlay${activeSlideHasDesignedText ? ' visually-hidden' : ''}`} aria-live="polite">
           <p className="quiet-label">{activeProgramStory?.label ?? 'Projekt druhých šancí'}</p>
           <h1>{activeSlide.title}</h1>

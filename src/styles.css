@@ -1442,6 +1442,11 @@ h3 {
   line-height: 1.55;
 }
 
+.streetwise-card-main .section-label,
+.streetwise-card-main p:not(.section-label) {
+  color: #ffffff;
+}
+
 .streetwise-photo {
   position: relative;
   overflow: hidden;
@@ -1571,7 +1576,7 @@ h3 {
 .green-band span {
   display: block;
   max-width: 720px;
-  color: rgba(255, 255, 255, 0.88);
+  color: #ffffff;
 }
 
 .project-reveal-section {

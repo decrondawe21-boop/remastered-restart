@@ -2700,6 +2700,7 @@ function HeroAutoScroll({ items }: { items: typeof heroAutoScrollItems }) {
 function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const visibleSlides = slides.filter((slide) => slide.isActive).sort((left, right) => left.sortOrder - right.sortOrder);
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const [autoplayEnabled, setAutoplayEnabled] = React.useState(false);
   const manualPauseUntil = React.useRef(0);
   const swipeStartX = React.useRef<number | null>(null);
   const activeSlide = visibleSlides[activeIndex] ?? visibleSlides[0] ?? starterSlides[0];
@@ -2713,6 +2714,7 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
     return (index + slideCount) % slideCount;
   };
   const markManualInteraction = () => {
+    setAutoplayEnabled(true);
     manualPauseUntil.current = Date.now() + 9000;
   };
   const goToSlide = (index: number, manual = false) => {
@@ -2754,13 +2756,14 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   };
 
   React.useEffect(() => {
+    if (!autoplayEnabled) return;
     if (visibleSlides.length < 2) return;
     const timer = window.setInterval(() => {
       if (Date.now() < manualPauseUntil.current) return;
       setActiveIndex((current) => (current + 1) % visibleSlides.length);
     }, 6500);
     return () => window.clearInterval(timer);
-  }, [visibleSlides.length]);
+  }, [autoplayEnabled, visibleSlides.length]);
 
   React.useEffect(() => {
     if (activeIndex >= visibleSlides.length) setActiveIndex(0);

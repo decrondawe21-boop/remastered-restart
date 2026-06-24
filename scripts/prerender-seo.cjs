@@ -16,6 +16,32 @@ const alternateNames = [styledName, 'REST ART Integrace', 'Restart Integrace', '
 const defaultRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 const defaultKeywords =
   'RESTART Integrace, REST||ART Integrace, Restart Integrace, oficiální web RESTART Integrace, druhá šance, sociální integrace, mentoring, práce, bydlení, stabilizace, JAILBREAK, RESET, REWORK';
+const criticalCss = `
+:root{color-scheme:light;--bg:#fff;--bg-soft:#f5f8f4;--text:#17211b;--muted:#617064;--line:#dce6dd;--green:#2f7d49;--green-dark:#1f5f36;--green-soft:#e4f2e7;--gold:#b8933a;--page-max:1640px;--page-gutter:clamp(22px,3.6vw,58px);--font-sans:"Aptos","Segoe UI Variable","Segoe UI",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;--weight-bold:800;font-family:var(--font-sans)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:16px;line-height:1.5}
+a{color:inherit}
+.app-layout-provider{min-height:100vh;background:linear-gradient(180deg,#fff 0%,#f7faf7 100%)}
+.site-header{position:sticky;top:0;z-index:40;display:flex;gap:18px;align-items:center;justify-content:space-between;padding:16px var(--page-gutter);border-bottom:1px solid var(--line);background:rgba(255,255,255,.94);backdrop-filter:blur(16px)}
+.brand{display:inline-flex;align-items:center;text-decoration:none}
+.brand img{width:220px;height:auto}
+.desktop-nav{display:flex;gap:8px;align-items:center}
+.desktop-nav a,.button{display:inline-flex;align-items:center;gap:8px;border-radius:14px;text-decoration:none;font-weight:700}
+.desktop-nav a{padding:10px 12px;color:#34443a}
+.button.primary{padding:13px 18px;background:var(--green);color:#fff}
+.menu-button{display:none}
+.hero{max-width:var(--page-max);margin:0 auto;padding:clamp(22px,4vw,58px) var(--page-gutter)}
+.hero-banner{position:relative;overflow:hidden;min-height:clamp(420px,58vw,720px);border-radius:30px;background:#0a2117;box-shadow:0 24px 70px rgba(12,44,27,.18)}
+.hero-banner-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(24px) saturate(.9);transform:scale(1.08);opacity:.44}
+.hero-banner-main{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.hero-banner-overlay{position:relative;z-index:2;max-width:760px;padding:clamp(36px,6vw,78px);color:#fff}
+.hero-banner-overlay h1{margin:0 0 16px;font-size:clamp(3rem,8vw,7.8rem);line-height:.9;letter-spacing:-.08em}
+.quiet-label,.section-label{margin:0 0 10px;color:var(--green-dark);font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.hero-banner-overlay .quiet-label{color:#d8efad}
+.hero-text,.hero-program-motto{max-width:620px;margin:0 0 18px;font-size:clamp(1rem,2vw,1.35rem)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+@media(max-width:760px){.site-header{padding:12px 18px}.brand img{width:174px}.desktop-nav{display:none}.menu-button{display:inline-flex}.hero{padding:18px}.hero-banner{min-height:520px;border-radius:22px}.hero-banner-overlay{padding:28px}.hero-banner-overlay h1{font-size:clamp(2.6rem,16vw,4.5rem)}}
+`.trim();
 const videoAssets = [
   {
     routes: ['/'],
@@ -290,6 +316,21 @@ function replaceTag(html, pattern, replacement) {
   return pattern.test(html) ? html.replace(pattern, replacement) : html;
 }
 
+function deferRenderBlockingCss(html) {
+  const withCriticalCss = html.includes('data-critical-css')
+    ? html
+    : html.replace('</head>', `    <style data-critical-css>\n${criticalCss}\n    </style>\n  </head>`);
+
+  return withCriticalCss.replace(
+    /<link\s+rel="stylesheet"\s+([^>]*href="([^"]+)"[^>]*)>/g,
+    (match, attrs, href) => {
+      if (!href.includes('/assets/')) return match;
+      const crossorigin = /\bcrossorigin\b/i.test(attrs) ? ' crossorigin' : '';
+      return `<link rel="preload" href="${href}" as="style"${crossorigin} onload="this.onload=null;this.rel='stylesheet'" /><noscript><link rel="stylesheet" href="${href}"${crossorigin} /></noscript>`;
+    }
+  );
+}
+
 function structuredData(route, canonical) {
   const routeVideos = videoAssets.filter((video) => video.routes.includes(route.path));
   const currentOgImage = routeOgImage(route);
@@ -438,7 +479,7 @@ function renderRoute(route) {
     /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(structuredData(route, canonical), null, 6)}\n    </script>`
   );
-  return html;
+  return deferRenderBlockingCss(html);
 }
 
 function outputPath(routePath) {

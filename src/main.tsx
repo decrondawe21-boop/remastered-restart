@@ -55,8 +55,6 @@ import {
   Wrench,
   X
 } from 'lucide-react';
-import JsBarcode from 'jsbarcode';
-import QRCode from 'qrcode';
 import {
   contacts,
   focusAreas,
@@ -1470,6 +1468,19 @@ const programHeroStories: Record<string, { label: string; motto: string; text: s
   }
 };
 
+const programHeroStoryFromSlide = (slide: HomeSlide) => {
+  const storyById = programHeroStories[slide.id];
+  if (storyById) return storyById;
+  const slugMatch = slide.imageUrl.match(/\/images\/program-pillars\/([a-z-]+)-skica\.webp$/i);
+  if (!slugMatch) return undefined;
+  return programHeroStories[`pillar-${slugMatch[1].toLowerCase()}`];
+};
+
+const programPillarSlideFromSlide = (slide: HomeSlide) => {
+  const storySlugMatch = slide.imageUrl.match(/\/images\/program-pillars\/([a-z-]+)-skica\.webp$/i);
+  return starterSlides.find((starterSlide) => starterSlide.id === slide.id || starterSlide.imageUrl === slide.imageUrl || starterSlide.id === `pillar-${storySlugMatch?.[1]?.toLowerCase()}`);
+};
+
 const heroAutoScrollItems = starterSlides.map((slide) => ({
   id: slide.id,
   title: slide.title,
@@ -2707,7 +2718,12 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const activeSlideHasDesignedText = designedTextSlidePattern.test(activeSlide.imageUrl);
   const activeSlideIsProgramStory = sketchPillarSlidePattern.test(activeSlide.imageUrl);
   const activeSlideHasContainedImage = activeSlideHasDesignedText || activeSlideIsProgramStory;
-  const activeProgramStory = programHeroStories[activeSlide.id];
+  const activeProgramStory = programHeroStoryFromSlide(activeSlide);
+  const activePillarSlide = programPillarSlideFromSlide(activeSlide);
+  const activeSlideTitle = activeSlide.title?.trim() || activePillarSlide?.title || 'REST||ART Integrace';
+  const activeSlideSubtitle = activeSlide.subtitle?.trim() || activePillarSlide?.subtitle || '';
+  const activeCtaLabel = activeSlide.ctaLabel?.trim() || activePillarSlide?.ctaLabel;
+  const activeCtaHref = activeSlide.ctaHref?.trim() || activePillarSlide?.ctaHref;
   const slideCount = visibleSlides.length;
   const wrapIndex = (index: number) => {
     if (!slideCount) return 0;
@@ -2793,19 +2809,19 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
         <img className="hero-banner-main" src={activeSlide.imageUrl} alt="" loading="eager" fetchPriority="high" decoding="async" />
         <div className={`hero-banner-overlay${activeSlideHasDesignedText ? ' visually-hidden' : ''}`} aria-live="polite">
           <p className="quiet-label">{activeProgramStory?.label ?? 'Projekt druhých šancí'}</p>
-          <h1>{activeSlide.title}</h1>
+          <h1>{activeSlideTitle}</h1>
           {activeProgramStory ? (
             <>
               <p className="hero-program-motto">{activeProgramStory.motto}</p>
               <p className="hero-text">{activeProgramStory.text}</p>
             </>
           ) : (
-            <p className="hero-text">{activeSlide.subtitle}</p>
+            <p className="hero-text">{activeSlideSubtitle}</p>
           )}
           <div className="hero-actions">
-            {activeSlide.ctaLabel && activeSlide.ctaHref && (
-              <a className="button inverse" href={activeSlide.ctaHref}>
-                {activeSlide.ctaLabel} <ArrowRight size={18} />
+            {activeCtaLabel && activeCtaHref && (
+              <a className="button inverse" href={activeCtaHref}>
+                {activeCtaLabel} <ArrowRight size={18} />
               </a>
             )}
             <a className="button inverse ghost" href="/programy">
@@ -6874,9 +6890,14 @@ function AdminWorkspace({
   const previewNewsLike = previewNews ? discussion.likes[previewNews.id] : null;
 
   React.useEffect(() => {
-    if (!barcodeRef.current || !toolsDraft.barcodeValue.trim()) return;
-    try {
-      JsBarcode(barcodeRef.current, toolsDraft.barcodeValue.trim(), {
+    const barcodeValue = toolsDraft.barcodeValue.trim();
+    const barcodeElement = barcodeRef.current;
+    if (!barcodeElement || !barcodeValue) return;
+    let isCancelled = false;
+    import('jsbarcode')
+      .then(({ default: renderBarcode }) => {
+        if (isCancelled) return;
+        renderBarcode(barcodeElement, barcodeValue, {
         format: 'CODE128',
         lineColor: '#14231b',
         width: 2,
@@ -6886,24 +6907,44 @@ function AdminWorkspace({
         fontSize: 16,
         margin: 14
       });
-    } catch (error) {
-      onNotify('error', 'Čárový kód nejde vykreslit', error instanceof Error ? error.message : 'Zkontrolujte hodnotu kódu.');
-    }
+      })
+      .catch((error) => {
+        if (!isCancelled) {
+          onNotify('error', 'Čárový kód nejde vykreslit', error instanceof Error ? error.message : 'Zkontrolujte hodnotu kódu.');
+        }
+      });
+    return () => {
+      isCancelled = true;
+    };
   }, [onNotify, toolsDraft.barcodeValue]);
 
   React.useEffect(() => {
-    if (!qrCanvasRef.current || !toolsDraft.qrValue.trim()) return;
-    QRCode.toCanvas(qrCanvasRef.current, toolsDraft.qrValue.trim(), {
-      width: 236,
-      margin: 2,
-      errorCorrectionLevel: 'M',
-      color: {
-        dark: '#14231b',
-        light: '#ffffff'
-      }
-    }).catch((error) => {
-      onNotify('error', 'QR kód nejde vykreslit', error instanceof Error ? error.message : 'Zkontrolujte hodnotu QR kódu.');
-    });
+    const qrValue = toolsDraft.qrValue.trim();
+    const qrCanvas = qrCanvasRef.current;
+    if (!qrCanvas || !qrValue) return;
+    let isCancelled = false;
+    import('qrcode')
+      .then((qrCodeModule) => {
+        if (isCancelled) return undefined;
+        const qrCode = qrCodeModule.default ?? qrCodeModule;
+        return qrCode.toCanvas(qrCanvas, qrValue, {
+          width: 236,
+          margin: 2,
+          errorCorrectionLevel: 'M',
+          color: {
+            dark: '#14231b',
+            light: '#ffffff'
+          }
+        });
+      })
+      .catch((error) => {
+        if (!isCancelled) {
+          onNotify('error', 'QR kód nejde vykreslit', error instanceof Error ? error.message : 'Zkontrolujte hodnotu QR kódu.');
+        }
+      });
+    return () => {
+      isCancelled = true;
+    };
   }, [onNotify, toolsDraft.qrValue]);
 
   React.useEffect(() => {

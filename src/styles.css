@@ -160,6 +160,7 @@ body::after {
 
 .app-layout-provider {
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 .reveal-fx {
@@ -904,6 +905,9 @@ h1 {
 }
 
 .hero-banner-main {
+  position: relative;
+  z-index: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -916,6 +920,7 @@ h1 {
 .hero-banner.designed-slide .hero-banner-bg {
   position: absolute;
   inset: -26px;
+  z-index: 0;
   width: calc(100% + 52px);
   height: calc(100% + 52px);
   object-fit: cover;
@@ -933,8 +938,10 @@ h1 {
 .hero-banner::after {
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: rgba(0, 0, 0, 0.46);
   content: "";
+  pointer-events: none;
 }
 
 .hero-banner.designed-slide::after {
@@ -959,7 +966,7 @@ h1 {
 .hero-banner-overlay {
   position: absolute;
   inset: 50% clamp(70px, 9vw, 130px) auto;
-  z-index: 1;
+  z-index: 3;
   max-width: 850px;
   margin: 0 auto;
   color: #fff;
@@ -1034,6 +1041,11 @@ h1 {
 .slideshow-hero:focus-visible {
   outline: 3px solid rgba(43, 128, 78, 0.28);
   outline-offset: 5px;
+}
+
+.hero-banner .slide-arrow,
+.hero-banner .slide-counter {
+  z-index: 4;
 }
 
 .hero-autoscroll {

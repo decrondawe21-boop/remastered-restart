@@ -1093,7 +1093,7 @@ function isSafeNewsUrl(tagName: string, attrName: string, value: string) {
   return true;
 }
 
-function cleanNewsHtml(value = '') {
+function cleanNewsHtml(value = '', fallbackImageAlt = 'Obrázek k aktualitě') {
   if (typeof document === 'undefined') {
     return value
       .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
@@ -1146,7 +1146,24 @@ function cleanNewsHtml(value = '') {
       if (tagName === 'A') {
         element.setAttribute('rel', 'noopener noreferrer');
       }
-      if (tagName === 'IMG' || tagName === 'IFRAME') {
+      if (tagName === 'IMG') {
+        if (!element.getAttribute('src')?.trim()) {
+          element.remove();
+          continue;
+        }
+        if (!element.getAttribute('alt')?.trim()) {
+          element.setAttribute('alt', fallbackImageAlt);
+        }
+        element.setAttribute('loading', 'lazy');
+      }
+      if (tagName === 'IFRAME') {
+        if (!element.getAttribute('src')?.trim()) {
+          element.remove();
+          continue;
+        }
+        if (!element.getAttribute('title')?.trim()) {
+          element.setAttribute('title', 'Vložené video');
+        }
         element.setAttribute('loading', 'lazy');
       }
       cleanNode(element);
@@ -2410,7 +2427,7 @@ function NewsGrid({
           </div>
           <h3>{item.title}</h3>
           <p>{item.excerpt}</p>
-          {item.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body) }} />}
+          {item.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body, item.title) }} />}
           <NewsDiscussionPanel
             item={item}
             discussion={discussion}
@@ -7017,7 +7034,7 @@ function AdminWorkspace({
       ...newsForm,
       id,
       date: newsForm.date || todayIso(),
-      body: cleanNewsHtml(newsForm.body || ''),
+      body: cleanNewsHtml(newsForm.body || '', newsForm.title || 'Obrázek k aktualitě'),
       tag: newsForm.tag?.trim() || ''
     };
     if (onNewsSaveRequest) {
@@ -8920,7 +8937,7 @@ function AdminWorkspace({
                       ))}
                     </div>
                   )}
-                  {previewNews.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(previewNews.body) }} />}
+                  {previewNews.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(previewNews.body, previewNews.title) }} />}
                 </article>
               ) : (
                 <p className="empty-note">Po vytvoření aktuality se tady ukáže rychlý náhled.</p>
@@ -9058,7 +9075,7 @@ function AdminWorkspace({
                       {newsForm.tag && <em className="news-tag">{newsForm.tag}</em>}
                       <h4>{newsForm.title || 'Nadpis aktuality'}</h4>
                       <p>{newsForm.excerpt || 'Krátký text aktuality.'}</p>
-                      <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(newsForm.body || '') }} />
+                      <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(newsForm.body || '', newsForm.title || 'Obrázek k aktualitě') }} />
                     </div>
                   </div>
 

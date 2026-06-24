@@ -3062,6 +3062,22 @@ function HomePage({
         </div>
       </section>
 
+      <section className="homepage-seo-section" aria-labelledby="homepage-seo-title">
+        <p className="section-label">Oficiální projekt druhých šancí</p>
+        <h2 id="homepage-seo-title">Sociální začleňování, podpora po výkonu trestu a návrat do běžného života.</h2>
+        <p>
+          RESTART Integrace propojuje mentoring, stabilizaci, práci, bydlení a komunitní podporu pro lidi, kteří
+          potřebují bezpečný návrat do společnosti. Programy pomáhají po výkonu trestu, v sociální krizi, po ústavní
+          péči i při dlouhodobé ztrátě práce nebo zázemí.
+        </p>
+        <div className="homepage-seo-points" aria-label="Hlavní oblasti podpory">
+          <span>projekt druhých šancí</span>
+          <span>sociální začleňování</span>
+          <span>podpora po výkonu trestu</span>
+          <span>práce, bydlení a stabilizace</span>
+        </div>
+      </section>
+
       <section className="project-video-section" id="projektove-video" aria-labelledby="project-video-title">
         <div className="project-video-copy">
           <p className="section-label">Video o projektu</p>

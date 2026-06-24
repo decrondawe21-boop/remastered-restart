@@ -2,7 +2,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const baseUrl = 'https://restartintegrace.dk-i.cz';
-const ogImage = `${baseUrl}/images/og/restart-integrace-og-1200x630.png`;
+const ogImage = `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`;
+const routeOgImages = {
+  '/': `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`,
+  '/zapojeni': `${baseUrl}/images/og/restart-integrace-zapojeni-1200x630.png`,
+  '/povinne-zverejnovani': `${baseUrl}/images/og/restart-integrace-povinne-zverejnovani-1200x630.png`,
+  '/aktuality': `${baseUrl}/images/og/restart-integrace-pribehy-1200x630.png`
+};
 const today = new Date().toISOString().slice(0, 10);
 const officialName = 'RESTART Integrace';
 const styledName = 'REST||ART Integrace';
@@ -205,12 +211,88 @@ function routeUrl(routePath) {
   return `${baseUrl}${routePath === '/' ? '/' : routePath}`;
 }
 
+function routeOgImage(route) {
+  return routeOgImages[route.path] || ogImage;
+}
+
+function routeLabel(routePath) {
+  const labels = {
+    '/': 'Úvod',
+    '/co-delame': 'Co děláme',
+    '/programy': 'Programy',
+    '/programy/jailbreak': 'JAILBREAK',
+    '/programy/reset': 'RESET',
+    '/programy/rework': 'REWORK',
+    '/programy/streetwise': 'STREETWISE',
+    '/programy/bod-zlomu': 'BOD ZLOMU',
+    '/programy/stabilizace': 'STABILIZACE',
+    '/aktuality': 'Aktuality',
+    '/zapojeni': 'Zapojení',
+    '/povinne-zverejnovani': 'Povinné zveřejňování',
+    '/kontakt': 'Kontakt',
+    '/pro-firmy': 'Pro firmy',
+    '/media': 'Média',
+    '/webove-gdpr': 'Webové GDPR',
+    '/zasady-ochrany-osobnich-udaju': 'Zásady ochrany osobních údajů',
+    '/klient': 'Klientská zóna',
+    '/admin': 'Administrace'
+  };
+  return labels[routePath] || routePath.replace(/^\//, '').replace(/-/g, ' ');
+}
+
+function breadcrumbGraph(route) {
+  const parts = route.path === '/' ? [] : route.path.split('/').filter(Boolean);
+  const crumbs = [{ path: '/', name: routeLabel('/') }];
+  let current = '';
+  for (const part of parts) {
+    current += `/${part}`;
+    crumbs.push({ path: current, name: routeLabel(current) });
+  }
+  return {
+    '@type': 'BreadcrumbList',
+    '@id': `${routeUrl(route.path)}#breadcrumb`,
+    itemListElement: crumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: routeUrl(crumb.path)
+    }))
+  };
+}
+
+function articleGraph(route, canonical, image) {
+  if (route.path !== '/aktuality') return [];
+  return [
+    {
+      '@type': 'Article',
+      '@id': `${canonical}#article-pribehy-druhe-sance`,
+      headline: 'Příběhy druhé šance',
+      description:
+        'Citlivě zpracované anonymizované příběhy lidí, kteří se s podporou projektu RESTART Integrace vracejí do běžného života.',
+      image,
+      datePublished: '2026-06-24',
+      dateModified: today,
+      inLanguage: 'cs-CZ',
+      author: {
+        '@id': `${baseUrl}/#organization`
+      },
+      publisher: {
+        '@id': `${baseUrl}/#organization`
+      },
+      mainEntityOfPage: {
+        '@id': `${canonical}#webpage`
+      }
+    }
+  ];
+}
+
 function replaceTag(html, pattern, replacement) {
   return pattern.test(html) ? html.replace(pattern, replacement) : html;
 }
 
 function structuredData(route, canonical) {
   const routeVideos = videoAssets.filter((video) => video.routes.includes(route.path));
+  const currentOgImage = routeOgImage(route);
 
   return {
     '@context': 'https://schema.org',
@@ -222,7 +304,7 @@ function structuredData(route, canonical) {
         alternateName: alternateNames,
         url: `${baseUrl}/`,
         logo: `${baseUrl}/images/brand/restart-integrace-full-logo.png`,
-        image: ogImage,
+        image: currentOgImage,
         description:
           'RESTART Integrace (REST||ART) je oficiální projekt druhých šancí zaměřený na stabilizaci, práci, bydlení a důstojný návrat do společnosti.',
         foundingDate: '2025-05-06',
@@ -266,13 +348,15 @@ function structuredData(route, canonical) {
         },
         primaryImageOfPage: {
           '@type': 'ImageObject',
-          url: ogImage,
+          url: currentOgImage,
           width: 1200,
           height: 630
         },
         dateModified: today,
         keywords: route.noindex ? undefined : defaultKeywords
       },
+      breadcrumbGraph(route),
+      ...articleGraph(route, canonical, currentOgImage),
       ...routeVideos.map((video) => ({
         '@type': 'VideoObject',
         '@id': `${video.contentUrl}#video`,
@@ -294,6 +378,7 @@ function structuredData(route, canonical) {
 
 function renderRoute(route) {
   const canonical = routeUrl(route.path);
+  const currentOgImage = routeOgImage(route);
   let html = template;
   html = replaceTag(html, /<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(route.title)}</title>`);
   html = replaceTag(
@@ -326,11 +411,16 @@ function renderRoute(route) {
     `<meta property="og:description" content="${escapeHtml(route.description)}" />`
   );
   html = replaceTag(html, /<meta\s+property="og:url"\s+content="[^"]*"\s*\/>/, `<meta property="og:url" content="${canonical}" />`);
-  html = replaceTag(html, /<meta\s+property="og:image"\s+content="[^"]*"\s*\/>/, `<meta property="og:image" content="${ogImage}" />`);
+  html = replaceTag(html, /<meta\s+property="og:image"\s+content="[^"]*"\s*\/>/, `<meta property="og:image" content="${currentOgImage}" />`);
   html = replaceTag(
     html,
     /<meta\s+property="og:image:secure_url"\s+content="[^"]*"\s*\/>/,
-    `<meta property="og:image:secure_url" content="${ogImage}" />`
+    `<meta property="og:image:secure_url" content="${currentOgImage}" />`
+  );
+  html = replaceTag(
+    html,
+    /<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/>/,
+    `<meta property="og:image:alt" content="${escapeHtml(route.title)}" />`
   );
   html = replaceTag(html, /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/>/, `<meta name="twitter:title" content="${escapeHtml(route.title)}" />`);
   html = replaceTag(
@@ -338,7 +428,12 @@ function renderRoute(route) {
     /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/>/,
     `<meta name="twitter:description" content="${escapeHtml(route.description)}" />`
   );
-  html = replaceTag(html, /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/>/, `<meta name="twitter:image" content="${ogImage}" />`);
+  html = replaceTag(html, /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/>/, `<meta name="twitter:image" content="${currentOgImage}" />`);
+  html = replaceTag(
+    html,
+    /<meta\s+name="twitter:image:alt"\s+content="[^"]*"\s*\/>/,
+    `<meta name="twitter:image:alt" content="${escapeHtml(route.title)}" />`
+  );
   html = html.replace(
     /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(structuredData(route, canonical), null, 6)}\n    </script>`

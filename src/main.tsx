@@ -1072,7 +1072,7 @@ const newsHtmlAttrs = new Map([
   ['H2', new Set(['class'])],
   ['H3', new Set(['class'])],
   ['H4', new Set(['class'])],
-  ['IMG', new Set(['src', 'alt', 'title', 'loading'])],
+  ['IMG', new Set(['src', 'alt', 'title', 'loading', 'width', 'height'])],
   ['IFRAME', new Set(['src', 'title', 'allow', 'allowfullscreen', 'loading'])],
   ['P', new Set(['class'])]
 ]);
@@ -1153,6 +1153,12 @@ function cleanNewsHtml(value = '', fallbackImageAlt = 'Obrázek k aktualitě') {
         }
         if (!element.getAttribute('alt')?.trim()) {
           element.setAttribute('alt', fallbackImageAlt);
+        }
+        if (!element.getAttribute('width')?.trim()) {
+          element.setAttribute('width', '1200');
+        }
+        if (!element.getAttribute('height')?.trim()) {
+          element.setAttribute('height', '675');
         }
         element.setAttribute('loading', 'lazy');
       }
@@ -2119,7 +2125,7 @@ function Header({
     <>
       <header className="site-header">
         <a className="brand" href="/" aria-label="REST ART Integrace domů">
-        <img src="/images/sponsor-logo.png" alt="" />
+          <img src="/images/sponsor-logo.png" alt="" width="1024" height="492" />
         </a>
         <button className="menu-button" type="button" aria-label="Otevřít menu" onClick={() => setOpen(true)}>
           <Menu size={22} />
@@ -7013,7 +7019,7 @@ function AdminWorkspace({
     if (!url) return;
     const trimmed = url.trim();
     if (type === 'image') {
-      insertNewsBody(`<figure><img src="${trimmed}" alt="" /><figcaption>Popisek obrázku</figcaption></figure>`);
+      insertNewsBody(`<figure><img src="${trimmed}" alt="" width="1200" height="675" /><figcaption>Popisek obrázku</figcaption></figure>`);
       return;
     }
     if (type === 'video') {

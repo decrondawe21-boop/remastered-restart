@@ -48,6 +48,10 @@ function sendPdf(response, statusCode, buffer, fileName) {
   response.end(buffer);
 }
 
+function isUnknownColumnError(error) {
+  return error && (error.code === 'ER_BAD_FIELD_ERROR' || error.errno === 1054);
+}
+
 const publicRoot = path.resolve(__dirname, '..', 'public');
 const portalRoles = ['applicant', 'client', 'volunteer', 'investor', 'patron', 'contributor', 'donor', 'user'];
 const assignableRoles = ['admin', 'editor', ...portalRoles];
@@ -591,13 +595,25 @@ async function confirmPasswordReset(request, response) {
 }
 
 async function listNews(_request, response) {
-  const rows = await query(
-    `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
-     FROM news
-     WHERE status = 'published'
-     ORDER BY published_at DESC, created_at DESC
-     LIMIT 50`
-  );
+  let rows;
+  try {
+    rows = await query(
+      `SELECT id, title, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+       FROM news
+       WHERE status = 'published'
+       ORDER BY published_at DESC, created_at DESC
+       LIMIT 50`
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    rows = await query(
+      `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+       FROM news
+       WHERE status = 'published'
+       ORDER BY published_at DESC, created_at DESC
+       LIMIT 50`
+    );
+  }
   sendJson(response, 200, { news: rows });
 }
 
@@ -615,25 +631,55 @@ async function saveNews(request, response) {
   }
   const id = body.id || randomId();
   const date = String(body.date || '').trim() || new Date().toISOString().slice(0, 10);
-  await query(
-    `INSERT INTO news (id, title, excerpt, body, published_at, status, author_id)
-     VALUES (?, ?, ?, ?, ?, 'published', ?)
-     ON DUPLICATE KEY UPDATE
-       title = VALUES(title),
-       excerpt = VALUES(excerpt),
-       body = VALUES(body),
-       published_at = VALUES(published_at),
-       status = 'published',
-       author_id = VALUES(author_id)`,
-    [id, body.title.trim(), body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
-  );
-  const rows = await query(
-    `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
-     FROM news
-     WHERE id = ?
-     LIMIT 1`,
-    [id]
-  );
+  const tag = String(body.tag || '').trim() || null;
+  try {
+    await query(
+      `INSERT INTO news (id, title, tag, excerpt, body, published_at, status, author_id)
+       VALUES (?, ?, ?, ?, ?, ?, 'published', ?)
+       ON DUPLICATE KEY UPDATE
+         title = VALUES(title),
+         tag = VALUES(tag),
+         excerpt = VALUES(excerpt),
+         body = VALUES(body),
+         published_at = VALUES(published_at),
+         status = 'published',
+         author_id = VALUES(author_id)`,
+      [id, body.title.trim(), tag, body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    await query(
+      `INSERT INTO news (id, title, excerpt, body, published_at, status, author_id)
+       VALUES (?, ?, ?, ?, ?, 'published', ?)
+       ON DUPLICATE KEY UPDATE
+         title = VALUES(title),
+         excerpt = VALUES(excerpt),
+         body = VALUES(body),
+         published_at = VALUES(published_at),
+         status = 'published',
+         author_id = VALUES(author_id)`,
+      [id, body.title.trim(), body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
+    );
+  }
+  let rows;
+  try {
+    rows = await query(
+      `SELECT id, title, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+       FROM news
+       WHERE id = ?
+       LIMIT 1`,
+      [id]
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    rows = await query(
+      `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+       FROM news
+       WHERE id = ?
+       LIMIT 1`,
+      [id]
+    );
+  }
   sendJson(response, 200, { news: rows[0] });
 }
 

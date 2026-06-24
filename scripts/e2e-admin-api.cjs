@@ -362,18 +362,32 @@ async function requestRaw(path, options = {}) {
       headers: { cookie },
       body: JSON.stringify({
         title: newsTitle,
+        tag: 'Příběhy druhé šance',
         date: '2026-06-03',
         excerpt: 'Aktualita založená přes admin API test.',
         body: '<p>Testovací tělo aktuality.</p>'
       })
     });
-    if (!createdNews.response.ok || createdNews.body.news.title !== newsTitle || !createdNews.body.news.body.includes('Testovací tělo')) {
+    if (
+      !createdNews.response.ok ||
+      createdNews.body.news.title !== newsTitle ||
+      !createdNews.body.news.body.includes('Testovací tělo')
+    ) {
       throw new Error(`News creation failed: ${JSON.stringify(createdNews.body)}`);
+    }
+    const newsTagsSupported = Object.prototype.hasOwnProperty.call(createdNews.body.news, 'tag');
+    if (newsTagsSupported && createdNews.body.news.tag !== 'Příběhy druhé šance') {
+      throw new Error(`News tag was not persisted: ${JSON.stringify(createdNews.body)}`);
     }
     createdNewsId = createdNews.body.news.id;
 
     const publicNews = await request('/api/news');
-    if (!publicNews.response.ok || !publicNews.body.news.some((item) => item.id === createdNews.body.news.id)) {
+    if (
+      !publicNews.response.ok ||
+      !publicNews.body.news.some(
+        (item) => item.id === createdNews.body.news.id && (!newsTagsSupported || item.tag === 'Příběhy druhé šance')
+      )
+    ) {
       throw new Error(`Created news is missing from public news list: ${JSON.stringify(publicNews.body)}`);
     }
 

@@ -561,6 +561,29 @@ export const partnerTypes = [
 
 export const starterNews = [
   {
+    id: 'story-petr-s-druha-sance',
+    title: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát',
+    date: '2026-06-24',
+    tag: 'Příběhy druhé šance',
+    excerpt:
+      'Petr S. ve svém dopise popisuje cestu přes ústavní péči, ulici, výkon trestu i léčbu. Nehledá výmluvu. Hledá způsob, jak začít žít jinak.',
+    body: [
+      '<p><strong>Tenhle příběh zveřejňujeme anonymizovaně a s respektem k soukromí klienta.</strong> Jméno je zkrácené, fotografie dopisu nezveřejňujeme a konkrétní citlivé detaily ponecháváme mimo veřejný prostor.</p>',
+      '<h2>Život, který začal bez pevného zázemí</h2>',
+      '<p>Petr S. vyrůstal od dětství mimo vlastní rodinu. Ve svém dopise se vrací k dětskému domovu, ústavní výchově, samotě a pocitu, že musel příliš brzy nést věci, kterým jako dítě nemohl rozumět.</p>',
+      '<p>Ve škole se dokázal držet. Nebyl člověkem bez schopností ani bez snahy. Jenže za tím, co bylo vidět navenek, zůstávala bolest, nejistota a otázka, kam vlastně patří.</p>',
+      '<h2>Špatná rozhodnutí a kruh, ze kterého se těžko vystupuje</h2>',
+      '<p>Postupně přišla ulice, špatná rozhodnutí, trestná činnost, výkon trestu i pokusy o léčbu. Petr o minulosti nepíše proto, aby ji obhajoval. Píše o ní jako o kruhu, který se bez podpory a bezpečného zázemí velmi těžko přerušuje.</p>',
+      '<p>Po výkonu trestu se člověk může ocitnout formálně na svobodě, ale prakticky bez opory: bez stabilního bydlení, bez práce, bez vztahů, bez režimu a často i bez důvěry, že změna může vydržet.</p>',
+      '<h2>To nejdůležitější není minulost, ale směr</h2>',
+      '<p>Nejsilnější část dopisu není popis pádu. Je to snaha říct: ještě to nechci vzdát. Petr píše o touze žít normálně, naučit se fungovat, obnovit důvěru a nezůstat sám v okamžiku, kdy přijde první těžká chvíle.</p>',
+      '<p>Právě tady začíná smysl programu JAILBREAK. Druhá šance není smazání minulosti. Je to konkrétní plán, kontakt, odpovědnost, práce, bydlení, režim a člověk, který pomůže udržet směr, když je návrat do běžného života křehký.</p>',
+      '<h2>Druhá šance v praxi</h2>',
+      '<p>Petrův příběh není jednoduchý a nebude jednoduchý ani další krok. Ale dopis ukazuje něco podstatného: i člověk, který prošel těžkou minulostí, může pořád nést touhu změnit směr.</p>',
+      '<p>Ne každý návrat se povede napoprvé. Každý návrat ale musí někde začít. Někdy jedním dopisem. Jednou větou. Jedním rozhodnutím, že minulost už nemá být jediný scénář budoucnosti.</p>'
+    ].join('')
+  },
+  {
     id: 'news-second-chance',
     title: 'Ne každý má možnosti. REST||ART umožňuje zkusit to znovu.',
     date: '2026-06-03',

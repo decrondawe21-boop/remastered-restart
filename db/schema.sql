@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS form_submissions (
 CREATE TABLE IF NOT EXISTS news (
   id CHAR(36) PRIMARY KEY,
   title VARCHAR(220) NOT NULL,
+  tag VARCHAR(80) NULL,
   excerpt TEXT NOT NULL,
   body MEDIUMTEXT NULL,
   published_at DATETIME NOT NULL,
@@ -150,6 +151,28 @@ CREATE TABLE IF NOT EXISTS news (
   CONSTRAINT news_author_fk FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE SET NULL,
   KEY news_status_published_idx (status, published_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE news
+  ADD COLUMN IF NOT EXISTS tag VARCHAR(80) NULL AFTER title;
+
+INSERT INTO news (id, title, tag, excerpt, body, published_at, status, author_id)
+VALUES (
+  'story-petr-s-druha-sance',
+  'Petr S.: Dopis, ve kterém se člověk nechce vzdát',
+  'Příběhy druhé šance',
+  'Petr S. ve svém dopise popisuje cestu přes ústavní péči, ulici, výkon trestu i léčbu. Nehledá výmluvu. Hledá způsob, jak začít žít jinak.',
+  '<p><strong>Tenhle příběh zveřejňujeme anonymizovaně a s respektem k soukromí klienta.</strong> Jméno je zkrácené, fotografie dopisu nezveřejňujeme a konkrétní citlivé detaily ponecháváme mimo veřejný prostor.</p><h2>Život, který začal bez pevného zázemí</h2><p>Petr S. vyrůstal od dětství mimo vlastní rodinu. Ve svém dopise se vrací k dětskému domovu, ústavní výchově, samotě a pocitu, že musel příliš brzy nést věci, kterým jako dítě nemohl rozumět.</p><p>Ve škole se dokázal držet. Nebyl člověkem bez schopností ani bez snahy. Jenže za tím, co bylo vidět navenek, zůstávala bolest, nejistota a otázka, kam vlastně patří.</p><h2>Špatná rozhodnutí a kruh, ze kterého se těžko vystupuje</h2><p>Postupně přišla ulice, špatná rozhodnutí, trestná činnost, výkon trestu i pokusy o léčbu. Petr o minulosti nepíše proto, aby ji obhajoval. Píše o ní jako o kruhu, který se bez podpory a bezpečného zázemí velmi těžko přerušuje.</p><p>Po výkonu trestu se člověk může ocitnout formálně na svobodě, ale prakticky bez opory: bez stabilního bydlení, bez práce, bez vztahů, bez režimu a často i bez důvěry, že změna může vydržet.</p><h2>To nejdůležitější není minulost, ale směr</h2><p>Nejsilnější část dopisu není popis pádu. Je to snaha říct: ještě to nechci vzdát. Petr píše o touze žít normálně, naučit se fungovat, obnovit důvěru a nezůstat sám v okamžiku, kdy přijde první těžká chvíle.</p><p>Právě tady začíná smysl programu JAILBREAK. Druhá šance není smazání minulosti. Je to konkrétní plán, kontakt, odpovědnost, práce, bydlení, režim a člověk, který pomůže udržet směr, když je návrat do běžného života křehký.</p><h2>Druhá šance v praxi</h2><p>Petrův příběh není jednoduchý a nebude jednoduchý ani další krok. Ale dopis ukazuje něco podstatného: i člověk, který prošel těžkou minulostí, může pořád nést touhu změnit směr.</p><p>Ne každý návrat se povede napoprvé. Každý návrat ale musí někde začít. Někdy jedním dopisem. Jednou větou. Jedním rozhodnutím, že minulost už nemá být jediný scénář budoucnosti.</p>',
+  '2026-06-24 00:00:00',
+  'published',
+  NULL
+)
+ON DUPLICATE KEY UPDATE
+  title = VALUES(title),
+  tag = VALUES(tag),
+  excerpt = VALUES(excerpt),
+  body = VALUES(body),
+  published_at = VALUES(published_at),
+  status = VALUES(status);
 
 CREATE TABLE IF NOT EXISTS news_likes (
   news_id CHAR(36) NOT NULL,

@@ -327,6 +327,7 @@ type NewsItem = {
   date: string;
   excerpt: string;
   body?: string;
+  tag?: string;
 };
 
 type NewsDiscussion = {
@@ -2376,7 +2377,10 @@ function NewsGrid({
     <div className="news-grid">
       {news.map((item) => (
         <article key={item.id} className="news-card">
-          <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+          <div className="news-card-meta">
+            {item.tag && <span className="news-tag">{item.tag}</span>}
+            <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+          </div>
           <h3>{item.title}</h3>
           <p>{item.excerpt}</p>
           {item.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body) }} />}
@@ -3344,6 +3348,7 @@ function NewsPage({
   onDeleteComment: (commentId: string) => Promise<void>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
+  const secondChanceStories = news.filter((item) => item.tag === 'Příběhy druhé šance');
   return (
     <>
       <PageHeader
@@ -3352,6 +3357,18 @@ function NewsPage({
         text="Novinky z projektu, příběhy z praxe a důležité informace o podpoře, programech a komunitní spolupráci."
       />
       <section className="content-section">
+        {secondChanceStories.length > 0 && (
+          <aside className="story-rubric-callout" aria-label="Rubrika Příběhy druhé šance">
+            <span className="news-tag">Příběhy druhé šance</span>
+            <div>
+              <h2>Skutečné příběhy bez bulváru.</h2>
+              <p>
+                Citlivě zpracované kazuistiky lidí, kteří se snaží vrátit do běžného života. Identifikační a
+                rodinné detaily zůstávají mimo veřejný prostor.
+              </p>
+            </div>
+          </aside>
+        )}
         <NewsGrid
           news={news}
           discussion={discussion}
@@ -6298,7 +6315,8 @@ function AdminWorkspace({
     title: '',
     date: todayIso(),
     excerpt: '',
-    body: ''
+    body: '',
+    tag: ''
   });
   const [isNewsDialogOpen, setIsNewsDialogOpen] = React.useState(false);
   const [newsUndoStack, setNewsUndoStack] = React.useState<string[]>([]);
@@ -6797,7 +6815,8 @@ function AdminWorkspace({
         title: '',
         date: todayIso(),
         excerpt: '',
-        body: ''
+        body: '',
+        tag: ''
       }
     );
     setIsNewsDialogOpen(true);
@@ -6806,7 +6825,7 @@ function AdminWorkspace({
 
   const closeNewsDialog = () => {
     setIsNewsDialogOpen(false);
-    setNewsForm({ id: '', title: '', date: todayIso(), excerpt: '', body: '' });
+    setNewsForm({ id: '', title: '', date: todayIso(), excerpt: '', body: '', tag: '' });
     setNewsUndoStack([]);
   };
 
@@ -6860,7 +6879,13 @@ function AdminWorkspace({
     event.preventDefault();
     if (!newsForm.title.trim()) return;
     const id = newsForm.id || crypto.randomUUID();
-    let nextItem: NewsItem = { ...newsForm, id, date: newsForm.date || todayIso(), body: cleanNewsHtml(newsForm.body || '') };
+    let nextItem: NewsItem = {
+      ...newsForm,
+      id,
+      date: newsForm.date || todayIso(),
+      body: cleanNewsHtml(newsForm.body || ''),
+      tag: newsForm.tag?.trim() || ''
+    };
     if (onNewsSaveRequest) {
       try {
         const savedItem = await onNewsSaveRequest(nextItem);
@@ -8629,6 +8654,7 @@ function AdminWorkspace({
                   <article key={item.id} className={`news-admin-row ${focusedNewsId === item.id ? 'is-targeted' : ''}`} data-news-id={item.id}>
                     <button className="news-admin-main" type="button" onClick={() => editNews(item)}>
                       <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+                      {item.tag && <em className="news-tag">{item.tag}</em>}
                       <strong>{item.title}</strong>
                       <span>{item.excerpt}</span>
                     </button>
@@ -8723,6 +8749,20 @@ function AdminWorkspace({
                       Datum
                       <input type="date" value={newsForm.date} onChange={(event) => setNewsForm((current) => ({ ...current, date: event.target.value }))} />
                     </label>
+                    <label>
+                      Rubrika / tag
+                      <input
+                        value={newsForm.tag || ''}
+                        onChange={(event) => setNewsForm((current) => ({ ...current, tag: event.target.value }))}
+                        placeholder="Příběhy druhé šance"
+                        list="news-tag-options"
+                      />
+                      <datalist id="news-tag-options">
+                        <option value="Příběhy druhé šance" />
+                        <option value="JAILBREAK" />
+                        <option value="Aktuality" />
+                      </datalist>
+                    </label>
                     <label className="editor-full">
                       Krátký text
                       <textarea rows={3} value={newsForm.excerpt} onChange={(event) => setNewsForm((current) => ({ ...current, excerpt: event.target.value }))} required />
@@ -8799,6 +8839,7 @@ function AdminWorkspace({
                     </label>
                     <div className="news-editor-preview">
                       <span>Náhled</span>
+                      {newsForm.tag && <em className="news-tag">{newsForm.tag}</em>}
                       <h4>{newsForm.title || 'Nadpis aktuality'}</h4>
                       <p>{newsForm.excerpt || 'Krátký text aktuality.'}</p>
                       <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(newsForm.body || '') }} />

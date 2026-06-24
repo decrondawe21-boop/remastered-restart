@@ -17,6 +17,7 @@ export type ApiNewsItem = {
   date: string;
   excerpt: string;
   body?: string;
+  tag?: string;
 };
 
 export type ApiNewsLike = {

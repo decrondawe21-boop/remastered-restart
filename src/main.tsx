@@ -1374,7 +1374,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-jailbreak',
     title: 'JAILBREAK',
     subtitle: 'Výkon trestu odnětí svobody a návrat ven: svoboda potřebuje strukturu, práci a konkrétní plán.',
-    imageUrl: '/images/program-pillars/jailbreak-skica.png',
+    imageUrl: '/images/program-pillars/jailbreak-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/jailbreak',
     sortOrder: 10,
@@ -1384,7 +1384,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-reset',
     title: 'RESET',
     subtitle: 'Závislosti, krize a ztracený režim: důstojný restart přes terapii, komunitu a bezpečný každodenní rytmus.',
-    imageUrl: '/images/program-pillars/reset-skica.png',
+    imageUrl: '/images/program-pillars/reset-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/reset',
     sortOrder: 20,
@@ -1394,7 +1394,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-rework',
     title: 'REWORK',
     subtitle: 'Dlouhodobě nezaměstnaní a lidé s bariérami: pracovní restart, rekvalifikace a férový návrat do praxe.',
-    imageUrl: '/images/program-pillars/rework-skica.png',
+    imageUrl: '/images/program-pillars/rework-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/rework',
     sortOrder: 30,
@@ -1404,7 +1404,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-streetwise',
     title: 'STREETWISE',
     subtitle: 'Lidé bez domova a mimo dosah systému: nízkoprahové zázemí, terén a první bezpečný krok.',
-    imageUrl: '/images/program-pillars/streetwise-skica.png',
+    imageUrl: '/images/program-pillars/streetwise-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/streetwise',
     sortOrder: 40,
@@ -1414,7 +1414,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-bod-zlomu',
     title: 'BOD ZLOMU',
     subtitle: 'Děti z dětských domovů a mladí lidé po ústavní péči: přechod do samostatnosti, vztahů a vlastního směru.',
-    imageUrl: '/images/program-pillars/bod-zlomu-skica.png',
+    imageUrl: '/images/program-pillars/bod-zlomu-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/bod-zlomu',
     sortOrder: 50,
@@ -1424,7 +1424,7 @@ const starterSlides: HomeSlide[] = [
     id: 'pillar-stabilizace',
     title: 'STABILIZACE',
     subtitle: 'Konečný podpůrný program: udržet změnu v bydlení, práci, režimu, komunitě a běžném životě.',
-    imageUrl: '/images/program-pillars/stabilizace-skica.png',
+    imageUrl: '/images/program-pillars/stabilizace-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/stabilizace',
     sortOrder: 60,
@@ -1435,7 +1435,7 @@ const starterSlides: HomeSlide[] = [
 const starterSlideIds = new Set(starterSlides.map((slide) => slide.id));
 const designedTextSlidePattern = /^\/images\/\d{2}\.png$/i;
 const sketchPillarSlidePattern =
-  /^\/images\/program-pillars\/(?:jailbreak|reset|rework|streetwise|bod-zlomu|stabilizace)-skica\.png$/i;
+  /^\/images\/program-pillars\/(?:jailbreak|reset|rework|streetwise|bod-zlomu|stabilizace)-skica\.webp$/i;
 
 const programHeroStories: Record<string, { label: string; motto: string; text: string }> = {
   'pillar-jailbreak': {
@@ -2125,7 +2125,7 @@ function Header({
     <>
       <header className="site-header">
         <a className="brand" href="/" aria-label="REST ART Integrace domů">
-          <img src="/images/sponsor-logo.png" alt="" width="1024" height="492" />
+          <img src="/images/sponsor-logo.webp" alt="" width="440" height="212" />
         </a>
         <button className="menu-button" type="button" aria-label="Otevřít menu" onClick={() => setOpen(true)}>
           <Menu size={22} />
@@ -2900,6 +2900,39 @@ function PracticePhotoSlideshow() {
   );
 }
 
+function LazyVideo({
+  src,
+  poster,
+  label,
+  buttonLabel = 'Přehrát video'
+}: {
+  src: string;
+  poster: string;
+  label: string;
+  buttonLabel?: string;
+}) {
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
+  if (isLoaded) {
+    return (
+      <video controls autoPlay preload="metadata" poster={poster} aria-label={label}>
+        <source src={src} type="video/mp4" />
+        Váš prohlížeč neumí přehrát vložené video.
+      </video>
+    );
+  }
+
+  return (
+    <button className="lazy-video-poster" type="button" aria-label={label} onClick={() => setIsLoaded(true)}>
+      <img src={poster} alt="" width="960" height="540" loading="lazy" />
+      <span className="lazy-video-play">
+        <Video size={22} />
+        {buttonLabel}
+      </span>
+    </button>
+  );
+}
+
 function ProjectRevealMini() {
   return (
     <section className="project-reveal-section" aria-labelledby="project-reveal-title">
@@ -2921,15 +2954,12 @@ function ProjectRevealMini() {
       </div>
       <figure className="project-reveal-card">
         <div className="project-reveal-video-frame">
-          <video
-            controls
-            preload="metadata"
-            poster="/images/video/restart-logo-reveal-preview.png"
-            aria-label="Mini animace loga REST ART Integrace"
-          >
-            <source src="/videos/restart-logo-reveal.mp4" type="video/mp4" />
-            Váš prohlížeč neumí přehrát vložené video.
-          </video>
+          <LazyVideo
+            src="/videos/restart-logo-reveal.mp4"
+            poster="/images/video/restart-logo-reveal-preview.webp"
+            label="Přehrát mini animaci loga REST ART Integrace"
+            buttonLabel="Přehrát animaci"
+          />
         </div>
         <figcaption>
           <Video size={18} />
@@ -3111,10 +3141,11 @@ function HomePage({
           </p>
         </div>
         <figure className="project-video-frame">
-          <video controls preload="metadata" poster="/videos/rest-art-intro-poster.png">
-            <source src="/videos/rest-art-intro-z-podkladu-v1-1080p.mp4" type="video/mp4" />
-            Váš prohlížeč nepodporuje přehrávání videa. Video je dostupné jako MP4 soubor.
-          </video>
+          <LazyVideo
+            src="/videos/rest-art-intro-z-podkladu-v1-1080p.mp4"
+            poster="/videos/rest-art-intro-poster.webp"
+            label="Přehrát krátké video projektu RESTART Integrace"
+          />
           <figcaption>Oficiální krátké video projektu RESTART Integrace.</figcaption>
         </figure>
       </section>

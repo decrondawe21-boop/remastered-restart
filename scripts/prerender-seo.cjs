@@ -22,7 +22,7 @@ const videoAssets = [
     name: 'RESTART Integrace - krátké představení projektu',
     description:
       'Krátké video představující RESTART Integrace jako projekt druhých šancí, praktické podpory a návratu lidí do života.',
-    thumbnailUrl: `${baseUrl}/videos/rest-art-intro-poster.png`,
+    thumbnailUrl: `${baseUrl}/videos/rest-art-intro-poster.webp`,
     contentUrl: `${baseUrl}/videos/rest-art-intro-z-podkladu-v1-1080p.mp4`,
     embedUrl: `${baseUrl}/#projektove-video`,
     uploadDate: '2026-06-23',
@@ -32,7 +32,7 @@ const videoAssets = [
     routes: ['/'],
     name: 'RESTART Integrace - logo reveal',
     description: 'Logo animace RESTART Integrace pro veřejnou prezentaci projektu druhých šancí.',
-    thumbnailUrl: `${baseUrl}/videos/restart-logo-reveal-poster.png`,
+    thumbnailUrl: `${baseUrl}/videos/restart-logo-reveal-poster.webp`,
     contentUrl: `${baseUrl}/videos/restart-logo-reveal.mp4`,
     embedUrl: `${baseUrl}/#projektove-video`,
     uploadDate: '2026-06-23',

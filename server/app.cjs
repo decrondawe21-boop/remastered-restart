@@ -939,6 +939,88 @@ function publicSlide(row) {
   };
 }
 
+const institutionalCareLabelMap = {
+  yes: 'Ano - dětský domov / ústavní péče',
+  no: 'Ne',
+  unknown: 'Nezjištěno / neuvedeno'
+};
+
+const childhoodBackgroundLabelMap = {
+  institutional_home: 'Dětský domov',
+  educational_institute: 'Výchovný ústav',
+  foster_care: 'Pěstounská péče',
+  incomplete_family: 'Neúplná rodina',
+  standard_family: 'Běžná rodina',
+  street_or_homelessness: 'Ulice / bez stabilního zázemí',
+  other: 'Jiné',
+  unknown: 'Nezjištěno / neuvedeno'
+};
+
+function normalizeInstitutionalCare(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  return ['yes', 'no', 'unknown'].includes(normalized) ? normalized : 'unknown';
+}
+
+function normalizeChildhoodBackground(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(childhoodBackgroundLabelMap, normalized) ? normalized : 'unknown';
+}
+
+function aggregateJailbreakBackgroundStats(rows, totalOverride = null) {
+  const total = totalOverride === null ? rows.length : Number(totalOverride || 0);
+  const minPublicSample = 10;
+  const institutionalCareCounts = new Map([
+    ['yes', 0],
+    ['no', 0],
+    ['unknown', 0]
+  ]);
+  const backgroundCounts = new Map(Object.keys(childhoodBackgroundLabelMap).map((key) => [key, 0]));
+
+  for (const row of rows) {
+    const institutionalCare = normalizeInstitutionalCare(row.institutionalCareHistory || row.institutional_care_history);
+    const childhoodBackground = normalizeChildhoodBackground(row.childhoodBackground || row.childhood_background);
+    institutionalCareCounts.set(institutionalCare, (institutionalCareCounts.get(institutionalCare) || 0) + 1);
+    backgroundCounts.set(childhoodBackground, (backgroundCounts.get(childhoodBackground) || 0) + 1);
+  }
+
+  const bucket = ([key, count], labelMap) => ({
+    key,
+    label: labelMap[key] || key,
+    count,
+    share: total > 0 ? Math.round((count / total) * 100) : 0
+  });
+
+  return {
+    program: 'JAILBREAK',
+    total,
+    minPublicSample,
+    canPublish: total >= minPublicSample,
+    institutionalCare: Array.from(institutionalCareCounts.entries()).map((entry) => bucket(entry, institutionalCareLabelMap)),
+    childhoodBackground: Array.from(backgroundCounts.entries())
+      .map((entry) => bucket(entry, childhoodBackgroundLabelMap))
+      .filter((item) => item.count > 0 || item.key === 'unknown'),
+    updatedAt: new Date().toISOString(),
+    note:
+      'Anonymizovaná agregovaná data z klientské evidence programu JAILBREAK. Nejde o statistiku celé populace VTOS.'
+  };
+}
+
+async function publicJailbreakBackgroundStats(_request, response) {
+  try {
+    const rows = await query(
+      `SELECT institutional_care_history AS institutionalCareHistory, childhood_background AS childhoodBackground
+       FROM clients
+       WHERE program = ?`,
+      ['JAILBREAK']
+    );
+    sendJson(response, 200, { stats: aggregateJailbreakBackgroundStats(rows) });
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    const rows = await query('SELECT COUNT(*) AS count FROM clients WHERE program = ?', ['JAILBREAK']);
+    sendJson(response, 200, { stats: aggregateJailbreakBackgroundStats([], rows[0]?.count || 0) });
+  }
+}
+
 async function listSlides(_request, response) {
   const rows = await query(
     `SELECT
@@ -1019,25 +1101,51 @@ async function listClients(request, response) {
     sendJson(response, 403, { error: 'Admin access required.' });
     return;
   }
-  const rows = await query(
-    `SELECT
-       id,
-       first_name AS firstName,
-       last_name AS lastName,
-       DATE_FORMAT(birth_date, '%Y-%m-%d') AS birthDate,
-       phone,
-       email,
-       address,
-       target_group AS targetGroup,
-       program,
-       status,
-       notes,
-       operational_id AS operationalId,
-       DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
-     FROM clients
-     ORDER BY created_at DESC
-     LIMIT 200`
-  );
+  let rows;
+  try {
+    rows = await query(
+      `SELECT
+         id,
+         first_name AS firstName,
+         last_name AS lastName,
+         DATE_FORMAT(birth_date, '%Y-%m-%d') AS birthDate,
+         phone,
+         email,
+         address,
+         target_group AS targetGroup,
+         program,
+         institutional_care_history AS institutionalCareHistory,
+         childhood_background AS childhoodBackground,
+         status,
+         notes,
+         operational_id AS operationalId,
+         DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
+       FROM clients
+       ORDER BY created_at DESC
+       LIMIT 200`
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    rows = await query(
+      `SELECT
+         id,
+         first_name AS firstName,
+         last_name AS lastName,
+         DATE_FORMAT(birth_date, '%Y-%m-%d') AS birthDate,
+         phone,
+         email,
+         address,
+         target_group AS targetGroup,
+         program,
+         status,
+         notes,
+         operational_id AS operationalId,
+         DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
+       FROM clients
+       ORDER BY created_at DESC
+       LIMIT 200`
+    );
+  }
   sendJson(response, 200, { clients: rows });
 }
 
@@ -1055,57 +1163,125 @@ async function createClient(request, response) {
   }
   const id = body.id || randomId();
   const operationalId = String(body.operationalId || '').trim() || null;
-  await query(
-    `INSERT INTO clients
-       (id, first_name, last_name, birth_date, phone, email, address, target_group, program, status, notes, operational_id, created_by)
-     VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE
-       first_name = VALUES(first_name),
-       last_name = VALUES(last_name),
-       birth_date = VALUES(birth_date),
-       phone = VALUES(phone),
-       email = VALUES(email),
-       address = VALUES(address),
-       target_group = VALUES(target_group),
-       program = VALUES(program),
-       status = VALUES(status),
-       notes = VALUES(notes),
-       operational_id = VALUES(operational_id)`,
-    [
-      id,
-      body.firstName.trim(),
-      body.lastName.trim(),
-      body.birthDate || '',
-      body.phone || '',
-      body.email || '',
-      body.address || '',
-      body.targetGroup || '',
-      body.program || 'JAILBREAK',
-      body.status || 'Nový kontakt',
-      body.notes || '',
-      operationalId,
-      user.id
-    ]
-  );
-  const rows = await query(
-    `SELECT
-       id,
-       first_name AS firstName,
-       last_name AS lastName,
-       DATE_FORMAT(birth_date, '%Y-%m-%d') AS birthDate,
-       phone,
-       email,
-       address,
-       target_group AS targetGroup,
-       program,
-       status,
-       notes,
-       operational_id AS operationalId,
-       DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
-     FROM clients
-     WHERE id = ?`,
-    [id]
-  );
+  const institutionalCareHistory = normalizeInstitutionalCare(body.institutionalCareHistory);
+  const childhoodBackground = normalizeChildhoodBackground(body.childhoodBackground);
+  try {
+    await query(
+      `INSERT INTO clients
+         (id, first_name, last_name, birth_date, phone, email, address, target_group, program, institutional_care_history, childhood_background, status, notes, operational_id, created_by)
+       VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         first_name = VALUES(first_name),
+         last_name = VALUES(last_name),
+         birth_date = VALUES(birth_date),
+         phone = VALUES(phone),
+         email = VALUES(email),
+         address = VALUES(address),
+         target_group = VALUES(target_group),
+         program = VALUES(program),
+         institutional_care_history = VALUES(institutional_care_history),
+         childhood_background = VALUES(childhood_background),
+         status = VALUES(status),
+         notes = VALUES(notes),
+         operational_id = VALUES(operational_id)`,
+      [
+        id,
+        body.firstName.trim(),
+        body.lastName.trim(),
+        body.birthDate || '',
+        body.phone || '',
+        body.email || '',
+        body.address || '',
+        body.targetGroup || '',
+        body.program || 'JAILBREAK',
+        institutionalCareHistory,
+        childhoodBackground,
+        body.status || 'Nový kontakt',
+        body.notes || '',
+        operationalId,
+        user.id
+      ]
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    await query(
+      `INSERT INTO clients
+         (id, first_name, last_name, birth_date, phone, email, address, target_group, program, status, notes, operational_id, created_by)
+       VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         first_name = VALUES(first_name),
+         last_name = VALUES(last_name),
+         birth_date = VALUES(birth_date),
+         phone = VALUES(phone),
+         email = VALUES(email),
+         address = VALUES(address),
+         target_group = VALUES(target_group),
+         program = VALUES(program),
+         status = VALUES(status),
+         notes = VALUES(notes),
+         operational_id = VALUES(operational_id)`,
+      [
+        id,
+        body.firstName.trim(),
+        body.lastName.trim(),
+        body.birthDate || '',
+        body.phone || '',
+        body.email || '',
+        body.address || '',
+        body.targetGroup || '',
+        body.program || 'JAILBREAK',
+        body.status || 'Nový kontakt',
+        body.notes || '',
+        operationalId,
+        user.id
+      ]
+    );
+  }
+  let rows;
+  try {
+    rows = await query(
+      `SELECT
+         id,
+         first_name AS firstName,
+         last_name AS lastName,
+         DATE_FORMAT(birth_date, '%Y-%m-%d') AS birthDate,
+         phone,
+         email,
+         address,
+         target_group AS targetGroup,
+         program,
+         institutional_care_history AS institutionalCareHistory,
+         childhood_background AS childhoodBackground,
+         status,
+         notes,
+         operational_id AS operationalId,
+         DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
+       FROM clients
+       WHERE id = ?`,
+      [id]
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    rows = await query(
+      `SELECT
+         id,
+         first_name AS firstName,
+         last_name AS lastName,
+         DATE_FORMAT(birth_date, '%Y-%m-%d') AS birthDate,
+         phone,
+         email,
+         address,
+         target_group AS targetGroup,
+         program,
+         status,
+         notes,
+         operational_id AS operationalId,
+         DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
+       FROM clients
+       WHERE id = ?`,
+      [id]
+    );
+  }
   sendJson(response, 200, { client: rows[0] });
 }
 
@@ -2303,6 +2479,7 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/auth/reset/confirm') return await confirmPasswordReset(request, response);
     if (request.method === 'GET' && url.pathname === '/api/applications/me') return await listMyProjectApplications(request, response);
     if (request.method === 'POST' && url.pathname === '/api/applications') return await submitProjectApplication(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/public/jailbreak-background-stats') return await publicJailbreakBackgroundStats(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news') return await listNews(request, response);
     if (request.method === 'POST' && url.pathname === '/api/news') return await saveNews(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news/discussion') return await listNewsDiscussion(request, response);

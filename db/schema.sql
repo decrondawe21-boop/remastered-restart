@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS clients (
   address VARCHAR(255) NULL,
   target_group VARCHAR(190) NULL,
   program VARCHAR(80) NOT NULL DEFAULT 'JAILBREAK',
+  institutional_care_history VARCHAR(20) NOT NULL DEFAULT 'unknown',
+  childhood_background VARCHAR(80) NOT NULL DEFAULT 'unknown',
   status VARCHAR(80) NOT NULL DEFAULT 'Nový kontakt',
   notes TEXT NULL,
   operational_id VARCHAR(64) NULL,
@@ -45,7 +47,9 @@ CREATE TABLE IF NOT EXISTS clients (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE clients
-  ADD COLUMN IF NOT EXISTS operational_id VARCHAR(64) NULL AFTER notes;
+  ADD COLUMN IF NOT EXISTS operational_id VARCHAR(64) NULL AFTER notes,
+  ADD COLUMN IF NOT EXISTS institutional_care_history VARCHAR(20) NOT NULL DEFAULT 'unknown' AFTER program,
+  ADD COLUMN IF NOT EXISTS childhood_background VARCHAR(80) NOT NULL DEFAULT 'unknown' AFTER institutional_care_history;
 
 CREATE UNIQUE INDEX IF NOT EXISTS clients_operational_id_unique ON clients (operational_id);
 

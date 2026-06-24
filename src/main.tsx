@@ -79,6 +79,7 @@ import {
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
   fillFormPdf,
+  getJailbreakBackgroundStats,
   listClients,
   listDocuments,
   listFormTemplates,
@@ -114,6 +115,7 @@ import {
   type ApiClientDocument,
   type ApiClientRecord,
   type ApiFormTemplate,
+  type ApiJailbreakBackgroundStats,
   type ApiManagedUser,
   type ApiMediaFile,
   type ApiNewsComment,
@@ -315,6 +317,8 @@ type ClientRecord = {
   address: string;
   targetGroup: string;
   program: string;
+  institutionalCareHistory: string;
+  childhoodBackground: string;
   status: string;
   notes: string;
   operationalId: string;
@@ -384,6 +388,25 @@ const applicationRoleOptions: Array<{ value: ApiProjectApplicationType; label: s
 const adminRoleOptions: ApiRole[] = ['admin', 'editor', 'applicant', ...applicationRoleOptions.map((item) => item.value), 'user'];
 const isPortalRole = (role?: ApiRole) => Boolean(role && portalRoles.includes(role));
 const TRANSPARENCY_DOCUMENT_CATEGORY = 'transparency';
+const institutionalCareOptions = [
+  { value: 'unknown', label: 'Nezjištěno / nechce uvést' },
+  { value: 'yes', label: 'Ano - dětský domov / ústavní péče' },
+  { value: 'no', label: 'Ne' }
+];
+const institutionalCareLabel = (value?: string | null) =>
+  institutionalCareOptions.find((item) => item.value === value)?.label ?? institutionalCareOptions[0].label;
+const childhoodBackgroundOptions = [
+  { value: 'unknown', label: 'Nezjištěno / neuvedeno' },
+  { value: 'institutional_home', label: 'Dětský domov' },
+  { value: 'educational_institute', label: 'Výchovný ústav' },
+  { value: 'foster_care', label: 'Pěstounská péče' },
+  { value: 'incomplete_family', label: 'Neúplná rodina' },
+  { value: 'standard_family', label: 'Běžná rodina' },
+  { value: 'street_or_homelessness', label: 'Ulice / bez stabilního zázemí' },
+  { value: 'other', label: 'Jiné' }
+];
+const childhoodBackgroundLabel = (value?: string | null) =>
+  childhoodBackgroundOptions.find((item) => item.value === value)?.label ?? childhoodBackgroundOptions[0].label;
 const seededTransparentDocuments: MediaFile[] = [
   {
     id: 'fallback-opz-051',
@@ -1023,6 +1046,8 @@ const fromApiClient = (client: ApiClientRecord): ClientRecord => ({
   address: client.address || '',
   targetGroup: client.targetGroup || '',
   program: client.program,
+  institutionalCareHistory: client.institutionalCareHistory || 'unknown',
+  childhoodBackground: client.childhoodBackground || 'unknown',
   status: client.status,
   notes: client.notes || '',
   operationalId: client.operationalId || '',
@@ -1499,6 +1524,8 @@ const emptyClient: ClientRecord = {
   address: '',
   targetGroup: '',
   program: 'JAILBREAK',
+  institutionalCareHistory: 'unknown',
+  childhoodBackground: 'unknown',
   status: 'Nový kontakt',
   notes: '',
   operationalId: '',
@@ -3544,7 +3571,63 @@ function MediaKitPage({ page, assets }: { page: (typeof staticPages)[string]; as
   );
 }
 
-function TransparencyDocumentsPage({ documents }: { documents: MediaFile[] }) {
+function JailbreakBackgroundWidget({ stats }: { stats: ApiJailbreakBackgroundStats }) {
+  const institutionalCareYes = stats.institutionalCare.find((item) => item.key === 'yes');
+  const displayBuckets = stats.childhoodBackground.filter((item) => item.count > 0);
+
+  return (
+    <aside className="transparency-data-widget" aria-label="Anonymizovaná metrika programu JAILBREAK">
+      <div className="transparency-data-head">
+        <span className="news-tag">JAILBREAK data</span>
+        <div>
+          <h2>Zázemí klientů před vstupem do programu</h2>
+          <p>{stats.note}</p>
+        </div>
+      </div>
+      <div className="transparency-data-main">
+        <div className="transparency-data-number">
+          <span>Vzorek</span>
+          <strong>{stats.total}</strong>
+          <small>klientů JAILBREAK v evidenci</small>
+        </div>
+        <div className="transparency-data-number">
+          <span>Institucionální péče</span>
+          <strong>{stats.canPublish ? `${institutionalCareYes?.share ?? 0} %` : 'sběr'}</strong>
+          <small>{stats.canPublish ? `${institutionalCareYes?.count ?? 0} z ${stats.total} klientů` : `zveřejníme od n >= ${stats.minPublicSample}`}</small>
+        </div>
+      </div>
+      {stats.canPublish ? (
+        <div className="transparency-bars">
+          {displayBuckets.length > 0 ? (
+            displayBuckets.map((item) => (
+              <div className="transparency-bar-row" key={item.key}>
+                <span>{item.label}</span>
+                <div aria-hidden="true">
+                  <i style={{ width: `${Math.max(item.share, item.count > 0 ? 4 : 0)}%` }} />
+                </div>
+                <strong>{item.count} / {item.share} %</strong>
+              </div>
+            ))
+          ) : (
+            <p className="empty-note">Zatím nejsou vyplněná strukturovaná data k zázemí klientů.</p>
+          )}
+        </div>
+      ) : (
+        <p className="transparency-data-note">
+          Veřejný graf zobrazíme až po dosažení minimálního anonymizačního vzorku. Interně lze data sbírat už teď.
+        </p>
+      )}
+    </aside>
+  );
+}
+
+function TransparencyDocumentsPage({
+  documents,
+  jailbreakBackgroundStats
+}: {
+  documents: MediaFile[];
+  jailbreakBackgroundStats: ApiJailbreakBackgroundStats | null;
+}) {
   const sorted = documents.slice().sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
 
   return (
@@ -3554,6 +3637,7 @@ function TransparencyDocumentsPage({ documents }: { documents: MediaFile[] }) {
         <h1>Povinné zveřejňování</h1>
         <p>Zveřejňujeme dokumenty pro transparentnost projektových aktivit, financování a veřejných podkladů.</p>
       </div>
+      {jailbreakBackgroundStats && <JailbreakBackgroundWidget stats={jailbreakBackgroundStats} />}
       <div className="client-document-list transparency-document-list">
         {sorted.length === 0 ? (
           <p className="empty-note">Zatím nejsou žádné zveřejněné transparentní dokumenty. Přidejte je prosím v administraci v sekci Média.</p>
@@ -5794,6 +5878,7 @@ function App() {
   const [projectApplications, setProjectApplications] = React.useState<ProjectApplication[]>([]);
   const [mediaFiles, setMediaFiles] = React.useState<MediaFile[]>([]);
   const [publicMediaFiles, setPublicMediaFiles] = React.useState<MediaFile[]>(seededTransparentDocuments);
+  const [jailbreakBackgroundStats, setJailbreakBackgroundStats] = React.useState<ApiJailbreakBackgroundStats | null>(null);
   const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
   const [sessionId, setSessionId] = useStoredState<string | null>('restart-auth-session', null);
@@ -5827,6 +5912,9 @@ function App() {
         setNews(items);
       })
       .catch(() => undefined);
+    getJailbreakBackgroundStats()
+      .then(setJailbreakBackgroundStats)
+      .catch(() => setJailbreakBackgroundStats(null));
     listSlides()
       .then((items) => {
         if (items.length > 0) setSlides(shouldUseProgramPillarDeck(items) ? starterSlides : items);
@@ -6091,7 +6179,7 @@ function App() {
     ) : currentPath === '/media' ? (
       <MediaKitPage page={staticPages['/media']} assets={publicMediaKitAssets} />
     ) : currentPath === '/povinne-zverejnovani' ? (
-      <TransparencyDocumentsPage documents={transparencyPublicDocuments} />
+      <TransparencyDocumentsPage documents={transparencyPublicDocuments} jailbreakBackgroundStats={jailbreakBackgroundStats} />
     ) : currentPath === '/kontakt' ? (
       <ContactPage onNotify={notify} />
     ) : staticPage ? (
@@ -6427,7 +6515,19 @@ function AdminWorkspace({
     const query = clientQuery.trim().toLowerCase();
     const matchesQuery =
       !query ||
-      [client.firstName, client.lastName, client.email, client.phone, client.program, client.status, client.operationalId, client.targetGroup, client.address]
+      [
+        client.firstName,
+        client.lastName,
+        client.email,
+        client.phone,
+        client.program,
+        client.status,
+        client.operationalId,
+        client.targetGroup,
+        client.address,
+        institutionalCareLabel(client.institutionalCareHistory),
+        childhoodBackgroundLabel(client.childhoodBackground)
+      ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(query));
     const matchesStatus = clientStatusFilter === 'all' || client.status === clientStatusFilter;
@@ -7721,6 +7821,25 @@ function AdminWorkspace({
           })
           .join(', ')})`
       : 'linear-gradient(135deg, rgba(34, 111, 63, 0.16), rgba(187, 143, 58, 0.16))';
+  const jailbreakClients = clients.filter((client) => client.program === 'JAILBREAK');
+  const institutionalCareStats = institutionalCareOptions.map((option) => {
+    const count = jailbreakClients.filter((client) => (client.institutionalCareHistory || 'unknown') === option.value).length;
+    return {
+      ...option,
+      count,
+      share: jailbreakClients.length > 0 ? Math.round((count / jailbreakClients.length) * 100) : 0
+    };
+  });
+  const childhoodBackgroundStats = childhoodBackgroundOptions
+    .map((option) => {
+      const count = jailbreakClients.filter((client) => (client.childhoodBackground || 'unknown') === option.value).length;
+      return {
+        ...option,
+        count,
+        share: jailbreakClients.length > 0 ? Math.round((count / jailbreakClients.length) * 100) : 0
+      };
+    })
+    .filter((item) => item.count > 0 || item.value === 'unknown');
   const onlineWindowMs = 15 * 60 * 1000;
   const onlineUsers = managedUsers.filter((user) => {
     if (user.id === account.id) return true;
@@ -7856,6 +7975,31 @@ function AdminWorkspace({
                   <span style={{ color: '#607067', fontSize: '0.9rem' }}>Zatím žádný klient k rozdělení.</span>
                 )}
               </div>
+            </article>
+            <article className="admin-card metric-card evidence-card">
+              <span>JAILBREAK zázemí</span>
+              <strong>{jailbreakClients.length}</strong>
+              <p>interní anonymizační metrika pro vazbu na BOD ZLOMU</p>
+              <div className="evidence-bars" aria-label="Institucionální péče v dětství u klientů JAILBREAK">
+                {institutionalCareStats.map((item) => (
+                  <div className="evidence-bar-row" key={item.value}>
+                    <span>{item.label}</span>
+                    <div aria-hidden="true">
+                      <i style={{ width: `${Math.max(item.share, item.count > 0 ? 4 : 0)}%` }} />
+                    </div>
+                    <strong>{item.count} / {item.share} %</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="evidence-background-list" aria-label="Typ dětství nebo rodinného zázemí">
+                {childhoodBackgroundStats.map((item) => (
+                  <span key={item.value}>
+                    {item.label}
+                    <strong>{item.count}</strong>
+                  </span>
+                ))}
+              </div>
+              <small className="metric-disclaimer">Veřejně pouze agregovaně a až po dosažení bezpečného vzorku.</small>
             </article>
             <article className="admin-card metric-card">
               <span>Aktuality</span>
@@ -8052,6 +8196,36 @@ function AdminWorkspace({
                   placeholder="např. po výkonu trestu, bez domova, sociální krize"
                 />
               </label>
+              <div className="form-grid two">
+                <label>
+                  Institucionální péče v dětství
+                  <select
+                    value={clientForm.institutionalCareHistory}
+                    onChange={(event) => updateClientField('institutionalCareHistory', event.target.value)}
+                  >
+                    {institutionalCareOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <small className="form-help">Interní metrika pro JAILBREAK/BOD ZLOMU, veřejně pouze anonymizovaně.</small>
+                </label>
+                <label>
+                  Typ dětství / rodinného zázemí
+                  <select
+                    value={clientForm.childhoodBackground}
+                    onChange={(event) => updateClientField('childhoodBackground', event.target.value)}
+                  >
+                    {childhoodBackgroundOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <small className="form-help">Pomáhá doložit vazbu mezi JAILBREAK a prevencí BOD ZLOMU.</small>
+                </label>
+              </div>
               <label>
                 Stav
                 <select value={clientForm.status} onChange={(event) => updateClientField('status', event.target.value)}>
@@ -8173,6 +8347,14 @@ function AdminWorkspace({
                     <div>
                       <span>Program</span>
                       <strong>{clientPanelClient.program}</strong>
+                    </div>
+                    <div>
+                      <span>Institucionální péče</span>
+                      <strong>{institutionalCareLabel(clientPanelClient.institutionalCareHistory)}</strong>
+                    </div>
+                    <div>
+                      <span>Zázemí v dětství</span>
+                      <strong>{childhoodBackgroundLabel(clientPanelClient.childhoodBackground)}</strong>
                     </div>
                     <div>
                       <span>Dokumenty</span>

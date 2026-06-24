@@ -61,10 +61,33 @@ export type ApiClientRecord = {
   address: string | null;
   targetGroup: string | null;
   program: string;
+  institutionalCareHistory?: string | null;
+  childhoodBackground?: string | null;
   status: string;
   notes: string | null;
   operationalId: string | null;
   createdAt: string;
+};
+
+export type ApiJailbreakBackgroundStats = {
+  program: string;
+  total: number;
+  minPublicSample: number;
+  canPublish: boolean;
+  institutionalCare: Array<{
+    key: string;
+    label: string;
+    count: number;
+    share: number;
+  }>;
+  childhoodBackground: Array<{
+    key: string;
+    label: string;
+    count: number;
+    share: number;
+  }>;
+  updatedAt: string;
+  note: string;
 };
 
 export type ApiFormField = {
@@ -344,6 +367,11 @@ export async function saveClient(client: Omit<ApiClientRecord, 'createdAt'> & { 
     body: JSON.stringify(client)
   });
   return body.client;
+}
+
+export async function getJailbreakBackgroundStats() {
+  const body = await request<{ stats: ApiJailbreakBackgroundStats }>('/api/public/jailbreak-background-stats');
+  return body.stats;
 }
 
 export async function deleteClient(clientId: string) {

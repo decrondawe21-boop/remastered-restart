@@ -308,6 +308,8 @@ async function requestRaw(path, options = {}) {
         phone: '+420 777 333 444',
         email: `admin-client-${stamp}@restart.test`,
         program: 'RESET',
+        institutionalCareHistory: 'yes',
+        childhoodBackground: 'institutional_home',
         status: 'V mapování',
         operationalId: `AD-${stampText.slice(-6)}-1234-001`,
         notes: 'Založeno e2e admin testem.'
@@ -316,12 +318,24 @@ async function requestRaw(path, options = {}) {
     if (!created.response.ok || created.body.client.program !== 'RESET' || !created.body.client.operationalId) {
       throw new Error(`Client creation failed: ${JSON.stringify(created.body)}`);
     }
+    const clientBackgroundSupported = Object.prototype.hasOwnProperty.call(created.body.client, 'institutionalCareHistory');
+    if (
+      clientBackgroundSupported &&
+      (created.body.client.institutionalCareHistory !== 'yes' || created.body.client.childhoodBackground !== 'institutional_home')
+    ) {
+      throw new Error(`Client background metrics were not persisted: ${JSON.stringify(created.body.client)}`);
+    }
     createdClientId = created.body.client.id;
 
     const list = await request('/api/clients', { headers: { cookie } });
     if (
       !list.response.ok ||
-      !list.body.clients.some((client) => client.id === created.body.client.id && client.operationalId === created.body.client.operationalId)
+      !list.body.clients.some(
+        (client) =>
+          client.id === created.body.client.id &&
+          client.operationalId === created.body.client.operationalId &&
+          (!clientBackgroundSupported || client.institutionalCareHistory === 'yes')
+      )
     ) {
       throw new Error(`Created client is missing from database list: ${JSON.stringify(list.body)}`);
     }

@@ -344,7 +344,7 @@ export const programs: Program[] = [
       lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
     },
     image: {
-      src: '/images/crops/streetwise/streetwise-bouda-stavba.jpg',
+      src: '/images/crops/streetwise/streetwise-bouda-stavba.webp',
       alt: 'Rozpracované zázemí STREETWISE stavěné ze zachráněného materiálu'
     }
   },
@@ -605,3 +605,4 @@ export const starterNews = [
       'Nabízíme konkrétní cestu těm, kteří stojí mimo systém: bezpečný první kontakt, mentoring, práci a návaznou stabilizaci.'
   }
 ];
+

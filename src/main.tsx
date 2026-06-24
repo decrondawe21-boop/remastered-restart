@@ -1482,49 +1482,49 @@ const practicePhotoSlides = [
     id: 'practice-rose-arch',
     title: 'Klenba, která vyrostla',
     text: 'Z malých sazenic vznikl průchod. Stejně stavíme zázemí: trpělivě, rukama a krok za krokem.',
-    imageUrl: '/images/crops/roses-20260608/ruze-klenba.jpg'
+    imageUrl: '/images/crops/roses-20260608/ruze-klenba.webp'
   },
   {
     id: 'practice-roses',
     title: 'Trpělivost, která roste',
     text: 'Růže, práce a čas připomínají, že změna nevzniká naráz.',
-    imageUrl: '/images/crops/roses-20260608/ruze-detail.jpg'
+    imageUrl: '/images/crops/roses-20260608/ruze-detail.webp'
   },
   {
     id: 'practice-gate',
     title: 'První průchod',
     text: 'Místo, kde se z prvního kontaktu může stát další bezpečný krok.',
-    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.jpg'
+    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.webp'
   },
   {
     id: 'practice-workbench',
     title: 'Zázemí z nalezeného',
     text: 'Z věcí, které měly skončit, vzniká praktický prostor pro STREETWISE.',
-    imageUrl: '/images/crops/new-photos/foto-175346-mid.jpg'
+    imageUrl: '/images/crops/new-photos/foto-175346-mid.webp'
   },
   {
     id: 'practice-shelter',
     title: 'Bouda v procesu',
     text: 'Materiál, ruce a čas. Malé kroky, které dávají prostoru smysl.',
-    imageUrl: '/images/crops/streetwise/streetwise-bouda-stavba.jpg'
+    imageUrl: '/images/crops/streetwise/streetwise-bouda-stavba.webp'
   },
   {
     id: 'practice-flowers',
     title: 'Zázemí z detailů',
     text: 'I malá úprava prostoru mění pocit z prvního setkání.',
-    imageUrl: '/images/crops/roses-20260608/kvetiny-zazemi.jpg'
+    imageUrl: '/images/crops/roses-20260608/kvetiny-zazemi.webp'
   },
   {
     id: 'practice-path',
     title: 'Cesta k bezpečí',
     text: 'Každý stabilní bod začíná konkrétním místem, kam se dá přijít.',
-    imageUrl: '/images/crops/roses-20260608/ruze-pruchod.jpg'
+    imageUrl: '/images/crops/roses-20260608/ruze-pruchod.webp'
   },
   {
     id: 'practice-green',
     title: 'Živé místo',
     text: 'Zázemí nemá působit jako instituce. Má být čitelné, lidské a použitelné.',
-    imageUrl: '/images/crops/roses-20260608/ruze-svetlo.jpg'
+    imageUrl: '/images/crops/roses-20260608/ruze-svetlo.webp'
   }
 ];
 
@@ -3034,7 +3034,7 @@ function HomePage({
           </p>
         </article>
         <figure className="streetwise-card streetwise-photo">
-          <img src="/images/crops/streetwise/streetwise-bouda-stavba.jpg" alt="" />
+          <img src="/images/crops/streetwise/streetwise-bouda-stavba.webp" alt="" />
           <figcaption>Reálná stavba z nalezeného materiálu</figcaption>
         </figure>
       </section>
@@ -10110,3 +10110,4 @@ appRoot.render(
     </AppProviders>
   </React.StrictMode>
 );
+

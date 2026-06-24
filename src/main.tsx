@@ -3062,6 +3062,24 @@ function HomePage({
         </div>
       </section>
 
+      <section className="project-video-section" id="projektove-video" aria-labelledby="project-video-title">
+        <div className="project-video-copy">
+          <p className="section-label">Video o projektu</p>
+          <h2 id="project-video-title">RESTART Integrace v krátké animaci</h2>
+          <p>
+            Stručné představení projektu druhých šancí: proč vzniká, komu pomáhá a jak se do něj mohou zapojit lidé,
+            firmy, instituce i podporovatelé.
+          </p>
+        </div>
+        <figure className="project-video-frame">
+          <video controls preload="metadata" poster="/videos/rest-art-intro-poster.png">
+            <source src="/videos/rest-art-intro-z-podkladu-v1-1080p.mp4" type="video/mp4" />
+            Váš prohlížeč nepodporuje přehrávání videa. Video je dostupné jako MP4 soubor.
+          </video>
+          <figcaption>Oficiální krátké video projektu RESTART Integrace.</figcaption>
+        </figure>
+      </section>
+
       <section className="split-section partner-message">
         <div>
           <p className="section-label">Pro partnery</p>

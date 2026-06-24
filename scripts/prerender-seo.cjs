@@ -10,6 +10,29 @@ const alternateNames = [styledName, 'REST ART Integrace', 'Restart Integrace', '
 const defaultRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 const defaultKeywords =
   'RESTART Integrace, REST||ART Integrace, Restart Integrace, oficiální web RESTART Integrace, druhá šance, sociální integrace, mentoring, práce, bydlení, stabilizace, JAILBREAK, RESET, REWORK';
+const videoAssets = [
+  {
+    routes: ['/'],
+    name: 'RESTART Integrace - krátké představení projektu',
+    description:
+      'Krátké video představující RESTART Integrace jako projekt druhých šancí, praktické podpory a návratu lidí do života.',
+    thumbnailUrl: `${baseUrl}/videos/rest-art-intro-poster.png`,
+    contentUrl: `${baseUrl}/videos/rest-art-intro-z-podkladu-v1-1080p.mp4`,
+    embedUrl: `${baseUrl}/#projektove-video`,
+    uploadDate: '2026-06-23',
+    familyFriendly: true
+  },
+  {
+    routes: ['/'],
+    name: 'RESTART Integrace - logo reveal',
+    description: 'Logo animace RESTART Integrace pro veřejnou prezentaci projektu druhých šancí.',
+    thumbnailUrl: `${baseUrl}/videos/restart-logo-reveal-poster.png`,
+    contentUrl: `${baseUrl}/videos/restart-logo-reveal.mp4`,
+    embedUrl: `${baseUrl}/#projektove-video`,
+    uploadDate: '2026-06-23',
+    familyFriendly: true
+  }
+];
 
 const routes = [
   {
@@ -174,6 +197,10 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
+function escapeXml(value) {
+  return escapeHtml(value).replace(/'/g, '&apos;');
+}
+
 function routeUrl(routePath) {
   return `${baseUrl}${routePath === '/' ? '/' : routePath}`;
 }
@@ -183,6 +210,8 @@ function replaceTag(html, pattern, replacement) {
 }
 
 function structuredData(route, canonical) {
+  const routeVideos = videoAssets.filter((video) => video.routes.includes(route.path));
+
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -243,7 +272,22 @@ function structuredData(route, canonical) {
         },
         dateModified: today,
         keywords: route.noindex ? undefined : defaultKeywords
-      }
+      },
+      ...routeVideos.map((video) => ({
+        '@type': 'VideoObject',
+        '@id': `${video.contentUrl}#video`,
+        name: video.name,
+        description: video.description,
+        thumbnailUrl: [video.thumbnailUrl],
+        uploadDate: video.uploadDate,
+        contentUrl: video.contentUrl,
+        embedUrl: video.embedUrl,
+        inLanguage: 'cs-CZ',
+        isFamilyFriendly: video.familyFriendly,
+        publisher: {
+          '@id': `${baseUrl}/#organization`
+        }
+      }))
     ]
   };
 }
@@ -315,16 +359,32 @@ for (const route of routes) {
 
 const sitemapRoutes = routes.filter((route) => !route.noindex);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
 ${sitemapRoutes
-  .map(
-    (route) => `  <url>
+  .map((route) => {
+    const routeVideos = videoAssets.filter((video) => video.routes.includes(route.path));
+    const videoXml = routeVideos
+      .map(
+        (video) => `
+    <video:video>
+      <video:thumbnail_loc>${escapeXml(video.thumbnailUrl)}</video:thumbnail_loc>
+      <video:title>${escapeXml(video.name)}</video:title>
+      <video:description>${escapeXml(video.description)}</video:description>
+      <video:content_loc>${escapeXml(video.contentUrl)}</video:content_loc>
+      <video:player_loc>${escapeXml(video.embedUrl)}</video:player_loc>
+      <video:publication_date>${video.uploadDate}</video:publication_date>
+      <video:family_friendly>${video.familyFriendly ? 'yes' : 'no'}</video:family_friendly>
+    </video:video>`
+      )
+      .join('');
+    return `  <url>
     <loc>${routeUrl(route.path)}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${route.changefreq || 'monthly'}</changefreq>
     <priority>${route.priority || '0.5'}</priority>
-  </url>`
-  )
+${videoXml}
+  </url>`;
+  })
   .join('\n')}
 </urlset>
 `;

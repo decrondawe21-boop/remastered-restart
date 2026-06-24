@@ -2138,7 +2138,7 @@ function Header({
     <>
       <header className="site-header">
         <a className="brand" href="/" aria-label="REST ART Integrace domů">
-          <img src="/images/sponsor-logo.webp" alt="" width="440" height="212" />
+          <img src="/images/sponsor-logo.webp" alt="" width="440" height="212" loading="eager" fetchPriority="high" decoding="async" />
         </a>
         <button className="menu-button" type="button" aria-label="Otevřít menu" onClick={() => setOpen(true)}>
           <Menu size={22} />

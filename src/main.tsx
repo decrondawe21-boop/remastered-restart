@@ -2036,6 +2036,19 @@ function useHashPath() {
   return path;
 }
 
+function runWhenIdle(callback: () => void, timeout = 1600) {
+  const scheduler = (window as Window & {
+    requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  }).requestIdleCallback;
+  if (scheduler) {
+    const handle = scheduler(callback, { timeout });
+    return () => (window as Window & { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback?.(handle);
+  }
+  const handle = window.setTimeout(callback, Math.min(timeout, 700));
+  return () => window.clearTimeout(handle);
+}
+
 function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => void }) {
   const [query, setQuery] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement | null>(null);
@@ -6000,36 +6013,43 @@ function App() {
         setNews(items);
       })
       .catch(() => undefined);
-    getJailbreakBackgroundStats()
-      .then(setJailbreakBackgroundStats)
-      .catch(() => setJailbreakBackgroundStats(null));
     listSlides()
       .then((items) => {
         if (items.length > 0) setSlides(shouldUseProgramPillarDeck(items) ? starterSlides : items);
       })
       .catch(() => undefined);
+
+    return runWhenIdle(() => {
+      getJailbreakBackgroundStats()
+        .then(setJailbreakBackgroundStats)
+        .catch(() => setJailbreakBackgroundStats(null));
+    });
   }, [setNews, setSlides]);
 
   React.useEffect(() => {
-    listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY)
-      .then((items) => {
-        setPublicMediaFiles((current) => {
-          const fallbackIds = new Set(current.map((item) => item.fileUrl));
-          const merged = [...current];
-          items.forEach((item) => {
-            if (!fallbackIds.has(item.fileUrl)) {
-              merged.push(item);
-              fallbackIds.add(item.fileUrl);
-            }
+    return runWhenIdle(() => {
+      listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY)
+        .then((items) => {
+          setPublicMediaFiles((current) => {
+            const fallbackIds = new Set(current.map((item) => item.fileUrl));
+            const merged = [...current];
+            items.forEach((item) => {
+              if (!fallbackIds.has(item.fileUrl)) {
+                merged.push(item);
+                fallbackIds.add(item.fileUrl);
+              }
+            });
+            return merged;
           });
-          return merged;
-        });
-      })
-      .catch(() => undefined);
+        })
+        .catch(() => undefined);
+    }, 2200);
   }, []);
 
   React.useEffect(() => {
-    refreshNewsDiscussion().catch(() => undefined);
+    return runWhenIdle(() => {
+      refreshNewsDiscussion().catch(() => undefined);
+    }, currentAccount ? 900 : 2400);
   }, [currentAccount?.id, refreshNewsDiscussion]);
 
   React.useEffect(() => {

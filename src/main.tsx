@@ -3176,7 +3176,7 @@ function HomePage({
         </div>
         <figure className="project-video-frame">
           <LazyVideo
-            src="/videos/rest-art-intro-z-podkladu-v1-1080p.mp4"
+            src="/videos/rest-art-intro-z-podkladu-v1-720p.mp4"
             poster="/videos/rest-art-intro-poster.webp"
             label="Přehrát krátké video projektu RESTART Integrace"
           />

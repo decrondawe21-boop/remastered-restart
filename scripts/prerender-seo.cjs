@@ -17,7 +17,12 @@ const defaultRobots = 'index, follow, max-image-preview:large, max-snippet:-1, m
 const defaultKeywords =
   'RESTART Integrace, REST||ART Integrace, Restart Integrace, oficiální web RESTART Integrace, druhá šance, sociální integrace, mentoring, práce, bydlení, stabilizace, JAILBREAK, RESET, REWORK';
 const criticalCss = `
-:root{color-scheme:light;--bg:#fff;--bg-soft:#f5f8f4;--text:#17211b;--muted:#617064;--line:#dce6dd;--green:#2f7d49;--green-dark:#1f5f36;--green-soft:#e4f2e7;--gold:#b8933a;--page-max:1640px;--page-gutter:clamp(22px,3.6vw,58px);--font-sans:"Aptos","Segoe UI Variable","Segoe UI",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;--weight-bold:800;font-family:var(--font-sans)}
+@font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/poppins/poppins-01.woff2") format("woff2")}
+@font-face{font-family:"Poppins";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/poppins/poppins-02.woff2") format("woff2")}
+@font-face{font-family:"Poppins";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/poppins/poppins-03.woff2") format("woff2")}
+@font-face{font-family:"Poppins";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/poppins/poppins-04.woff2") format("woff2")}
+@font-face{font-family:"Poppins";font-style:normal;font-weight:800;font-display:swap;src:url("/fonts/poppins/poppins-05.woff2") format("woff2")}
+:root{color-scheme:light;--bg:#fff;--bg-soft:#f5f8f4;--text:#17211b;--muted:#617064;--line:#dce6dd;--green:#2f7d49;--green-dark:#1f5f36;--green-soft:#e4f2e7;--gold:#b8933a;--page-max:1640px;--page-gutter:clamp(22px,3.6vw,58px);--font-sans:"Poppins","Aptos","Segoe UI Variable","Segoe UI",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;--weight-bold:800;font-family:var(--font-sans)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:16px;line-height:1.5}
 a{color:inherit}
@@ -48,8 +53,8 @@ const videoAssets = [
     name: 'RESTART Integrace - krátké představení projektu',
     description:
       'Krátké video představující RESTART Integrace jako projekt druhých šancí, praktické podpory a návratu lidí do života.',
-    thumbnailUrl: `${baseUrl}/videos/rest-art-intro-poster.webp`,
-    contentUrl: `${baseUrl}/videos/rest-art-intro-z-podkladu-v1-1080p.mp4`,
+    thumbnailUrl: `${baseUrl}/images/video/rest-art-intro-preview-strip-v1.jpg`,
+    contentUrl: `${baseUrl}/videos/rest-art-intro-z-podkladu-v1-720p.mp4`,
     embedUrl: `${baseUrl}/#projektove-video`,
     uploadDate: '2026-06-23',
     familyFriendly: true

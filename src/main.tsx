@@ -6043,42 +6043,42 @@ function App() {
         if (items.length > 0) setSlides(shouldUseProgramPillarDeck(items) ? starterSlides : items);
       })
       .catch(() => undefined);
-
-    return runWhenIdle(() => {
-      getJailbreakBackgroundStats()
-        .then(setJailbreakBackgroundStats)
-        .catch(() => setJailbreakBackgroundStats(null));
-    });
   }, [setNews, setSlides]);
 
   React.useEffect(() => {
+    if (currentPath !== '/povinne-zverejnovani') return;
     return runWhenIdle(() => {
-      listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY)
-        .then((items) => {
-          setPublicMediaFiles((current) => {
-            const fallbackIds = new Set(current.map((item) => item.fileUrl));
-            const merged = [...current];
-            items.forEach((item) => {
-              if (!fallbackIds.has(item.fileUrl)) {
-                merged.push(item);
-                fallbackIds.add(item.fileUrl);
-              }
+      Promise.allSettled([listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY), getJailbreakBackgroundStats()]).then(
+        ([mediaResult, statsResult]) => {
+          if (mediaResult.status === 'fulfilled') {
+            setPublicMediaFiles((current) => {
+              const fallbackIds = new Set(current.map((item) => item.fileUrl));
+              const merged = [...current];
+              mediaResult.value.forEach((item) => {
+                if (!fallbackIds.has(item.fileUrl)) {
+                  merged.push(item);
+                  fallbackIds.add(item.fileUrl);
+                }
+              });
+              return merged;
             });
-            return merged;
-          });
-        })
-        .catch(() => undefined);
-    }, 2200);
-  }, []);
+          }
+          setJailbreakBackgroundStats(statsResult.status === 'fulfilled' ? statsResult.value : null);
+        }
+      );
+    }, 1200);
+  }, [currentPath]);
 
   React.useEffect(() => {
+    const shouldLoadDiscussion = currentPath === '/' || currentPath === '/aktuality';
+    if (!shouldLoadDiscussion) return;
     return runWhenIdle(() => {
       refreshNewsDiscussion().catch(() => undefined);
     }, currentAccount ? 900 : 2400);
-  }, [currentAccount?.id, refreshNewsDiscussion]);
+  }, [currentAccount?.id, currentPath, refreshNewsDiscussion]);
 
   React.useEffect(() => {
-    if (currentAccount?.role !== 'admin') return;
+    if (currentAccount?.role !== 'admin' || currentPath !== '/admin') return;
     listClients()
       .then((items) => setClients(items.map(fromApiClient)))
       .catch(() => undefined);
@@ -6103,14 +6103,15 @@ function App() {
     listNotifications()
       .then(setNotifications)
       .catch(() => undefined);
-  }, [currentAccount?.id, currentAccount?.role, setClients, setFormTemplates]);
+  }, [currentAccount?.id, currentAccount?.role, currentPath, setClients, setFormTemplates]);
 
   React.useEffect(() => {
-    if (!currentAccount || currentAccount.role === 'admin') return;
-    listMyProjectApplications()
-      .then(setProjectApplications)
-      .catch(() => undefined);
-  }, [currentAccount?.id, currentAccount?.role]);
+    if (!currentAccount || currentAccount.role === 'admin' || currentPath !== '/klient') return;
+    Promise.allSettled([listMyProjectApplications(), listNotifications()]).then(([applicationsResult, notificationsResult]) => {
+      if (applicationsResult.status === 'fulfilled') setProjectApplications(applicationsResult.value);
+      if (notificationsResult.status === 'fulfilled') setNotifications(notificationsResult.value);
+    });
+  }, [currentAccount?.id, currentAccount?.role, currentPath]);
 
   const login = (account: AuthAccount) => {
     if (account.password) {

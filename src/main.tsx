@@ -2034,7 +2034,9 @@ function useHashPath() {
   React.useEffect(() => {
     const onRouteChange = () => {
       setPath(currentBrowserPath());
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
     };
     window.addEventListener('hashchange', onRouteChange);
     window.addEventListener('popstate', onRouteChange);
@@ -2075,7 +2077,9 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
     }
 
     const browserFind = (window as Window & { find?: (text: string, caseSensitive?: boolean, backwards?: boolean, wrapAround?: boolean) => boolean }).find;
-    const found = browserFind ? browserFind(value, false, false, true) : document.body.innerText.toLowerCase().includes(value.toLowerCase());
+    const found = browserFind
+      ? browserFind(value, false, false, true)
+      : (document.body.textContent ?? '').toLowerCase().includes(value.toLowerCase());
     if (found) {
       onNotify('success', 'Text nalezen', `Prohlížeč zvýraznil výskyt: ${value}`);
       onDone?.();

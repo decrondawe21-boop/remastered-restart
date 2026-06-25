@@ -1506,6 +1506,11 @@ const programPillarSlideFromSlide = (slide: HomeSlide) => {
   return starterSlides.find((starterSlide) => starterSlide.id === slide.id || starterSlide.imageUrl === slide.imageUrl || starterSlide.id === storyKey);
 };
 
+const fallbackProgramStoryFromIndex = (index: number) => {
+  const starterSlide = starterSlides[index % starterSlides.length];
+  return starterSlide ? programHeroStories[starterSlide.id] : undefined;
+};
+
 const heroAutoScrollItems = starterSlides.map((slide) => ({
   id: slide.id,
   title: slide.title,
@@ -2475,7 +2480,13 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const swipeStartX = React.useRef<number | null>(null);
   const activeSlide = visibleSlides[activeIndex] ?? visibleSlides[0] ?? starterSlides[0];
   const activeSlideHasDesignedText = designedTextSlidePattern.test(activeSlide.imageUrl);
-  const activeProgramStory = programHeroStoryFromSlide(activeSlide);
+  const detectedProgramStory = programHeroStoryFromSlide(activeSlide);
+  const activeSlideLooksLikeProgram =
+    sketchPillarSlidePattern.test(activeSlide.imageUrl) ||
+    /program-pillars|jailbreak|reset|rework|streetwise|bod[-_\s]?zlomu|stabilizace/i.test(
+      `${activeSlide.id} ${activeSlide.title} ${activeSlide.subtitle} ${activeSlide.imageUrl}`
+    );
+  const activeProgramStory = detectedProgramStory ?? (activeSlideLooksLikeProgram || activeSlideHasDesignedText ? fallbackProgramStoryFromIndex(activeIndex) : undefined);
   const activeSlideIsProgramStory = Boolean(activeProgramStory) || sketchPillarSlidePattern.test(activeSlide.imageUrl);
   const activeSlideHasContainedImage = activeSlideHasDesignedText || activeSlideIsProgramStory;
   const activePillarSlide = programPillarSlideFromSlide(activeSlide);

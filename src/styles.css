@@ -1016,6 +1016,8 @@ h1 {
 .hero-banner.program-story-slide .hero-banner-overlay {
   inset: 50% auto auto clamp(34px, 6vw, 96px);
   display: grid;
+  width: min(620px, calc(58% - 42px));
+  min-width: min(420px, calc(100% - 72px));
   max-width: min(640px, 58%);
   padding: clamp(20px, 3vw, 36px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1023,7 +1025,9 @@ h1 {
   border-radius: 22px;
   background: rgba(8, 29, 20, 0.6);
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.22);
+  opacity: 1;
   text-align: left;
+  visibility: visible;
   backdrop-filter: blur(10px);
 }
 

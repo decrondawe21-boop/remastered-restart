@@ -6690,6 +6690,7 @@ function AdminWorkspace({
     return (Number.isNaN(rightDate) ? 0 : rightDate) - (Number.isNaN(leftDate) ? 0 : leftDate);
   });
   const systemActivityItems = adminActivityItems.filter((item) => item.kind === 'like' || item.kind === 'comment' || item.kind === 'registration');
+  const newsReactionCount = Object.values(discussion.likes).reduce((sum, like) => sum + Number(like.count || 0), 0);
   const previewNews = (focusedNewsId ? news.find((item) => item.id === focusedNewsId) : null) ?? news[0] ?? null;
   const previewNewsComments = previewNews
     ? discussion.comments
@@ -7964,10 +7965,25 @@ function AdminWorkspace({
               </div>
               <small className="metric-disclaimer">Veřejně pouze agregovaně a až po dosažení bezpečného vzorku.</small>
             </article>
-            <article className="admin-card metric-card">
-              <span>Aktuality</span>
-              <strong>{news.length}</strong>
-              <p>publikovaných nebo připravených zpráv</p>
+            <article className="admin-card metric-card compact-news-card">
+              <div>
+                <span>Aktuality</span>
+                <strong>{news.length}</strong>
+                <p>zpráv ve veřejném archivu</p>
+              </div>
+              <div className="compact-metric-strip" aria-label="Rychlý stav aktualit">
+                <span>
+                  Komentáře
+                  <strong>{discussion.comments.length}</strong>
+                </span>
+                <span>
+                  Reakce
+                  <strong>{newsReactionCount}</strong>
+                </span>
+              </div>
+              <button className="button ghost compact-card-action" type="button" onClick={() => selectAdminTab('news')}>
+                Upravit aktuality
+              </button>
             </article>
             <article className="admin-card metric-card">
               <span>Slideshow</span>

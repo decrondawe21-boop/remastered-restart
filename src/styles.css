@@ -4084,6 +4084,43 @@ h3 {
   color: var(--muted);
 }
 
+.compact-news-card {
+  align-self: start;
+  gap: 14px;
+  min-height: 0;
+}
+
+.compact-news-card strong {
+  font-size: clamp(2rem, 3vw, 2.75rem);
+}
+
+.compact-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.compact-metric-strip span {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #d8e7dc;
+  border-radius: 8px;
+  background: #f7fbf5;
+  color: var(--muted);
+}
+
+.compact-metric-strip strong {
+  color: var(--green-dark);
+  font-size: 1.35rem;
+}
+
+.compact-card-action {
+  justify-self: start;
+  min-height: 38px;
+  padding: 8px 14px;
+}
+
 .activity-list,
 .placeholder-list,
 .table-lite,

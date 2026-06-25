@@ -1014,8 +1014,8 @@ h1 {
 }
 
 .hero-banner.program-story-slide .hero-banner-overlay {
+  display: none;
   inset: 50% auto auto clamp(34px, 6vw, 96px);
-  display: grid;
   width: min(620px, calc(58% - 42px));
   min-width: min(420px, calc(100% - 72px));
   max-width: min(640px, 58%);
@@ -1029,6 +1029,55 @@ h1 {
   text-align: left;
   visibility: visible;
   backdrop-filter: blur(10px);
+}
+
+.hero-program-card {
+  position: absolute;
+  top: 50%;
+  left: clamp(34px, 6vw, 96px);
+  z-index: 30;
+  display: grid;
+  width: min(620px, calc(56% - 42px));
+  min-width: min(420px, calc(100% - 72px));
+  padding: clamp(20px, 3vw, 36px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-left: 5px solid var(--gold);
+  border-radius: 22px;
+  background: rgba(8, 29, 20, 0.72);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-align: left;
+  transform: translateY(-50%);
+  visibility: visible;
+  opacity: 1;
+  backdrop-filter: blur(10px);
+}
+
+.hero-program-card .quiet-label,
+.hero-program-card .hero-text,
+.hero-program-card .hero-program-motto {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.hero-program-card h1 {
+  max-width: 850px;
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: clamp(2.7rem, 5.6vw, 5.4rem);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.24);
+}
+
+.hero-program-card .hero-text {
+  max-width: 600px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: clamp(0.98rem, 1.25vw, 1.13rem);
+  line-height: 1.55;
+}
+
+.hero-program-card .hero-actions {
+  justify-content: flex-start;
+  margin-top: 22px;
 }
 
 .hero-banner-overlay .quiet-label,
@@ -7134,11 +7183,23 @@ h3 {
     transform: none;
   }
 
+  .hero-program-card {
+    inset: auto 14px 18px;
+    top: auto;
+    left: 14px;
+    width: auto;
+    min-width: 0;
+    padding: 18px;
+    border-radius: 18px;
+    transform: none;
+  }
+
   .hero-banner-overlay h1 {
     font-size: clamp(2rem, 11vw, 3.25rem);
   }
 
-  .hero-banner.program-story-slide .hero-banner-overlay h1 {
+  .hero-banner.program-story-slide .hero-banner-overlay h1,
+  .hero-program-card h1 {
     font-size: clamp(2.35rem, 12vw, 3.55rem);
   }
 
@@ -7146,7 +7207,8 @@ h3 {
     font-size: 1rem;
   }
 
-  .hero-banner.program-story-slide .hero-text {
+  .hero-banner.program-story-slide .hero-text,
+  .hero-program-card .hero-text {
     font-size: 0.92rem;
   }
 
@@ -7154,12 +7216,14 @@ h3 {
     display: none;
   }
 
-  .hero-banner.program-story-slide .hero-actions {
+  .hero-banner.program-story-slide .hero-actions,
+  .hero-program-card .hero-actions {
     display: flex;
     gap: 8px;
   }
 
-  .hero-banner.program-story-slide .hero-actions .button {
+  .hero-banner.program-story-slide .hero-actions .button,
+  .hero-program-card .hero-actions .button {
     min-height: 40px;
     padding-inline: 12px;
     font-size: 0.86rem;

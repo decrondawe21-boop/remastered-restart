@@ -2577,6 +2577,24 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
           <img className="hero-banner-bg" src={activeSlide.imageUrl} alt="" aria-hidden="true" loading="eager" fetchPriority="high" decoding="async" />
         )}
         <img className="hero-banner-main" src={activeSlide.imageUrl} alt="" loading="eager" fetchPriority="high" decoding="async" />
+        {activeProgramStory && (
+          <div className="hero-program-card" aria-live="polite">
+            <p className="quiet-label">{activeProgramStory.label}</p>
+            <h1>{activeSlideTitle}</h1>
+            <p className="hero-program-motto">{activeProgramStory.motto}</p>
+            <p className="hero-text">{activeProgramStory.text}</p>
+            <div className="hero-actions">
+              {activeCtaLabel && activeCtaHref && (
+                <a className="button inverse" href={activeCtaHref}>
+                  {activeCtaLabel} <ArrowRight size={18} />
+                </a>
+              )}
+              <a className="button inverse ghost" href="/programy">
+                Zobrazit programy
+              </a>
+            </div>
+          </div>
+        )}
         <div className="hero-banner-overlay" aria-live="polite">
           <p className="quiet-label">{activeProgramStory?.label ?? 'Projekt druhých šancí'}</p>
           <h1>{activeSlideTitle}</h1>

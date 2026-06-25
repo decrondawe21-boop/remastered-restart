@@ -405,104 +405,8 @@ const childhoodBackgroundOptions = [
 ];
 const childhoodBackgroundLabel = (value?: string | null) =>
   childhoodBackgroundOptions.find((item) => item.value === value)?.label ?? childhoodBackgroundOptions[0].label;
-const seededTransparentDocuments: MediaFile[] = [
-  {
-    id: 'fallback-opz-051',
-    title: 'REST||ART Podklad ke konzultaci OPZ 051',
-    fileName: 'REST_ART_PODKLAD_KONZULTACE_OPZ_051_v1.pdf',
-    fileUrl: '/documents/transparency/REST_ART_PODKLAD_KONZULTACE_OPZ_051_v1.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 111226,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: '',
-    uploadedBy: null,
-    createdAt: '2026-06-10'
-  },
-  {
-    id: 'fallback-kpz-politiky-ktere-funguji',
-    title: 'REST||ART KPZ - Politiky, které fungují',
-    fileName: 'REST_ART_KPZ_POLITIKY_KTERE_FUNGUJI_v1.pdf',
-    fileUrl: '/documents/transparency/REST_ART_KPZ_POLITIKY_KTERE_FUNGUJI_v1.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 175390,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: '',
-    uploadedBy: null,
-    createdAt: '2026-06-11'
-  },
-  {
-    id: 'fallback-kpz-opz-051-realizacni-faze',
-    title: 'REST||ART KPZ OPZ 051 - Realizační fáze',
-    fileName: 'REST_ART_KPZ_OPZ_051_REALIZACNI_FAZE_v1.pdf',
-    fileUrl: '/documents/transparency/REST_ART_KPZ_OPZ_051_REALIZACNI_FAZE_v1.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 194631,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: 'Veřejný KPZ dokument projektu REST||ART Integrace pro realizační fázi OPZ 051',
-    uploadedBy: null,
-    createdAt: '2026-06-21'
-  },
-  {
-    id: 'fallback-kapitola-institucionalni-partnerstvi',
-    title: 'REST||ART Kapitola - Institucionální partnerství',
-    fileName: 'REST_ART_KAPITOLA_INSTITUCIONALNI_PARTNERSTVI_v1.pdf',
-    fileUrl: '/documents/transparency/REST_ART_KAPITOLA_INSTITUCIONALNI_PARTNERSTVI_v1.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 490487,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: 'Veřejný dokument projektu REST||ART Integrace k institucionálnímu partnerství',
-    uploadedBy: null,
-    createdAt: '2026-06-21'
-  },
-  {
-    id: 'fallback-opz-051-59',
-    title: 'REST||ART Podklad ke konzultaci OPZ 051/59',
-    fileName: 'REST_ART_PODKLAD_KONZULTACE_OPZ_051_59_v1.pdf',
-    fileUrl: '/documents/transparency/REST_ART_PODKLAD_KONZULTACE_OPZ_051_59_v1.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 409589,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: '',
-    uploadedBy: null,
-    createdAt: '2026-06-11'
-  },
-  {
-    id: 'rest-art-one-page-projekt-2026-v1-5',
-    title: 'REST||ART One page projektu 2026',
-    fileName: 'RAI-DOC-PROJ-001_ONE_PAGE_PROJEKT_2026_v1_5_CONTENT_LOCKED.pdf',
-    fileUrl: '/documents/transparency/RAI-DOC-PROJ-001_ONE_PAGE_PROJEKT_2026_v1_5_CONTENT_LOCKED.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 95148,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: 'Veřejný one-page dokument projektu REST||ART Integrace',
-    uploadedBy: null,
-    createdAt: '2026-06-15'
-  },
-  {
-    id: 'rest-art-public-rai-met-jb-001',
-    title: 'Metodika JAILBREAK',
-    fileName: 'RAI-MET-JB-001_METODIKA_JAILBREAK_v1_5_CONTENT_LOCKED.pdf',
-    fileUrl: '/documents/transparency/RAI-MET-JB-001_METODIKA_JAILBREAK_v1_5_CONTENT_LOCKED.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 94629,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: 'Veřejná metodika programu REST||ART Integrace',
-    uploadedBy: null,
-    createdAt: '2026-06-16'
-  },
-  {
-    id: 'rest-art-gdpr-odvolani-omezeni-souhlasu',
-    title: 'GDPR - Odvolání nebo omezení souhlasu',
-    fileName: 'RAI-FRM-GDPR-013_ODVOLANI_NEBO_OMEZENI_SOUHLASU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
-    fileUrl: '/documents/transparency/RAI-FRM-GDPR-013_ODVOLANI_NEBO_OMEZENI_SOUHLASU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',
-    mimeType: 'application/pdf',
-    fileSize: 109920,
-    category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: 'Veřejný formulář pro odvolání nebo omezení souhlasu se zpracováním osobních údajů',
-    uploadedBy: null,
-    createdAt: '2026-06-16'
-  }
-];
+const loadSeededTransparentDocuments = () => import('./transparentDocuments').then((module) => module.seededTransparentDocuments as unknown as MediaFile[]);
+const PrintableForm = React.lazy(() => import('./PrintableForm'));
 
 type PublicMediaAsset = {
   id: string;
@@ -1278,23 +1182,6 @@ const formSensitivity = (template: FormTemplate) => {
   return 'Standard';
 };
 
-const cleanPrintableFormTitle = (title: string) =>
-  title
-    .replace(/^([A-Z]{2,5}-FRM-[A-Z0-9-]+-\d{3,4})\s*[-–]\s*/i, '')
-    .replace(/^([A-Z]{2,5}-\d{2,4})\s*[-–]\s*/i, '')
-    .replace(/\bGDPR\s+0?0?1\s+/i, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/\bKryci\b/gi, 'Krycí')
-    .replace(/\bList\b/g, 'list')
-    .replace(/\bBalicku\b/gi, 'balíčku')
-    .replace(/\bStiznosti\b/gi, 'stížností')
-    .replace(/\bSouhlasu\b/gi, 'souhlasu')
-    .replace(/\bUdaju\b/gi, 'údajů')
-    .replace(/\bPribehu\b/gi, 'příběhu')
-    .replace(/\bCitace\b/gi, 'citace')
-    .replace(/\bKazuistika\b/gi, 'kazuistika')
-    .replace(/\bMlcenlivost\b/gi, 'mlčenlivost');
 
 const normalizeAutofillText = (value: string) => stripDiacritics(value).toLowerCase();
 
@@ -5787,7 +5674,7 @@ function App() {
   const [managedUsers, setManagedUsers] = React.useState<ManagedUser[]>([]);
   const [projectApplications, setProjectApplications] = React.useState<ProjectApplication[]>([]);
   const [mediaFiles, setMediaFiles] = React.useState<MediaFile[]>([]);
-  const [publicMediaFiles, setPublicMediaFiles] = React.useState<MediaFile[]>(seededTransparentDocuments);
+  const [publicMediaFiles, setPublicMediaFiles] = React.useState<MediaFile[]>([]);
   const [jailbreakBackgroundStats, setJailbreakBackgroundStats] = React.useState<ApiJailbreakBackgroundStats | null>(null);
   const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
@@ -5832,13 +5719,13 @@ function App() {
   React.useEffect(() => {
     if (currentPath !== '/povinne-zverejnovani') return;
     return runWhenIdle(() => {
-      Promise.allSettled([listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY), getJailbreakBackgroundStats()]).then(
-        ([mediaResult, statsResult]) => {
-          if (mediaResult.status === 'fulfilled') {
+      Promise.allSettled([loadSeededTransparentDocuments(), listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY), getJailbreakBackgroundStats()]).then(
+        ([fallbackResult, mediaResult, statsResult]) => {
+          const mergeDocuments = (items: MediaFile[]) => {
             setPublicMediaFiles((current) => {
               const fallbackIds = new Set(current.map((item) => item.fileUrl));
               const merged = [...current];
-              mediaResult.value.forEach((item) => {
+              items.forEach((item) => {
                 if (!fallbackIds.has(item.fileUrl)) {
                   merged.push(item);
                   fallbackIds.add(item.fileUrl);
@@ -5846,6 +5733,12 @@ function App() {
               });
               return merged;
             });
+          };
+          if (fallbackResult.status === 'fulfilled') {
+            mergeDocuments(fallbackResult.value);
+          }
+          if (mediaResult.status === 'fulfilled') {
+            mergeDocuments(mediaResult.value);
           }
           setJailbreakBackgroundStats(statsResult.status === 'fulfilled' ? statsResult.value : null);
         }
@@ -8532,7 +8425,9 @@ function AdminWorkspace({
               </div>
             </div>
 
-            <PrintableForm client={selectedClient} template={selectedTemplate} draft={draft} />
+            <React.Suspense fallback={<article className="print-sheet print-sheet-branded"><p className="empty-note">Načítám náhled tiskového formuláře...</p></article>}>
+              <PrintableForm client={selectedClient} template={selectedTemplate} draft={draft} />
+            </React.Suspense>
           </div>
         )}
 
@@ -9874,97 +9769,6 @@ function AdminDetailDialog({
         </div>
       </form>
     </div>
-  );
-}
-
-function PrintableForm({
-  client,
-  template,
-  draft
-}: {
-  client: ClientRecord | null;
-  template: FormTemplate;
-  draft: FormDraft;
-}) {
-  const clientName = client ? `${client.firstName} ${client.lastName}`.trim() : '';
-  const printDate = new Date().toLocaleDateString('cs-CZ');
-  const internalId = client?.operationalId?.trim() || 'bude doplněno';
-  const documentCode = [template.formUid || template.id, client?.operationalId].filter(Boolean).join(' / ') || template.id;
-  const printableTitle = cleanPrintableFormTitle(template.title);
-
-  return (
-    <article className="print-sheet print-sheet-branded">
-      <div className="print-brand-ribbon">
-        <div className="print-brand-identity">
-          <div className="print-brand-mark" aria-hidden="true">
-            <img src="/images/brand/restart-integrace-mark.png" alt="" />
-          </div>
-          <p className="print-brand-nameplate">REST||ART INTEGRACE</p>
-          <span>Provozní formulář projektu druhých šancí</span>
-        </div>
-        <div className="print-brand-code">
-          <strong>{documentCode}</strong>
-          <span>{printDate}</span>
-        </div>
-      </div>
-      <div className="print-header">
-        <div>
-          <p>{template.formGroup || template.folder || 'Tisková šablona'}</p>
-          <h2>{printableTitle || template.title}</h2>
-        </div>
-        <FileText size={34} />
-      </div>
-      {!client ? (
-        <p className="empty-note">Vyberte klienta pro náhled tiskového formuláře.</p>
-      ) : (
-        <>
-          <div className="print-meta">
-            <div>
-              <span>Klient</span>
-              <strong>{clientName}</strong>
-            </div>
-            <div>
-              <span>Datum narození</span>
-              <strong>{client.birthDate || '-'}</strong>
-            </div>
-            <div>
-              <span>Program</span>
-              <strong>{client.program}</strong>
-            </div>
-            <div>
-              <span>Interní ID</span>
-              <strong>{internalId}</strong>
-            </div>
-          </div>
-          <div className="print-block print-block-highlight">
-            <span>Kontakt a adresa</span>
-            <p>{[client.phone, client.email, client.address].filter(Boolean).join(' | ') || '-'}</p>
-          </div>
-          {template.fields.map((field, index) => (
-            <div className="print-block print-block-numbered" key={field.key}>
-              <span><small>{String(index + 1).padStart(2, '0')}</small>{field.label}</span>
-              <p>{draft[field.key] || ' '}</p>
-            </div>
-          ))}
-          <div className="print-form-footer-note">
-            <strong>Kontrolní poznámka</strong>
-            <span>Vyplněný formulář založte do klientské složky a navazující dokumenty evidujte v administraci.</span>
-          </div>
-          <div className="signature-grid">
-            <div>
-              <span>Podpis klienta</span>
-            </div>
-            <div>
-              <span>Podpis pracovníka</span>
-            </div>
-          </div>
-          <footer className="print-document-footer">
-            <span>David Kozák International, s.r.o. | projekt RESTART</span>
-            <strong>1/1</strong>
-          </footer>
-        </>
-      )}
-    </article>
   );
 }
 

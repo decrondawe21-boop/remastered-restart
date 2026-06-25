@@ -2811,7 +2811,7 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
           <img className="hero-banner-bg" src={activeSlide.imageUrl} alt="" aria-hidden="true" loading="eager" fetchPriority="high" decoding="async" />
         )}
         <img className="hero-banner-main" src={activeSlide.imageUrl} alt="" loading="eager" fetchPriority="high" decoding="async" />
-        <div className={`hero-banner-overlay${activeSlideHasDesignedText ? ' visually-hidden' : ''}`} aria-live="polite">
+        <div className="hero-banner-overlay" aria-live="polite">
           <p className="quiet-label">{activeProgramStory?.label ?? 'Projekt druhých šancí'}</p>
           <h1>{activeSlideTitle}</h1>
           {activeProgramStory ? (

@@ -1468,17 +1468,42 @@ const programHeroStories: Record<string, { label: string; motto: string; text: s
   }
 };
 
+const programHeroStoryAliases: Array<[string, keyof typeof programHeroStories]> = [
+  ['jailbreak', 'pillar-jailbreak'],
+  ['reset', 'pillar-reset'],
+  ['rework', 'pillar-rework'],
+  ['streetwise', 'pillar-streetwise'],
+  ['bod-zlomu', 'pillar-bod-zlomu'],
+  ['bod zlomu', 'pillar-bod-zlomu'],
+  ['stabilizace', 'pillar-stabilizace']
+];
+
+const programPillarStoryKeyFromSlide = (slide: HomeSlide) => {
+  const directKey = slide.id.toLowerCase();
+  if (directKey in programHeroStories) return directKey as keyof typeof programHeroStories;
+
+  const slugMatch = slide.imageUrl.match(/\/images\/program-pillars\/([a-z-]+)-skica\.(?:webp|png|jpe?g|avif)$/i);
+  if (slugMatch) {
+    const slugKey = `pillar-${slugMatch[1].toLowerCase()}`;
+    if (slugKey in programHeroStories) return slugKey as keyof typeof programHeroStories;
+  }
+
+  const searchable = `${slide.id} ${slide.title} ${slide.subtitle} ${slide.imageUrl}`
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  return programHeroStoryAliases.find(([alias]) => searchable.includes(alias))?.[1];
+};
+
 const programHeroStoryFromSlide = (slide: HomeSlide) => {
-  const storyById = programHeroStories[slide.id];
-  if (storyById) return storyById;
-  const slugMatch = slide.imageUrl.match(/\/images\/program-pillars\/([a-z-]+)-skica\.webp$/i);
-  if (!slugMatch) return undefined;
-  return programHeroStories[`pillar-${slugMatch[1].toLowerCase()}`];
+  const storyKey = programPillarStoryKeyFromSlide(slide);
+  return storyKey ? programHeroStories[storyKey] : undefined;
 };
 
 const programPillarSlideFromSlide = (slide: HomeSlide) => {
-  const storySlugMatch = slide.imageUrl.match(/\/images\/program-pillars\/([a-z-]+)-skica\.webp$/i);
-  return starterSlides.find((starterSlide) => starterSlide.id === slide.id || starterSlide.imageUrl === slide.imageUrl || starterSlide.id === `pillar-${storySlugMatch?.[1]?.toLowerCase()}`);
+  const storyKey = programPillarStoryKeyFromSlide(slide);
+  return starterSlides.find((starterSlide) => starterSlide.id === slide.id || starterSlide.imageUrl === slide.imageUrl || starterSlide.id === storyKey);
 };
 
 const heroAutoScrollItems = starterSlides.map((slide) => ({
@@ -2450,9 +2475,9 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const swipeStartX = React.useRef<number | null>(null);
   const activeSlide = visibleSlides[activeIndex] ?? visibleSlides[0] ?? starterSlides[0];
   const activeSlideHasDesignedText = designedTextSlidePattern.test(activeSlide.imageUrl);
-  const activeSlideIsProgramStory = sketchPillarSlidePattern.test(activeSlide.imageUrl);
-  const activeSlideHasContainedImage = activeSlideHasDesignedText || activeSlideIsProgramStory;
   const activeProgramStory = programHeroStoryFromSlide(activeSlide);
+  const activeSlideIsProgramStory = Boolean(activeProgramStory) || sketchPillarSlidePattern.test(activeSlide.imageUrl);
+  const activeSlideHasContainedImage = activeSlideHasDesignedText || activeSlideIsProgramStory;
   const activePillarSlide = programPillarSlideFromSlide(activeSlide);
   const activeSlideTitle = activeSlide.title?.trim() || activePillarSlide?.title || 'REST||ART Integrace';
   const activeSlideSubtitle = activeSlide.subtitle?.trim() || activePillarSlide?.subtitle || '';

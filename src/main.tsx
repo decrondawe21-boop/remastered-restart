@@ -431,6 +431,36 @@ const publicMediaKitAssets: PublicMediaAsset[] = [
     kind: 'pdf'
   },
   {
+    id: 'restart-brochure-rozkladaci',
+    title: 'REST||ART rozkládací brožura',
+    description: 'Stručná projektová brožura pro představení poslání, programů a možností zapojení.',
+    fileName: 'brochure-rozkladaci-03.pdf',
+    fileUrl: '/documents/media/brochure-rozkladaci-03.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 807252,
+    kind: 'pdf'
+  },
+  {
+    id: 'restart-brochure-jailbreak',
+    title: 'Brožura programu JAILBREAK',
+    description: 'Programová brožura zaměřená na podporu návratu po výkonu trestu a druhou šanci v praxi.',
+    fileName: 'brochure-jailbreak.pdf',
+    fileUrl: '/documents/media/brochure-jailbreak.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 975787,
+    kind: 'pdf'
+  },
+  {
+    id: 'restart-elegant-brochure',
+    title: 'Prezentační brožura REST||ART',
+    description: 'Elegantní veřejná brožura pro partnery, podporovatele a úvodní představení projektu.',
+    fileName: 'elegant-brochure.pdf',
+    fileUrl: '/documents/media/elegant-brochure.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 290962,
+    kind: 'pdf'
+  },
+  {
     id: 'restart-projekt-infografika',
     title: 'Projekt REST||ART Integrace',
     description: 'Prezentační projektová infografika s posláním, kontakty a základními pilíři projektu.',

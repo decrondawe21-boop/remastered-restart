@@ -68,7 +68,7 @@ export const programs: Program[] = [
     icon: ShieldCheck,
     duration: '6-12 měsíců dle profilu klienta',
     featureText:
-      'Projekt JAILBREAK otevírá novou kapitolu života lidem po výkonu trestu. Po výstupu nemá přijít jen svoboda, ale také struktura, odpovědnost, práce a návazná opora.',
+      'Projekt JAILBREAK otevírá novou kapitolu života lidem po výkonu trestu. Po výstupu nemá přijít jen svoboda, ale také struktura, odpovědnost, práce a návazná opora. Svoboda bez plánu často znamená jen další zkoušku; JAILBREAK proto spojuje přípravu ještě před výstupem s konkrétním zázemím po návratu.',
     quote: {
       text:
         'Neslibujeme iluze. Nabízíme konkrétní cestu. Program funguje, protože propojuje to, co společnost potřebuje, s tím, co jednotlivci skutečně hledají.',
@@ -81,6 +81,17 @@ export const programs: Program[] = [
     ],
     sections: [
       {
+        label: 'Proč existuje',
+        title: 'REST||ART není tabulka. Je to odpověď.',
+        text:
+          'Program vznikl jako odpověď na ticho v systému, který často přehlíží lidi po pádu a nechává je mezi stigmatem, bariérami a dalším rizikem propadu. JAILBREAK není další formální projekt pro výkaz. Je to praktická cesta, jak z času ve výkonu trestu udělat přípravu na návrat a z návratu udělat skutečný restart.',
+        items: [
+          'Začínáme motivací, kontaktem a plánem, ne až krizí po propuštění.',
+          'Propojujeme práci, bydlení, režim, vztahy a následnou stabilizaci.',
+          'Druhá šance znamená odpovědnost na obou stranách: podporu i jasné závazky.'
+        ]
+      },
+      {
         label: 'Význam názvu',
         title: 'Ne útěk z vězení, ale životní restart',
         text:
@@ -90,7 +101,7 @@ export const programs: Program[] = [
         label: 'Konkrétní přínos programu',
         title: 'Každá úspěšná reintegrace snižuje riziko další kriminality',
         text:
-          'JAILBREAK nestaví na frázi o druhé šanci, ale na konkrétním přechodu do práce, režimu a běžného života.',
+          'JAILBREAK nestaví na frázi o druhé šanci, ale na konkrétním přechodu do práce, režimu a běžného života. Nečekáme, až lidé znovu spadnou, ale nechceme je ani nechat ležet, když už spadli.',
         items: [
           'Snížení recidivy a opakovaného uvěznění.',
           'Rychlejší a cílenější rehabilitace odsouzených.',
@@ -104,7 +115,7 @@ export const programs: Program[] = [
         label: 'Jak to děláme',
         title: 'Mentoring, práce a opora',
         text:
-          'David Kozák International s.r.o. zajišťuje mentoring, korespondenci s lidmi ve VTOS, návštěvy pracovníků, stanovení cílů, přípravu na podmíněné propuštění, podporu rodinných vztahů, pracovní návaznost a základní materiální pomoc pro nemajetné klienty. Po výkonu trestu nabízíme práci v Německu, ubytování, psychosociální podporu a navazující stabilizační kroky. Vše na smluvním základě, bez závislosti na dotacích.',
+          'David Kozák International s.r.o. zajišťuje mentoring, korespondenci s lidmi ve VTOS, návštěvy pracovníků, stanovení cílů, přípravu na podmíněné propuštění, podporu rodinných vztahů, pracovní návaznost a základní materiální pomoc pro nemajetné klienty. Po výkonu trestu nabízíme práci, ubytování, psychosociální podporu a navazující stabilizační kroky. Vše stojí na smluvním rámci, osobní odpovědnosti a spolupráci, která má být skutečná, ne jen výkazově přijatelná.',
         items: [
           'Korespondence s vězni a příprava prvního důvěryhodného kontaktu.',
           'Návštěvy pracovníků a osobní mapování situace ještě před výstupem.',
@@ -441,22 +452,22 @@ export const programs: Program[] = [
 export const focusAreas = [
   {
     title: 'Mentoring',
-    text: 'Individuální vedení, podpora a motivace. Pomáháme lidem překonat překážky, které brání návratu do běžného života.',
+    text: 'Individuální vedení, podpora a motivace. Mentor pomáhá převést druhou šanci z dobrého úmyslu do konkrétních kroků: domluva, termín, kontrola, odpovědnost a kontakt ve chvíli, kdy člověk začíná ztrácet směr.',
     icon: HandHeart
   },
   {
     title: 'Práce',
-    text: 'Spolupracujeme se zaměstnavateli, pomáháme s přípravou, rekvalifikací i nástupem do zaměstnání.',
+    text: 'Spolupracujeme se zaměstnavateli, pomáháme s přípravou, rekvalifikací i nástupem do zaměstnání. Práce není jen příjem; je to rytmus, důvěra, odpovědnost a jeden z nejrychlejších způsobů, jak se vrátit do běžného života.',
     icon: Briefcase
   },
   {
     title: 'Bydlení',
-    text: 'Stabilní zázemí je podmínkou změny. Podporujeme bezpečný přechod k samostatnému bydlení.',
+    text: 'Stabilní zázemí je podmínkou změny. Bez místa, kam se člověk může vracet, se i dobrý plán rychle rozpadá. Podporujeme bezpečný přechod k bydlení, režimu a samostatnosti.',
     icon: Building2
   },
   {
     title: 'Stabilizace',
-    text: 'Pracujeme s financemi, dokumenty, zdravím, vztahy a každodenním režimem. Krok za krokem vracíme život do rovnováhy.',
+    text: 'Pracujeme s financemi, dokumenty, zdravím, vztahy a každodenním režimem. Stabilizace není jednorázová pomoc, ale doprovod v prvních týdnech a měsících, kdy se rozhoduje, jestli změna vydrží.',
     icon: Leaf
   }
 ];
@@ -464,15 +475,15 @@ export const focusAreas = [
 export const supportPaths = [
   {
     title: 'Pro jednotlivce',
-    text: 'Potřebujete pomoc se startem, prací, bydlením nebo návaznou podporou? Ozvěte se. První krok může být krátká zpráva.'
+    text: 'Potřebujete pomoc se startem, prací, bydlením nebo návaznou podporou? Ozvěte se. Není nutné mít dokonale připravený příběh ani plán. První krok může být krátká zpráva a ochota začít mluvit pravdivě.'
   },
   {
     title: 'Pro firmy',
-    text: 'Hledáme zaměstnavatele, kteří umí dát férovou šanci a chtějí být součástí návratu lidí do stabilního života.'
+    text: 'Hledáme zaměstnavatele, kteří umí dát férovou šanci a chtějí být součástí návratu lidí do stabilního života. Nabízíme rámec, doprovod a komunikaci, aby druhá šance nebyla rizikem bez opory, ale připravenou spoluprací.'
   },
   {
     title: 'Pro instituce a obce',
-    text: 'Navazujeme na věznice, úřady, školy, komunitní služby a další organizace, které pracují s lidmi v riziku.'
+    text: 'Navazujeme na věznice, úřady, školy, komunitní služby a další organizace, které pracují s lidmi v riziku. Nehledáme grantové rivaly ani formální partnerství na papíře, ale společný směr, odvahu a odpovědnost.'
   }
 ];
 
@@ -503,19 +514,19 @@ export const realityCards = [
 export const solutionPrinciples = [
   {
     title: 'Propojení',
-    text: 'Spojujeme lidi, firmy, obce, instituce a konkrétní příležitosti.'
+    text: 'Spojujeme lidi, firmy, obce, instituce a konkrétní příležitosti. Systém začne fungovat až ve chvíli, kdy spolu jeho části skutečně mluví.'
   },
   {
     title: 'Příběhy',
-    text: 'Za každým klientem je konkrétní cesta, ne anonymní položka ve statistice.'
+    text: 'Za každým klientem je konkrétní cesta, ne anonymní položka ve statistice. Nejde o to vylepšit výkaz, ale vrátit člověku šanci na normální den.'
   },
   {
     title: 'Odpovědnost',
-    text: 'Druhá šance není bezbřehá tolerance. Je to jasný plán, dohoda a práce.'
+    text: 'Druhá šance není bezbřehá tolerance. Je to jasný plán, dohoda a práce. Podpora má smysl jen tehdy, když vede k převzetí odpovědnosti.'
   },
   {
     title: 'Udržitelnost',
-    text: 'Cílem není jednorázová pomoc, ale stav, který vydrží i po skončení programu.'
+    text: 'Cílem není jednorázová pomoc, ale stav, který vydrží i po skončení programu. Pomoc má člověka postavit na nohy, ne vytvořit další závislost.'
   }
 ];
 
@@ -560,6 +571,22 @@ export const partnerTypes = [
 ];
 
 export const starterNews = [
+  {
+    id: 'news-brozury-druhe-sance',
+    title: 'Nové brožury REST||ART Integrace jsou veřejně ke stažení',
+    date: '2026-06-26',
+    tag: 'Média a materiály',
+    excerpt:
+      'Zveřejnili jsme projektové brožury pro partnery, podporovatele i zájemce o program JAILBREAK. Materiály shrnují, proč REST||ART není jen další projekt, ale značka druhé šance v praxi.',
+    body: [
+      '<p>Do veřejné knihovny médií jsme doplnili nové projektové brožury REST||ART Integrace. Slouží pro partnery, podporovatele, instituce i lidi, kteří chtějí rychle pochopit, proč projekt vznikl a jakou změnu chce přinést.</p>',
+      '<h2>Značka druhé šance</h2>',
+      '<p>REST||ART Integrace nevnímáme jako tabulku, výkaz nebo formální značku na obálku žádosti. Je to odpověď na situace, kdy člověk po pádu najde stigma, bariéru a další propad místo otevřených dveří.</p>',
+      '<p>Brožury popisují základní myšlenku: nečekat, až lidé znovu spadnou, ale zároveň je nenechat ležet. Projekt propojuje prevenci, doprovod, práci, bydlení a stabilizaci do jednoho praktického rámce.</p>',
+      '<h2>Spolupráce, ne grantové soupeření</h2>',
+      '<p>Hledáme partnery, kteří chtějí táhnout stejným směrem. Nejde nám o výkazově přijatelná partnerství, ale o prostředí, kde partner znamená společný směr, odvahu a odpovědnost.</p>'
+    ].join('')
+  },
   {
     id: 'story-petr-s-druha-sance',
     title: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát',

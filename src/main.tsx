@@ -4067,6 +4067,20 @@ const categoryLabels: Record<CookieCategory, string> = {
   marketing: 'Marketingové'
 };
 
+const applyGoogleConsentMode = (preferences: Pick<CookiePreferences, 'statistics' | 'marketing'>) => {
+  const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+  if (!gtag) return;
+  gtag('consent', 'update', {
+    analytics_storage: preferences.statistics ? 'granted' : 'denied',
+    ad_storage: preferences.marketing ? 'granted' : 'denied',
+    ad_user_data: preferences.marketing ? 'granted' : 'denied',
+    ad_personalization: preferences.marketing ? 'granted' : 'denied',
+    personalization_storage: preferences.marketing ? 'granted' : 'denied',
+    functionality_storage: 'granted',
+    security_storage: 'granted'
+  });
+};
+
 function CookieConsent({ forceOpen = false, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
   const [legacyAccepted, setLegacyAccepted] = useStoredState('restart-cookie-consent', false);
   const [preferences, setPreferences] = useStoredState<CookiePreferences | null>('restart-cookie-preferences', null);
@@ -4092,6 +4106,7 @@ function CookieConsent({ forceOpen = false, onClose }: { forceOpen?: boolean; on
     if (!preferences) return;
     setStatistics(preferences.statistics);
     setMarketing(preferences.marketing);
+    applyGoogleConsentMode(preferences);
   }, [preferences, forceOpen]);
 
   if (!shouldShowBanner && !shouldShowManager) return null;

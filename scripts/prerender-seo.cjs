@@ -18,14 +18,19 @@ const defaultRobots = 'index, follow, max-image-preview:large, max-snippet:-1, m
 const defaultKeywords =
   'RESTART Integrace, REST||ART Integrace, Restart Integrace, oficiální web RESTART Integrace, druhá šance, sociální integrace, mentoring, práce, bydlení, stabilizace, JAILBREAK, RESET, REWORK';
 const googleTagId = 'G-8YXS6ZYRNH';
-const googleTagSnippet = `    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>
-    <script>
+const googleConsentSnippet = `    <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', '${googleTagId}');
+      gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        personalization_storage: 'denied',
+        functionality_storage: 'granted',
+        security_storage: 'granted',
+        wait_for_update: 500
+      });
     </script>`;
 const criticalCss = `
 @font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/poppins/poppins-01.woff2") format("woff2")}
@@ -414,7 +419,7 @@ function replaceTag(html, pattern, replacement) {
 
 function ensureGoogleTag(html) {
   if (html.includes(googleTagId)) return html;
-  return html.replace(/<head>/, `<head>\n${googleTagSnippet}`);
+  return html.replace(/<head>/, `<head>\n${googleConsentSnippet}`);
 }
 
 function deferRenderBlockingCss(html) {
@@ -651,4 +656,5 @@ fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapIndex);
 fs.writeFileSync(path.join(distDir, 'sitemap-pages.xml'), sitemapPages);
 fs.writeFileSync(path.join(distDir, 'sitemap-videos.xml'), sitemapVideos);
 console.log(`Prerendered SEO HTML for ${routes.length} routes.`);
+
 

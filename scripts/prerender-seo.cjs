@@ -17,6 +17,16 @@ const alternateNames = [styledName, 'REST ART Integrace', 'Restart Integrace', '
 const defaultRobots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 const defaultKeywords =
   'RESTART Integrace, REST||ART Integrace, Restart Integrace, oficiální web RESTART Integrace, druhá šance, sociální integrace, mentoring, práce, bydlení, stabilizace, JAILBREAK, RESET, REWORK';
+const googleTagId = 'G-8YXS6ZYRNH';
+const googleTagSnippet = `    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '${googleTagId}');
+    </script>`;
 const criticalCss = `
 @font-face{font-family:"Poppins";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/poppins/poppins-01.woff2") format("woff2")}
 @font-face{font-family:"Poppins";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/poppins/poppins-02.woff2") format("woff2")}
@@ -153,6 +163,16 @@ const routes = [
     description:
       'Novinky, veřejné zprávy a průběžné informace z oficiálního projektu RESTART Integrace.',
     priority: '0.7',
+    changefreq: 'weekly'
+  },
+  {
+    path: '/pribehy-druhe-sance',
+    title: 'Příběhy druhé šance | RESTART Integrace',
+    description:
+      'Anonymizované příběhy druhé šance z projektu RESTART Integrace. Citlivě, bez bulváru a s důrazem na cestu ke stabilitě.',
+    keywords:
+      'Příběhy druhé šance, anonymizované příběhy, RESTART Integrace, sociální začleňování, druhá šance, návrat do života, JAILBREAK, RESET, stabilizace',
+    priority: '0.85',
     changefreq: 'weekly'
   },
   {
@@ -295,7 +315,7 @@ function breadcrumbGraph(route) {
 }
 
 function articleGraph(route, canonical, image) {
-  if (route.path !== '/aktuality') return [];
+  if (!['/aktuality', '/pribehy-druhe-sance'].includes(route.path)) return [];
   return [
     {
       '@type': 'Article',
@@ -390,6 +410,11 @@ function routeSpecificGraph(route, canonical) {
 
 function replaceTag(html, pattern, replacement) {
   return pattern.test(html) ? html.replace(pattern, replacement) : html;
+}
+
+function ensureGoogleTag(html) {
+  if (html.includes(googleTagId)) return html;
+  return html.replace(/<head>/, `<head>\n${googleTagSnippet}`);
 }
 
 function deferRenderBlockingCss(html) {
@@ -556,7 +581,7 @@ function renderRoute(route) {
     /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(structuredData(route, canonical), null, 6)}\n    </script>`
   );
-  return deferRenderBlockingCss(html);
+  return ensureGoogleTag(deferRenderBlockingCss(html));
 }
 
 function outputPath(routePath) {

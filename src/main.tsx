@@ -143,6 +143,7 @@ const routeLabels: Record<string, string> = {
   '/co-delame': 'Co děláme',
   '/programy': 'Programy',
   '/aktuality': 'Aktuality',
+  '/pribehy-druhe-sance': 'Příběhy druhé šance',
   '/zapojeni': 'Zapojení',
   '/kontakt': 'Kontakt',
   '/kontakt/formular': 'Formulář',
@@ -3191,7 +3192,8 @@ function NewsPage({
   onAddComment,
   onUpdateComment,
   onDeleteComment,
-  onNotify
+  onNotify,
+  storiesOnly = false
 }: {
   news: NewsItem[];
   discussion: NewsDiscussion;
@@ -3201,17 +3203,23 @@ function NewsPage({
   onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
   onDeleteComment: (commentId: string) => Promise<void>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+  storiesOnly?: boolean;
 }) {
   const secondChanceStories = news.filter((item) => item.tag === 'Příběhy druhé šance');
+  const displayedNews = storiesOnly ? secondChanceStories : news;
   return (
     <>
       <PageHeader
-        label="Aktuality"
-        title="Co se v projektu děje"
-        text="Novinky z projektu, příběhy z praxe a důležité informace o podpoře, programech a komunitní spolupráci."
+        label={storiesOnly ? 'Příběhy druhé šance' : 'Aktuality'}
+        title={storiesOnly ? 'Skutečné příběhy bez bulváru' : 'Co se v projektu děje'}
+        text={
+          storiesOnly
+            ? 'Anonymizované příběhy lidí, kteří se snaží vrátit do běžného života. Bez senzace, s respektem a důrazem na změnu.'
+            : 'Novinky z projektu, příběhy z praxe a důležité informace o podpoře, programech a komunitní spolupráci.'
+        }
       />
       <section className="content-section">
-        {secondChanceStories.length > 0 && (
+        {secondChanceStories.length > 0 && !storiesOnly && (
           <aside className="story-rubric-callout" aria-label="Rubrika Příběhy druhé šance">
             <span className="news-tag">Příběhy druhé šance</span>
             <div>
@@ -3224,7 +3232,7 @@ function NewsPage({
           </aside>
         )}
         <NewsGrid
-          news={news}
+          news={displayedNews}
           discussion={discussion}
           account={account}
           onToggleLike={onToggleLike}
@@ -6034,6 +6042,18 @@ React.useEffect(() => {
         onUpdateComment={updateCommentViaApi}
         onDeleteComment={deleteCommentViaApi}
         onNotify={notify}
+      />
+    ) : currentPath === '/pribehy-druhe-sance' ? (
+      <NewsPage
+        news={news}
+        discussion={newsDiscussion}
+        account={currentAccount}
+        onToggleLike={toggleLikeViaApi}
+        onAddComment={addCommentViaApi}
+        onUpdateComment={updateCommentViaApi}
+        onDeleteComment={deleteCommentViaApi}
+        onNotify={notify}
+        storiesOnly
       />
     ) : currentPath === '/zapojeni' ? (
       <SupportPage />

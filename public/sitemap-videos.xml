@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url>
+    <loc>https://restartintegrace.dk-i.cz/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://restartintegrace.dk-i.cz/videos/rest-art-intro-poster.png</video:thumbnail_loc>
+      <video:title>RESTART Integrace - příběh druhé šance</video:title>
+      <video:description>Krátké projektové video o kořenech, stabilitě, růstu a novém začátku v projektu RESTART Integrace.</video:description>
+      <video:content_loc>https://restartintegrace.dk-i.cz/videos/rest-art-intro-z-podkladu-v1-720p.mp4</video:content_loc>
+      <video:publication_date>2026-06-24</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+    </video:video>
+    <video:video>
+      <video:thumbnail_loc>https://restartintegrace.dk-i.cz/images/video/restart-logo-reveal-preview.webp</video:thumbnail_loc>
+      <video:title>Mini animace loga RESTART Integrace</video:title>
+      <video:description>Krátká logo animace projektu druhých šancí RESTART Integrace.</video:description>
+      <video:content_loc>https://restartintegrace.dk-i.cz/videos/restart-logo-reveal.mp4</video:content_loc>
+      <video:publication_date>2026-06-24</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+    </video:video>
+  </url>
+</urlset>

@@ -1,7 +1,69 @@
+# RESTART Integrace - production robots.txt
+# Official canonical host: https://restartintegrace.dk-i.cz/
+
 User-agent: *
+Allow: /
+Allow: /assets/
+Allow: /images/
+Allow: /videos/
+Allow: /documents/media/
+Allow: /documents/transparency/
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /klient
+Disallow: /klient/
+Disallow: /output/
+Disallow: /tmp/
+Disallow: /*?tab=
+Disallow: /*?section=
+Disallow: /*?token=
+Disallow: /*?reset=
+
+User-agent: Googlebot
+Allow: /
+Allow: /assets/
+Allow: /images/
+Allow: /videos/
+Allow: /documents/media/
+Allow: /documents/transparency/
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /klient
+Disallow: /klient/
+Disallow: /output/
+Disallow: /tmp/
+
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /documents/transparency/thumbnails/
+Disallow: /api/
+Disallow: /admin
+Disallow: /klient
+
+User-agent: Googlebot-Video
+Allow: /videos/
+Allow: /images/video/
+Disallow: /api/
+Disallow: /admin
+Disallow: /klient
+
+User-agent: AdsBot-Google
 Allow: /
 Disallow: /api/
 Disallow: /admin
 Disallow: /klient
 
+User-agent: Yandex
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /klient
+Disallow: /output/
+Disallow: /tmp/
+Crawl-delay: 2
+
 Sitemap: https://restartintegrace.dk-i.cz/sitemap.xml
+Sitemap: https://restartintegrace.dk-i.cz/sitemap-pages.xml
+Sitemap: https://restartintegrace.dk-i.cz/sitemap-videos.xml

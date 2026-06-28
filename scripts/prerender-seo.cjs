@@ -7,7 +7,8 @@ const routeOgImages = {
   '/': `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`,
   '/zapojeni': `${baseUrl}/images/og/restart-integrace-zapojeni-1200x630.png`,
   '/povinne-zverejnovani': `${baseUrl}/images/og/restart-integrace-povinne-zverejnovani-1200x630.png`,
-  '/aktuality': `${baseUrl}/images/og/restart-integrace-pribehy-1200x630.png`
+  '/aktuality': `${baseUrl}/images/og/restart-integrace-pribehy-1200x630.png`,
+  '/programy/jailbreak': `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`
 };
 const today = new Date().toISOString().slice(0, 10);
 const officialName = 'RESTART Integrace';
@@ -98,11 +99,13 @@ const routes = [
   },
   {
     path: '/programy/jailbreak',
-    title: 'JAILBREAK | Návrat po výkonu trestu',
+    title: 'JAILBREAK | Návrat po výkonu trestu a druhá šance v praxi',
     description:
-      'JAILBREAK pomáhá lidem po výkonu trestu vytvořit plán návratu, práci, režim, vztahy a stabilní každodenní strukturu.',
-    priority: '0.8',
-    changefreq: 'monthly'
+      'JAILBREAK je program RESTART Integrace pro lidi po výkonu trestu: mentoring, plán návratu, práce, bydlení, režim, vztahy a následná stabilizace po propuštění.',
+    keywords:
+      'JAILBREAK, program JAILBREAK, návrat po výkonu trestu, postpenitenciární péče, resocializace, reintegrace odsouzených, druhá šance, snížení recidivy, práce po propuštění, bydlení po propuštění, mentoring vězňů, RESTART Integrace',
+    priority: '0.95',
+    changefreq: 'weekly'
   },
   {
     path: '/programy/reset',
@@ -317,6 +320,74 @@ function articleGraph(route, canonical, image) {
   ];
 }
 
+function routeSpecificGraph(route, canonical) {
+  if (route.path !== '/programy/jailbreak') return [];
+  return [
+    {
+      '@type': 'Service',
+      '@id': `${canonical}#service-jailbreak`,
+      name: 'JAILBREAK',
+      alternateName: ['Program JAILBREAK', 'JAILBREAK - druhá šance po výkonu trestu'],
+      description:
+        'JAILBREAK je program RESTART Integrace pro přípravu a stabilizaci lidí po výkonu trestu: mentoring, korespondence, plán návratu, práce, bydlení, vztahy a následná opora po propuštění.',
+      serviceType: 'Sociální reintegrace a postpenitenciární podpora',
+      provider: {
+        '@id': `${baseUrl}/#organization`
+      },
+      areaServed: {
+        '@type': 'Country',
+        name: 'Česká republika'
+      },
+      audience: {
+        '@type': 'Audience',
+        audienceType: 'Osoby po výkonu trestu, osoby ve výkonu trestu připravující návrat, lidé v sociálním vyloučení'
+      },
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Podpora programu JAILBREAK',
+        itemListElement: [
+          'mentoring',
+          'korespondence a návštěvy',
+          'plán návratu po výkonu trestu',
+          'pracovní návaznost',
+          'bydlení a stabilizace',
+          'podpora rodinných vztahů',
+          'follow-up po propuštění'
+        ].map((name, index) => ({
+          '@type': 'Offer',
+          position: index + 1,
+          itemOffered: {
+            '@type': 'Service',
+            name
+          }
+        }))
+      },
+      mainEntityOfPage: {
+        '@id': `${canonical}#webpage`
+      }
+    },
+    {
+      '@type': 'Article',
+      '@id': `${canonical}#article-jailbreak`,
+      headline: 'JAILBREAK: návrat po výkonu trestu a druhá šance v praxi',
+      description: route.description,
+      image: routeOgImage(route),
+      datePublished: '2026-06-19',
+      dateModified: today,
+      inLanguage: 'cs-CZ',
+      author: {
+        '@id': `${baseUrl}/#organization`
+      },
+      publisher: {
+        '@id': `${baseUrl}/#organization`
+      },
+      mainEntityOfPage: {
+        '@id': `${canonical}#webpage`
+      }
+    }
+  ];
+}
+
 function replaceTag(html, pattern, replacement) {
   return pattern.test(html) ? html.replace(pattern, replacement) : html;
 }
@@ -399,10 +470,11 @@ function structuredData(route, canonical) {
           height: 630
         },
         dateModified: today,
-        keywords: route.noindex ? undefined : defaultKeywords
+        keywords: route.noindex ? undefined : route.keywords || defaultKeywords
       },
       breadcrumbGraph(route),
       ...articleGraph(route, canonical, currentOgImage),
+      ...routeSpecificGraph(route, canonical),
       ...routeVideos.map((video) => ({
         '@type': 'VideoObject',
         '@id': `${video.contentUrl}#video`,
@@ -440,7 +512,7 @@ function renderRoute(route) {
   html = replaceTag(
     html,
     /<meta\s+name="keywords"\s+content="[^"]*"\s*\/>/,
-    `<meta name="keywords" content="${escapeHtml(defaultKeywords)}" />`
+    `<meta name="keywords" content="${escapeHtml(route.keywords || defaultKeywords)}" />`
   );
   html = replaceTag(html, /<meta\s+name="application-name"\s+content="[^"]*"\s*\/>/, `<meta name="application-name" content="${officialName}" />`);
   html = replaceTag(
@@ -499,14 +571,28 @@ for (const route of routes) {
 }
 
 const sitemapRoutes = routes.filter((route) => !route.noindex);
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+const sitemapPages = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${sitemapRoutes
   .map((route) => {
-    const routeVideos = videoAssets.filter((video) => video.routes.includes(route.path));
-    const videoXml = routeVideos
-      .map(
-        (video) => `
+    return `  <url>
+    <loc>${routeUrl(route.path)}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${route.changefreq || 'monthly'}</changefreq>
+    <priority>${route.priority || '0.5'}</priority>
+  </url>`;
+  })
+  .join('\n')}
+</urlset>
+`;
+
+const sitemapVideos = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+${videoAssets
+  .flatMap((video) =>
+    video.routes.map(
+      (routePath) => `  <url>
+    <loc>${routeUrl(routePath)}</loc>
     <video:video>
       <video:thumbnail_loc>${escapeXml(video.thumbnailUrl)}</video:thumbnail_loc>
       <video:title>${escapeXml(video.name)}</video:title>
@@ -515,20 +601,29 @@ ${sitemapRoutes
       <video:player_loc>${escapeXml(video.embedUrl)}</video:player_loc>
       <video:publication_date>${video.uploadDate}</video:publication_date>
       <video:family_friendly>${video.familyFriendly ? 'yes' : 'no'}</video:family_friendly>
-    </video:video>`
-      )
-      .join('');
-    return `  <url>
-    <loc>${routeUrl(route.path)}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${route.changefreq || 'monthly'}</changefreq>
-    <priority>${route.priority || '0.5'}</priority>
-${videoXml}
-  </url>`;
-  })
+    </video:video>
+  </url>`
+    )
+  )
   .join('\n')}
 </urlset>
 `;
 
-fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemap);
+const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${baseUrl}/sitemap-pages.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-videos.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>
+`;
+
+fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapIndex);
+fs.writeFileSync(path.join(distDir, 'sitemap-pages.xml'), sitemapPages);
+fs.writeFileSync(path.join(distDir, 'sitemap-videos.xml'), sitemapVideos);
 console.log(`Prerendered SEO HTML for ${routes.length} routes.`);
+

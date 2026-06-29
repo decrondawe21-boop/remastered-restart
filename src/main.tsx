@@ -4081,6 +4081,12 @@ const applyGoogleConsentMode = (preferences: Pick<CookiePreferences, 'statistics
   });
 };
 
+const trackAnalyticsEvent = (eventName: string, params: Record<string, string | number | boolean> = {}) => {
+  const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+  if (!gtag) return;
+  gtag('event', eventName, params);
+};
+
 function CookieConsent({ forceOpen = false, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
   const [legacyAccepted, setLegacyAccepted] = useStoredState('restart-cookie-consent', false);
   const [preferences, setPreferences] = useStoredState<CookiePreferences | null>('restart-cookie-preferences', null);
@@ -4588,6 +4594,11 @@ function AuthScreen({
       createdAt: todayIso()
     };
     onRegister(account);
+    trackAnalyticsEvent('sign_up', {
+      method: 'local',
+      role: 'applicant',
+      account_status: 'local_fallback'
+    });
     onNotify('success', 'Registrace je hotová', 'Profil byl vytvořen.');
     setIsSubmitting(false);
     onLogin(account);
@@ -5902,6 +5913,11 @@ React.useEffect(() => {
   };
   const registerViaApi = async ({ name, email, phone, password }: RegisterRequest) => {
     const registration = await registerClientAccount(name, email, phone, password);
+    trackAnalyticsEvent('sign_up', {
+      method: 'email',
+      role: 'applicant',
+      account_status: registration.pendingVerification || registration.user.isActive === false ? 'pending_verification' : 'active'
+    });
     if (registration.pendingVerification || registration.user.isActive === false) {
       notify(
         'success',

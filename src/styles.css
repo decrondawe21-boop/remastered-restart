@@ -2717,6 +2717,36 @@ h3 {
   box-shadow: 0 16px 40px rgba(26, 51, 36, 0.06);
 }
 
+.verified-data-widget {
+  border-left-color: var(--gold);
+}
+
+.verified-data-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.verified-data-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid rgba(186, 143, 74, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--green-dark);
+  font-size: 0.84rem;
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.verified-data-links a:hover {
+  border-color: rgba(31, 119, 68, 0.36);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .transparency-data-head {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

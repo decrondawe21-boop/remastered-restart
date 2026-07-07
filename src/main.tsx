@@ -3456,6 +3456,40 @@ function JailbreakBackgroundWidget({ stats }: { stats: ApiJailbreakBackgroundSta
   );
 }
 
+function VerifiedPrisonStatsNote() {
+  return (
+    <aside className="transparency-data-widget verified-data-widget" aria-label="Ověřená data Vězeňské služby České republiky">
+      <div className="transparency-data-head">
+        <span className="news-tag">ONLY TRUE</span>
+        <div>
+          <h2>Ověřená data k vězeňství</h2>
+          <p>
+            Rozpočtové údaje v grafu se vztahují k běžným výdajům Vězeňské služby ČR. U roku 2025 odpovídá hodnota
+            „Rozpočet po změnách“ částce 13 107 759,28 tis. Kč a hodnota „Skutečné čerpání“ částce 13 084 930,06 tis.
+            Kč podle Výroční zprávy VS ČR za rok 2025.
+          </p>
+        </div>
+      </div>
+      <p className="transparency-data-note">
+        Údaj je proto nutné číst jako běžné výdaje, nikoliv jako celkové výdaje Vězeňské služby ČR. Rozpočtová data jsou
+        používána pouze jako přesně vymezený ukazatel běžných výdajů VS ČR, nikoliv jako zjednodušené tvrzení o celkových
+        nákladech vězeňství.
+      </p>
+      <div className="verified-data-links" aria-label="Zdroje ověřených údajů">
+        <a href="https://www.vs.gov.cz/media/organizacni-jednotky/generalni-reditelstvi/odbor-spravni/uredni-deska/vyrocni-zpravy/vyrocni-zprava-vs-cr-2025.pdf" target="_blank" rel="noreferrer">
+          Výroční zpráva VS ČR 2025
+        </a>
+        <a href="https://www.vs.gov.cz/sekce/statisticke-rocenky-vezenske-sluzby" target="_blank" rel="noreferrer">
+          Statistické ročenky VS ČR
+        </a>
+        <a href="https://csu.gov.cz/vezni" target="_blank" rel="noreferrer">
+          ČSÚ: Vězni
+        </a>
+      </div>
+    </aside>
+  );
+}
+
 function TransparencyDocumentsPage({
   documents,
   jailbreakBackgroundStats
@@ -3472,6 +3506,7 @@ function TransparencyDocumentsPage({
         <h1>Povinné zveřejňování</h1>
         <p>Zveřejňujeme dokumenty pro transparentnost projektových aktivit, financování a veřejných podkladů.</p>
       </div>
+      <VerifiedPrisonStatsNote />
       {jailbreakBackgroundStats && <JailbreakBackgroundWidget stats={jailbreakBackgroundStats} />}
       <div className="client-document-list transparency-document-list">
         {sorted.length === 0 ? (

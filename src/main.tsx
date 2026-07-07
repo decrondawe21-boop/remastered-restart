@@ -156,6 +156,8 @@ const routeLabels: Record<string, string> = {
   '/webove-gdpr': 'Webové GDPR'
 };
 
+const storyDetailPrefix = '/pribehy-druhe-sance/';
+
 const footerNavGroups = [
   {
     title: 'Navigace',
@@ -276,6 +278,10 @@ const getProgramPillarVisual = (programTitle: string) => programPillarVisuals[pr
 
 const getRouteLabel = (path: string) => {
   if (routeLabels[path]) return routeLabels[path];
+  if (path.startsWith(storyDetailPrefix)) {
+    const storyId = path.slice(storyDetailPrefix.length);
+    return starterNews.find((item) => item.id === storyId)?.title ?? 'Příběh druhé šance';
+  }
   if (path.startsWith('/programy/')) {
     const program = getProgramBySlug(path.replace('/programy/', ''));
     return program?.title ?? 'Program';
@@ -286,6 +292,7 @@ const getRouteLabel = (path: string) => {
 const normalizePath = (value: string) => {
   const path = (value.replace(/^#/, '').split('?')[0] || '/') as string;
   if (routeLabels[path]) return path;
+  if (/^\/pribehy-druhe-sance\/[^/]+$/.test(path)) return path;
   if (path.startsWith('/programy/') && getProgramBySlug(path.replace('/programy/', ''))) return path;
   return '/';
 };
@@ -331,6 +338,20 @@ type NewsItem = {
   excerpt: string;
   body?: string;
   tag?: string;
+};
+
+const storyTag = 'Příběhy druhé šance';
+const isSecondChanceStory = (item: Pick<NewsItem, 'tag'>) => item.tag === storyTag;
+const storyPath = (item: Pick<NewsItem, 'id'>) => `${storyDetailPrefix}${encodeURIComponent(item.id)}`;
+
+const mergeNewsItems = (fallbackItems: NewsItem[], apiItems: NewsItem[]) => {
+  const byId = new Map<string, NewsItem>();
+  fallbackItems.forEach((item) => byId.set(item.id, item));
+  apiItems.forEach((item) => byId.set(item.id, item));
+  return Array.from(byId.values()).sort((a, b) => {
+    const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+    return dateDiff || a.title.localeCompare(b.title, 'cs');
+  });
 };
 
 type NewsDiscussion = {
@@ -2131,27 +2152,36 @@ function NewsGrid({
 }) {
   return (
     <div className="news-grid">
-      {news.map((item) => (
-        <article key={item.id} className="news-card">
-          <div className="news-card-meta">
-            {item.tag && <span className="news-tag">{item.tag}</span>}
-            <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
-          </div>
-          <h3>{item.title}</h3>
-          <p>{item.excerpt}</p>
-          {item.body && <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body, item.title) }} />}
-          <NewsDiscussionPanel
-            item={item}
-            discussion={discussion}
-            account={account}
-            onToggleLike={onToggleLike}
-            onAddComment={onAddComment}
-            onUpdateComment={onUpdateComment}
-            onDeleteComment={onDeleteComment}
-            onNotify={onNotify}
-          />
-        </article>
-      ))}
+      {news.map((item) => {
+        const isStory = isSecondChanceStory(item);
+        return (
+          <article key={item.id} className="news-card">
+            <div className="news-card-meta">
+              {item.tag && <span className="news-tag">{item.tag}</span>}
+              <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+            </div>
+            <h3>{item.title}</h3>
+            <p>{item.excerpt}</p>
+            {isStory ? (
+              <a className="story-detail-link" href={storyPath(item)}>
+                Otevřít celý příběh <ArrowRight size={16} />
+              </a>
+            ) : item.body ? (
+              <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body, item.title) }} />
+            ) : null}
+            <NewsDiscussionPanel
+              item={item}
+              discussion={discussion}
+              account={account}
+              onToggleLike={onToggleLike}
+              onAddComment={onAddComment}
+              onUpdateComment={onUpdateComment}
+              onDeleteComment={onDeleteComment}
+              onNotify={onNotify}
+            />
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -3184,6 +3214,61 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
   );
 }
 
+function NewsDetailPage({
+  item,
+  discussion,
+  account,
+  onToggleLike,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  onNotify
+}: {
+  item: NewsItem;
+  discussion: NewsDiscussion;
+  account: AuthAccount | null;
+  onToggleLike: (newsId: string) => Promise<void>;
+  onAddComment: (newsId: string, text: string, parentId?: string | null) => Promise<boolean>;
+  onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
+  onDeleteComment: (commentId: string) => Promise<void>;
+  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+}) {
+  return (
+    <>
+      <section className="story-detail-hero">
+        <div>
+          <a className="back-link" href="/pribehy-druhe-sance">
+            <ChevronLeft size={18} /> Zpět na příběhy
+          </a>
+          <div className="news-card-meta">
+            {item.tag && <span className="news-tag">{item.tag}</span>}
+            <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+          </div>
+          <h1>{item.title}</h1>
+          <p>{item.excerpt}</p>
+        </div>
+      </section>
+      <section className="content-section story-detail-content">
+        {item.body ? (
+          <article className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body, item.title) }} />
+        ) : (
+          <p>{item.excerpt}</p>
+        )}
+        <NewsDiscussionPanel
+          item={item}
+          discussion={discussion}
+          account={account}
+          onToggleLike={onToggleLike}
+          onAddComment={onAddComment}
+          onUpdateComment={onUpdateComment}
+          onDeleteComment={onDeleteComment}
+          onNotify={onNotify}
+        />
+      </section>
+    </>
+  );
+}
+
 function NewsPage({
   news,
   discussion,
@@ -3205,7 +3290,7 @@ function NewsPage({
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
   storiesOnly?: boolean;
 }) {
-  const secondChanceStories = news.filter((item) => item.tag === 'Příběhy druhé šance');
+  const secondChanceStories = news.filter(isSecondChanceStory);
   const displayedNews = storiesOnly ? secondChanceStories : news;
   return (
     <>
@@ -5805,7 +5890,7 @@ function App() {
       .catch(() => setApiAccount(null));
     listNews()
       .then((items) => {
-        setNews(items);
+        setNews(mergeNewsItems(starterNews, items));
       })
       .catch(() => undefined);
     listSlides()
@@ -5846,7 +5931,8 @@ function App() {
   }, [currentPath]);
 
   React.useEffect(() => {
-    const shouldLoadDiscussion = currentPath === '/' || currentPath === '/aktuality';
+    const shouldLoadDiscussion =
+      currentPath === '/' || currentPath === '/aktuality' || currentPath === '/pribehy-druhe-sance' || currentPath.startsWith(storyDetailPrefix);
     if (!shouldLoadDiscussion) return;
     return runWhenIdle(() => {
       refreshNewsDiscussion().catch(() => undefined);
@@ -6086,6 +6172,8 @@ React.useEffect(() => {
   };
 
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
+  const selectedStoryId = currentPath.startsWith(storyDetailPrefix) ? decodeURIComponent(currentPath.slice(storyDetailPrefix.length)) : '';
+  const selectedStory = selectedStoryId ? news.find((item) => item.id === selectedStoryId && isSecondChanceStory(item)) : null;
 
   const staticPage = staticPages[currentPath];
   const transparencyPublicDocuments = publicMediaFiles
@@ -6098,6 +6186,17 @@ React.useEffect(() => {
       <ProgramsPage />
     ) : selectedProgram ? (
       <ProgramDetailPage program={selectedProgram} />
+    ) : selectedStory ? (
+      <NewsDetailPage
+        item={selectedStory}
+        discussion={newsDiscussion}
+        account={currentAccount}
+        onToggleLike={toggleLikeViaApi}
+        onAddComment={addCommentViaApi}
+        onUpdateComment={updateCommentViaApi}
+        onDeleteComment={deleteCommentViaApi}
+        onNotify={notify}
+      />
     ) : currentPath === '/aktuality' ? (
       <NewsPage
         news={news}

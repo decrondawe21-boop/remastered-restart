@@ -87,6 +87,35 @@ const videoAssets = [
   }
 ];
 
+const storyRoutes = [
+  {
+    id: 'story-z-praxe-ne-od-stolu',
+    path: '/pribehy-druhe-sance/story-z-praxe-ne-od-stolu',
+    title: 'REST||ART vznikl z praxe, ne od stolu | Příběhy druhé šance',
+    description:
+      'Zakladatelský příběh projektu REST||ART / RESTART Integrace: osobní cesta přes závislost, ulici, výkon trestu, návrat do práce a vznik systému druhých šancí.',
+    keywords:
+      'REST||ART vznikl z praxe, zakladatelský příběh, RESTART Integrace, výkon trestu, bezdomovectví, závislost, návrat do života, druhá šance, JAILBREAK, reintegrace',
+    datePublished: '2026-07-02',
+    priority: '0.78',
+    changefreq: 'weekly',
+    articleHeadline: 'REST||ART vznikl z praxe, ne od stolu'
+  },
+  {
+    id: 'story-petr-s-druha-sance',
+    path: '/pribehy-druhe-sance/story-petr-s-druha-sance',
+    title: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát | Příběhy druhé šance',
+    description:
+      'Anonymizovaný příběh druhé šance: Petr S. popisuje cestu přes ústavní péči, ulici, výkon trestu i snahu začít žít jinak.',
+    keywords:
+      'Petr S., příběh druhé šance, anonymizovaný příběh, JAILBREAK, výkon trestu, ústavní péče, návrat do života, RESTART Integrace',
+    datePublished: '2026-06-24',
+    priority: '0.74',
+    changefreq: 'monthly',
+    articleHeadline: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát'
+  }
+];
+
 const routes = [
   {
     path: '/',
@@ -180,6 +209,7 @@ const routes = [
     priority: '0.85',
     changefreq: 'weekly'
   },
+  ...storyRoutes,
   {
     path: '/zapojeni',
     title: 'Zapojení a podpora | RESTART Integrace',
@@ -296,6 +326,8 @@ function routeLabel(routePath) {
     '/klient': 'Klientská zóna',
     '/admin': 'Administrace'
   };
+  const story = storyRoutes.find((item) => item.path === routePath);
+  if (story) return story.articleHeadline;
   return labels[routePath] || routePath.replace(/^\//, '').replace(/-/g, ' ');
 }
 
@@ -320,6 +352,31 @@ function breadcrumbGraph(route) {
 }
 
 function articleGraph(route, canonical, image) {
+  const story = storyRoutes.find((item) => item.path === route.path);
+  if (story) {
+    return [
+      {
+        '@type': 'Article',
+        '@id': `${canonical}#article-${story.id}`,
+        headline: story.articleHeadline,
+        description: story.description,
+        image,
+        datePublished: story.datePublished,
+        dateModified: today,
+        inLanguage: 'cs-CZ',
+        articleSection: 'Příběhy druhé šance',
+        author: {
+          '@id': `${baseUrl}/#organization`
+        },
+        publisher: {
+          '@id': `${baseUrl}/#organization`
+        },
+        mainEntityOfPage: {
+          '@id': `${canonical}#webpage`
+        }
+      }
+    ];
+  }
   if (!['/aktuality', '/pribehy-druhe-sance'].includes(route.path)) return [];
   return [
     {

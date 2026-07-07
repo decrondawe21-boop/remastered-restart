@@ -588,6 +588,37 @@ export const starterNews = [
     ].join('')
   },
   {
+    id: 'story-z-praxe-ne-od-stolu',
+    title: 'REST||ART vznikl z praxe, ne od stolu',
+    date: '2026-07-02',
+    tag: 'Příběhy druhé šance',
+    excerpt:
+      'Zakladatelský příběh projektu REST||ART / RESTART Integrace: osobní cesta přes závislost, ulici, výkon trestu, návrat do práce a vznik systému druhých šancí.',
+    body: [
+      '<p><strong>Projekt REST||ART / RESTART Integrace nevznikl od stolu ani jako teoretická úvaha.</strong> Je odpovědí na osobní zkušenost, která trvala šest let výkonu trestu a ještě několik let předtím.</p>',
+      '<p>V mnoha ohledech jsem prošel téměř všemi cílovými skupinami, se kterými dnes projekt pracuje: závislostí, bezdomovectvím, sociálním propadem, ztrátou zázemí i návratem z výkonu trestu. Jedinou oblastí, kterou jsem osobně nezažil, je program BOD ZLOMU zaměřený na děti a mladé lidi. Právě zkušenost s tím, jak zásadní je včasný zásah, mi ale ukazuje, proč je tato část projektu důležitá.</p>',
+      '<h2>Cesta nezačala dramaticky</h2>',
+      '<p>Chytil jsem se špatné skupiny lidí. Nejdřív přišla marihuana, později pervitin. Přestože jsem si na střední škole držel dobrý prospěch, vysoká absence mě nakonec dostala na ulici: bez domova, bez zázemí, bez podpory. Kradl jsem jídlo, žil ze dne na den a postupně ztrácel kontakt s realitou i sám se sebou.</p>',
+      '<p>První pokus o léčbu v Horních Beřkovicích nepomohl. Po propuštění jsem se okamžitě vrátil k tomu, co mě ničilo. Paradoxně jsem tehdy rodině tvrdil, že je všechno v pořádku. Začal jsem pracovat a po několika měsících jsem s užíváním přestal sám od sebe. Dodnes nevím, co přesně se ve mně zlomilo, ale dva roky jsem abstinoval a pracoval ve státním podniku.</p>',
+      '<p>Věřil jsem, že se vrátím ke studiu. Právě návrat do školy ale přinesl další relaps. Tentokrát mě vyhodili a já strávil další dva roky na ulici jako bezdomovec.</p>',
+      '<h2>Když pomoc nepřichází včas</h2>',
+      '<p>Když už jsem byl na dně a začal přemýšlet o smrti, rozhodl jsem se požádat o pomoc. Zjistil jsem ale, že na odbornou péči budu čekat půl roku. V zoufalství jsem udělal něco, co přesně ukazuje, jak se člověk chová, když už neví kudy kam: ukradl jsem oblečení a nechal se chytit.</p>',
+      '<p>Když mě po pár hodinách pustili, udělal jsem to znovu. Tentokrát mě zavřeli. Z původních šesti měsíců se po proměně podmínky stalo šest let.</p>',
+      '<h2>Systém zevnitř</h2>',
+      '<p>Ve výkonu trestu jsem ještě nějakou dobu užíval. Přes všechnu svou inteligenci mi trvalo dlouho, než jsem začal používat i rozum. Postupně jsem se zapojil do aktivit, které dávaly smysl: psal jsem dopisy, pomáhal méně zdatným odsouzeným, učil angličtinu, vedl kroužky a stal se pomocnou rukou pedagogů a vychovatelů.</p>',
+      '<p>Díky tomu jsem získal důvěru odsouzených i personálu a mohl jsem vidět systém zevnitř. To, co jsem viděl, bylo zásadní.</p>',
+      '<ul><li>míra propustnosti drog do věznic je obrovská,</li><li>velká část programů nefunguje tak, jak je prezentováno,</li><li>jeden pedagog a jeden vychovatel na padesát lidí nemůže zajistit skutečnou práci,</li><li>mnoho odsouzených nerozumí ani základním instrukcím,</li><li>systém je přetížený, vyhořelý a často formální.</li></ul>',
+      '<p>Začal jsem pomáhat odsouzeným s dluhy, s přípravou na výstup, s kontaktem na děti v ústavní péči a také jsem upozorňoval na zneužívání kompetencí ze strany vedení.</p>',
+      '<h2>Výstup bez zázemí</h2>',
+      '<p>Těsně před mým propuštěním mi při filcungu zabavili téměř všechny osobní věci: bez protokolu, bez záznamu. Stížnost byla zamítnuta s tím, že neexistuje dokumentace. Na svobodu jsem šel v tom, v čem mě zavřeli: bez oblečení, bez jídla, bez zázemí, bez práce.</p>',
+      '<p>Přesto jsem se nevzdal. Odešel jsem do Německa, začal pracovat jako OSVČ a během dvou let jsem splatil všechny dluhy včetně nákladů na právní řízení. Tvrdě jsem pracoval, vybudoval si stabilitu a nakonec založil vlastní firmu.</p>',
+      '<h2>Proč vznikl REST||ART</h2>',
+      '<p>Právě tehdy vznikla myšlenka projektu: vytvořit systém, který pomůže lidem v situaci, kterou jsem sám zažil. Ne jako fráze o druhé šanci, ale jako praktická cesta přes práci, bydlení, mentoring, režim, dokumenty, vztahy a následnou stabilizaci.</p>',
+      '<p>REST||ART / RESTART Integrace je proto postavený na praxi, ne na teorii. Na zkušenosti, ne na domněnkách. Na tom, co skutečně funguje, ne na tom, co se dobře vyjímá v dokumentech.</p>',
+      '<p>Je to projekt druhých šancí pro lidi, kteří se ocitli na okraji společnosti, ale mají chuť začít znovu.</p>'
+    ].join('')
+  },
+  {
     id: 'story-petr-s-druha-sance',
     title: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát',
     date: '2026-06-24',

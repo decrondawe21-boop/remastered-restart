@@ -157,6 +157,7 @@ const routeLabels: Record<string, string> = {
 };
 
 const storyDetailPrefix = '/pribehy-druhe-sance/';
+const newsDetailPrefix = '/aktuality/';
 
 const footerNavGroups = [
   {
@@ -282,6 +283,10 @@ const getRouteLabel = (path: string) => {
     const storyId = path.slice(storyDetailPrefix.length);
     return starterNews.find((item) => item.id === storyId)?.title ?? 'Příběh druhé šance';
   }
+  if (path.startsWith(newsDetailPrefix)) {
+    const newsId = path.slice(newsDetailPrefix.length);
+    return starterNews.find((item) => item.id === newsId)?.title ?? 'Aktualita';
+  }
   if (path.startsWith('/programy/')) {
     const program = getProgramBySlug(path.replace('/programy/', ''));
     return program?.title ?? 'Program';
@@ -343,6 +348,7 @@ type NewsItem = {
 const storyTag = 'Příběhy druhé šance';
 const isSecondChanceStory = (item: Pick<NewsItem, 'tag'>) => item.tag === storyTag;
 const storyPath = (item: Pick<NewsItem, 'id'>) => `${storyDetailPrefix}${encodeURIComponent(item.id)}`;
+const newsPath = (item: Pick<NewsItem, 'id'>) => `${newsDetailPrefix}${encodeURIComponent(item.id)}`;
 
 const mergeNewsItems = (fallbackItems: NewsItem[], apiItems: NewsItem[]) => {
   const byId = new Map<string, NewsItem>();
@@ -2166,9 +2172,11 @@ function NewsGrid({
               <a className="story-detail-link" href={storyPath(item)}>
                 Otevřít celý příběh <ArrowRight size={16} />
               </a>
-            ) : item.body ? (
-              <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body, item.title) }} />
-            ) : null}
+            ) : (
+              <a className="story-detail-link" href={newsPath(item)}>
+                Přečíst více <ArrowRight size={16} />
+              </a>
+            )}
             <NewsDiscussionPanel
               item={item}
               discussion={discussion}
@@ -3222,7 +3230,9 @@ function NewsDetailPage({
   onAddComment,
   onUpdateComment,
   onDeleteComment,
-  onNotify
+  onNotify,
+  backPath = '/pribehy-druhe-sance',
+  backLabel = 'Zpět na příběhy'
 }: {
   item: NewsItem;
   discussion: NewsDiscussion;
@@ -3232,13 +3242,15 @@ function NewsDetailPage({
   onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
   onDeleteComment: (commentId: string) => Promise<void>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+  backPath?: string;
+  backLabel?: string;
 }) {
   return (
     <>
       <section className="story-detail-hero">
         <div>
-          <a className="back-link" href="/pribehy-druhe-sance">
-            <ChevronLeft size={18} /> Zpět na příběhy
+          <a className="back-link" href={backPath}>
+            <ChevronLeft size={18} /> {backLabel}
           </a>
           <div className="news-card-meta">
             {item.tag && <span className="news-tag">{item.tag}</span>}
@@ -5932,7 +5944,7 @@ function App() {
 
   React.useEffect(() => {
     const shouldLoadDiscussion =
-      currentPath === '/' || currentPath === '/aktuality' || currentPath === '/pribehy-druhe-sance' || currentPath.startsWith(storyDetailPrefix);
+      currentPath === '/' || currentPath === '/aktuality' || currentPath === '/pribehy-druhe-sance' || currentPath.startsWith(storyDetailPrefix) || currentPath.startsWith(newsDetailPrefix);
     if (!shouldLoadDiscussion) return;
     return runWhenIdle(() => {
       refreshNewsDiscussion().catch(() => undefined);
@@ -6174,6 +6186,8 @@ React.useEffect(() => {
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
   const selectedStoryId = currentPath.startsWith(storyDetailPrefix) ? decodeURIComponent(currentPath.slice(storyDetailPrefix.length)) : '';
   const selectedStory = selectedStoryId ? news.find((item) => item.id === selectedStoryId && isSecondChanceStory(item)) : null;
+  const selectedNewsId = currentPath.startsWith(newsDetailPrefix) ? decodeURIComponent(currentPath.slice(newsDetailPrefix.length)) : '';
+  const selectedNews = selectedNewsId ? news.find((item) => item.id === selectedNewsId && !isSecondChanceStory(item)) : null;
 
   const staticPage = staticPages[currentPath];
   const transparencyPublicDocuments = publicMediaFiles
@@ -6186,6 +6200,19 @@ React.useEffect(() => {
       <ProgramsPage />
     ) : selectedProgram ? (
       <ProgramDetailPage program={selectedProgram} />
+    ) : selectedNews ? (
+      <NewsDetailPage
+        item={selectedNews}
+        discussion={newsDiscussion}
+        account={currentAccount}
+        onToggleLike={toggleLikeViaApi}
+        onAddComment={addCommentViaApi}
+        onUpdateComment={updateCommentViaApi}
+        onDeleteComment={deleteCommentViaApi}
+        onNotify={notify}
+        backPath="/aktuality"
+        backLabel="Zpět na aktuality"
+      />
     ) : selectedStory ? (
       <NewsDetailPage
         item={selectedStory}

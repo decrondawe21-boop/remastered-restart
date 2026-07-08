@@ -338,6 +338,7 @@ type NewsItem = {
   excerpt: string;
   body?: string;
   tag?: string;
+  imageUrl?: string;
 };
 
 const storyTag = 'Příběhy druhé šance';
@@ -2150,39 +2151,97 @@ function NewsGrid({
   onDeleteComment: (commentId: string) => Promise<void>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(news.length / itemsPerPage);
+  const startIdx = currentPage * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const currentItems = news.slice(startIdx, endIdx);
+
   return (
-    <div className="news-grid">
-      {news.map((item) => {
-        const isStory = isSecondChanceStory(item);
-        return (
-          <article key={item.id} className="news-card">
-            <div className="news-card-meta">
-              {item.tag && <span className="news-tag">{item.tag}</span>}
-              <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
-            </div>
-            <h3>{item.title}</h3>
-            <p>{item.excerpt}</p>
-            {isStory ? (
-              <a className="story-detail-link" href={storyPath(item)}>
-                Otevřít celý příběh <ArrowRight size={16} />
-              </a>
-            ) : item.body ? (
-              <div className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body, item.title) }} />
-            ) : null}
-            <NewsDiscussionPanel
-              item={item}
-              discussion={discussion}
-              account={account}
-              onToggleLike={onToggleLike}
-              onAddComment={onAddComment}
-              onUpdateComment={onUpdateComment}
-              onDeleteComment={onDeleteComment}
-              onNotify={onNotify}
-            />
-          </article>
-        );
-      })}
-    </div>
+    <>
+      <div className="news-gallery">
+        {currentItems.map((item) => {
+          const isStory = isSecondChanceStory(item);
+          return (
+            <article key={item.id} className="news-gallery-card">
+              {item.imageUrl ? (
+                <div className="news-gallery-image">
+                  <img src={item.imageUrl} alt={item.title} loading="lazy" />
+                </div>
+              ) : (
+                <div className="news-gallery-image-placeholder">
+                  <Newspaper size={48} opacity={0.3} />
+                </div>
+              )}
+              <div className="news-gallery-content">
+                <div className="news-card-meta">
+                  {item.tag && <span className="news-tag">{item.tag}</span>}
+                  <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+                </div>
+                <h3>{item.title}</h3>
+                <p className="news-excerpt">{item.excerpt}</p>
+                {isStory ? (
+                  <a className="story-detail-link" href={storyPath(item)}>
+                    Přečti více <ArrowRight size={16} />
+                  </a>
+                ) : item.body ? (
+                  <a className="story-detail-link" href={`#/aktualita/${encodeURIComponent(item.id)}`}>
+                    Přečti více <ArrowRight size={16} />
+                  </a>
+                ) : null}
+                <NewsDiscussionPanel
+                  item={item}
+                  discussion={discussion}
+                  account={account}
+                  onToggleLike={onToggleLike}
+                  onAddComment={onAddComment}
+                  onUpdateComment={onUpdateComment}
+                  onDeleteComment={onDeleteComment}
+                  onNotify={onNotify}
+                />
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="news-pagination">
+          <button
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage(currentPage - 1)}
+            className="pagination-btn"
+            aria-label="Předchozí strana"
+          >
+            <ChevronLeft size={20} /> Předchozí
+          </button>
+
+          <div className="pagination-numbers">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i)}
+                className={`pagination-number ${currentPage === i ? 'active' : ''}`}
+                aria-label={`Strana ${i + 1}`}
+                aria-current={currentPage === i ? 'page' : undefined}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+
+          <button
+            disabled={currentPage === totalPages - 1}
+            onClick={() => setCurrentPage(currentPage + 1)}
+            className="pagination-btn"
+            aria-label="Následující strana"
+          >
+            Následující <ChevronLeft size={20} style={{ transform: 'scaleX(-1)' }} />
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -3233,12 +3292,16 @@ function NewsDetailPage({
   onDeleteComment: (commentId: string) => Promise<void>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
+  const isStory = isSecondChanceStory(item);
+  const backHref = isStory ? '/pribehy-druhe-sance' : '/aktuality';
+  const backLabel = isStory ? 'Zpět na příběhy' : 'Zpět na aktuality';
+  
   return (
     <>
       <section className="story-detail-hero">
         <div>
-          <a className="back-link" href="/pribehy-druhe-sance">
-            <ChevronLeft size={18} /> Zpět na příběhy
+          <a className="back-link" href={backHref}>
+            <ChevronLeft size={18} /> {backLabel}
           </a>
           <div className="news-card-meta">
             {item.tag && <span className="news-tag">{item.tag}</span>}
@@ -3246,6 +3309,11 @@ function NewsDetailPage({
           </div>
           <h1>{item.title}</h1>
           <p>{item.excerpt}</p>
+          {item.imageUrl && (
+            <div className="news-detail-image">
+              <img src={item.imageUrl} alt={item.title} loading="lazy" />
+            </div>
+          )}
         </div>
       </section>
       <section className="content-section story-detail-content">
@@ -5932,7 +6000,7 @@ function App() {
 
   React.useEffect(() => {
     const shouldLoadDiscussion =
-      currentPath === '/' || currentPath === '/aktuality' || currentPath === '/pribehy-druhe-sance' || currentPath.startsWith(storyDetailPrefix);
+      currentPath === '/' || currentPath === '/aktuality' || currentPath === '/pribehy-druhe-sance' || currentPath.startsWith(storyDetailPrefix) || currentPath.startsWith('/aktualita/');
     if (!shouldLoadDiscussion) return;
     return runWhenIdle(() => {
       refreshNewsDiscussion().catch(() => undefined);
@@ -6174,6 +6242,10 @@ React.useEffect(() => {
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
   const selectedStoryId = currentPath.startsWith(storyDetailPrefix) ? decodeURIComponent(currentPath.slice(storyDetailPrefix.length)) : '';
   const selectedStory = selectedStoryId ? news.find((item) => item.id === selectedStoryId && isSecondChanceStory(item)) : null;
+  
+  const newsDetailPrefix = '/aktualita/';
+  const selectedNewsId = currentPath.startsWith(newsDetailPrefix) ? decodeURIComponent(currentPath.slice(newsDetailPrefix.length)) : '';
+  const selectedNews = selectedNewsId ? news.find((item) => item.id === selectedNewsId && !isSecondChanceStory(item)) : null;
 
   const staticPage = staticPages[currentPath];
   const transparencyPublicDocuments = publicMediaFiles
@@ -6189,6 +6261,17 @@ React.useEffect(() => {
     ) : selectedStory ? (
       <NewsDetailPage
         item={selectedStory}
+        discussion={newsDiscussion}
+        account={currentAccount}
+        onToggleLike={toggleLikeViaApi}
+        onAddComment={addCommentViaApi}
+        onUpdateComment={updateCommentViaApi}
+        onDeleteComment={deleteCommentViaApi}
+        onNotify={notify}
+      />
+    ) : selectedNews ? (
+      <NewsDetailPage
+        item={selectedNews}
         discussion={newsDiscussion}
         account={currentAccount}
         onToggleLike={toggleLikeViaApi}
@@ -6450,7 +6533,8 @@ function AdminWorkspace({
     date: todayIso(),
     excerpt: '',
     body: '',
-    tag: ''
+    tag: '',
+    imageUrl: ''
   });
   const [isNewsDialogOpen, setIsNewsDialogOpen] = React.useState(false);
   const [newsUndoStack, setNewsUndoStack] = React.useState<string[]>([]);
@@ -6988,7 +7072,8 @@ function AdminWorkspace({
         date: todayIso(),
         excerpt: '',
         body: '',
-        tag: ''
+        tag: '',
+        imageUrl: ''
       }
     );
     setIsNewsDialogOpen(true);
@@ -6997,7 +7082,7 @@ function AdminWorkspace({
 
   const closeNewsDialog = () => {
     setIsNewsDialogOpen(false);
-    setNewsForm({ id: '', title: '', date: todayIso(), excerpt: '', body: '', tag: '' });
+    setNewsForm({ id: '', title: '', date: todayIso(), excerpt: '', body: '', tag: '', imageUrl: '' });
     setNewsUndoStack([]);
   };
 
@@ -9033,6 +9118,20 @@ function AdminWorkspace({
                         <option value="JAILBREAK" />
                         <option value="Aktuality" />
                       </datalist>
+                    </label>
+                    <label className="editor-full">
+                      URL obrázku / miniatury
+                      <input
+                        type="url"
+                        value={newsForm.imageUrl || ''}
+                        onChange={(event) => setNewsForm((current) => ({ ...current, imageUrl: event.target.value }))}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                      {newsForm.imageUrl && (
+                        <small style={{ display: 'block', marginTop: '8px' }}>
+                          Náhled: <img src={newsForm.imageUrl} alt="Náhled" style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '8px', borderRadius: '6px' }} />
+                        </small>
+                      )}
                     </label>
                     <label className="editor-full">
                       Krátký text

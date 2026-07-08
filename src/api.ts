@@ -18,6 +18,7 @@ export type ApiNewsItem = {
   excerpt: string;
   body?: string;
   tag?: string;
+  imageUrl?: string;
 };
 
 export type ApiNewsLike = {

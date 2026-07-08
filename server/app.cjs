@@ -598,7 +598,7 @@ async function listNews(_request, response) {
   let rows;
   try {
     rows = await query(
-      `SELECT id, title, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+      `SELECT id, title, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
        FROM news
        WHERE status = 'published'
        ORDER BY published_at DESC, created_at DESC
@@ -632,19 +632,21 @@ async function saveNews(request, response) {
   const id = body.id || randomId();
   const date = String(body.date || '').trim() || new Date().toISOString().slice(0, 10);
   const tag = String(body.tag || '').trim() || null;
+  const imageUrl = String(body.imageUrl || '').trim() || null;
   try {
     await query(
-      `INSERT INTO news (id, title, tag, excerpt, body, published_at, status, author_id)
-       VALUES (?, ?, ?, ?, ?, ?, 'published', ?)
+      `INSERT INTO news (id, title, tag, image_url, excerpt, body, published_at, status, author_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?)
        ON DUPLICATE KEY UPDATE
          title = VALUES(title),
          tag = VALUES(tag),
+         image_url = VALUES(image_url),
          excerpt = VALUES(excerpt),
          body = VALUES(body),
          published_at = VALUES(published_at),
          status = 'published',
          author_id = VALUES(author_id)`,
-      [id, body.title.trim(), tag, body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
+      [id, body.title.trim(), tag, imageUrl, body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
     );
   } catch (error) {
     if (!isUnknownColumnError(error)) throw error;
@@ -664,7 +666,7 @@ async function saveNews(request, response) {
   let rows;
   try {
     rows = await query(
-      `SELECT id, title, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+      `SELECT id, title, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
        FROM news
        WHERE id = ?
        LIMIT 1`,

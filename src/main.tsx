@@ -3638,8 +3638,123 @@ function VerifiedPrisonStatsNote() {
         <a href="https://csu.gov.cz/vezni" target="_blank" rel="noreferrer">
           ČSÚ: Vězni
         </a>
+        <a href="https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Prison_statistics" target="_blank" rel="noreferrer">
+          Eurostat: Prison statistics
+        </a>
       </div>
     </aside>
+  );
+}
+
+const prisonStatisticMetrics = [
+  {
+    label: 'Počet vězněných osob v roce 2025',
+    value: '19 359',
+    note: 'stav podle souhrnných dat VS ČR'
+  },
+  {
+    label: 'Změna 2020-2025',
+    value: '+73 osob',
+    note: 'celkově +0,38 %, tedy dlouhodobě stabilní hladina okolo 19 tisíc osob'
+  },
+  {
+    label: 'Nárůst osob ve vazbě 2021-2025',
+    value: '+259 osob',
+    note: 'z 1 392 na 1 651 osob, přibližně +18,6 %'
+  },
+  {
+    label: 'Česko v EU v roce 2024',
+    value: '178 / 100 tis.',
+    note: 'Eurostat uvádí Česko mezi zeměmi s nejvyšší mírou věznění v EU'
+  }
+];
+
+const prisonStatisticFigures = [
+  {
+    title: 'Dlouhodobý trend počtu vězněných osob',
+    imageUrl: '/images/statistics/dlouhodoby-trend-veznenych-osob.png',
+    alt: 'Graf dlouhodobého trendu počtu vězněných osob v letech 2020 až 2023.',
+    caption:
+      'Po poklesu v roce 2021 se počet vězněných osob vrátil nad 19 tisíc. Trend proto podporuje potřebu stabilní reintegrační práce, ne pouze jednorázových intervencí.'
+  },
+  {
+    title: 'Souhrn vývoje VS ČR 2020-2025',
+    imageUrl: '/images/statistics/souhrn-vyvoje-vs-cr-2020-2025.png',
+    alt: 'Souhrnný graf vývoje počtu vězněných osob, osob ve výkonu trestu, ve vazbě, v zabezpečovací detenci a rozpočtových údajů v letech 2020 až 2025.',
+    caption:
+      'Souhrn ukazuje současně kapacitní, procesní i rozpočtový rozměr vězeňství. Rozpočet v grafu je čten jako běžné výdaje podle uvedené poznámky ONLY TRUE.'
+  },
+  {
+    title: 'Evropské srovnání v roce 2024',
+    imageUrl: '/images/statistics/eurostat-vezni-eu-srovnani-2024.png',
+    alt: 'Graf Eurostatu s porovnáním počtu vězňů na 100 tisíc obyvatel v zemích Evropské unie v roce 2024.',
+    caption:
+      'Eurostat pro rok 2024 uvádí Česko na hodnotě přibližně 178 vězňů na 100 tisíc obyvatel. Tento údaj slouží jako kontext zatížení systému, nikoliv jako samostatné hodnocení příčin.'
+  }
+];
+
+function PrisonStatisticsSection() {
+  return (
+    <section className="prison-stats-section" aria-labelledby="prison-stats-title">
+      <div className="prison-stats-head">
+        <p className="section-label">Statistická opora</p>
+        <h2 id="prison-stats-title">Data, která vysvětlují potřebnost reintegrace</h2>
+        <p>
+          Grafy vycházejí ze souhrnných údajů Vězeňské služby ČR za roky 2020-2025 a z evropského srovnání Eurostatu za
+          rok 2024. Nepoužíváme je jako argument strachu, ale jako věcný rámec: tisíce lidí se každoročně vracejí z
+          výkonu trestu, vazby nebo zabezpečovací detence zpět do společnosti.
+        </p>
+      </div>
+
+      <div className="prison-stats-metrics">
+        {prisonStatisticMetrics.map((metric) => (
+          <article key={metric.label}>
+            <span>{metric.label}</span>
+            <strong>{metric.value}</strong>
+            <p>{metric.note}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="prison-stats-copy">
+        <article>
+          <h3>Co z dat plyne pro REST||ART</h3>
+          <p>
+            V letech 2020-2025 se počet vězněných osob pohyboval v úzkém pásmu okolo 19 tisíc osob. Nejde tedy o
+            výjimečný výkyv, ale o stabilní společenské téma, které potřebuje dlouhodobý rámec práce s návratem člověka
+            do běžného života.
+          </p>
+        </article>
+        <article>
+          <h3>Proč vzniká bod zlomu dříve</h3>
+          <p>
+            Nárůst počtu osob ve vazbě mezi roky 2021 a 2025 ukazuje, že reintegrační práce nemá začínat až po propuštění.
+            RESTART proto pracuje s bodem zlomu už ve vězení, v institucích, ve škole, v rodině nebo v krizové životní
+            situaci.
+          </p>
+        </article>
+      </div>
+
+      <div className="prison-figure-grid">
+        {prisonStatisticFigures.map((figure) => (
+          <figure key={figure.imageUrl} className="prison-figure-card">
+            <a href={figure.imageUrl} target="_blank" rel="noreferrer" aria-label={`Otevřít graf: ${figure.title}`}>
+              <img src={figure.imageUrl} alt={figure.alt} loading="lazy" />
+            </a>
+            <figcaption>
+              <strong>{figure.title}</strong>
+              <span>{figure.caption}</span>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+
+      <p className="prison-stats-source-note">
+        Zdrojová data: výroční zprávy a statistické údaje Vězeňské služby ČR, statistické ročenky VS ČR, ČSÚ a Eurostat.
+        Každá veřejná interpretace je vedena principem ONLY TRUE: číslo je buď doložené, nebo je výslovně označené jako
+        pracovní hypotéza.
+      </p>
+    </section>
   );
 }
 
@@ -3660,6 +3775,7 @@ function TransparencyDocumentsPage({
         <p>Zveřejňujeme dokumenty pro transparentnost projektových aktivit, financování a veřejných podkladů.</p>
       </div>
       <VerifiedPrisonStatsNote />
+      <PrisonStatisticsSection />
       {jailbreakBackgroundStats && <JailbreakBackgroundWidget stats={jailbreakBackgroundStats} />}
       <div className="client-document-list transparency-document-list">
         {sorted.length === 0 ? (

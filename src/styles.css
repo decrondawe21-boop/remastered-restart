@@ -2881,6 +2881,140 @@ h3 {
   text-underline-offset: 4px;
 }
 
+.prison-stats-section {
+  display: grid;
+  gap: clamp(18px, 3vw, 28px);
+  scroll-margin-top: 120px;
+  margin-bottom: 24px;
+  padding: clamp(22px, 3.4vw, 38px);
+  border: 1px solid rgba(31, 119, 68, 0.14);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 248, 0.9));
+  box-shadow: 0 16px 42px rgba(26, 51, 36, 0.06);
+}
+
+.prison-stats-head {
+  display: grid;
+  gap: 10px;
+  max-width: 980px;
+}
+
+.prison-stats-head h2 {
+  max-width: 820px;
+  margin: 0;
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
+  line-height: 1.02;
+}
+
+.prison-stats-head p,
+.prison-stats-copy p,
+.prison-stats-source-note,
+.prison-figure-card figcaption span {
+  margin: 0;
+  color: var(--muted);
+}
+
+.prison-stats-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.prison-stats-metrics article {
+  min-height: 150px;
+  padding: 16px;
+  border: 1px solid rgba(31, 119, 68, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.prison-stats-metrics span {
+  display: block;
+  color: #41564c;
+  font-size: 0.78rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.prison-stats-metrics strong {
+  display: block;
+  margin: 10px 0 8px;
+  color: var(--green-dark);
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  line-height: 1;
+}
+
+.prison-stats-metrics p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.prison-stats-copy {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.prison-stats-copy article {
+  padding: 18px;
+  border-left: 4px solid rgba(186, 143, 74, 0.72);
+  background: rgba(255, 247, 224, 0.48);
+}
+
+.prison-stats-copy h3 {
+  margin-bottom: 8px;
+  font-size: 1.15rem;
+}
+
+.prison-figure-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.prison-figure-card {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid rgba(31, 119, 68, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.prison-figure-card a {
+  display: block;
+  overflow-x: auto;
+}
+
+.prison-figure-card:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
+.prison-figure-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.prison-figure-card figcaption {
+  display: grid;
+  gap: 5px;
+}
+
+.prison-figure-card figcaption strong {
+  color: var(--text);
+}
+
+.prison-stats-source-note {
+  padding-top: 12px;
+  border-top: 1px solid rgba(31, 119, 68, 0.12);
+  font-size: 0.92rem;
+}
+
 .transparency-data-head {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -7187,6 +7321,7 @@ h3 {
   .news-grid,
   .news-gallery,
   .metric-grid,
+  .prison-stats-metrics,
   .program-pillar-grid,
   .home-link-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -7208,6 +7343,8 @@ h3 {
   .forms-layout,
   .forms-control-stack,
   .program-map-layout,
+  .prison-stats-copy,
+  .prison-figure-grid,
   .tools-grid,
   .code-archive-grid,
   .client-dashboard,
@@ -7392,8 +7529,27 @@ h3 {
   .transparency-data-head,
   .transparency-data-main,
   .evidence-bar-row,
+  .prison-stats-metrics,
   .transparency-bar-row {
     grid-template-columns: 1fr;
+  }
+
+  .prison-figure-card:nth-child(2) {
+    grid-column: auto;
+  }
+
+  .prison-figure-card a {
+    margin-inline: -4px;
+    padding-bottom: 4px;
+  }
+
+  .prison-figure-card img {
+    width: 100%;
+  }
+
+  .prison-figure-card:nth-child(2) img {
+    width: max(100%, 760px);
+    max-width: none;
   }
 
   .slideshow-hero {

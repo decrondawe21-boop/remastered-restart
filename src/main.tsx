@@ -131,6 +131,7 @@ import './styles.css';
 const navItems = [
   { href: '/co-delame', label: 'Co děláme' },
   { href: '/programy', label: 'Programy' },
+  { href: '/metodika', label: 'Metodika' },
   { href: '/aktuality', label: 'Aktuality' },
   { href: '/zapojeni', label: 'Zapojení' },
   { href: '/povinne-zverejnovani', label: 'Transparentnost' },
@@ -142,6 +143,7 @@ const routeLabels: Record<string, string> = {
   '/': 'Domů',
   '/co-delame': 'Co děláme',
   '/programy': 'Programy',
+  '/metodika': 'Metodika',
   '/aktuality': 'Aktuality',
   '/pribehy-druhe-sance': 'Příběhy druhé šance',
   '/zapojeni': 'Zapojení',
@@ -174,6 +176,7 @@ const footerNavGroups = [
     title: 'Projekt',
     links: [
       { href: '/pro-firmy', label: 'Pro firmy' },
+      { href: '/metodika', label: 'Metodika' },
       { href: '/media', label: 'Média' },
       { href: '/povinne-zverejnovani', label: 'Povinné zveřejňování' },
       { href: '/webove-gdpr', label: 'Webové GDPR' },
@@ -513,6 +516,151 @@ const publicMediaKitAssets: PublicMediaAsset[] = [
     fileSize: 5447357,
     kind: 'image'
   }
+];
+
+const methodologyLifecycleSteps = [
+  'První kontakt',
+  'Intake a vstupní posouzení',
+  'Zařazení do programu',
+  'Komplexní mapování situace',
+  'Individuální plán podpory',
+  'Realizace intervencí',
+  'Průběžné hodnocení',
+  'Stabilizace',
+  'Follow-up',
+  'Samostatný klient'
+];
+
+const methodologyPillars = [
+  {
+    title: 'JAILBREAK',
+    text: 'Příprava a podpora osob ve výkonu trestu a po propuštění. Důraz je na rozhodnutí, plán návratu a zodpovědnost.'
+  },
+  {
+    title: 'RESET',
+    text: 'Obnovení režimu, základních návyků, stability těla, mysli a prostředí před dalšími kroky.'
+  },
+  {
+    title: 'STREETWISE',
+    text: 'Praktické dovednosti pro běžný život: finance, komunikace, orientace v pravidlech a krizové rozhodování.'
+  },
+  {
+    title: 'REWORK',
+    text: 'Pracovní integrace, rekvalifikace, příprava na zaměstnání a obnova profesní identity.'
+  },
+  {
+    title: 'BOD ZLOMU',
+    text: 'Včasná prevence u mladých lidí a lidí v riziku. Bod zlomu vytváříme dříve, než přijde selhání.'
+  },
+  {
+    title: 'STABILIZACE',
+    text: 'Dlouhodobé udržení změny: práce, bydlení, vztahy, komunita, zdraví a měřitelné vyhodnocování.'
+  }
+];
+
+const methodologyPrinciples = [
+  {
+    icon: ShieldCheck,
+    title: 'Odpovědnost před omluvou',
+    text: 'Klient dostává příležitost, ne výmluvu. Důvěra je vždy spojena s konkrétní odpovědností.'
+  },
+  {
+    icon: ClipboardList,
+    title: 'Měřitelnost místo dojmů',
+    text: 'Pracujeme se Stabilizačním indexem, KPI, revizemi plánu a anonymizovaným veřejným reportingem.'
+  },
+  {
+    icon: Users,
+    title: 'Překlad mezi dvěma světy',
+    text: 'Metodika propojuje očekávání zaměstnavatelů, institucí a lidí s trestní nebo krizovou minulostí.'
+  },
+  {
+    icon: Wrench,
+    title: 'Standard formulářů',
+    text: 'PDF standard drží jednotnou identitu, přesnou geometrii polí a povinnou vizuální i funkční kontrolu.'
+  }
+];
+
+const methodologyVisuals = [
+  {
+    title: 'Druhá šance, skutečná změna',
+    src: '/images/methodology/druha-sance-skutecna-zmena.png',
+    alt: 'Vizuál REST ART Integrace s textem Druhá šance, skutečná změna.',
+    note: 'Veřejný prezentační vizuál pro základní sdělení projektu.'
+  },
+  {
+    title: 'Životní cyklus klienta',
+    src: '/images/methodology/zivotni-cyklus-klienta.png',
+    alt: 'Infografika životního cyklu klienta REST ART Integrace.',
+    note: 'Metodický model od prvního kontaktu přes intervenci, hodnocení a follow-up.'
+  },
+  {
+    title: 'Životní cyklus pro metodiky',
+    src: '/images/methodology/zivotni-cyklus-klienta-ministerstvo.png',
+    alt: 'Rozšířená verze životního cyklu klienta s rámcem a podporou ministerstva.',
+    note: 'Varianta pro institucionální jednání, standardy kvality a akreditaci programů.'
+  },
+  {
+    title: 'Šest programových pilířů',
+    src: '/images/methodology/sest-programovych-piliru.png',
+    alt: 'Infografika šesti programových pilířů REST ART Integrace.',
+    note: 'Pracovní metodický vizuál. Před tiskem projde ještě závěrečnou jazykovou a URL korekturou.'
+  },
+  {
+    title: 'Síť spolupráce',
+    src: '/images/methodology/sit-spoluprace.png',
+    alt: 'Mapa sítě spolupráce REST ART Integrace v České republice.',
+    note: 'Pracovní vizuál partnerství mezi institucemi, zaměstnavateli, komunitou a odborníky.'
+  },
+  {
+    title: 'Milníky 2025-2026',
+    src: '/images/methodology/milniky-2025-2026.png',
+    alt: 'Časová osa a milníky projektu REST ART Integrace pro roky 2025 a 2026.',
+    note: 'Pracovní přehled vývoje projektu od vzniku po pilotní ověřování.'
+  }
+];
+
+const methodologyIconVisuals = [
+  {
+    title: 'BOD ZLOMU',
+    src: '/images/methodology/bod-zlomu-ikon.png',
+    alt: 'Ikona programu BOD ZLOMU.'
+  },
+  {
+    title: 'STABILIZACE',
+    src: '/images/methodology/stabilizace-ikon.png',
+    alt: 'Ikona programu STABILIZACE.'
+  }
+];
+
+const methodologyDownloads = [
+  {
+    title: 'METODIKA REST||ART INTEGRACE',
+    description: 'Pracovní dokument metodiky s životním cyklem klienta, procesy, principy práce a programovou architekturou.',
+    fileName: 'metodika-restart-integrace.docx',
+    fileUrl: '/documents/methodology/metodika-restart-integrace.docx',
+    mimeType: 'DOCX',
+    fileSize: 10198668
+  },
+  {
+    title: 'Standard stylu PDF formulářů',
+    description: 'Technický a vizuální standard pro formuláře: statický master, pole, barvy, typografie a kontrolní pravidla.',
+    fileName: 'standard-stylu-pdf-formularu-v2-1-rc4.pdf',
+    fileUrl: '/documents/methodology/standard-stylu-pdf-formularu-v2-1-rc4.pdf',
+    mimeType: 'PDF',
+    fileSize: 2807045
+  }
+];
+
+const methodologyStyleTokens = [
+  { name: 'Primary dark green', value: '#0D5E46' },
+  { name: 'Accent green', value: '#8BC53F' },
+  { name: 'Field fill', value: '#E9EFFC' },
+  { name: 'Section band', value: '#EAF5E6' },
+  { name: 'Light green-white', value: '#F5FAF3' },
+  { name: 'Warning', value: '#FFF8D8' },
+  { name: 'Main text', value: '#0B1F18' },
+  { name: 'Secondary text', value: '#5D6B66' }
 ];
 
 type AuthRole = ApiRole;
@@ -3559,6 +3707,180 @@ function MediaKitPage({ page, assets }: { page: (typeof staticPages)[string]; as
   );
 }
 
+function MethodologyPage() {
+  return (
+    <section className="content-section methodology-page">
+      <div className="methodology-hero">
+        <div className="methodology-hero-copy">
+          <p className="section-label">Metodika a vizuální systém</p>
+          <h1>REST||ART jako opakovatelný standard, ne jednorázový projekt</h1>
+          <p>
+            Metodika propojuje zkušenost, práci s klientem, zaměstnavatele, instituce a měřitelná data. Vychází z principu,
+            že člověk není definovaný trestem, ale odpovědným krokem, který udělá zítra.
+          </p>
+          <div className="methodology-actions">
+            <a className="button primary" href="/documents/methodology/metodika-restart-integrace.docx" download>
+              <Download size={18} /> Stáhnout metodiku
+            </a>
+            <a className="button secondary" href="#metodika-vizualy">
+              <ImageIcon size={18} /> Vizuální podklady
+            </a>
+          </div>
+        </div>
+        <div className="methodology-video-card" id="metodika-video">
+          <video controls preload="metadata" poster="/videos/rest-art-logo-reveal-standard-poster.png">
+            <source src="/videos/rest-art-logo-reveal-standard.mp4" type="video/mp4" />
+            Váš prohlížeč neumí přehrát vložené video.
+          </video>
+          <div>
+            <p className="section-label">Vybraný brand asset</p>
+            <h2>Logo reveal pro veřejnou prezentaci</h2>
+            <p>
+              Z přiložených variant je tato zvolená jako nejčistší pracovní verze pro web: drží prémiový dojem, respektuje
+              zeleno-zlatou identitu a nepůsobí jako samostatná náhrada oficiálního loga.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="methodology-principle-grid" aria-label="Metodické principy REST ART Integrace">
+        {methodologyPrinciples.map((principle) => {
+          const Icon = principle.icon;
+          return (
+            <article key={principle.title}>
+              <Icon size={24} />
+              <h2>{principle.title}</h2>
+              <p>{principle.text}</p>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="methodology-split">
+        <article className="methodology-flow-card">
+          <p className="section-label">Životní cyklus klienta</p>
+          <h2>Od prvního kontaktu k samostatnosti</h2>
+          <p>
+            Základem není pouze zaměstnání. Základem je řízená změna: rozhodnutí, plán, intervence, průběžné hodnocení,
+            stabilizace a návrat do podpory, pokud se objeví relaps, ztráta bydlení, práce nebo nová krize.
+          </p>
+          <ol className="methodology-flow-list">
+            {methodologyLifecycleSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </article>
+
+        <article className="methodology-standard-card">
+          <p className="section-label">ONLY TRUE</p>
+          <h2>Každé tvrzení má mít oporu</h2>
+          <p>
+            Veřejné výstupy rozlišují doložené číslo, odborný zdroj, zkušenost a pracovní hypotézu. Stejný princip platí
+            pro formuláře: statický grafický master, přesná pole, kontrola funkčnosti a žádné změny mimo opravenou vrstvu.
+          </p>
+          <ul>
+            <li>Statická grafika je master.</li>
+            <li>Pole nesmí překrývat rámečky ani text.</li>
+            <li>Opakované prvky drží shodné rozměry.</li>
+            <li>Oprava pole nesmí měnit ostatní části dokumentu.</li>
+            <li>Finální PDF prochází funkční i vizuální kontrolou.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div className="methodology-program-section">
+        <div>
+          <p className="section-label">Programová architektura</p>
+          <h2>Šest pilířů, jeden směr</h2>
+          <p>
+            Jednotlivé programy nejsou izolované značky. Tvoří modulární rámec, který lze skládat podle rizik, potřeb,
+            motivace a reálné životní situace klienta.
+          </p>
+        </div>
+        <div className="methodology-pillar-grid">
+          {methodologyPillars.map((pillar) => (
+            <article key={pillar.title}>
+              <h3>{pillar.title}</h3>
+              <p>{pillar.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="methodology-downloads" aria-label="Metodické dokumenty ke stažení">
+        {methodologyDownloads.map((download) => (
+          <article key={download.fileUrl}>
+            <FileText size={28} />
+            <div>
+              <p className="section-label">{download.mimeType}</p>
+              <h2>{download.title}</h2>
+              <p>{download.description}</p>
+              <small>{download.fileName} · {readableBytes(download.fileSize)}</small>
+            </div>
+            <a className="button secondary" href={download.fileUrl} target="_blank" rel="noreferrer" download={download.fileName}>
+              <Download size={18} /> Otevřít
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <div className="methodology-style-section">
+        <div>
+          <p className="section-label">PDF standard</p>
+          <h2>Vizuální a technická konzistence</h2>
+          <p>
+            Standard formulářů drží jednotný vzhled napříč dokumenty: Poppins pro vizuální identitu, Helvetica pro
+            interaktivní pole, rámečky 0,6 pt v akcentní zelené a jasně definované vrstvy dokumentu.
+          </p>
+        </div>
+        <div className="methodology-token-grid">
+          {methodologyStyleTokens.map((token) => (
+            <article key={token.value}>
+              <span style={{ backgroundColor: token.value }} aria-hidden="true" />
+              <strong>{token.name}</strong>
+              <small>{token.value}</small>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="methodology-gallery-section" id="metodika-vizualy">
+        <div className="methodology-gallery-head">
+          <div>
+            <p className="section-label">Vizuální knihovna</p>
+            <h2>Podklady pro web, metodiku a partnerskou komunikaci</h2>
+          </div>
+          <p>
+            Galerie kombinuje finální veřejně použitelné vizuály a pracovní návrhy. Pracovní kusy jsou záměrně označené,
+            aby před tiskem nebo kampaní prošly poslední korekturou.
+          </p>
+        </div>
+        <div className="methodology-visual-grid">
+          {methodologyVisuals.map((visual) => (
+            <figure key={visual.src}>
+              <a href={visual.src} target="_blank" rel="noreferrer">
+                <img src={visual.src} alt={visual.alt} loading="lazy" />
+              </a>
+              <figcaption>
+                <strong>{visual.title}</strong>
+                <span>{visual.note}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <div className="methodology-icon-strip" aria-label="Programové ikony">
+          {methodologyIconVisuals.map((visual) => (
+            <figure key={visual.src}>
+              <img src={visual.src} alt={visual.alt} loading="lazy" />
+              <figcaption>{visual.title}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function JailbreakBackgroundWidget({ stats }: { stats: ApiJailbreakBackgroundStats }) {
   const institutionalCareYes = stats.institutionalCare.find((item) => item.key === 'yes');
   const displayBuckets = stats.childhoodBackground.filter((item) => item.count > 0);
@@ -6372,6 +6694,8 @@ React.useEffect(() => {
       <WorkPage />
     ) : currentPath === '/programy' ? (
       <ProgramsPage />
+    ) : currentPath === '/metodika' ? (
+      <MethodologyPage />
     ) : selectedProgram ? (
       <ProgramDetailPage program={selectedProgram} />
     ) : selectedStory ? (

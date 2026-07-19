@@ -84,6 +84,17 @@ const videoAssets = [
     embedUrl: `${baseUrl}/#projektove-video`,
     uploadDate: '2026-06-23',
     familyFriendly: true
+  },
+  {
+    routes: ['/metodika'],
+    name: 'REST||ART Integrace - metodický logo reveal',
+    description:
+      'Vybraný logo reveal pro metodickou a partnerskou prezentaci REST||ART Integrace.',
+    thumbnailUrl: `${baseUrl}/videos/rest-art-logo-reveal-standard-poster.png`,
+    contentUrl: `${baseUrl}/videos/rest-art-logo-reveal-standard.mp4`,
+    embedUrl: `${baseUrl}/metodika#metodika-video`,
+    uploadDate: '2026-07-19',
+    familyFriendly: true
   }
 ];
 
@@ -219,6 +230,16 @@ const routes = [
     changefreq: 'monthly'
   },
   {
+    path: '/metodika',
+    title: 'Metodika a vizuální systém | RESTART Integrace',
+    description:
+      'Metodika REST||ART Integrace: životní cyklus klienta, šest programových pilířů, Stabilizační index, PDF standard formulářů a vizuální podklady.',
+    keywords:
+      'metodika REST||ART Integrace, metodika RESTART Integrace, životní cyklus klienta, Stabilizační index, reintegrace, resocializace, JAILBREAK, RESET, STREETWISE, REWORK, BOD ZLOMU, STABILIZACE',
+    priority: '0.75',
+    changefreq: 'monthly'
+  },
+  {
     path: '/povinne-zverejnovani',
     title: 'Povinné zveřejňování | RESTART Integrace',
     description:
@@ -317,6 +338,7 @@ function routeLabel(routePath) {
     '/programy/stabilizace': 'STABILIZACE',
     '/aktuality': 'Aktuality',
     '/zapojeni': 'Zapojení',
+    '/metodika': 'Metodika',
     '/povinne-zverejnovani': 'Povinné zveřejňování',
     '/kontakt': 'Kontakt',
     '/pro-firmy': 'Pro firmy',

@@ -86,6 +86,18 @@ export const seededTransparentDocuments = [
     createdAt: '2026-06-16'
   },
   {
+    id: 'rest-art-vyrocni-zprava-2025',
+    title: 'Výroční zpráva REST||ART Integrace',
+    fileName: 'vyrocni-zprava-restart-integrace.pdf',
+    fileUrl: '/documents/transparency/vyrocni-zprava-restart-integrace.pdf',
+    mimeType: 'application/pdf',
+    fileSize: 4498728,
+    category: TRANSPARENCY_DOCUMENT_CATEGORY,
+    altText: 'Veřejná výroční zpráva projektu REST||ART Integrace',
+    uploadedBy: null,
+    createdAt: '2026-07-20'
+  },
+  {
     id: 'rest-art-gdpr-odvolani-omezeni-souhlasu',
     title: 'GDPR - Odvolání nebo omezení souhlasu',
     fileName: 'RAI-FRM-GDPR-013_ODVOLANI_NEBO_OMEZENI_SOUHLASU_FILLABLE_v1_3_CONTENT_LOCKED.pdf',

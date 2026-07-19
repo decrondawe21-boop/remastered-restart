@@ -5467,10 +5467,12 @@ h3 {
 }
 
 .methodology-hero-copy,
+.methodology-public-card,
 .methodology-video-card,
 .methodology-principle-grid article,
 .methodology-flow-card,
 .methodology-standard-card,
+.methodology-admin-section,
 .methodology-program-section,
 .methodology-downloads article,
 .methodology-style-section,
@@ -5533,6 +5535,35 @@ h3 {
   overflow: hidden;
 }
 
+.methodology-public-card {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-height: 100%;
+  padding: clamp(24px, 3vw, 34px);
+  background: #fbfdf9;
+}
+
+.methodology-public-card svg {
+  color: var(--green-dark);
+}
+
+.methodology-public-card h2,
+.methodology-admin-head h2 {
+  margin: 0;
+  color: var(--green-dark);
+  line-height: 1.05;
+}
+
+.methodology-public-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.methodology-public-card .button {
+  justify-self: start;
+}
+
 .methodology-video-card video {
   display: block;
   width: 100%;
@@ -5575,6 +5606,7 @@ h3 {
 .methodology-flow-card,
 .methodology-standard-card,
 .methodology-program-section,
+.methodology-admin-section,
 .methodology-style-section,
 .methodology-gallery-section {
   display: grid;
@@ -5642,6 +5674,25 @@ h3 {
   margin-top: 0.45em;
   border-radius: 50%;
   background: var(--gold);
+}
+
+.methodology-admin-section {
+  gap: 22px;
+  border-color: #c9dcc4;
+  background:
+    linear-gradient(180deg, rgba(13, 94, 70, 0.04), rgba(139, 197, 63, 0.05)),
+    #fff;
+}
+
+.methodology-admin-head {
+  display: grid;
+  gap: 10px;
+  max-width: 900px;
+}
+
+.methodology-admin-head p:not(.section-label) {
+  margin: 0;
+  color: var(--muted);
 }
 
 .methodology-pillar-grid {
@@ -8018,9 +8069,11 @@ h3 {
   }
 
   .methodology-hero-copy,
+  .methodology-public-card,
   .methodology-flow-card,
   .methodology-standard-card,
   .methodology-program-section,
+  .methodology-admin-section,
   .methodology-style-section,
   .methodology-gallery-section {
     padding: 20px;

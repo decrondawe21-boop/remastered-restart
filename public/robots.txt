@@ -66,4 +66,9 @@ Crawl-delay: 2
 
 Sitemap: https://restartintegrace.dk-i.cz/sitemap.xml
 Sitemap: https://restartintegrace.dk-i.cz/sitemap-pages.xml
+Sitemap: https://restartintegrace.dk-i.cz/sitemap-programs.xml
+Sitemap: https://restartintegrace.dk-i.cz/sitemap-stories.xml
+Sitemap: https://restartintegrace.dk-i.cz/sitemap-documents.xml
+Sitemap: https://restartintegrace.dk-i.cz/sitemap-media.xml
+Sitemap: https://restartintegrace.dk-i.cz/sitemap-donate.xml
 Sitemap: https://restartintegrace.dk-i.cz/sitemap-videos.xml

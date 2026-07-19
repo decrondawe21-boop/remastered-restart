@@ -147,6 +147,7 @@ const routeLabels: Record<string, string> = {
   '/aktuality': 'Aktuality',
   '/pribehy-druhe-sance': 'Příběhy druhé šance',
   '/zapojeni': 'Zapojení',
+  '/darovat': 'Darovat',
   '/kontakt': 'Kontakt',
   '/kontakt/formular': 'Formulář',
   '/klient': 'Klientský profil',
@@ -169,6 +170,7 @@ const footerNavGroups = [
       { href: '/programy', label: 'Programy' },
       { href: '/aktuality', label: 'Aktuality' },
       { href: '/zapojeni', label: 'Zapojení' },
+      { href: '/darovat', label: 'Darovat' },
       { href: '/kontakt', label: 'Kontakt' }
     ]
   },
@@ -634,6 +636,17 @@ const methodologyIconVisuals = [
 ];
 
 const methodologyDownloads = [
+  {
+    title: 'METODIKA REST||ART INTEGRACE',
+    description: 'Veřejná PDF verze metodiky: životní cyklus klienta, princip práce, programová architektura a rámec odpovědné reintegrace.',
+    fileName: 'metodika-restart-integrace.pdf',
+    fileUrl: '/documents/methodology/metodika-restart-integrace.pdf',
+    mimeType: 'PDF',
+    fileSize: 2277729
+  }
+];
+
+const methodologyAdminDownloads = [
   {
     title: 'METODIKA REST||ART INTEGRACE',
     description: 'Pracovní dokument metodiky s životním cyklem klienta, procesy, principy práce a programovou architekturou.',
@@ -3576,7 +3589,7 @@ function SupportPage() {
           })}
         </div>
       </section>
-      <section className="donate-section">
+      <section className="donate-section" id="darovat">
         <div className="donate-copy">
           <p className="section-label">DONATE</p>
           <h2>Podpořte nás</h2>
@@ -3707,39 +3720,41 @@ function MediaKitPage({ page, assets }: { page: (typeof staticPages)[string]; as
   );
 }
 
-function MethodologyPage() {
+function MethodologyPage({ account }: { account: AuthAccount | null }) {
+  const isAdmin = account?.role === 'admin';
+
   return (
     <section className="content-section methodology-page">
       <div className="methodology-hero">
         <div className="methodology-hero-copy">
-          <p className="section-label">Metodika a vizuální systém</p>
+          <p className="section-label">Metodika pro veřejnost</p>
           <h1>REST||ART jako opakovatelný standard, ne jednorázový projekt</h1>
           <p>
             Metodika propojuje zkušenost, práci s klientem, zaměstnavatele, instituce a měřitelná data. Vychází z principu,
             že člověk není definovaný trestem, ale odpovědným krokem, který udělá zítra.
           </p>
           <div className="methodology-actions">
-            <a className="button primary" href="/documents/methodology/metodika-restart-integrace.docx" download>
-              <Download size={18} /> Stáhnout metodiku
+            <a className="button primary" href="/documents/methodology/metodika-restart-integrace.pdf" target="_blank" rel="noreferrer" download>
+              <Download size={18} /> Stáhnout metodiku PDF
             </a>
-            <a className="button secondary" href="#metodika-vizualy">
-              <ImageIcon size={18} /> Vizuální podklady
+            <a className="button secondary" href="#metodika-cyklus">
+              <ClipboardList size={18} /> Jak funguje cyklus
             </a>
           </div>
         </div>
-        <div className="methodology-video-card" id="metodika-video">
-          <video controls preload="metadata" poster="/videos/rest-art-logo-reveal-standard-poster.png">
-            <source src="/videos/rest-art-logo-reveal-standard.mp4" type="video/mp4" />
-            Váš prohlížeč neumí přehrát vložené video.
-          </video>
+        <div className="methodology-public-card">
+          <FileText size={34} />
           <div>
-            <p className="section-label">Vybraný brand asset</p>
-            <h2>Logo reveal pro veřejnou prezentaci</h2>
+            <p className="section-label">Veřejný dokument</p>
+            <h2>Metodika ke stažení ve formátu PDF</h2>
             <p>
-              Z přiložených variant je tato zvolená jako nejčistší pracovní verze pro web: drží prémiový dojem, respektuje
-              zeleno-zlatou identitu a nepůsobí jako samostatná náhrada oficiálního loga.
+              PDF verze je určená pro partnery, veřejnost a základní orientaci v přístupu REST||ART Integrace. Pracovní
+              DOCX, brand video, vizuály a technické standardy zůstávají dostupné pouze administrátorovi.
             </p>
           </div>
+          <a className="button secondary" href="/documents/methodology/metodika-restart-integrace.pdf" target="_blank" rel="noreferrer">
+            <Download size={18} /> Otevřít PDF
+          </a>
         </div>
       </div>
 
@@ -3756,7 +3771,7 @@ function MethodologyPage() {
         })}
       </div>
 
-      <div className="methodology-split">
+      <div className="methodology-split" id="metodika-cyklus">
         <article className="methodology-flow-card">
           <p className="section-label">Životní cyklus klienta</p>
           <h2>Od prvního kontaktu k samostatnosti</h2>
@@ -3775,15 +3790,14 @@ function MethodologyPage() {
           <p className="section-label">ONLY TRUE</p>
           <h2>Každé tvrzení má mít oporu</h2>
           <p>
-            Veřejné výstupy rozlišují doložené číslo, odborný zdroj, zkušenost a pracovní hypotézu. Stejný princip platí
-            pro formuláře: statický grafický master, přesná pole, kontrola funkčnosti a žádné změny mimo opravenou vrstvu.
+            Veřejné výstupy rozlišují doložené číslo, odborný zdroj, zkušenost a pracovní hypotézu. RESTART proto nechce
+            stavět důvěru na dojmu, ale na čitelném procesu, konkrétních datech a otevřeném vyhodnocování.
           </p>
           <ul>
-            <li>Statická grafika je master.</li>
-            <li>Pole nesmí překrývat rámečky ani text.</li>
-            <li>Opakované prvky drží shodné rozměry.</li>
-            <li>Oprava pole nesmí měnit ostatní části dokumentu.</li>
-            <li>Finální PDF prochází funkční i vizuální kontrolou.</li>
+            <li>Data jsou uvedená s jasným zdrojem.</li>
+            <li>Zkušenost je označená jako zkušenost, ne jako statistika.</li>
+            <li>Pracovní hypotéza je zveřejněná pouze jako pracovní hypotéza.</li>
+            <li>Výsledky mají být měřitelné, ověřitelné a průběžně revidované.</li>
           </ul>
         </article>
       </div>
@@ -3807,7 +3821,7 @@ function MethodologyPage() {
         </div>
       </div>
 
-      <div className="methodology-downloads" aria-label="Metodické dokumenty ke stažení">
+      <div className="methodology-downloads" aria-label="Veřejná metodika ke stažení">
         {methodologyDownloads.map((download) => (
           <article key={download.fileUrl}>
             <FileText size={28} />
@@ -3824,59 +3838,120 @@ function MethodologyPage() {
         ))}
       </div>
 
-      <div className="methodology-style-section">
-        <div>
-          <p className="section-label">PDF standard</p>
-          <h2>Vizuální a technická konzistence</h2>
-          <p>
-            Standard formulářů drží jednotný vzhled napříč dokumenty: Poppins pro vizuální identitu, Helvetica pro
-            interaktivní pole, rámečky 0,6 pt v akcentní zelené a jasně definované vrstvy dokumentu.
-          </p>
-        </div>
-        <div className="methodology-token-grid">
-          {methodologyStyleTokens.map((token) => (
-            <article key={token.value}>
-              <span style={{ backgroundColor: token.value }} aria-hidden="true" />
-              <strong>{token.name}</strong>
-              <small>{token.value}</small>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      <div className="methodology-gallery-section" id="metodika-vizualy">
-        <div className="methodology-gallery-head">
-          <div>
-            <p className="section-label">Vizuální knihovna</p>
-            <h2>Podklady pro web, metodiku a partnerskou komunikaci</h2>
+      {isAdmin && (
+        <div className="methodology-admin-section" aria-label="Administrátorské standardy pro tvorbu dokumentů">
+          <div className="methodology-admin-head">
+            <p className="section-label">Viditelné pouze administrátorovi</p>
+            <h2>Standardy pro tvorbu dokumentů</h2>
+            <p>
+              Tato část je pracovní knihovna pro správu metodiky, formulářů, PDF standardů, brand assetů a vizuálních
+              podkladů. Veřejnosti se nevykresluje a v prerenderu není součástí indexovaného obsahu.
+            </p>
           </div>
-          <p>
-            Galerie kombinuje finální veřejně použitelné vizuály a pracovní návrhy. Pracovní kusy jsou záměrně označené,
-            aby před tiskem nebo kampaní prošly poslední korekturou.
-          </p>
+
+          <div className="methodology-video-card" id="metodika-video">
+            <video controls preload="metadata" poster="/videos/rest-art-logo-reveal-standard-poster.png">
+              <source src="/videos/rest-art-logo-reveal-standard.mp4" type="video/mp4" />
+              Váš prohlížeč neumí přehrát vložené video.
+            </video>
+            <div>
+              <p className="section-label">Vybraný brand asset</p>
+              <h2>Logo reveal pro interní a partnerskou prezentaci</h2>
+              <p>
+                Z přiložených variant je tato zvolená jako nejčistší pracovní verze pro web: drží prémiový dojem,
+                respektuje zeleno-zlatou identitu a nepůsobí jako samostatná náhrada oficiálního loga.
+              </p>
+            </div>
+          </div>
+
+          <div className="methodology-standard-card">
+            <p className="section-label">PDF standard</p>
+            <h2>Technická pravidla formulářů</h2>
+            <p>
+              Standard formulářů drží jednotný vzhled napříč dokumenty: Poppins pro vizuální identitu, Helvetica pro
+              interaktivní pole, rámečky 0,6 pt v akcentní zelené a jasně definované vrstvy dokumentu.
+            </p>
+            <ul>
+              <li>Statická grafika je master.</li>
+              <li>Pole nesmí překrývat rámečky ani text.</li>
+              <li>Opakované prvky drží shodné rozměry.</li>
+              <li>Oprava pole nesmí měnit ostatní části dokumentu.</li>
+              <li>Finální PDF prochází funkční i vizuální kontrolou.</li>
+            </ul>
+          </div>
+
+          <div className="methodology-downloads" aria-label="Administrátorské dokumenty ke stažení">
+            {methodologyAdminDownloads.map((download) => (
+              <article key={download.fileUrl}>
+                <FileText size={28} />
+                <div>
+                  <p className="section-label">{download.mimeType}</p>
+                  <h2>{download.title}</h2>
+                  <p>{download.description}</p>
+                  <small>{download.fileName} · {readableBytes(download.fileSize)}</small>
+                </div>
+                <a className="button secondary" href={download.fileUrl} target="_blank" rel="noreferrer" download={download.fileName}>
+                  <Download size={18} /> Otevřít
+                </a>
+              </article>
+            ))}
+          </div>
+
+          <div className="methodology-style-section">
+            <div>
+              <p className="section-label">Design tokens</p>
+              <h2>Vizuální a technická konzistence</h2>
+              <p>
+                Barevné hodnoty vycházejí ze standardu PDF formulářů a slouží jako společný základ pro dokumenty,
+                formuláře i veřejné vizuály.
+              </p>
+            </div>
+            <div className="methodology-token-grid">
+              {methodologyStyleTokens.map((token) => (
+                <article key={token.value}>
+                  <span style={{ backgroundColor: token.value }} aria-hidden="true" />
+                  <strong>{token.name}</strong>
+                  <small>{token.value}</small>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="methodology-gallery-section" id="metodika-vizualy">
+            <div className="methodology-gallery-head">
+              <div>
+                <p className="section-label">Vizuální knihovna</p>
+                <h2>Podklady pro web, metodiku a partnerskou komunikaci</h2>
+              </div>
+              <p>
+                Galerie kombinuje finální veřejně použitelné vizuály a pracovní návrhy. Pracovní kusy jsou záměrně
+                označené, aby před tiskem nebo kampaní prošly poslední korekturou.
+              </p>
+            </div>
+            <div className="methodology-visual-grid">
+              {methodologyVisuals.map((visual) => (
+                <figure key={visual.src}>
+                  <a href={visual.src} target="_blank" rel="noreferrer">
+                    <img src={visual.src} alt={visual.alt} loading="lazy" />
+                  </a>
+                  <figcaption>
+                    <strong>{visual.title}</strong>
+                    <span>{visual.note}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+            <div className="methodology-icon-strip" aria-label="Programové ikony">
+              {methodologyIconVisuals.map((visual) => (
+                <figure key={visual.src}>
+                  <img src={visual.src} alt={visual.alt} loading="lazy" />
+                  <figcaption>{visual.title}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="methodology-visual-grid">
-          {methodologyVisuals.map((visual) => (
-            <figure key={visual.src}>
-              <a href={visual.src} target="_blank" rel="noreferrer">
-                <img src={visual.src} alt={visual.alt} loading="lazy" />
-              </a>
-              <figcaption>
-                <strong>{visual.title}</strong>
-                <span>{visual.note}</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        <div className="methodology-icon-strip" aria-label="Programové ikony">
-          {methodologyIconVisuals.map((visual) => (
-            <figure key={visual.src}>
-              <img src={visual.src} alt={visual.alt} loading="lazy" />
-              <figcaption>{visual.title}</figcaption>
-            </figure>
-          ))}
-        </div>
-      </div>
+      )}
     </section>
   );
 }
@@ -6695,7 +6770,7 @@ React.useEffect(() => {
     ) : currentPath === '/programy' ? (
       <ProgramsPage />
     ) : currentPath === '/metodika' ? (
-      <MethodologyPage />
+      <MethodologyPage account={currentAccount} />
     ) : selectedProgram ? (
       <ProgramDetailPage program={selectedProgram} />
     ) : selectedStory ? (
@@ -6743,7 +6818,7 @@ React.useEffect(() => {
         onNotify={notify}
         storiesOnly
       />
-    ) : currentPath === '/zapojeni' ? (
+    ) : currentPath === '/zapojeni' || currentPath === '/darovat' ? (
       <SupportPage />
     ) : currentPath === '/media' ? (
       <MediaKitPage page={staticPages['/media']} assets={publicMediaKitAssets} />

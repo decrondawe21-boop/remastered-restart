@@ -84,17 +84,6 @@ const videoAssets = [
     embedUrl: `${baseUrl}/#projektove-video`,
     uploadDate: '2026-06-23',
     familyFriendly: true
-  },
-  {
-    routes: ['/metodika'],
-    name: 'REST||ART Integrace - metodický logo reveal',
-    description:
-      'Vybraný logo reveal pro metodickou a partnerskou prezentaci REST||ART Integrace.',
-    thumbnailUrl: `${baseUrl}/videos/rest-art-logo-reveal-standard-poster.png`,
-    contentUrl: `${baseUrl}/videos/rest-art-logo-reveal-standard.mp4`,
-    embedUrl: `${baseUrl}/metodika#metodika-video`,
-    uploadDate: '2026-07-19',
-    familyFriendly: true
   }
 ];
 
@@ -230,12 +219,22 @@ const routes = [
     changefreq: 'monthly'
   },
   {
-    path: '/metodika',
-    title: 'Metodika a vizuální systém | RESTART Integrace',
+    path: '/darovat',
+    title: 'Darovat | Podpořte RESTART Integrace',
     description:
-      'Metodika REST||ART Integrace: životní cyklus klienta, šest programových pilířů, Stabilizační index, PDF standard formulářů a vizuální podklady.',
+      'Podpořte RESTART Integrace přes bezpečný donate systém nebo přímý převod. Dary pomáhají pokrýt mentoring, materiály, práci a stabilizaci.',
     keywords:
-      'metodika REST||ART Integrace, metodika RESTART Integrace, životní cyklus klienta, Stabilizační index, reintegrace, resocializace, JAILBREAK, RESET, STREETWISE, REWORK, BOD ZLOMU, STABILIZACE',
+      'darovat RESTART Integrace, podpora druhé šance, donate REST||ART, dar na resocializaci, podpora reintegrace',
+    priority: '0.78',
+    changefreq: 'monthly'
+  },
+  {
+    path: '/metodika',
+    title: 'Metodika | RESTART Integrace',
+    description:
+      'Veřejná metodika REST||ART Integrace ke stažení v PDF: životní cyklus klienta, šest programových pilířů, Stabilizační index a odpovědný rámec reintegrace.',
+    keywords:
+      'metodika REST||ART Integrace, metodika RESTART Integrace, PDF metodika, životní cyklus klienta, Stabilizační index, reintegrace, resocializace, JAILBREAK, RESET, STREETWISE, REWORK, BOD ZLOMU, STABILIZACE',
     priority: '0.75',
     changefreq: 'monthly'
   },
@@ -338,6 +337,7 @@ function routeLabel(routePath) {
     '/programy/stabilizace': 'STABILIZACE',
     '/aktuality': 'Aktuality',
     '/zapojeni': 'Zapojení',
+    '/darovat': 'Darovat',
     '/metodika': 'Metodika',
     '/povinne-zverejnovani': 'Povinné zveřejňování',
     '/kontakt': 'Kontakt',
@@ -680,20 +680,109 @@ for (const route of routes) {
 }
 
 const sitemapRoutes = routes.filter((route) => !route.noindex);
-const sitemapPages = `<?xml version="1.0" encoding="UTF-8"?>
+const programSitemapRoutes = sitemapRoutes.filter((route) => route.path === '/programy' || route.path.startsWith('/programy/'));
+const storySitemapRoutes = sitemapRoutes.filter(
+  (route) => route.path === '/aktuality' || route.path === '/pribehy-druhe-sance' || route.path.startsWith('/pribehy-druhe-sance/')
+);
+const donateSitemapRoutes = sitemapRoutes.filter((route) => route.path === '/zapojeni' || route.path === '/darovat');
+const pageSitemapRoutes = sitemapRoutes.filter(
+  (route) => !programSitemapRoutes.includes(route) && !storySitemapRoutes.includes(route) && !donateSitemapRoutes.includes(route)
+);
+
+function renderRouteSitemap(routeList) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${sitemapRoutes
-  .map((route) => {
-    return `  <url>
+${routeList
+  .map(
+    (route) => `  <url>
     <loc>${routeUrl(route.path)}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${route.changefreq || 'monthly'}</changefreq>
     <priority>${route.priority || '0.5'}</priority>
-  </url>`;
-  })
+  </url>`
+  )
   .join('\n')}
 </urlset>
 `;
+}
+
+function collectPublicFiles(relativeDir, extensions, exclude = () => false) {
+  const root = path.join(distDir, relativeDir);
+  if (!fs.existsSync(root)) return [];
+  const output = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+        continue;
+      }
+      const ext = path.extname(entry.name).toLowerCase();
+      const publicPath = `/${path.relative(distDir, fullPath).replace(/\\/g, '/')}`;
+      if (extensions.includes(ext) && !exclude(publicPath)) {
+        output.push({
+          loc: `${baseUrl}${encodeURI(publicPath)}`,
+          lastmod: today,
+          changefreq: 'monthly',
+          priority: '0.45'
+        });
+      }
+    }
+  };
+  walk(root);
+  return output.sort((left, right) => left.loc.localeCompare(right.loc));
+}
+
+function uniqueEntries(entries) {
+  const seen = new Set();
+  return entries.filter((entry) => {
+    if (seen.has(entry.loc)) return false;
+    seen.add(entry.loc);
+    return true;
+  });
+}
+
+function renderFileSitemap(entries) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${uniqueEntries(entries)
+  .map(
+    (entry) => `  <url>
+    <loc>${escapeXml(entry.loc)}</loc>
+    <lastmod>${entry.lastmod || today}</lastmod>
+    <changefreq>${entry.changefreq || 'monthly'}</changefreq>
+    <priority>${entry.priority || '0.4'}</priority>
+  </url>`
+  )
+  .join('\n')}
+</urlset>
+`;
+}
+
+const documentEntries = uniqueEntries([
+  {
+    loc: `${baseUrl}/documents/methodology/metodika-restart-integrace.pdf`,
+    lastmod: today,
+    changefreq: 'monthly',
+    priority: '0.65'
+  },
+  ...collectPublicFiles('documents/transparency', ['.pdf']),
+  ...collectPublicFiles('documents/media', ['.pdf'])
+]);
+
+const mediaEntries = uniqueEntries([
+  ...collectPublicFiles('images/media', ['.png', '.jpg', '.jpeg', '.webp'], (publicPath) => publicPath.includes('/internal/')),
+  ...collectPublicFiles('images/statistics', ['.png', '.jpg', '.jpeg', '.webp']),
+  ...collectPublicFiles('images/og', ['.png', '.jpg', '.jpeg', '.webp']),
+  ...collectPublicFiles('videos', ['.mp4', '.webm', '.webp', '.png'], (publicPath) => publicPath.includes('rest-art-logo-reveal-standard'))
+]);
+
+const sitemapPages = renderRouteSitemap(pageSitemapRoutes);
+const sitemapPrograms = renderRouteSitemap(programSitemapRoutes);
+const sitemapStories = renderRouteSitemap(storySitemapRoutes);
+const sitemapDonate = renderRouteSitemap(donateSitemapRoutes);
+const sitemapDocuments = renderFileSitemap(documentEntries);
+const sitemapMedia = renderFileSitemap(mediaEntries);
 
 const sitemapVideos = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
@@ -725,6 +814,26 @@ const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
     <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
+    <loc>${baseUrl}/sitemap-programs.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-stories.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-documents.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-media.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${baseUrl}/sitemap-donate.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
     <loc>${baseUrl}/sitemap-videos.xml</loc>
     <lastmod>${today}</lastmod>
   </sitemap>
@@ -733,7 +842,14 @@ const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
 
 fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapIndex);
 fs.writeFileSync(path.join(distDir, 'sitemap-pages.xml'), sitemapPages);
+fs.writeFileSync(path.join(distDir, 'sitemap-programs.xml'), sitemapPrograms);
+fs.writeFileSync(path.join(distDir, 'sitemap-stories.xml'), sitemapStories);
+fs.writeFileSync(path.join(distDir, 'sitemap-documents.xml'), sitemapDocuments);
+fs.writeFileSync(path.join(distDir, 'sitemap-media.xml'), sitemapMedia);
+fs.writeFileSync(path.join(distDir, 'sitemap-donate.xml'), sitemapDonate);
 fs.writeFileSync(path.join(distDir, 'sitemap-videos.xml'), sitemapVideos);
-console.log(`Prerendered SEO HTML for ${routes.length} routes.`);
+console.log(
+  `Prerendered SEO HTML for ${routes.length} routes. Sitemap segments: pages=${pageSitemapRoutes.length}, programs=${programSitemapRoutes.length}, stories=${storySitemapRoutes.length}, documents=${documentEntries.length}, media=${mediaEntries.length}, donate=${donateSitemapRoutes.length}, videos=${videoAssets.length}.`
+);
 
 

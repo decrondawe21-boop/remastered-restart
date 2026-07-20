@@ -287,6 +287,12 @@ const routes = [
     changefreq: 'yearly'
   },
   {
+    path: '/vyhledavani',
+    title: 'Výsledky vyhledávání | RESTART Integrace',
+    description: 'Vyhledávání ve veřejném obsahu webu RESTART Integrace.',
+    noindex: true
+  },
+  {
     path: '/klient',
     title: 'Klientská zóna | RESTART Integrace',
     description: 'Chráněná klientská zóna projektu RESTART Integrace.',
@@ -772,6 +778,7 @@ const documentEntries = uniqueEntries([
 
 const mediaEntries = uniqueEntries([
   ...collectPublicFiles('images/media', ['.png', '.jpg', '.jpeg', '.webp'], (publicPath) => publicPath.includes('/internal/')),
+  ...collectPublicFiles('images/crops', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/statistics', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/og', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('videos', ['.mp4', '.webm', '.webp', '.png'], (publicPath) => publicPath.includes('rest-art-logo-reveal-standard'))

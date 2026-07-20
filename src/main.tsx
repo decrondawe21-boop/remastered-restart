@@ -150,6 +150,7 @@ const routeLabels: Record<string, string> = {
   '/darovat': 'Darovat',
   '/kontakt': 'Kontakt',
   '/kontakt/formular': 'Formulář',
+  '/vyhledavani': 'Výsledky vyhledávání',
   '/klient': 'Klientský profil',
   '/admin': 'Administrace',
   '/pro-firmy': 'Pro firmy',
@@ -1468,7 +1469,50 @@ const mergeClientAutofillDraft = (
 
 const starterAccounts: AuthAccount[] = [];
 
-const starterSlides: HomeSlide[] = [
+const missionSlides: HomeSlide[] = [
+  {
+    id: 'mission-origin',
+    title: 'REST||ART INTEGRACE',
+    subtitle: 'Zkušenost, poznání, metodika a teprve potom projekt.',
+    imageUrl: '/images/crops/camera-202607/20260608_155425.webp',
+    ctaLabel: 'Poznat metodiku',
+    ctaHref: '/metodika',
+    sortOrder: 10,
+    isActive: true
+  },
+  {
+    id: 'mission-understanding',
+    title: 'Než člověka zhodnotíme',
+    subtitle: 'Neobhajujeme chyby. Neomlouváme. Snažíme se porozumět cestě.',
+    imageUrl: '/images/crops/camera-202607/20260622_201849.webp',
+    ctaLabel: 'Naše principy',
+    ctaHref: '/metodika',
+    sortOrder: 20,
+    isActive: true
+  },
+  {
+    id: 'mission-change',
+    title: 'Trvalá změna nevzniká jednou službou',
+    subtitle: 'Práce, odpovědnost, důvěra, komunita a příležitost začít znovu.',
+    imageUrl: '/images/crops/camera-202607/20260606_055641.webp',
+    ctaLabel: 'Jak pracujeme',
+    ctaHref: '/co-delame',
+    sortOrder: 30,
+    isActive: true
+  },
+  {
+    id: 'mission-system',
+    title: 'Nevytváříme další službu',
+    subtitle: 'Budujeme připravený proces návratu do běžného života.',
+    imageUrl: '/images/crops/camera-202607/20260701_121440.webp',
+    ctaLabel: 'Zapojit se',
+    ctaHref: '/zapojeni',
+    sortOrder: 40,
+    isActive: true
+  }
+];
+
+const programSlides: HomeSlide[] = [
   {
     id: 'pillar-jailbreak',
     title: 'JAILBREAK',
@@ -1476,7 +1520,7 @@ const starterSlides: HomeSlide[] = [
     imageUrl: '/images/program-pillars/jailbreak-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/jailbreak',
-    sortOrder: 10,
+    sortOrder: 110,
     isActive: true
   },
   {
@@ -1486,7 +1530,7 @@ const starterSlides: HomeSlide[] = [
     imageUrl: '/images/program-pillars/reset-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/reset',
-    sortOrder: 20,
+    sortOrder: 120,
     isActive: true
   },
   {
@@ -1496,7 +1540,7 @@ const starterSlides: HomeSlide[] = [
     imageUrl: '/images/program-pillars/rework-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/rework',
-    sortOrder: 30,
+    sortOrder: 130,
     isActive: true
   },
   {
@@ -1506,7 +1550,7 @@ const starterSlides: HomeSlide[] = [
     imageUrl: '/images/program-pillars/streetwise-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/streetwise',
-    sortOrder: 40,
+    sortOrder: 140,
     isActive: true
   },
   {
@@ -1516,7 +1560,7 @@ const starterSlides: HomeSlide[] = [
     imageUrl: '/images/program-pillars/bod-zlomu-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/bod-zlomu',
-    sortOrder: 50,
+    sortOrder: 150,
     isActive: true
   },
   {
@@ -1526,12 +1570,15 @@ const starterSlides: HomeSlide[] = [
     imageUrl: '/images/program-pillars/stabilizace-skica.webp',
     ctaLabel: 'O programu',
     ctaHref: '/programy/stabilizace',
-    sortOrder: 60,
+    sortOrder: 160,
     isActive: true
   }
 ];
 
+const starterSlides = [...missionSlides, ...programSlides];
 const starterSlideIds = new Set(starterSlides.map((slide) => slide.id));
+const missionSlideIds = new Set(missionSlides.map((slide) => slide.id));
+const programSlideIds = new Set(programSlides.map((slide) => slide.id));
 const designedTextSlidePattern = /^\/images\/\d{2}\.png$/i;
 const sketchPillarSlidePattern =
   /^\/images\/program-pillars\/(?:jailbreak|reset|rework|streetwise|bod-zlomu|stabilizace)-skica\.webp$/i;
@@ -1569,6 +1616,29 @@ const programHeroStories: Record<string, { label: string; motto: string; text: s
   }
 };
 
+const missionHeroStories: Record<string, { label: string; motto: string; text: string }> = {
+  'mission-origin': {
+    label: 'Jak vznikáme',
+    motto: 'Zkušenost → poznání → metodika → projekt.',
+    text: 'To, co přinášíme, není běžná praxe. Nevznikli jsme podle schématu problém → dotace → projekt. Vycházíme z praktické zkušenosti, kterou převádíme do otevřeného a ověřitelného systému.'
+  },
+  'mission-understanding': {
+    label: 'Druhá šance a odpovědnost',
+    motto: 'Neobhajujeme chyby. Neomlouváme. Snažíme se porozumět cestě.',
+    text: 'Minulost nelze změnit. Lze však vytvořit podmínky, v nichž člověk převezme odpovědnost za to, co udělá zítra.'
+  },
+  'mission-change': {
+    label: 'Propojený proces',
+    motto: 'Práce. Odpovědnost. Důvěra. Komunita. Příležitost začít znovu.',
+    text: 'Skutečná změna vzniká tehdy, když člověk dostane příležitost převzít odpovědnost a zároveň má prostředí, které mu umožní změnu udržet.'
+  },
+  'mission-system': {
+    label: 'Systém spolupráce',
+    motto: 'Budujeme připravený proces návratu do běžného života.',
+    text: 'REST||ART INTEGRACE je vznikající systém pracovní a sociální reintegrace lidí ohrožených sociálním vyloučením. Propojuje praktickou zkušenost, odpovědné zaměstnavatele, veřejné instituce a budoucí odborné partnery. Koncept je ve výstavbě a otevřený ověřování.'
+  }
+};
+
 const programHeroStoryAliases: Array<[string, keyof typeof programHeroStories]> = [
   ['jailbreak', 'pillar-jailbreak'],
   ['reset', 'pillar-reset'],
@@ -1602,17 +1672,19 @@ const programHeroStoryFromSlide = (slide: HomeSlide) => {
   return storyKey ? programHeroStories[storyKey] : undefined;
 };
 
+const heroStoryFromSlide = (slide: HomeSlide) => missionHeroStories[slide.id] ?? programHeroStoryFromSlide(slide);
+
 const programPillarSlideFromSlide = (slide: HomeSlide) => {
   const storyKey = programPillarStoryKeyFromSlide(slide);
-  return starterSlides.find((starterSlide) => starterSlide.id === slide.id || starterSlide.imageUrl === slide.imageUrl || starterSlide.id === storyKey);
+  return programSlides.find((starterSlide) => starterSlide.id === slide.id || starterSlide.imageUrl === slide.imageUrl || starterSlide.id === storyKey);
 };
 
 const fallbackProgramStoryFromIndex = (index: number) => {
-  const starterSlide = starterSlides[index % starterSlides.length];
+  const starterSlide = programSlides[index % programSlides.length];
   return starterSlide ? programHeroStories[starterSlide.id] : undefined;
 };
 
-const heroAutoScrollItems = starterSlides.map((slide) => ({
+const heroAutoScrollItems = programSlides.map((slide) => ({
   id: slide.id,
   title: slide.title,
   motto: programHeroStories[slide.id]?.motto ?? slide.subtitle,
@@ -1621,62 +1693,149 @@ const heroAutoScrollItems = starterSlides.map((slide) => ({
 
 const practicePhotoSlides = [
   {
-    id: 'practice-rose-arch',
+    id: 'practice-camera-rose-arch',
     title: 'Klenba, která vyrostla',
-    text: 'Z malých sazenic vznikl průchod. Stejně stavíme zázemí: trpělivě, rukama a krok za krokem.',
-    imageUrl: '/images/crops/roses-20260608/ruze-klenba.webp'
+    text: 'Růže a pevná konstrukce ukazují, co dokáže trpělivá práce v čase.',
+    imageUrl: '/images/crops/camera-202607/20260608_155425.webp'
   },
   {
-    id: 'practice-roses',
-    title: 'Trpělivost, která roste',
-    text: 'Růže, práce a čas připomínají, že změna nevzniká naráz.',
-    imageUrl: '/images/crops/roses-20260608/ruze-detail.webp'
+    id: 'practice-camera-welcome',
+    title: 'Místo, které vítá',
+    text: 'Zázemí tvoří i malé konkrétní věci, které dávají najevo: tady může začít další krok.',
+    imageUrl: '/images/crops/camera-202607/20260701_121440.webp'
   },
   {
-    id: 'practice-gate',
-    title: 'První průchod',
-    text: 'Místo, kde se z prvního kontaktu může stát další bezpečný krok.',
-    imageUrl: '/images/crops/streetwise/streetwise-cesta-branka.webp'
+    id: 'practice-camera-pocerady-road',
+    title: 'Cesta z Počerad',
+    text: 'Projekt vzniká v konkrétním místě, ale jeho směr vede k návratu do běžného života.',
+    imageUrl: '/images/crops/camera-202607/20260622_201849.webp'
   },
   {
-    id: 'practice-workbench',
-    title: 'Zázemí z nalezeného',
-    text: 'Z věcí, které měly skončit, vzniká praktický prostor pro STREETWISE.',
-    imageUrl: '/images/crops/new-photos/foto-175346-mid.webp'
+    id: 'practice-camera-shelter',
+    title: 'Zázemí ve výstavbě',
+    text: 'Prostor vzniká svépomocí, z dostupných materiálů a práce, která je skutečně vidět.',
+    imageUrl: '/images/crops/camera-202607/20260604_190316.webp'
   },
   {
-    id: 'practice-shelter',
-    title: 'Bouda v procesu',
-    text: 'Materiál, ruce a čas. Malé kroky, které dávají prostoru smysl.',
-    imageUrl: '/images/crops/streetwise/streetwise-bouda-stavba.webp'
+    id: 'practice-camera-passage',
+    title: 'Průchod mezi růžemi',
+    text: 'Cesta nemusí být rovná ani hotová, aby mohla vést bezpečným směrem.',
+    imageUrl: '/images/crops/camera-202607/20260604_190302.webp'
   },
   {
-    id: 'practice-flowers',
-    title: 'Zázemí z detailů',
-    text: 'I malá úprava prostoru mění pocit z prvního setkání.',
-    imageUrl: '/images/crops/roses-20260608/kvetiny-zazemi.webp'
+    id: 'practice-camera-rose-path',
+    title: 'Cesta pod klenbou',
+    text: 'Živé prostředí připomíná, že stabilita se buduje péčí, rytmem a každodenní prací.',
+    imageUrl: '/images/crops/camera-202607/20260606_055641.webp'
   },
   {
-    id: 'practice-path',
-    title: 'Cesta k bezpečí',
-    text: 'Každý stabilní bod začíná konkrétním místem, kam se dá přijít.',
-    imageUrl: '/images/crops/roses-20260608/ruze-pruchod.webp'
+    id: 'practice-camera-open-gate',
+    title: 'Otevřený vstup',
+    text: 'První bezpečný krok potřebuje konkrétní místo, kam lze skutečně přijít.',
+    imageUrl: '/images/crops/camera-202607/20260610_123857.webp'
   },
   {
-    id: 'practice-green',
-    title: 'Živé místo',
-    text: 'Zázemí nemá působit jako instituce. Má být čitelné, lidské a použitelné.',
-    imageUrl: '/images/crops/roses-20260608/ruze-svetlo.webp'
+    id: 'practice-camera-raspberries',
+    title: 'Úroda z vlastního zázemí',
+    text: 'Péče má konkrétní výsledek. Někdy je jím i obyčejná sklizeň, o kterou se lidé společně postarali.',
+    imageUrl: '/images/crops/camera-202607/20260622_130315.webp'
+  },
+  {
+    id: 'practice-camera-shared-table',
+    title: 'Stůl, který spojuje',
+    text: 'Společné chvíle a běžné domácí rituály pomáhají vytvářet bezpečné a lidské prostředí.',
+    imageUrl: '/images/crops/camera-202607/20260702_230003.webp'
+  },
+  {
+    id: 'practice-camera-new-growth',
+    title: 'Nové výhonky',
+    text: 'Malé začátky potřebují pravidelnou péči, čas a prostor, aby mohly zesílit.',
+    imageUrl: '/images/crops/camera-202607/20260610_124158.webp'
+  },
+  {
+    id: 'practice-camera-rose-corridor',
+    title: 'Cesta mezi růžemi',
+    text: 'Proměna prostředí vzniká postupně, krok za krokem a vlastní prací.',
+    imageUrl: '/images/crops/camera-202607/20260610_124053.webp'
+  },
+  {
+    id: 'practice-camera-rose-canopy',
+    title: 'Když péče rozkvete',
+    text: 'To, co se dlouho buduje a udržuje, může jednou vytvořit pevné a krásné zázemí.',
+    imageUrl: '/images/crops/camera-202607/20260610_124143.webp'
+  },
+  {
+    id: 'practice-camera-building-materials',
+    title: 'Zázemí znovu použitých věcí',
+    text: 'Prostor vzniká z dostupných materiálů, nápadů a ochoty přiložit ruku k dílu.',
+    imageUrl: '/images/crops/camera-202607/20260604_190334.webp'
+  },
+  {
+    id: 'practice-camera-work-in-progress',
+    title: 'Práce před výsledkem',
+    text: 'Skutečná proměna má i pracovní fázi, která není uhlazená, ale bez ní by výsledek nevznikl.',
+    imageUrl: '/images/crops/camera-202607/20260604_190311.webp'
+  },
+  {
+    id: 'practice-camera-restart-strawberries',
+    title: 'REST||ART po svém',
+    text: 'Název projektu může vzniknout i z vlastní úrody, nápadu a společné chvíle.',
+    imageUrl: '/images/crops/camera-202607/restart-art-jahody.webp'
+  },
+  {
+    id: 'practice-camera-quiet-home',
+    title: 'Klid v zázemí',
+    text: 'Bezpečný prostor tvoří také obyčejné chvíle odpočinku a pocit, že člověk někam patří.',
+    imageUrl: '/images/crops/camera-202607/20260520_222915.webp'
+  },
+  {
+    id: 'practice-camera-yellow-passage',
+    title: 'Průchod, který se mění',
+    text: 'Každá dokončená část zázemí zpřehledňuje cestu a otevírá prostor pro další práci.',
+    imageUrl: '/images/crops/camera-202607/20260603_175300.webp'
+  },
+  {
+    id: 'practice-camera-potted-flowers',
+    title: 'Každý kout může růst',
+    text: 'I malý upravený prostor může nést důležitý signál péče, řádu a nového začátku.',
+    imageUrl: '/images/crops/camera-202607/20260606_055722.webp'
+  },
+  {
+    id: 'practice-camera-pink-rose',
+    title: 'Jeden konkrétní výsledek',
+    text: 'Změna se skládá z konkrétních kroků, které je možné vidět, pojmenovat a dál rozvíjet.',
+    imageUrl: '/images/crops/camera-202607/20260610_124306.webp'
+  },
+  {
+    id: 'practice-camera-color-in-progress',
+    title: 'Barva v rozestavěném místě',
+    text: 'I během výstavby lze vytvářet prostředí, které působí živě a dává smysl.',
+    imageUrl: '/images/crops/camera-202607/20260610_124243.webp'
+  },
+  {
+    id: 'practice-camera-reused-planter',
+    title: 'Zachráněná nádoba, nový život',
+    text: 'Nový účel často začíná tím, že se na dostupné věci podíváme jinak a dáme jim další možnost.',
+    imageUrl: '/images/crops/camera-202607/20260610_124203.webp'
   }
 ];
 
-const hasProgramPillarDeck = (slides: HomeSlide[]) =>
+const hasStarterHeroDeck = (slides: HomeSlide[]) =>
   slides.filter((slide) => slide.isActive && starterSlideIds.has(slide.id)).length === starterSlides.length;
 
-const shouldUseProgramPillarDeck = (slides: HomeSlide[]) => {
+const hasMissionHeroDeck = (slides: HomeSlide[]) =>
+  slides.filter((slide) => slide.isActive && missionSlideIds.has(slide.id)).length === missionSlides.length;
+
+const hasProgramPillarDeck = (slides: HomeSlide[]) =>
+  slides.filter((slide) => slide.isActive && programSlideIds.has(slide.id)).length === programSlides.length;
+
+const shouldUseStarterHeroDeck = (slides: HomeSlide[]) => {
   const activeSlides = slides.filter((slide) => slide.isActive);
-  if (activeSlides.length < starterSlides.length) return true;
-  return activeSlides.some((slide) => slide.id.startsWith('slide-')) && !hasProgramPillarDeck(slides);
+  if (hasStarterHeroDeck(slides)) return false;
+  if (activeSlides.length === 0) return true;
+  const isPreviousProgramDeck = hasProgramPillarDeck(slides) && !hasMissionHeroDeck(slides);
+  const isLegacySlideDeck = activeSlides.some((slide) => slide.id.startsWith('slide-'));
+  return isPreviousProgramDeck || isLegacySlideDeck;
 };
 
 const emptyClient: ClientRecord = {
@@ -1933,34 +2092,25 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
     const value = query.trim();
     if (!value) {
       inputRef.current?.focus();
-      onNotify('warning', 'Vyhledávání je prázdné', 'Zadejte text, který chcete najít na aktuální stránce.');
+      onNotify('warning', 'Vyhledávání je prázdné', 'Zadejte text, který chcete najít na webu.');
       return;
     }
-
-    const browserFind = (window as Window & { find?: (text: string, caseSensitive?: boolean, backwards?: boolean, wrapAround?: boolean) => boolean }).find;
-    const found = browserFind
-      ? browserFind(value, false, false, true)
-      : (document.body.textContent ?? '').toLowerCase().includes(value.toLowerCase());
-    if (found) {
-      onNotify('success', 'Text nalezen', `Prohlížeč zvýraznil výskyt: ${value}`);
-      onDone?.();
-      return;
-    }
-    onNotify('warning', 'Text nenalezen', `Na této stránce se nenašlo: ${value}`);
+    onDone?.();
+    window.location.assign(`/vyhledavani?q=${encodeURIComponent(value)}`);
   };
 
   return (
     <form className="site-search" role="search" onSubmit={submitSearch}>
-      <label className="visually-hidden" htmlFor={searchInputId}>Vyhledat text na stránce</label>
+      <label className="visually-hidden" htmlFor={searchInputId}>Vyhledat na celém webu</label>
       <Search size={16} aria-hidden="true" />
       <input
         id={searchInputId}
         ref={inputRef}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Vyhledat text na stránce"
+        placeholder="Hledat na celém webu"
       />
-      <button className="tooltip-link" type="submit" aria-label="Vyhledat text" data-tooltip="Vyhledat">
+      <button className="tooltip-link" type="submit" aria-label="Vyhledat na webu" data-tooltip="Vyhledat">
         <ArrowRight size={16} />
       </button>
     </form>
@@ -2036,22 +2186,20 @@ function Header({
                   </a>
                   <a className="header-avatar-link tooltip-link" href={profileHref} aria-label={profileAriaLabel} data-tooltip={profileLabel}>
                     {headerAvatar}
+                    <span className="header-account-label">{profileLabel}</span>
                   </a>
                 </>
               ) : (
-                <>
-                  <a
-                    className="signin-icon tooltip-link"
-                    href="/admin"
-                    aria-label="Sign in"
-                    data-tooltip="Sign in"
-                  >
-                    <UserRound size={19} />
+                <div className="portal-entry-links">
+                  <a className="portal-entry-link client" href="/klient">
+                    <UserRound size={17} />
+                    <span>Klientská zóna</span>
                   </a>
-                  <a className="signup-link" href="/klient" aria-label="Sign up">
-                    Sign up
+                  <a className="portal-entry-link admin" href="/admin">
+                    <ShieldCheck size={17} />
+                    <span>Administrace</span>
                   </a>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -2099,11 +2247,11 @@ function Header({
               </>
             ) : (
               <>
-                <a href="/admin" onClick={() => setOpen(false)}>
-                  <UserRound size={18} /> Sign in
-                </a>
                 <a href="/klient" onClick={() => setOpen(false)}>
-                  Sign up
+                  <UserRound size={18} /> Klientská zóna
+                </a>
+                <a href="/admin" onClick={() => setOpen(false)}>
+                  <ShieldCheck size={18} /> Administrace
                 </a>
               </>
             )}
@@ -2648,14 +2796,15 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   const swipeStartX = React.useRef<number | null>(null);
   const activeSlide = visibleSlides[activeIndex] ?? visibleSlides[0] ?? starterSlides[0];
   const activeSlideHasDesignedText = designedTextSlidePattern.test(activeSlide.imageUrl);
-  const detectedProgramStory = programHeroStoryFromSlide(activeSlide);
+  const detectedHeroStory = heroStoryFromSlide(activeSlide);
   const activeSlideLooksLikeProgram =
     sketchPillarSlidePattern.test(activeSlide.imageUrl) ||
     /program-pillars|jailbreak|reset|rework|streetwise|bod[-_\s]?zlomu|stabilizace/i.test(
       `${activeSlide.id} ${activeSlide.title} ${activeSlide.subtitle} ${activeSlide.imageUrl}`
     );
-  const activeProgramStory = detectedProgramStory ?? (activeSlideLooksLikeProgram || activeSlideHasDesignedText ? fallbackProgramStoryFromIndex(activeIndex) : undefined);
+  const activeProgramStory = detectedHeroStory ?? (activeSlideLooksLikeProgram || activeSlideHasDesignedText ? fallbackProgramStoryFromIndex(activeIndex) : undefined);
   const activeSlideIsProgramStory = Boolean(activeProgramStory) || sketchPillarSlidePattern.test(activeSlide.imageUrl);
+  const activeSlideIsMissionStory = missionSlideIds.has(activeSlide.id);
   const activeSlideHasContainedImage = activeSlideHasDesignedText || activeSlideIsProgramStory;
   const activePillarSlide = programPillarSlideFromSlide(activeSlide);
   const activeSlideTitle = activeSlide.title?.trim() || activePillarSlide?.title || 'REST||ART Integrace';
@@ -2734,7 +2883,7 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
       <div
         className={`hero-banner${activeSlideHasContainedImage ? ' designed-slide' : ''}${
           activeSlideIsProgramStory ? ' program-story-slide' : ''
-        }`}
+        }${activeSlideIsMissionStory ? ' mission-story-slide' : ''}`}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={() => {
@@ -3671,6 +3820,218 @@ function StaticInfoPage({ page }: { page: (typeof staticPages)[string] }) {
             <h2>{section.title}</h2>
             <p>{section.text}</p>
           </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+type SiteSearchEntry = {
+  id: string;
+  category: string;
+  title: string;
+  excerpt: string;
+  href: string;
+  searchableText: string;
+};
+
+const normalizeSearchValue = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('cs-CZ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+const coreSearchEntries: SiteSearchEntry[] = [
+  {
+    id: 'home',
+    category: 'Web',
+    title: 'REST||ART Integrace',
+    excerpt: 'Vznikající systém pracovní a sociální reintegrace, druhé šance, práce, odpovědnosti a stabilizace.',
+    href: '/',
+    searchableText: 'domů homepage zkušenost poznání metodika projekt práce odpovědnost důvěra komunita druhá šance'
+  },
+  {
+    id: 'work',
+    category: 'O projektu',
+    title: 'Co děláme',
+    excerpt: 'Mentoring, práce, bydlení, stabilizace a bezpečný návrat do běžného života.',
+    href: '/co-delame',
+    searchableText: JSON.stringify({ focusAreas, principles, solutionPrinciples, realityCards, impactMetrics })
+  },
+  {
+    id: 'programs',
+    category: 'Programy',
+    title: 'Programy REST||ART Integrace',
+    excerpt: 'JAILBREAK, RESET, REWORK, STREETWISE, BOD ZLOMU a STABILIZACE.',
+    href: '/programy',
+    searchableText: JSON.stringify(programs)
+  },
+  {
+    id: 'methodology',
+    category: 'Metodika',
+    title: 'Metodika REST||ART Integrace',
+    excerpt: 'Životní cyklus klienta, principy práce, programové pilíře, měřitelnost a veřejná PDF metodika.',
+    href: '/metodika',
+    searchableText: JSON.stringify({ methodologyLifecycleSteps, methodologyPillars, methodologyPrinciples, methodologyVisuals })
+  },
+  {
+    id: 'news',
+    category: 'Aktuality',
+    title: 'Aktuality',
+    excerpt: 'Zprávy z projektu, terénu a příprav jednotlivých programů.',
+    href: '/aktuality',
+    searchableText: 'aktuality novinky zprávy projekt terén'
+  },
+  {
+    id: 'stories',
+    category: 'Příběhy',
+    title: 'Příběhy druhé šance',
+    excerpt: 'Skutečné zkušenosti, návrat do společnosti a změna postavená na odpovědnosti.',
+    href: '/pribehy-druhe-sance',
+    searchableText: 'příběhy druhá šance zkušenost návrat společnost'
+  },
+  {
+    id: 'support',
+    category: 'Zapojení',
+    title: 'Zapojení a partnerství',
+    excerpt: 'Možnosti spolupráce pro zaměstnavatele, obce, instituce, odborníky, dobrovolníky a podporovatele.',
+    href: '/zapojeni',
+    searchableText: JSON.stringify({ partnerTypes, supportPaths })
+  },
+  {
+    id: 'donate',
+    category: 'Podpora',
+    title: 'Darovat a podpořit projekt',
+    excerpt: 'Finanční a materiální podpora mentoringu, dopravy, pracovních kroků a zázemí projektu.',
+    href: '/darovat',
+    searchableText: 'dar darovat donate podpora příspěvek finance transparentní účet materiál partner'
+  },
+  {
+    id: 'contact',
+    category: 'Kontakt',
+    title: 'Kontakt',
+    excerpt: 'Telefon, e-mail, adresa a kontaktní formulář REST||ART Integrace.',
+    href: '/kontakt',
+    searchableText: JSON.stringify(contacts)
+  }
+];
+
+const buildSiteSearchEntries = (news: NewsItem[]) => {
+  const staticEntries = Object.entries(staticPages).map(([href, page]) => ({
+    id: `static-${href}`,
+    category: page.label,
+    title: page.title,
+    excerpt: page.lead,
+    href,
+    searchableText: `${page.lead} ${page.sections.map((section) => `${section.title} ${section.text}`).join(' ')}`
+  }));
+  const programEntries = programs.map((program) => ({
+    id: `program-${programSlug(program.title)}`,
+    category: 'Program',
+    title: program.title,
+    excerpt: program.goal,
+    href: `/programy/${programSlug(program.title)}`,
+    searchableText: JSON.stringify(program)
+  }));
+  const newsEntries = news.map((item) => ({
+    id: `news-${item.id}`,
+    category: isSecondChanceStory(item) ? 'Příběh druhé šance' : 'Aktualita',
+    title: item.title,
+    excerpt: item.excerpt,
+    href: isSecondChanceStory(item) ? `${storyDetailPrefix}${encodeURIComponent(item.id)}` : `/aktualita/${encodeURIComponent(item.id)}`,
+    searchableText: `${item.tag ?? ''} ${item.excerpt} ${item.body ?? ''}`
+  }));
+  const methodologyEntries = methodologyDownloads.map((download) => ({
+    id: `methodology-${download.fileName}`,
+    category: 'Dokument',
+    title: download.title,
+    excerpt: download.description,
+    href: '/metodika',
+    searchableText: `${download.fileName} ${download.mimeType}`
+  }));
+  const mediaEntries = publicMediaKitAssets.map((asset) => ({
+    id: `media-${asset.id}`,
+    category: 'Média ke stažení',
+    title: asset.title,
+    excerpt: asset.description,
+    href: '/media',
+    searchableText: `${asset.fileName} ${asset.mimeType} ${asset.kind}`
+  }));
+  const unique = new Map<string, SiteSearchEntry>();
+  [...coreSearchEntries, ...staticEntries, ...programEntries, ...newsEntries, ...methodologyEntries, ...mediaEntries].forEach((entry) => {
+    const key = `${entry.href}|${entry.title}`;
+    if (!unique.has(key)) unique.set(key, entry);
+  });
+  return Array.from(unique.values());
+};
+
+function SearchPage({ news }: { news: NewsItem[] }) {
+  const initialQuery = new URLSearchParams(window.location.search).get('q')?.trim() ?? '';
+  const [query, setQuery] = React.useState(initialQuery);
+  const [activeQuery, setActiveQuery] = React.useState(initialQuery);
+  const entries = React.useMemo(() => buildSiteSearchEntries(news), [news]);
+  const normalizedQuery = normalizeSearchValue(activeQuery);
+  const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  const results = React.useMemo(() => {
+    if (!queryTokens.length) return [];
+    return entries
+      .map((entry) => {
+        const title = normalizeSearchValue(entry.title);
+        const excerpt = normalizeSearchValue(entry.excerpt);
+        const body = normalizeSearchValue(`${entry.category} ${entry.searchableText}`);
+        const score = queryTokens.reduce((total, token) => {
+          if (title === token) return total + 24;
+          if (title.startsWith(token)) return total + 16;
+          if (title.includes(token)) return total + 11;
+          if (excerpt.includes(token)) return total + 6;
+          if (body.includes(token)) return total + 3;
+          return total;
+        }, 0);
+        return { entry, score };
+      })
+      .filter((result) => result.score > 0)
+      .sort((left, right) => right.score - left.score || left.entry.title.localeCompare(right.entry.title, 'cs'));
+  }, [entries, normalizedQuery]);
+  const resultCountLabel = results.length === 1 ? 'výsledek' : results.length >= 2 && results.length <= 4 ? 'výsledky' : 'výsledků';
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const nextQuery = query.trim();
+    setActiveQuery(nextQuery);
+    window.history.replaceState(null, '', nextQuery ? `/vyhledavani?q=${encodeURIComponent(nextQuery)}` : '/vyhledavani');
+  };
+
+  return (
+    <section className="search-results-page">
+      <div className="section-heading search-results-heading">
+        <div>
+          <p className="section-label">Celý web</p>
+          <h1>Výsledky vyhledávání</h1>
+          <p>Prohledáváme veřejné stránky, programy, aktuality, metodiku, dokumenty, média i možnosti podpory.</p>
+        </div>
+        <form className="search-results-form" role="search" onSubmit={submit}>
+          <Search size={20} aria-hidden="true" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Co hledáte?" aria-label="Hledat na celém webu" autoFocus />
+          <button className="button primary" type="submit">Vyhledat</button>
+        </form>
+      </div>
+      <div className="search-results-summary" aria-live="polite">
+        {activeQuery ? <strong>{results.length} {resultCountLabel} pro „{activeQuery}“</strong> : <strong>Zadejte hledaný výraz.</strong>}
+      </div>
+      <div className="search-results-list">
+        {activeQuery && results.length === 0 && (
+          <div className="empty-note">Nic jsme nenašli. Zkuste kratší výraz, název programu nebo téma jako práce, bydlení, metodika či darování.</div>
+        )}
+        {results.map(({ entry }) => (
+          <a className="search-result-item" href={entry.href} key={entry.id}>
+            <span>{entry.category}</span>
+            <h2>{entry.title}</h2>
+            <p>{entry.excerpt}</p>
+            <strong>Otevřít <ArrowRight size={17} /></strong>
+          </a>
         ))}
       </div>
     </section>
@@ -6460,7 +6821,7 @@ function App() {
   }, []);
 
   React.useEffect(() => {
-    if (shouldUseProgramPillarDeck(slides)) {
+    if (shouldUseStarterHeroDeck(slides)) {
       setSlides(starterSlides);
     }
   }, [slides, setSlides]);
@@ -6476,7 +6837,7 @@ function App() {
       .catch(() => undefined);
     listSlides()
       .then((items) => {
-        if (items.length > 0) setSlides(shouldUseProgramPillarDeck(items) ? starterSlides : items);
+        if (items.length > 0) setSlides(shouldUseStarterHeroDeck(items) ? starterSlides : items);
       })
       .catch(() => undefined);
   }, [setNews, setSlides]);
@@ -6765,7 +7126,9 @@ React.useEffect(() => {
     .filter((document) => document.category === TRANSPARENCY_DOCUMENT_CATEGORY || document.fileUrl.startsWith('/documents/transparency/'))
     .filter((document, index, list) => list.findIndex((other) => other.fileUrl === document.fileUrl) === index);
   const page =
-    currentPath === '/co-delame' ? (
+    currentPath === '/vyhledavani' ? (
+      <SearchPage news={news} />
+    ) : currentPath === '/co-delame' ? (
       <WorkPage />
     ) : currentPath === '/programy' ? (
       <ProgramsPage />
@@ -7061,9 +7424,10 @@ function AdminWorkspace({
     imageUrl: '/images/slides/restart-tree.jpg',
     ctaLabel: '',
     ctaHref: '/kontakt',
-    sortOrder: 40,
+    sortOrder: 170,
     isActive: true
   });
+  const [imageUploadBusy, setImageUploadBusy] = React.useState('');
   const [adminMessage, setAdminMessage] = React.useState('');
   const [adminMessageTone, setAdminMessageTone] = React.useState<FeedbackTone>('info');
   const [adminDialog, setAdminDialog] = React.useState<AdminDialogState | null>(null);
@@ -7647,6 +8011,54 @@ function AdminWorkspace({
     insertNewsBody(`<a href="${trimmed}" target="_blank" rel="noreferrer">`, '</a>', 'Text odkazu');
   };
 
+  const uploadImageFromComputer = async (file: File, category: string) => {
+    if (!file.type.startsWith('image/')) {
+      onNotify('warning', 'Soubor není obrázek', 'Vyberte JPG, PNG, WebP, AVIF nebo jiný podporovaný obrázek.');
+      return '';
+    }
+    if (!onMediaUploadRequest) {
+      onNotify('warning', 'Nahrávání není dostupné', 'Upload endpoint není právě dostupný.');
+      return '';
+    }
+    setImageUploadBusy(category);
+    try {
+      const uploaded = await onMediaUploadRequest(file, category);
+      onNotify('success', 'Obrázek nahrán', file.name);
+      return resolvePublicFileUrl(uploaded.fileUrl);
+    } catch (error) {
+      onNotify('error', 'Obrázek se nepodařilo nahrát', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+      return '';
+    } finally {
+      setImageUploadBusy('');
+    }
+  };
+
+  const uploadNewsThumbnail = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+    const fileUrl = await uploadImageFromComputer(file, 'news');
+    if (fileUrl) setNewsForm((current) => ({ ...current, imageUrl: fileUrl }));
+  };
+
+  const uploadNewsBodyImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+    const fileUrl = await uploadImageFromComputer(file, 'news');
+    if (fileUrl) {
+      insertNewsBody(`<figure><img src="${fileUrl}" alt="" width="1200" height="675" /><figcaption>Popisek obrázku</figcaption></figure>`);
+    }
+  };
+
+  const uploadSlideImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+    const fileUrl = await uploadImageFromComputer(file, 'hero');
+    if (fileUrl) setSlideForm((current) => ({ ...current, imageUrl: fileUrl }));
+  };
+
   const saveNews = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!newsForm.title.trim()) return;
@@ -7720,7 +8132,10 @@ function AdminWorkspace({
 
   const saveSlide = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!slideForm.title.trim() || !slideForm.subtitle.trim() || !slideForm.imageUrl.trim()) return;
+    if (!slideForm.title.trim() || !slideForm.subtitle.trim() || !slideForm.imageUrl.trim()) {
+      onNotify('warning', 'Hero slide není kompletní', 'Vyplňte nadpis, text a obrázek.');
+      return;
+    }
     const id = slideForm.id || crypto.randomUUID();
     let nextItem = { ...slideForm, id };
     if (onSlideSaveRequest) {
@@ -7749,7 +8164,7 @@ function AdminWorkspace({
       imageUrl: '/images/slides/restart-tree.jpg',
       ctaLabel: '',
       ctaHref: '/kontakt',
-      sortOrder: 40,
+      sortOrder: Math.max(0, ...slides.map((slide) => slide.sortOrder)) + 10,
       isActive: true
     });
     if (!onSlideSaveRequest) {
@@ -8462,7 +8877,23 @@ function AdminWorkspace({
 
   const editSlide = (item: HomeSlide) => {
     setSlideForm(item);
+    selectAdminTab('content');
     onNotify('info', 'Slide načten k úpravě', item.title);
+  };
+
+  const newSlide = () => {
+    setSlideForm({
+      id: '',
+      title: '',
+      subtitle: '',
+      imageUrl: '',
+      ctaLabel: 'Zjistit více',
+      ctaHref: '/kontakt',
+      sortOrder: Math.max(0, ...slides.map((slide) => slide.sortOrder)) + 10,
+      isActive: true
+    });
+    selectAdminTab('content');
+    onNotify('info', 'Nový hero slide', 'Formulář je připravený.');
   };
 
   const currentAdminNav = adminNavItems.find((item) => item.id === activeTab) ?? adminNavItems[0];
@@ -9634,20 +10065,30 @@ function AdminWorkspace({
                         <option value="Aktuality" />
                       </datalist>
                     </label>
-                    <label className="editor-full">
-                      URL obrázku / miniatury
-                      <input
-                        type="url"
-                        value={newsForm.imageUrl || ''}
-                        onChange={(event) => setNewsForm((current) => ({ ...current, imageUrl: event.target.value }))}
-                        placeholder="https://example.com/image.jpg"
-                      />
+                    <div className="editor-full field-stack">
+                      <label>
+                        URL obrázku / miniatury
+                        <input
+                          type="text"
+                          value={newsForm.imageUrl || ''}
+                          onChange={(event) => setNewsForm((current) => ({ ...current, imageUrl: event.target.value }))}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </label>
+                      <span className="local-image-actions">
+                        <label className="button secondary local-image-upload">
+                          <Upload size={17} />
+                          {imageUploadBusy === 'news' ? 'Nahrávám…' : 'Nahrát z počítače'}
+                          <input type="file" accept="image/*" onChange={uploadNewsThumbnail} disabled={Boolean(imageUploadBusy)} />
+                        </label>
+                        <small>Obrázek se nahraje do mediální knihovny a URL se doplní automaticky.</small>
+                      </span>
                       {newsForm.imageUrl && (
                         <small style={{ display: 'block', marginTop: '8px' }}>
                           Náhled: <img src={newsForm.imageUrl} alt="Náhled" style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '8px', borderRadius: '6px' }} />
                         </small>
                       )}
-                    </label>
+                    </div>
                     <label className="editor-full">
                       Krátký text
                       <textarea rows={3} value={newsForm.excerpt} onChange={(event) => setNewsForm((current) => ({ ...current, excerpt: event.target.value }))} required />
@@ -9702,6 +10143,10 @@ function AdminWorkspace({
                     <button className="icon-tool tooltip-link" type="button" data-tooltip="Obrázek" aria-label="Vložit obrázek" onClick={() => insertNewsMedia('image')}>
                       <ImagePlus size={17} />
                     </button>
+                    <label className="icon-tool tooltip-link local-toolbar-upload" data-tooltip="Nahrát obrázek z počítače" aria-label="Nahrát obrázek z počítače">
+                      <Upload size={17} />
+                      <input type="file" accept="image/*" onChange={uploadNewsBodyImage} disabled={Boolean(imageUploadBusy)} />
+                    </label>
                     <button className="icon-tool tooltip-link" type="button" data-tooltip="Video" aria-label="Vložit video" onClick={() => insertNewsMedia('video')}>
                       <Video size={17} />
                     </button>
@@ -9749,8 +10194,17 @@ function AdminWorkspace({
 
         {activeTab === 'content' && (
           <div className="admin-grid">
-            <form className="admin-card" onSubmit={saveSlide}>
-              <h3>{slideForm.id ? 'Upravit pinned obsah' : 'Přidat pinned obsah'}</h3>
+            <form className="admin-card hero-admin-form" onSubmit={saveSlide}>
+              <div className="admin-card-header">
+                <div>
+                  <p className="section-label">Homepage</p>
+                  <h3>{slideForm.id ? 'Upravit hero slide' : 'Nový hero slide'}</h3>
+                  <p className="form-help">Každý slide potřebuje nadpis, krátký text a obrázek. Pořadí určuje jeho pozici.</p>
+                </div>
+                <button className="button secondary" type="button" onClick={newSlide}>
+                  <Plus size={17} /> Nový slide
+                </button>
+              </div>
               <label>
                 Nadpis
                 <input value={slideForm.title} onChange={(event) => setSlideForm((current) => ({ ...current, title: event.target.value }))} required />
@@ -9759,15 +10213,35 @@ function AdminWorkspace({
                 Text
                 <textarea rows={5} value={slideForm.subtitle} onChange={(event) => setSlideForm((current) => ({ ...current, subtitle: event.target.value }))} required />
               </label>
-              <label>
-                Obrázek URL
-                <input
-                  value={slideForm.imageUrl}
-                  onChange={(event) => setSlideForm((current) => ({ ...current, imageUrl: event.target.value }))}
-                  placeholder="/images/slides/restart-tree.jpg"
-                  required
-                />
-              </label>
+              <div className="field-stack">
+                <label>
+                  Obrázek
+                  <input
+                    value={slideForm.imageUrl}
+                    onChange={(event) => setSlideForm((current) => ({ ...current, imageUrl: event.target.value }))}
+                    placeholder="URL obrázku nebo nahrajte soubor z počítače"
+                    required
+                  />
+                </label>
+                <span className="local-image-actions">
+                  <label className="button secondary local-image-upload">
+                    <Upload size={17} />
+                    {imageUploadBusy === 'hero' ? 'Nahrávám…' : 'Nahrát z počítače'}
+                    <input type="file" accept="image/*" onChange={uploadSlideImage} disabled={Boolean(imageUploadBusy)} />
+                  </label>
+                  <small>JPG, PNG, WebP nebo AVIF. Po nahrání se cesta doplní sama.</small>
+                </span>
+              </div>
+              {slideForm.imageUrl && (
+                <div className="hero-admin-preview">
+                  <img src={resolvePublicFileUrl(slideForm.imageUrl)} alt="" />
+                  <div>
+                    <span>Náhled hero slidu</span>
+                    <strong>{slideForm.title || 'Nadpis slidu'}</strong>
+                    <p>{slideForm.subtitle || 'Text slidu'}</p>
+                  </div>
+                </div>
+              )}
               <div className="form-grid two">
                 <label>
                   Text tlačítka
@@ -9794,15 +10268,28 @@ function AdminWorkspace({
                   Aktivní
                 </label>
               </div>
-              <button className="button primary" type="submit">
-                <Save size={18} /> Uložit slide
-              </button>
+              <div className="editor-actions">
+                <button className="button primary" type="submit">
+                  <Save size={18} /> {slideForm.id ? 'Uložit změny' : 'Přidat do hero sekce'}
+                </button>
+                {slideForm.id && (
+                  <button className="button secondary" type="button" onClick={newSlide}>
+                    <Plus size={18} /> Přidat další
+                  </button>
+                )}
+              </div>
             </form>
             <div className="admin-card">
-              <h3>Pinned obsah a bannery</h3>
+              <div className="admin-card-header">
+                <div>
+                  <h3>Hero slidy</h3>
+                  <p className="form-help">Kliknutím otevřete slide k úpravě.</p>
+                </div>
+                <Badge tone="info">{slides.length} celkem</Badge>
+              </div>
               <div className="client-list slide-list">
                 {slides.map((item) => (
-                  <button key={item.id} type="button" onClick={() => editSlide(item)}>
+                  <button className={slideForm.id === item.id ? 'active' : ''} key={item.id} type="button" onClick={() => editSlide(item)}>
                     <img src={item.imageUrl} alt="" />
                     <strong>{item.title}</strong>
                     <span>
@@ -10194,6 +10681,8 @@ function AdminWorkspace({
           draft={draft}
           mediaForm={mediaForm}
           setMediaForm={setMediaForm}
+          mediaUploadFile={mediaUploadFile}
+          onMediaUploadSelect={onMediaUploadSelect}
           managedUserForm={managedUserForm}
           setManagedUserForm={setManagedUserForm}
           notificationForm={notificationForm}
@@ -10225,6 +10714,8 @@ function AdminDetailDialog({
   draft,
   mediaForm,
   setMediaForm,
+  mediaUploadFile,
+  onMediaUploadSelect,
   managedUserForm,
   setManagedUserForm,
   notificationForm,
@@ -10249,6 +10740,8 @@ function AdminDetailDialog({
   draft: FormDraft;
   mediaForm: MediaFile;
   setMediaForm: React.Dispatch<React.SetStateAction<MediaFile>>;
+  mediaUploadFile: File | null;
+  onMediaUploadSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
   managedUserForm: ManagedUser;
   setManagedUserForm: React.Dispatch<React.SetStateAction<ManagedUser>>;
   notificationForm: NotificationItem;
@@ -10362,6 +10855,16 @@ function AdminDetailDialog({
             <div className="editor-title-actions">{closeButton}</div>
           </div>
           <div className="editor-fields">
+            <div className="editor-full field-stack">
+              <span className="field-label">Nahrát soubor z počítače</span>
+              <span className="local-image-actions">
+                <label className="button secondary local-image-upload">
+                  <Upload size={17} /> {mediaUploadFile ? 'Vybrat jiný soubor' : 'Vybrat soubor'}
+                  <input type="file" onChange={onMediaUploadSelect} />
+                </label>
+                <small>{mediaUploadFile ? `${mediaUploadFile.name} · ${readableBytes(mediaUploadFile.size)}` : 'Obrázek, PDF nebo jiný dokument.'}</small>
+              </span>
+            </div>
             <label>
               Název
               <input value={mediaForm.title} onChange={(event) => setMediaForm((current) => ({ ...current, title: event.target.value }))} required />
@@ -10380,7 +10883,7 @@ function AdminDetailDialog({
             </label>
             <label className="editor-full">
               URL souboru
-              <input value={mediaForm.fileUrl} onChange={(event) => setMediaForm((current) => ({ ...current, fileUrl: event.target.value }))} required />
+              <input value={mediaForm.fileUrl} onChange={(event) => setMediaForm((current) => ({ ...current, fileUrl: event.target.value }))} placeholder="Doplňte URL nebo nahrajte soubor z počítače" required={!mediaUploadFile} />
             </label>
             <label>
               Velikost v bytech

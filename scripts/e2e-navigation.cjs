@@ -14,20 +14,13 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   if ((await mainNav.getByRole('link', { name: 'Klientská zóna', exact: true }).count()) !== 0) {
     throw new Error('Klientská zóna should be hidden from the anonymous main navigation.');
   }
-  const signIn = page.getByRole('link', { name: 'Sign in', exact: true });
-  if ((await signIn.getAttribute('href')) !== '/admin') {
-    throw new Error('Sign in icon should point to /admin.');
+  const adminEntry = page.getByRole('link', { name: 'Administrace', exact: true });
+  if ((await adminEntry.getAttribute('href')) !== '/admin') {
+    throw new Error('Administrace should point to /admin.');
   }
-  const tooltipPosition = await signIn.evaluate((element) => {
-    const style = window.getComputedStyle(element, '::after');
-    return { top: Number.parseFloat(style.top) };
-  });
-  if (!Number.isFinite(tooltipPosition.top) || tooltipPosition.top <= 0) {
-    throw new Error('Sign in tooltip should open below the icon so it stays inside the viewport.');
-  }
-  const signUp = page.getByRole('link', { name: 'Sign up', exact: true });
-  if ((await signUp.getAttribute('href')) !== '/klient') {
-    throw new Error('Sign up should point to /klient.');
+  const clientEntry = page.getByRole('link', { name: 'Klientská zóna', exact: true });
+  if ((await clientEntry.getAttribute('href')) !== '/klient') {
+    throw new Error('Klientská zóna should point to /klient.');
   }
 
   const kontaktLink = mainNav.getByRole('link', {
@@ -60,6 +53,16 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   }
   if (bodyText.includes('Šest cest podle konkrétní situace člověka')) {
     throw new Error('Kontakt page still contains unrelated one-page program section.');
+  }
+
+  await page.goto(baseUrl, { waitUntil: 'networkidle' });
+  const siteSearch = page.getByRole('search').first();
+  await siteSearch.getByRole('textbox', { name: 'Vyhledat na celém webu' }).fill('metodika');
+  await siteSearch.getByRole('button', { name: 'Vyhledat na webu' }).click();
+  await page.waitForURL('**/vyhledavani?q=metodika');
+  await page.getByRole('heading', { name: 'Výsledky vyhledávání', level: 1 }).waitFor();
+  if ((await page.getByText(/výsled(?:ek|ky|ků) pro „metodika“/).count()) === 0) {
+    throw new Error('Whole-site search did not render results for metodika.');
   }
 
   await browser.close();

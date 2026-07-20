@@ -415,6 +415,201 @@ const applicationRoleOptions: Array<{ value: ApiProjectApplicationType; label: s
 const adminRoleOptions: ApiRole[] = ['admin', 'editor', 'applicant', ...applicationRoleOptions.map((item) => item.value), 'user'];
 const isPortalRole = (role?: ApiRole) => Boolean(role && portalRoles.includes(role));
 const TRANSPARENCY_DOCUMENT_CATEGORY = 'transparency';
+type MediaSelectGroup = {
+  label: string;
+  options: Array<{ value: string; label: string }>;
+};
+const mediaCategoryGroups: MediaSelectGroup[] = [
+  {
+    label: 'Obecné použití',
+    options: [
+      { value: 'visual', label: 'Obrázek / fotografie' },
+      { value: 'document', label: 'Obecný dokument' },
+      { value: 'other', label: 'Ostatní soubor' },
+      { value: 'media', label: 'Mediální knihovna (starší kategorie)' }
+    ]
+  },
+  {
+    label: 'Web a komunikace',
+    options: [
+      { value: 'hero', label: 'Hero / banner webu' },
+      { value: 'news', label: 'Aktualita / článek' },
+      { value: 'gallery', label: 'Galerie / fotodokumentace' },
+      { value: 'infographic', label: 'Infografika / graf / statistika' },
+      { value: 'logo-brand', label: 'Logo / vizuální identita' },
+      { value: 'social-media', label: 'Sociální sítě' },
+      { value: 'press-media', label: 'Média / tiskové podklady' },
+      { value: 'brochure', label: 'Brožura / leták / plakát' },
+      { value: 'presentation', label: 'Prezentace' }
+    ]
+  },
+  {
+    label: 'Dokumenty a transparentnost',
+    options: [
+      { value: TRANSPARENCY_DOCUMENT_CATEGORY, label: 'Povinné zveřejňování' },
+      { value: 'methodology', label: 'Metodika / standard' },
+      { value: 'forms-templates', label: 'Formulář / šablona' },
+      { value: 'annual-report', label: 'Výroční zpráva' },
+      { value: 'financial-report', label: 'Finanční zpráva / rozpočet' },
+      { value: 'legal-gdpr', label: 'Právní dokument / GDPR' },
+      { value: 'partner-materials', label: 'Materiály pro partnery' },
+      { value: 'internal-standard', label: 'Interní standard' }
+    ]
+  },
+  {
+    label: 'Programy REST||ART',
+    options: [
+      { value: 'program-jailbreak', label: 'Program JAILBREAK' },
+      { value: 'program-reset', label: 'Program RESET' },
+      { value: 'program-rework', label: 'Program REWORK' },
+      { value: 'program-streetwise', label: 'Program STREETWISE' },
+      { value: 'program-bod-zlomu', label: 'Program BOD ZLOMU' },
+      { value: 'program-stabilizace', label: 'Program STABILIZACE' }
+    ]
+  },
+  {
+    label: 'Audiovizuální obsah',
+    options: [
+      { value: 'video', label: 'Video' },
+      { value: 'audio', label: 'Audio' },
+      { value: 'podcast', label: 'Podcast / rozhovor' }
+    ]
+  },
+  {
+    label: 'Data a technické soubory',
+    options: [
+      { value: 'data-spreadsheet', label: 'Tabulka / datový přehled' },
+      { value: 'data-export', label: 'Datový export' },
+      { value: 'archive', label: 'Archiv' },
+      { value: 'font', label: 'Písmo' },
+      { value: 'source-file', label: 'Zdrojový / pracovní soubor' }
+    ]
+  }
+];
+const mediaMimeTypeGroups: MediaSelectGroup[] = [
+  {
+    label: 'Obrázky',
+    options: [
+      { value: 'image/jpeg', label: 'JPEG obrázek (.jpg, .jpeg)' },
+      { value: 'image/png', label: 'PNG obrázek (.png)' },
+      { value: 'image/webp', label: 'WebP obrázek (.webp)' },
+      { value: 'image/avif', label: 'AVIF obrázek (.avif)' },
+      { value: 'image/gif', label: 'GIF obrázek / animace (.gif)' },
+      { value: 'image/svg+xml', label: 'SVG vektorový obrázek (.svg)' },
+      { value: 'image/tiff', label: 'TIFF obrázek (.tif, .tiff)' },
+      { value: 'image/bmp', label: 'Bitmapový obrázek (.bmp)' },
+      { value: 'image/heic', label: 'HEIC fotografie (.heic)' },
+      { value: 'image/heif', label: 'HEIF fotografie (.heif)' }
+    ]
+  },
+  {
+    label: 'Dokumenty a text',
+    options: [
+      { value: 'application/pdf', label: 'PDF dokument (.pdf)' },
+      { value: 'application/msword', label: 'Microsoft Word 97-2003 (.doc)' },
+      { value: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', label: 'Microsoft Word (.docx)' },
+      { value: 'application/rtf', label: 'Rich Text Format (.rtf)' },
+      { value: 'application/vnd.oasis.opendocument.text', label: 'OpenDocument text (.odt)' },
+      { value: 'text/plain', label: 'Prostý text (.txt)' },
+      { value: 'text/html', label: 'HTML dokument (.html)' },
+      { value: 'text/markdown', label: 'Markdown dokument (.md)' }
+    ]
+  },
+  {
+    label: 'Tabulky a data',
+    options: [
+      { value: 'application/vnd.ms-excel', label: 'Microsoft Excel 97-2003 (.xls)' },
+      { value: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', label: 'Microsoft Excel (.xlsx)' },
+      { value: 'application/vnd.oasis.opendocument.spreadsheet', label: 'OpenDocument tabulka (.ods)' },
+      { value: 'text/csv', label: 'CSV data (.csv)' },
+      { value: 'application/json', label: 'JSON data (.json)' },
+      { value: 'application/xml', label: 'XML data (.xml)' }
+    ]
+  },
+  {
+    label: 'Prezentace',
+    options: [
+      { value: 'application/vnd.ms-powerpoint', label: 'Microsoft PowerPoint 97-2003 (.ppt)' },
+      { value: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', label: 'Microsoft PowerPoint (.pptx)' },
+      { value: 'application/vnd.oasis.opendocument.presentation', label: 'OpenDocument prezentace (.odp)' }
+    ]
+  },
+  {
+    label: 'Video',
+    options: [
+      { value: 'video/mp4', label: 'MP4 video (.mp4)' },
+      { value: 'video/webm', label: 'WebM video (.webm)' },
+      { value: 'video/quicktime', label: 'QuickTime video (.mov)' },
+      { value: 'video/mpeg', label: 'MPEG video (.mpeg, .mpg)' },
+      { value: 'video/x-msvideo', label: 'AVI video (.avi)' },
+      { value: 'video/x-matroska', label: 'Matroska video (.mkv)' }
+    ]
+  },
+  {
+    label: 'Audio',
+    options: [
+      { value: 'audio/mpeg', label: 'MP3 audio (.mp3)' },
+      { value: 'audio/mp4', label: 'MPEG-4 audio (.m4a)' },
+      { value: 'audio/wav', label: 'WAV audio (.wav)' },
+      { value: 'audio/ogg', label: 'OGG audio (.ogg)' },
+      { value: 'audio/flac', label: 'FLAC audio (.flac)' }
+    ]
+  },
+  {
+    label: 'Archivy a balíčky',
+    options: [
+      { value: 'application/zip', label: 'ZIP archiv (.zip)' },
+      { value: 'application/gzip', label: 'GZIP archiv (.gz)' },
+      { value: 'application/x-7z-compressed', label: '7-Zip archiv (.7z)' },
+      { value: 'application/vnd.rar', label: 'RAR archiv (.rar)' },
+      { value: 'application/x-tar', label: 'TAR archiv (.tar)' }
+    ]
+  },
+  {
+    label: 'Písma',
+    options: [
+      { value: 'font/woff', label: 'Web Open Font (.woff)' },
+      { value: 'font/woff2', label: 'Web Open Font 2 (.woff2)' },
+      { value: 'font/ttf', label: 'TrueType font (.ttf)' },
+      { value: 'font/otf', label: 'OpenType font (.otf)' }
+    ]
+  },
+  {
+    label: 'Ostatní',
+    options: [
+      { value: 'text/calendar', label: 'Kalendářová událost (.ics)' },
+      { value: 'text/vcard', label: 'Elektronická vizitka (.vcf)' },
+      { value: 'application/octet-stream', label: 'Obecný binární soubor' }
+    ]
+  }
+];
+const knownMediaCategories = new Set(mediaCategoryGroups.flatMap((group) => group.options.map((option) => option.value)));
+const knownMediaMimeTypes = new Set(mediaMimeTypeGroups.flatMap((group) => group.options.map((option) => option.value)));
+const mediaMimeTypeByExtension: Record<string, string> = {
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif', gif: 'image/gif', svg: 'image/svg+xml',
+  tif: 'image/tiff', tiff: 'image/tiff', bmp: 'image/bmp', heic: 'image/heic', heif: 'image/heif', pdf: 'application/pdf', doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', rtf: 'application/rtf', odt: 'application/vnd.oasis.opendocument.text',
+  txt: 'text/plain', html: 'text/html', htm: 'text/html', md: 'text/markdown', xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ods: 'application/vnd.oasis.opendocument.spreadsheet', csv: 'text/csv',
+  json: 'application/json', xml: 'application/xml', ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', odp: 'application/vnd.oasis.opendocument.presentation',
+  mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', mpeg: 'video/mpeg', mpg: 'video/mpeg', avi: 'video/x-msvideo', mkv: 'video/x-matroska',
+  mp3: 'audio/mpeg', m4a: 'audio/mp4', wav: 'audio/wav', ogg: 'audio/ogg', flac: 'audio/flac', zip: 'application/zip', gz: 'application/gzip',
+  '7z': 'application/x-7z-compressed', rar: 'application/vnd.rar', tar: 'application/x-tar', woff: 'font/woff', woff2: 'font/woff2',
+  ttf: 'font/ttf', otf: 'font/otf', ics: 'text/calendar', vcf: 'text/vcard'
+};
+const inferMediaMimeType = (fileName: string) => mediaMimeTypeByExtension[fileName.split('.').pop()?.toLowerCase() ?? ''] || 'application/octet-stream';
+const inferMediaCategory = (mimeType: string) => {
+  if (mimeType.startsWith('image/')) return 'visual';
+  if (mimeType.startsWith('video/')) return 'video';
+  if (mimeType.startsWith('audio/')) return 'audio';
+  if (mimeType.startsWith('font/')) return 'font';
+  if (['application/zip', 'application/gzip', 'application/x-7z-compressed', 'application/vnd.rar', 'application/x-tar'].includes(mimeType)) return 'archive';
+  if (['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.oasis.opendocument.spreadsheet', 'text/csv'].includes(mimeType)) return 'data-spreadsheet';
+  if (['application/json', 'application/xml'].includes(mimeType)) return 'data-export';
+  if (mimeType === 'application/octet-stream') return 'other';
+  return 'document';
+};
 const institutionalCareOptions = [
   { value: 'unknown', label: 'Nezjištěno / nechce uvést' },
   { value: 'yes', label: 'Ano - dětský domov / ústavní péče' },
@@ -8346,13 +8541,18 @@ function AdminWorkspace({
     const selectedFile = event.currentTarget.files?.[0] || null;
     setMediaUploadFile(selectedFile);
     if (!selectedFile) return;
-    setMediaForm((current) => ({
-      ...current,
-      title: current.title || selectedFile.name.replace(/\.[^.]+$/, ''),
-      fileName: selectedFile.name,
-      mimeType: selectedFile.type || current.mimeType || 'application/pdf',
-      fileSize: selectedFile.size
-    }));
+    const detectedMimeType = selectedFile.type || inferMediaMimeType(selectedFile.name);
+    setMediaForm((current) => {
+      const shouldInferCategory = !current.id && (!current.category || current.category === 'visual');
+      return {
+        ...current,
+        title: current.title || selectedFile.name.replace(/\.[^.]+$/, ''),
+        fileName: selectedFile.name,
+        mimeType: detectedMimeType,
+        category: shouldInferCategory ? inferMediaCategory(detectedMimeType) : current.category,
+        fileSize: selectedFile.size
+      };
+    });
     onNotify('info', 'Soubor zvolen', `Nahrávání připraveno: ${selectedFile.name}`);
   };
 
@@ -10871,7 +11071,16 @@ function AdminDetailDialog({
             </label>
             <label>
               Kategorie
-              <input value={mediaForm.category} onChange={(event) => setMediaForm((current) => ({ ...current, category: event.target.value }))} />
+              <select aria-label="Kategorie" value={mediaForm.category} onChange={(event) => setMediaForm((current) => ({ ...current, category: event.target.value }))} required>
+                {mediaForm.category && !knownMediaCategories.has(mediaForm.category) && (
+                  <option value={mediaForm.category}>Aktuální vlastní hodnota: {mediaForm.category}</option>
+                )}
+                {mediaCategoryGroups.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </optgroup>
+                ))}
+              </select>
             </label>
             <label>
               Název souboru
@@ -10879,7 +11088,16 @@ function AdminDetailDialog({
             </label>
             <label>
               MIME typ
-              <input value={mediaForm.mimeType} onChange={(event) => setMediaForm((current) => ({ ...current, mimeType: event.target.value }))} />
+              <select aria-label="MIME typ" value={mediaForm.mimeType} onChange={(event) => setMediaForm((current) => ({ ...current, mimeType: event.target.value }))} required>
+                {mediaForm.mimeType && !knownMediaMimeTypes.has(mediaForm.mimeType) && (
+                  <option value={mediaForm.mimeType}>Aktuální vlastní hodnota: {mediaForm.mimeType}</option>
+                )}
+                {mediaMimeTypeGroups.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </optgroup>
+                ))}
+              </select>
             </label>
             <label className="editor-full">
               URL souboru

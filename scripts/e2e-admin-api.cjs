@@ -1,4 +1,6 @@
 const { spawn } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 const { PDFDocument } = require('pdf-lib');
 const { loadDotEnv } = require('../server/env.cjs');
 const { getPool, query } = require('../server/db.cjs');
@@ -92,6 +94,7 @@ async function requestRaw(path, options = {}) {
   let createdDocumentId = null;
   let createdNotificationId = null;
   let duplicateClientId = null;
+  let uploadedMediaPath = null;
 
   try {
     await query(
@@ -113,6 +116,25 @@ async function requestRaw(path, options = {}) {
       throw new Error(`Admin login failed: ${JSON.stringify(login.body)}`);
     }
     const cookie = login.response.headers.get('set-cookie');
+
+    const uploadedMedia = await request('/api/media/upload', {
+      method: 'POST',
+      headers: { cookie },
+      body: JSON.stringify({
+        fileName: `e2e-media-upload-${stamp}`,
+        mimeType: 'text/plain',
+        fileSize: 17,
+        category: 'methodology',
+        contentBase64: Buffer.from('E2E media upload').toString('base64')
+      })
+    });
+    if (!uploadedMedia.response.ok || !uploadedMedia.body.media.fileUrl.startsWith('/documents/media/') || !uploadedMedia.body.media.fileUrl.endsWith('.txt')) {
+      throw new Error(`Media upload routing failed: ${JSON.stringify(uploadedMedia.body)}`);
+    }
+    uploadedMediaPath = path.join(process.cwd(), 'public', ...uploadedMedia.body.media.fileUrl.split('/').filter(Boolean));
+    if (!fs.existsSync(uploadedMediaPath)) {
+      throw new Error(`Uploaded media file is missing at ${uploadedMediaPath}.`);
+    }
 
     const users = await request('/api/admin/users', { headers: { cookie } });
     if (!users.response.ok || !users.body.users.some((user) => user.id === adminId && user.role === 'admin')) {
@@ -489,6 +511,7 @@ async function requestRaw(path, options = {}) {
     console.log('Admin API validation passed.');
   } finally {
     server.kill();
+    if (uploadedMediaPath) await fs.promises.rm(uploadedMediaPath, { force: true });
     await query('DELETE FROM news WHERE id = ?', [createdNewsId]);
     await query('DELETE FROM notifications WHERE title = ? AND body LIKE ?', ['Klient smazán', `%duplicate-client-${stamp}@restart.test%`]);
     await query('DELETE FROM clients WHERE id = ?', [duplicateClientId]);

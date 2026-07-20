@@ -65,6 +65,52 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error('Whole-site search did not render results for metodika.');
   }
 
+  const testAdmin = {
+    id: 'e2e-media-admin',
+    role: 'admin',
+    name: 'E2E Media Admin',
+    email: 'e2e-media-admin@restart.test',
+    phone: '',
+    password: 'not-used-in-test',
+    createdAt: '2026-07-20'
+  };
+  await page.evaluate((account) => {
+    window.localStorage.setItem('restart-auth-accounts', JSON.stringify([account]));
+    window.localStorage.setItem('restart-auth-session', JSON.stringify(account.id));
+  }, testAdmin);
+  await page.goto(`${baseUrl}/#/admin`, { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: 'Přidat médium', exact: true }).click();
+  await page.getByRole('button', { name: 'Nové médium', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Detail média' }).waitFor({ state: 'visible' });
+
+  const categorySelect = page.getByLabel('Kategorie', { exact: true });
+  const mimeTypeSelect = page.getByLabel('MIME typ', { exact: true });
+  if ((await categorySelect.evaluate((element) => element.tagName)) !== 'SELECT') {
+    throw new Error('Media category should be a dropdown.');
+  }
+  if ((await mimeTypeSelect.evaluate((element) => element.tagName)) !== 'SELECT') {
+    throw new Error('Media MIME type should be a dropdown.');
+  }
+  const categoryValues = await categorySelect.locator('option').evaluateAll((options) => options.map((option) => option.value));
+  for (const expectedCategory of ['transparency', 'program-jailbreak', 'video', 'data-spreadsheet', 'source-file']) {
+    if (!categoryValues.includes(expectedCategory)) {
+      throw new Error(`Media category dropdown is missing ${expectedCategory}.`);
+    }
+  }
+  const mimeTypeValues = await mimeTypeSelect.locator('option').evaluateAll((options) => options.map((option) => option.value));
+  for (const expectedMimeType of [
+    'application/pdf',
+    'image/svg+xml',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'video/mp4',
+    'application/zip',
+    'font/woff2'
+  ]) {
+    if (!mimeTypeValues.includes(expectedMimeType)) {
+      throw new Error(`Media MIME type dropdown is missing ${expectedMimeType}.`);
+    }
+  }
+
   await browser.close();
   console.log('Navigation validation passed.');
 }))().catch(async (error) => {

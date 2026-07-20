@@ -2038,10 +2038,8 @@ function publicMedia(row) {
   };
 }
 
-function normalizeUploadCategory(category) {
-  const normalized = String(category || '').trim().toLowerCase();
-  if (normalized === 'media') return 'media';
-  return 'transparency';
+function normalizeMediaCategory(category, fallback = 'transparency') {
+  return String(category || '').trim().toLowerCase() || fallback;
 }
 
 function sanitizeUploadedFileName(value) {
@@ -2058,7 +2056,7 @@ async function uploadMediaToPublicFolder(request, response) {
   const fileName = String(body.fileName || '').trim();
   const mimeType = String(body.mimeType || '').trim() || 'application/pdf';
   const contentBase64 = String(body.contentBase64 || '').trim();
-  const category = normalizeUploadCategory(body.category);
+  const category = normalizeMediaCategory(body.category);
 
   if (!fileName) {
     sendJson(response, 400, { error: 'fileName is required.' });
@@ -2088,15 +2086,61 @@ async function uploadMediaToPublicFolder(request, response) {
 
   const extensionByMime = {
     'application/pdf': '.pdf',
+    'application/msword': '.doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/rtf': '.rtf',
+    'application/vnd.oasis.opendocument.text': '.odt',
+    'application/vnd.ms-excel': '.xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+    'application/vnd.oasis.opendocument.spreadsheet': '.ods',
+    'application/vnd.ms-powerpoint': '.ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+    'application/vnd.oasis.opendocument.presentation': '.odp',
+    'application/json': '.json',
+    'application/xml': '.xml',
+    'application/zip': '.zip',
+    'application/gzip': '.gz',
+    'application/x-7z-compressed': '.7z',
+    'application/vnd.rar': '.rar',
+    'application/x-tar': '.tar',
     'image/jpeg': '.jpg',
     'image/jpg': '.jpg',
     'image/png': '.png',
-    'image/webp': '.webp'
+    'image/webp': '.webp',
+    'image/avif': '.avif',
+    'image/gif': '.gif',
+    'image/svg+xml': '.svg',
+    'image/tiff': '.tiff',
+    'image/bmp': '.bmp',
+    'image/heic': '.heic',
+    'image/heif': '.heif',
+    'text/plain': '.txt',
+    'text/html': '.html',
+    'text/markdown': '.md',
+    'text/csv': '.csv',
+    'text/calendar': '.ics',
+    'text/vcard': '.vcf',
+    'video/mp4': '.mp4',
+    'video/webm': '.webm',
+    'video/quicktime': '.mov',
+    'video/mpeg': '.mpeg',
+    'video/x-msvideo': '.avi',
+    'video/x-matroska': '.mkv',
+    'audio/mpeg': '.mp3',
+    'audio/mp4': '.m4a',
+    'audio/wav': '.wav',
+    'audio/ogg': '.ogg',
+    'audio/flac': '.flac',
+    'font/woff': '.woff',
+    'font/woff2': '.woff2',
+    'font/ttf': '.ttf',
+    'font/otf': '.otf'
   };
-  const extension = path.extname(fileName) || extensionByMime[mimeType.toLowerCase()] || '.pdf';
-  const baseName = sanitizeUploadedFileName(path.basename(fileName, extension) || 'dokument');
+  const originalExtension = path.extname(fileName);
+  const extension = (originalExtension || extensionByMime[mimeType.toLowerCase()] || '.bin').toLowerCase();
+  const baseName = sanitizeUploadedFileName(path.basename(fileName, originalExtension) || 'soubor');
   const safeName = `${randomId()}-${baseName}${extension}`;
-  const uploadFolder = category === 'media' ? 'media' : 'transparency';
+  const uploadFolder = category === 'transparency' ? 'transparency' : 'media';
   const destination = path.resolve(__dirname, '..', 'public', 'documents', uploadFolder);
 
   await fs.promises.mkdir(destination, { recursive: true });
@@ -2115,7 +2159,7 @@ async function uploadMediaToPublicFolder(request, response) {
 
 async function listPublicMedia(request, response) {
   const params = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
-  const category = normalizeUploadCategory(params.searchParams.get('category') || 'transparency');
+  const category = normalizeMediaCategory(params.searchParams.get('category') || 'transparency');
   const rows = await query(
     `SELECT
        id,

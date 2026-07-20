@@ -65,6 +65,41 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error('Whole-site search did not render results for metodika.');
   }
 
+  await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'networkidle' });
+  await page.getByRole('heading', { name: 'Co se v projektu děje', level: 1 }).waitFor();
+  if ((await page.locator('.news-gallery-card').count()) < 3) {
+    throw new Error('News listing should render the three-column card collection.');
+  }
+  const categoryLink = page.getByRole('link', { name: 'Média a materiály', exact: true }).first();
+  if ((await categoryLink.getAttribute('href')) !== '/aktuality/media-a-materialy') {
+    throw new Error('News category should have its own stable archive URL.');
+  }
+  await categoryLink.click();
+  await page.waitForURL('**/aktuality/media-a-materialy');
+  const articleLink = page.locator('.news-gallery-card .news-read-more').first();
+  const articleHref = await articleLink.getAttribute('href');
+  if (!articleHref?.startsWith('/aktuality/media-a-materialy/')) {
+    throw new Error(`News article should have a category and slug URL, got ${articleHref}`);
+  }
+  await articleLink.click();
+  await page.waitForURL(`**${articleHref}`);
+  await page.locator('.story-detail-hero h1').waitFor();
+  const canonicalHref = await page.locator('link[rel="canonical"]').getAttribute('href');
+  if (!canonicalHref?.endsWith(articleHref)) {
+    throw new Error(`News detail canonical URL mismatch: ${canonicalHref}`);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'networkidle' });
+  const mobileLayout = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+    cardWidth: document.querySelector('.news-gallery-card')?.getBoundingClientRect().width || 0
+  }));
+  if (mobileLayout.scrollWidth > mobileLayout.viewport + 1 || mobileLayout.cardWidth > mobileLayout.viewport) {
+    throw new Error(`News listing overflows on mobile: ${JSON.stringify(mobileLayout)}`);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+
   const testAdmin = {
     id: 'e2e-media-admin',
     role: 'admin',
@@ -109,6 +144,28 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     if (!mimeTypeValues.includes(expectedMimeType)) {
       throw new Error(`Media MIME type dropdown is missing ${expectedMimeType}.`);
     }
+  }
+
+  await page.getByRole('dialog', { name: 'Detail média' }).getByRole('button', { name: 'Zavřít', exact: true }).click();
+  const adminSidebar = page.getByRole('complementary', { name: 'Admin menu' });
+  await adminSidebar.getByRole('button', { name: /Aktuality Publikace a archiv/ }).click();
+  await page.getByRole('button', { name: 'Nová aktualita', exact: true }).click();
+  const newsDialog = page.getByRole('dialog', { name: 'Editor aktuality' });
+  await newsDialog.waitFor({ state: 'visible' });
+  const newsTagSelect = newsDialog.locator('label').filter({ hasText: 'Rubrika / tag' }).locator('select');
+  if ((await newsTagSelect.evaluate((element) => element.tagName)) !== 'SELECT') {
+    throw new Error('News category should be a defined dropdown.');
+  }
+  const newsTagValues = await newsTagSelect.locator('option').evaluateAll((options) => options.map((option) => option.value));
+  for (const expectedTag of ['JAILBREAK', 'Příběhy druhé šance', 'Data a výzkum', 'Pracovní příležitosti']) {
+    if (!newsTagValues.includes(expectedTag)) {
+      throw new Error(`News category dropdown is missing ${expectedTag}.`);
+    }
+  }
+  await newsDialog.locator('label').filter({ hasText: 'Nadpis' }).locator('input').fill('Nová testovací aktualita');
+  const generatedSlug = await newsDialog.locator('label').filter({ hasText: 'URL název stránky' }).locator('input').inputValue();
+  if (generatedSlug !== 'nova-testovaci-aktualita') {
+    throw new Error(`News slug was not generated from title: ${generatedSlug}`);
   }
 
   await browser.close();

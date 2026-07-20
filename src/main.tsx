@@ -245,6 +245,15 @@ const programSlug = (title: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
+const slugifyPathSegment = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\|\|/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'aktualita';
+
 const getProgramBySlug = (slug: string) => programs.find((program) => programSlug(program.title) === slug);
 
 const programPillarVisuals: Record<string, { src: string; alt: string; shortLabel: string }> = {
@@ -292,6 +301,8 @@ const getRouteLabel = (path: string) => {
     const program = getProgramBySlug(path.replace('/programy/', ''));
     return program?.title ?? 'Program';
   }
+  if (path.startsWith('/aktuality/')) return 'Aktuality';
+  if (path.startsWith('/aktualita/')) return 'Aktualita';
   return 'Domů';
 };
 
@@ -299,6 +310,8 @@ const normalizePath = (value: string) => {
   const path = (value.replace(/^#/, '').split('?')[0] || '/') as string;
   if (routeLabels[path]) return path;
   if (/^\/pribehy-druhe-sance\/[^/]+$/.test(path)) return path;
+  if (/^\/aktuality\/[^/]+(?:\/[^/]+)?$/.test(path)) return path;
+  if (/^\/aktualita\/[^/]+$/.test(path)) return path;
   if (path.startsWith('/programy/') && getProgramBySlug(path.replace('/programy/', ''))) return path;
   return '/';
 };
@@ -340,6 +353,7 @@ type ClientRecord = {
 type NewsItem = {
   id: string;
   title: string;
+  slug?: string;
   date: string;
   excerpt: string;
   body?: string;
@@ -350,6 +364,32 @@ type NewsItem = {
 const storyTag = 'Příběhy druhé šance';
 const isSecondChanceStory = (item: Pick<NewsItem, 'tag'>) => item.tag === storyTag;
 const storyPath = (item: Pick<NewsItem, 'id'>) => `${storyDetailPrefix}${encodeURIComponent(item.id)}`;
+const newsTagLabel = (item: Pick<NewsItem, 'tag'>) => item.tag?.trim() || 'Aktuality projektu';
+const newsTagSlug = (item: Pick<NewsItem, 'tag'>) => slugifyPathSegment(newsTagLabel(item));
+const newsItemSlug = (item: Pick<NewsItem, 'id' | 'title' | 'slug'>) => slugifyPathSegment(item.slug || item.title || item.id);
+const newsPath = (item: Pick<NewsItem, 'id' | 'title' | 'slug' | 'tag'>) =>
+  isSecondChanceStory(item) ? storyPath(item) : `/aktuality/${newsTagSlug(item)}/${newsItemSlug(item)}`;
+const newsTagPath = (tag: string) => `/aktuality/${slugifyPathSegment(tag)}`;
+
+const newsTagOptions = [
+  'Aktuality projektu',
+  'JAILBREAK',
+  'RESET',
+  'REWORK',
+  'STREETWISE',
+  'BOD ZLOMU',
+  'STABILIZACE',
+  'Příběhy druhé šance',
+  'Události a konference',
+  'Partnerství',
+  'Data a výzkum',
+  'Metodika',
+  'Média a materiály',
+  'Transparentnost',
+  'Dobrovolnictví',
+  'Pracovní příležitosti',
+  'Komunita'
+];
 
 const mergeNewsItems = (fallbackItems: NewsItem[], apiItems: NewsItem[]) => {
   const byId = new Map<string, NewsItem>();
@@ -2638,73 +2678,60 @@ function ProgramPillarMap() {
 
 function NewsGrid({
   news,
-  discussion,
-  account,
-  onToggleLike,
-  onAddComment,
-  onUpdateComment,
-  onDeleteComment,
-  onNotify
+  discussion
 }: {
   news: NewsItem[];
   discussion: NewsDiscussion;
-  account: AuthAccount | null;
-  onToggleLike: (newsId: string) => Promise<void>;
-  onAddComment: (newsId: string, text: string, parentId?: string | null) => Promise<boolean>;
-  onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
-  onDeleteComment: (commentId: string) => Promise<void>;
-  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
   const [currentPage, setCurrentPage] = React.useState(0);
-  const itemsPerPage = 6;
+  const itemsPerPage = 3;
   const totalPages = Math.ceil(news.length / itemsPerPage);
   const startIdx = currentPage * itemsPerPage;
   const endIdx = startIdx + itemsPerPage;
   const currentItems = news.slice(startIdx, endIdx);
 
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [news]);
+
   return (
     <>
-      <div className="news-gallery">
+      <div className="news-gallery" aria-live="polite">
         {currentItems.map((item) => {
-          const isStory = isSecondChanceStory(item);
+          const itemHref = newsPath(item);
+          const commentCount = discussion.comments.filter((comment) => comment.newsId === item.id).length;
+          const commentLabel =
+            commentCount === 0
+              ? 'Žádné komentáře'
+              : commentCount === 1
+                ? '1 komentář'
+                : commentCount < 5
+                  ? `${commentCount} komentáře`
+                  : `${commentCount} komentářů`;
           return (
             <article key={item.id} className="news-gallery-card">
-              {item.imageUrl ? (
-                <div className="news-gallery-image">
+              <a className="news-gallery-image" href={itemHref} aria-label={`Otevřít aktualitu: ${item.title}`}>
+                {item.imageUrl ? (
                   <img src={item.imageUrl} alt={item.title} loading="lazy" />
-                </div>
-              ) : (
-                <div className="news-gallery-image-placeholder">
+                ) : (
+                  <span className="news-gallery-image-placeholder" aria-hidden="true">
                   <Newspaper size={48} opacity={0.3} />
-                </div>
-              )}
+                  </span>
+                )}
+              </a>
               <div className="news-gallery-content">
-                <div className="news-card-meta">
-                  {item.tag && <span className="news-tag">{item.tag}</span>}
-                  <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
-                </div>
-                <h3>{item.title}</h3>
+                <h3>
+                  <a href={itemHref}>{item.title}</a>
+                </h3>
                 <p className="news-excerpt">{item.excerpt}</p>
-                {isStory ? (
-                  <a className="story-detail-link" href={storyPath(item)}>
-                    Přečti více <ArrowRight size={16} />
-                  </a>
-                ) : item.body ? (
-                  <a className="story-detail-link" href={`#/aktualita/${encodeURIComponent(item.id)}`}>
-                    Přečti více <ArrowRight size={16} />
-                  </a>
-                ) : null}
-                <NewsDiscussionPanel
-                  item={item}
-                  discussion={discussion}
-                  account={account}
-                  onToggleLike={onToggleLike}
-                  onAddComment={onAddComment}
-                  onUpdateComment={onUpdateComment}
-                  onDeleteComment={onDeleteComment}
-                  onNotify={onNotify}
-                />
+                <a className="news-read-more" href={itemHref}>
+                  Přečíst více <span aria-hidden="true">»</span>
+                </a>
               </div>
+              <footer className="news-card-footer">
+                <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
+                <span>{commentLabel}</span>
+              </footer>
             </article>
           );
         })}
@@ -2718,7 +2745,7 @@ function NewsGrid({
             className="pagination-btn"
             aria-label="Předchozí strana"
           >
-            <ChevronLeft size={20} /> Předchozí
+            <ChevronLeft size={18} />
           </button>
 
           <div className="pagination-numbers">
@@ -2741,7 +2768,7 @@ function NewsGrid({
             className="pagination-btn"
             aria-label="Následující strana"
           >
-            Následující <ChevronLeft size={20} style={{ transform: 'scaleX(-1)' }} />
+            <ChevronLeft size={18} style={{ transform: 'scaleX(-1)' }} />
           </button>
         </div>
       )}
@@ -2955,6 +2982,71 @@ function NewsDiscussionPanel({
       )}
     </div>
   );
+}
+
+function useNewsSeo({ title, description, path, item }: { title: string; description: string; path: string; item?: NewsItem }) {
+  React.useEffect(() => {
+    const absoluteUrl = `${window.location.origin}${path}`;
+    const previousTitle = document.title;
+    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]') ?? document.createElement('link');
+    const canonicalWasCreated = !canonical.parentNode;
+    const previousCanonical = canonical.getAttribute('href');
+    if (canonicalWasCreated) {
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = absoluteUrl;
+    document.title = `${title} | RESTART Integrace`;
+
+    const changedMeta: Array<{ element: HTMLMetaElement; created: boolean; previous: string | null }> = [];
+    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
+      const meta = document.querySelector<HTMLMetaElement>(selector) ?? document.createElement('meta');
+      const created = !meta.parentNode;
+      changedMeta.push({ element: meta, created, previous: meta.getAttribute('content') });
+      if (created) {
+        meta.setAttribute(attribute, key);
+        document.head.appendChild(meta);
+      }
+      meta.content = content;
+    };
+
+    setMeta('meta[name="description"]', 'name', 'description', description);
+    setMeta('meta[property="og:title"]', 'property', 'og:title', title);
+    setMeta('meta[property="og:description"]', 'property', 'og:description', description);
+    setMeta('meta[property="og:url"]', 'property', 'og:url', absoluteUrl);
+    setMeta('meta[property="og:type"]', 'property', 'og:type', item ? 'article' : 'website');
+
+    const schemaId = 'news-structured-data';
+    document.getElementById(schemaId)?.remove();
+    if (item) {
+      const schema = document.createElement('script');
+      schema.id = schemaId;
+      schema.type = 'application/ld+json';
+      schema.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: item.title,
+        description: item.excerpt,
+        datePublished: item.date,
+        dateModified: item.date,
+        mainEntityOfPage: absoluteUrl,
+        image: item.imageUrl ? [new URL(item.imageUrl, window.location.origin).href] : undefined,
+        publisher: { '@type': 'Organization', name: 'RESTART Integrace', url: window.location.origin }
+      });
+      document.head.appendChild(schema);
+    }
+
+    return () => {
+      document.getElementById(schemaId)?.remove();
+      document.title = previousTitle;
+      if (canonicalWasCreated) canonical.remove();
+      else if (previousCanonical) canonical.href = previousCanonical;
+      changedMeta.forEach(({ element, created, previous }) => {
+        if (created) element.remove();
+        else if (previous !== null) element.content = previous;
+      });
+    };
+  }, [description, item, path, title]);
 }
 
 function HeroAutoScroll({ items }: { items: typeof heroAutoScrollItems }) {
@@ -3539,12 +3631,6 @@ function HomePage({
         <NewsGrid
           news={news.slice(0, 2)}
           discussion={discussion}
-          account={account}
-          onToggleLike={onToggleLike}
-          onAddComment={onAddComment}
-          onUpdateComment={onUpdateComment}
-          onDeleteComment={onDeleteComment}
-          onNotify={onNotify}
         />
       </section>
     </>
@@ -3798,8 +3884,9 @@ function NewsDetailPage({
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
   const isStory = isSecondChanceStory(item);
-  const backHref = isStory ? '/pribehy-druhe-sance' : '/aktuality';
-  const backLabel = isStory ? 'Zpět na příběhy' : 'Zpět na aktuality';
+  const backHref = isStory ? '/pribehy-druhe-sance' : newsTagPath(newsTagLabel(item));
+  const backLabel = isStory ? 'Zpět na příběhy' : `Zpět: ${newsTagLabel(item)}`;
+  useNewsSeo({ title: item.title, description: item.excerpt, path: newsPath(item), item });
   
   return (
     <>
@@ -3809,7 +3896,11 @@ function NewsDetailPage({
             <ChevronLeft size={18} /> {backLabel}
           </a>
           <div className="news-card-meta">
-            {item.tag && <span className="news-tag">{item.tag}</span>}
+            {item.tag && (
+              <a className="news-tag" href={isStory ? '/pribehy-druhe-sance' : newsTagPath(item.tag)}>
+                {item.tag}
+              </a>
+            )}
             <time dateTime={item.date}>{new Date(item.date).toLocaleDateString('cs-CZ')}</time>
           </div>
           <h1>{item.title}</h1>
@@ -3845,31 +3936,44 @@ function NewsDetailPage({
 function NewsPage({
   news,
   discussion,
-  account,
-  onToggleLike,
-  onAddComment,
-  onUpdateComment,
-  onDeleteComment,
-  onNotify,
-  storiesOnly = false
+  storiesOnly = false,
+  activeTagSlug = ''
 }: {
   news: NewsItem[];
   discussion: NewsDiscussion;
-  account: AuthAccount | null;
-  onToggleLike: (newsId: string) => Promise<void>;
-  onAddComment: (newsId: string, text: string, parentId?: string | null) => Promise<boolean>;
-  onUpdateComment: (commentId: string, text: string) => Promise<boolean>;
-  onDeleteComment: (commentId: string) => Promise<void>;
-  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
   storiesOnly?: boolean;
+  activeTagSlug?: string;
 }) {
-  const secondChanceStories = news.filter(isSecondChanceStory);
-  const displayedNews = storiesOnly ? secondChanceStories : news;
+  const sortedNews = [...news].sort((a, b) => {
+    const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+    return dateDiff || a.title.localeCompare(b.title, 'cs');
+  });
+  const secondChanceStories = sortedNews.filter(isSecondChanceStory);
+  const availableTags = Array.from(new Set(sortedNews.filter((item) => !isSecondChanceStory(item)).map(newsTagLabel))).sort((a, b) =>
+    a.localeCompare(b, 'cs')
+  );
+  const activeTag = activeTagSlug ? availableTags.find((tag) => slugifyPathSegment(tag) === activeTagSlug) : undefined;
+  const displayedNews = storiesOnly
+    ? secondChanceStories
+    : activeTag
+      ? sortedNews.filter((item) => !isSecondChanceStory(item) && newsTagSlug(item) === activeTagSlug)
+      : sortedNews;
+  const seoTitle = storiesOnly ? 'Příběhy druhé šance' : activeTag ? `Aktuality: ${activeTag}` : 'Aktuality';
+  const seoDescription = storiesOnly
+    ? 'Anonymizované příběhy lidí, kteří se vracejí do běžného života.'
+    : activeTag
+      ? `Novinky projektu RESTART Integrace v rubrice ${activeTag}.`
+      : 'Novinky z projektu, praxe, programů a komunitní spolupráce RESTART Integrace.';
+  useNewsSeo({
+    title: seoTitle,
+    description: seoDescription,
+    path: storiesOnly ? '/pribehy-druhe-sance' : activeTag ? newsTagPath(activeTag) : '/aktuality'
+  });
   return (
     <>
       <PageHeader
-        label={storiesOnly ? 'Příběhy druhé šance' : 'Aktuality'}
-        title={storiesOnly ? 'Skutečné příběhy bez bulváru' : 'Co se v projektu děje'}
+        label={storiesOnly ? 'Příběhy druhé šance' : activeTag || 'Aktuality'}
+        title={storiesOnly ? 'Skutečné příběhy bez bulváru' : activeTag ? `Aktuality: ${activeTag}` : 'Co se v projektu děje'}
         text={
           storiesOnly
             ? 'Anonymizované příběhy lidí, kteří se snaží vrátit do běžného života. Bez senzace, s respektem a důrazem na změnu.'
@@ -3877,6 +3981,23 @@ function NewsPage({
         }
       />
       <section className="content-section">
+        {!storiesOnly && availableTags.length > 0 && (
+          <nav className="news-tag-nav" aria-label="Rubriky aktualit">
+            <a className={!activeTag ? 'active' : ''} href="/aktuality" aria-current={!activeTag ? 'page' : undefined}>
+              Všechny
+            </a>
+            {availableTags.map((tag) => (
+              <a
+                key={tag}
+                className={tag === activeTag ? 'active' : ''}
+                href={newsTagPath(tag)}
+                aria-current={tag === activeTag ? 'page' : undefined}
+              >
+                {tag}
+              </a>
+            ))}
+          </nav>
+        )}
         {secondChanceStories.length > 0 && !storiesOnly && (
           <aside className="story-rubric-callout" aria-label="Rubrika Příběhy druhé šance">
             <span className="news-tag">Příběhy druhé šance</span>
@@ -3892,12 +4013,6 @@ function NewsPage({
         <NewsGrid
           news={displayedNews}
           discussion={discussion}
-          account={account}
-          onToggleLike={onToggleLike}
-          onAddComment={onAddComment}
-          onUpdateComment={onUpdateComment}
-          onDeleteComment={onDeleteComment}
-          onNotify={onNotify}
         />
       </section>
     </>
@@ -4136,7 +4251,7 @@ const buildSiteSearchEntries = (news: NewsItem[]) => {
     category: isSecondChanceStory(item) ? 'Příběh druhé šance' : 'Aktualita',
     title: item.title,
     excerpt: item.excerpt,
-    href: isSecondChanceStory(item) ? `${storyDetailPrefix}${encodeURIComponent(item.id)}` : `/aktualita/${encodeURIComponent(item.id)}`,
+    href: newsPath(item),
     searchableText: `${item.tag ?? ''} ${item.excerpt} ${item.body ?? ''}`
   }));
   const methodologyEntries = methodologyDownloads.map((download) => ({
@@ -7069,7 +7184,7 @@ function App() {
 
   React.useEffect(() => {
     const shouldLoadDiscussion =
-      currentPath === '/' || currentPath === '/aktuality' || currentPath === '/pribehy-druhe-sance' || currentPath.startsWith(storyDetailPrefix) || currentPath.startsWith('/aktualita/');
+      currentPath === '/' || currentPath.startsWith('/aktuality') || currentPath === '/pribehy-druhe-sance' || currentPath.startsWith(storyDetailPrefix) || currentPath.startsWith('/aktualita/');
     if (!shouldLoadDiscussion) return;
     return runWhenIdle(() => {
       refreshNewsDiscussion().catch(() => undefined);
@@ -7311,10 +7426,19 @@ React.useEffect(() => {
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
   const selectedStoryId = currentPath.startsWith(storyDetailPrefix) ? decodeURIComponent(currentPath.slice(storyDetailPrefix.length)) : '';
   const selectedStory = selectedStoryId ? news.find((item) => item.id === selectedStoryId && isSecondChanceStory(item)) : null;
-  
+
+  const newsRouteMatch = currentPath.match(/^\/aktuality\/([^/]+)(?:\/([^/]+))?$/);
+  const activeNewsTagSlug = newsRouteMatch?.[1] ? decodeURIComponent(newsRouteMatch[1]) : '';
+  const selectedNewsSlug = newsRouteMatch?.[2] ? decodeURIComponent(newsRouteMatch[2]) : '';
+  const selectedNewsBySlug = selectedNewsSlug
+    ? news.find(
+        (item) => !isSecondChanceStory(item) && newsTagSlug(item) === activeNewsTagSlug && newsItemSlug(item) === selectedNewsSlug
+      )
+    : null;
   const newsDetailPrefix = '/aktualita/';
   const selectedNewsId = currentPath.startsWith(newsDetailPrefix) ? decodeURIComponent(currentPath.slice(newsDetailPrefix.length)) : '';
-  const selectedNews = selectedNewsId ? news.find((item) => item.id === selectedNewsId && !isSecondChanceStory(item)) : null;
+  const selectedLegacyNews = selectedNewsId ? news.find((item) => item.id === selectedNewsId && !isSecondChanceStory(item)) : null;
+  const selectedNews = selectedNewsBySlug || selectedLegacyNews;
 
   const staticPage = staticPages[currentPath];
   const transparencyPublicDocuments = publicMediaFiles
@@ -7353,27 +7477,16 @@ React.useEffect(() => {
         onDeleteComment={deleteCommentViaApi}
         onNotify={notify}
       />
-    ) : currentPath === '/aktuality' ? (
+    ) : currentPath === '/aktuality' || (newsRouteMatch && !selectedNewsSlug) ? (
       <NewsPage
         news={news}
         discussion={newsDiscussion}
-        account={currentAccount}
-        onToggleLike={toggleLikeViaApi}
-        onAddComment={addCommentViaApi}
-        onUpdateComment={updateCommentViaApi}
-        onDeleteComment={deleteCommentViaApi}
-        onNotify={notify}
+        activeTagSlug={activeNewsTagSlug}
       />
     ) : currentPath === '/pribehy-druhe-sance' ? (
       <NewsPage
         news={news}
         discussion={newsDiscussion}
-        account={currentAccount}
-        onToggleLike={toggleLikeViaApi}
-        onAddComment={addCommentViaApi}
-        onUpdateComment={updateCommentViaApi}
-        onDeleteComment={deleteCommentViaApi}
-        onNotify={notify}
         storiesOnly
       />
     ) : currentPath === '/zapojeni' || currentPath === '/darovat' ? (
@@ -7603,10 +7716,11 @@ function AdminWorkspace({
   const [newsForm, setNewsForm] = React.useState<NewsItem>({
     id: '',
     title: '',
+    slug: '',
     date: todayIso(),
     excerpt: '',
     body: '',
-    tag: '',
+    tag: 'Aktuality projektu',
     imageUrl: ''
   });
   const [isNewsDialogOpen, setIsNewsDialogOpen] = React.useState(false);
@@ -8143,10 +8257,11 @@ function AdminWorkspace({
       item ?? {
         id: '',
         title: '',
+        slug: '',
         date: todayIso(),
         excerpt: '',
         body: '',
-        tag: '',
+        tag: 'Aktuality projektu',
         imageUrl: ''
       }
     );
@@ -8261,9 +8376,10 @@ function AdminWorkspace({
     let nextItem: NewsItem = {
       ...newsForm,
       id,
+      slug: slugifyPathSegment(newsForm.slug || newsForm.title),
       date: newsForm.date || todayIso(),
       body: cleanNewsHtml(newsForm.body || '', newsForm.title || 'Obrázek k aktualitě'),
-      tag: newsForm.tag?.trim() || ''
+      tag: newsForm.tag?.trim() || 'Aktuality projektu'
     };
     if (onNewsSaveRequest) {
       try {
@@ -10245,7 +10361,17 @@ function AdminWorkspace({
                   <div className="editor-fields">
                     <label>
                       Nadpis
-                      <input value={newsForm.title} onChange={(event) => setNewsForm((current) => ({ ...current, title: event.target.value }))} required />
+                      <input
+                        value={newsForm.title}
+                        onChange={(event) =>
+                          setNewsForm((current) => {
+                            const title = event.target.value;
+                            const shouldRefreshSlug = !current.slug || current.slug === slugifyPathSegment(current.title);
+                            return { ...current, title, slug: shouldRefreshSlug ? slugifyPathSegment(title) : current.slug };
+                          })
+                        }
+                        required
+                      />
                     </label>
                     <label>
                       Datum
@@ -10253,17 +10379,28 @@ function AdminWorkspace({
                     </label>
                     <label>
                       Rubrika / tag
-                      <input
+                      <select
                         value={newsForm.tag || ''}
                         onChange={(event) => setNewsForm((current) => ({ ...current, tag: event.target.value }))}
-                        placeholder="Příběhy druhé šance"
-                        list="news-tag-options"
+                        required
+                      >
+                        {newsForm.tag && !newsTagOptions.includes(newsForm.tag) && <option value={newsForm.tag}>{newsForm.tag}</option>}
+                        {newsTagOptions.map((tag) => (
+                          <option key={tag} value={tag}>{tag}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      URL název stránky
+                      <input
+                        value={newsForm.slug || ''}
+                        onChange={(event) => setNewsForm((current) => ({ ...current, slug: slugifyPathSegment(event.target.value) }))}
+                        placeholder="nazev-aktuality"
+                        required
                       />
-                      <datalist id="news-tag-options">
-                        <option value="Příběhy druhé šance" />
-                        <option value="JAILBREAK" />
-                        <option value="Aktuality" />
-                      </datalist>
+                      <small className="news-url-preview">
+                        {newsPath({ ...newsForm, slug: newsForm.slug || newsForm.title })}
+                      </small>
                     </label>
                     <div className="editor-full field-stack">
                       <label>

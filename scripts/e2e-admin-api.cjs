@@ -393,12 +393,14 @@ async function requestRaw(path, options = {}) {
     }
     duplicateClientId = null;
     const newsTitle = `Aktualita databaze ${stamp}`;
+    const newsSlug = `aktualita-databaze-${stamp}`;
     const createdNews = await request('/api/news', {
       method: 'POST',
       headers: { cookie },
       body: JSON.stringify({
         title: newsTitle,
-        tag: 'Příběhy druhé šance',
+        slug: newsSlug,
+        tag: 'JAILBREAK',
         date: '2026-06-03',
         excerpt: 'Aktualita založená přes admin API test.',
         body: '<p>Testovací tělo aktuality.</p>'
@@ -407,12 +409,13 @@ async function requestRaw(path, options = {}) {
     if (
       !createdNews.response.ok ||
       createdNews.body.news.title !== newsTitle ||
+      createdNews.body.news.slug !== newsSlug ||
       !createdNews.body.news.body.includes('Testovací tělo')
     ) {
       throw new Error(`News creation failed: ${JSON.stringify(createdNews.body)}`);
     }
     const newsTagsSupported = Object.prototype.hasOwnProperty.call(createdNews.body.news, 'tag');
-    if (newsTagsSupported && createdNews.body.news.tag !== 'Příběhy druhé šance') {
+    if (newsTagsSupported && createdNews.body.news.tag !== 'JAILBREAK') {
       throw new Error(`News tag was not persisted: ${JSON.stringify(createdNews.body)}`);
     }
     createdNewsId = createdNews.body.news.id;
@@ -421,10 +424,16 @@ async function requestRaw(path, options = {}) {
     if (
       !publicNews.response.ok ||
       !publicNews.body.news.some(
-        (item) => item.id === createdNews.body.news.id && (!newsTagsSupported || item.tag === 'Příběhy druhé šance')
+        (item) => item.id === createdNews.body.news.id && item.slug === newsSlug && (!newsTagsSupported || item.tag === 'JAILBREAK')
       )
     ) {
       throw new Error(`Created news is missing from public news list: ${JSON.stringify(publicNews.body)}`);
+    }
+
+    const newsSitemap = await requestRaw('/api/sitemap/news.xml');
+    const newsSitemapXml = await newsSitemap.text();
+    if (!newsSitemap.ok || !newsSitemapXml.includes(`/aktuality/jailbreak/${newsSlug}`)) {
+      throw new Error(`Dynamic news sitemap is missing the created article: ${newsSitemapXml.slice(0, 500)}`);
     }
 
     const deletedNews = await request(`/api/news/${encodeURIComponent(createdNewsId)}`, {

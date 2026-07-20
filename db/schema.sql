@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS form_submissions (
 CREATE TABLE IF NOT EXISTS news (
   id CHAR(36) PRIMARY KEY,
   title VARCHAR(220) NOT NULL,
+  slug VARCHAR(220) NULL,
   tag VARCHAR(80) NULL,
   excerpt TEXT NOT NULL,
   body MEDIUMTEXT NULL,
@@ -158,7 +159,8 @@ CREATE TABLE IF NOT EXISTS news (
 
 ALTER TABLE news
   ADD COLUMN IF NOT EXISTS tag VARCHAR(80) NULL AFTER title,
-  ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL AFTER title;
+  ADD COLUMN IF NOT EXISTS image_url VARCHAR(500) NULL AFTER title,
+  ADD COLUMN IF NOT EXISTS slug VARCHAR(220) NULL AFTER title;
 
 INSERT INTO news (id, title, tag, excerpt, body, published_at, status, author_id)
 VALUES (

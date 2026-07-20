@@ -29,6 +29,15 @@ function sendJson(response, statusCode, body, headers = {}) {
   response.end(JSON.stringify(body));
 }
 
+function sendXml(response, statusCode, body, headers = {}) {
+  response.writeHead(statusCode, {
+    'content-type': 'application/xml; charset=utf-8',
+    'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
+    ...headers
+  });
+  response.end(body);
+}
+
 function sendRedirect(response, location, headers = {}) {
   response.writeHead(302, {
     location,
@@ -50,6 +59,83 @@ function sendPdf(response, statusCode, buffer, fileName) {
 
 function isUnknownColumnError(error) {
   return error && (error.code === 'ER_BAD_FIELD_ERROR' || error.errno === 1054);
+}
+
+const publicSiteUrl = String(process.env.PUBLIC_SITE_URL || 'https://restartintegrace.dk-i.cz').replace(/\/$/, '');
+const secondChanceStoryTag = 'Příběhy druhé šance';
+const builtInNewsSitemapRows = [
+  {
+    id: 'news-brozury-druhe-sance',
+    title: 'Nové brožury REST||ART Integrace jsou veřejně ke stažení',
+    tag: 'Média a materiály',
+    date: '2026-06-26'
+  },
+  {
+    id: 'news-second-chance',
+    title: 'Ne každý má možnosti. REST||ART umožňuje zkusit to znovu.',
+    tag: 'Aktuality projektu',
+    date: '2026-06-03'
+  },
+  {
+    id: 'news-meeting-support',
+    title: '28.05.2026 - 10:00 schůzka',
+    tag: 'Aktuality projektu',
+    date: '2026-05-28'
+  },
+  {
+    id: 'news-people-on-edge',
+    title: 'Lidé na okraji společnosti',
+    tag: 'Aktuality projektu',
+    date: '2026-05-13'
+  }
+];
+
+function slugifyPathSegment(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\|\|/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'aktualita';
+}
+
+function publicNewsRow(row) {
+  const { image_url: imageUrlFromDatabase, ...rest } = row;
+  return {
+    ...rest,
+    slug: slugifyPathSegment(row.slug || row.title || row.id),
+    imageUrl: row.imageUrl || imageUrlFromDatabase || ''
+  };
+}
+
+function newsPublicPath(row) {
+  if (row.tag === secondChanceStoryTag) return `/pribehy-druhe-sance/${encodeURIComponent(row.id)}`;
+  return `/aktuality/${slugifyPathSegment(row.tag || 'Aktuality projektu')}/${slugifyPathSegment(row.slug || row.title || row.id)}`;
+}
+
+function escapeXml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+async function uniqueNewsSlug(requestedSlug, title, id) {
+  const base = slugifyPathSegment(requestedSlug || title);
+  let candidate = base;
+  let suffix = 2;
+  try {
+    while ((await query('SELECT id FROM news WHERE slug = ? AND id <> ? LIMIT 1', [candidate, id])).length > 0) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+    }
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+  }
+  return candidate;
 }
 
 const publicRoot = path.resolve(__dirname, '..', 'public');
@@ -598,23 +684,87 @@ async function listNews(_request, response) {
   let rows;
   try {
     rows = await query(
-      `SELECT id, title, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+      `SELECT id, title, slug, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
        FROM news
        WHERE status = 'published'
        ORDER BY published_at DESC, created_at DESC
-       LIMIT 50`
+       LIMIT 500`
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    try {
+      rows = await query(
+        `SELECT id, title, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+         FROM news
+         WHERE status = 'published'
+         ORDER BY published_at DESC, created_at DESC
+         LIMIT 500`
+      );
+    } catch (legacyError) {
+      if (!isUnknownColumnError(legacyError)) throw legacyError;
+      rows = await query(
+        `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+         FROM news
+         WHERE status = 'published'
+         ORDER BY published_at DESC, created_at DESC
+         LIMIT 500`
+      );
+    }
+  }
+  sendJson(response, 200, { news: rows.map(publicNewsRow) });
+}
+
+async function newsSitemap(_request, response) {
+  let rows;
+  try {
+    rows = await query(
+      `SELECT id, title, slug, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date
+       FROM news
+       WHERE status = 'published'
+       ORDER BY published_at DESC, created_at DESC
+       LIMIT 5000`
     );
   } catch (error) {
     if (!isUnknownColumnError(error)) throw error;
     rows = await query(
-      `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+      `SELECT id, title, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date
        FROM news
        WHERE status = 'published'
        ORDER BY published_at DESC, created_at DESC
-       LIMIT 50`
+       LIMIT 5000`
     );
   }
-  sendJson(response, 200, { news: rows });
+
+  const itemByPath = new Map();
+  [...builtInNewsSitemapRows, ...rows].map(publicNewsRow).forEach((item) => itemByPath.set(newsPublicPath(item), item));
+  const items = Array.from(itemByPath.values()).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const tagEntries = new Map();
+  for (const item of items) {
+    if (item.tag === secondChanceStoryTag) continue;
+    const path = `/aktuality/${slugifyPathSegment(item.tag || 'Aktuality projektu')}`;
+    const previousDate = tagEntries.get(path);
+    if (!previousDate || item.date > previousDate) tagEntries.set(path, item.date);
+  }
+  const urls = [
+    { path: '/aktuality', date: items[0]?.date || new Date().toISOString().slice(0, 10) },
+    ...Array.from(tagEntries, ([path, date]) => ({ path, date })),
+    ...items.map((item) => ({ path: newsPublicPath(item), date: item.date }))
+  ];
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map(
+    (entry) => `  <url>
+    <loc>${escapeXml(`${publicSiteUrl}${entry.path}`)}</loc>
+    <lastmod>${escapeXml(entry.date)}</lastmod>
+    <changefreq>${entry.path === '/aktuality' ? 'daily' : 'weekly'}</changefreq>
+    <priority>${entry.path === '/aktuality' ? '0.8' : '0.7'}</priority>
+  </url>`
+  )
+  .join('\n')}
+</urlset>
+`;
+  sendXml(response, 200, xml);
 }
 
 async function saveNews(request, response) {
@@ -633,12 +783,14 @@ async function saveNews(request, response) {
   const date = String(body.date || '').trim() || new Date().toISOString().slice(0, 10);
   const tag = String(body.tag || '').trim() || null;
   const imageUrl = String(body.imageUrl || '').trim() || null;
+  const slug = await uniqueNewsSlug(body.slug, body.title, id);
   try {
     await query(
-      `INSERT INTO news (id, title, tag, image_url, excerpt, body, published_at, status, author_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?)
+      `INSERT INTO news (id, title, slug, tag, image_url, excerpt, body, published_at, status, author_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'published', ?)
        ON DUPLICATE KEY UPDATE
          title = VALUES(title),
+         slug = VALUES(slug),
          tag = VALUES(tag),
          image_url = VALUES(image_url),
          excerpt = VALUES(excerpt),
@@ -646,27 +798,45 @@ async function saveNews(request, response) {
          published_at = VALUES(published_at),
          status = 'published',
          author_id = VALUES(author_id)`,
-      [id, body.title.trim(), tag, imageUrl, body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
+      [id, body.title.trim(), slug, tag, imageUrl, body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
     );
   } catch (error) {
     if (!isUnknownColumnError(error)) throw error;
-    await query(
-      `INSERT INTO news (id, title, excerpt, body, published_at, status, author_id)
-       VALUES (?, ?, ?, ?, ?, 'published', ?)
-       ON DUPLICATE KEY UPDATE
-         title = VALUES(title),
-         excerpt = VALUES(excerpt),
-         body = VALUES(body),
-         published_at = VALUES(published_at),
-         status = 'published',
-         author_id = VALUES(author_id)`,
-      [id, body.title.trim(), body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
-    );
+    try {
+      await query(
+        `INSERT INTO news (id, title, tag, image_url, excerpt, body, published_at, status, author_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?)
+         ON DUPLICATE KEY UPDATE
+           title = VALUES(title),
+           tag = VALUES(tag),
+           image_url = VALUES(image_url),
+           excerpt = VALUES(excerpt),
+           body = VALUES(body),
+           published_at = VALUES(published_at),
+           status = 'published',
+           author_id = VALUES(author_id)`,
+        [id, body.title.trim(), tag, imageUrl, body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
+      );
+    } catch (legacyError) {
+      if (!isUnknownColumnError(legacyError)) throw legacyError;
+      await query(
+        `INSERT INTO news (id, title, excerpt, body, published_at, status, author_id)
+         VALUES (?, ?, ?, ?, ?, 'published', ?)
+         ON DUPLICATE KEY UPDATE
+           title = VALUES(title),
+           excerpt = VALUES(excerpt),
+           body = VALUES(body),
+           published_at = VALUES(published_at),
+           status = 'published',
+           author_id = VALUES(author_id)`,
+        [id, body.title.trim(), body.excerpt.trim(), body.body || null, `${date} 00:00:00`, user.id]
+      );
+    }
   }
   let rows;
   try {
     rows = await query(
-      `SELECT id, title, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+      `SELECT id, title, slug, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
        FROM news
        WHERE id = ?
        LIMIT 1`,
@@ -674,15 +844,26 @@ async function saveNews(request, response) {
     );
   } catch (error) {
     if (!isUnknownColumnError(error)) throw error;
-    rows = await query(
-      `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
-       FROM news
-       WHERE id = ?
-       LIMIT 1`,
-      [id]
-    );
+    try {
+      rows = await query(
+        `SELECT id, title, tag, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+         FROM news
+         WHERE id = ?
+         LIMIT 1`,
+        [id]
+      );
+    } catch (legacyError) {
+      if (!isUnknownColumnError(legacyError)) throw legacyError;
+      rows = await query(
+        `SELECT id, title, DATE_FORMAT(published_at, '%Y-%m-%d') AS date, excerpt, body
+         FROM news
+         WHERE id = ?
+         LIMIT 1`,
+        [id]
+      );
+    }
   }
-  sendJson(response, 200, { news: rows[0] });
+  sendJson(response, 200, { news: publicNewsRow(rows[0]) });
 }
 
 async function deleteNews(request, response, newsId) {
@@ -2526,6 +2707,7 @@ async function createApp(request, response) {
     if (request.method === 'GET' && url.pathname === '/api/applications/me') return await listMyProjectApplications(request, response);
     if (request.method === 'POST' && url.pathname === '/api/applications') return await submitProjectApplication(request, response);
     if (request.method === 'GET' && url.pathname === '/api/public/jailbreak-background-stats') return await publicJailbreakBackgroundStats(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/sitemap/news.xml') return await newsSitemap(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news') return await listNews(request, response);
     if (request.method === 'POST' && url.pathname === '/api/news') return await saveNews(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news/discussion') return await listNewsDiscussion(request, response);

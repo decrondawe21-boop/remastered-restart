@@ -14,6 +14,7 @@ export type ApiUser = {
 export type ApiNewsItem = {
   id: string;
   title: string;
+  slug?: string;
   date: string;
   excerpt: string;
   body?: string;

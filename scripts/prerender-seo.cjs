@@ -829,6 +829,10 @@ const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
     <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
+    <loc>${baseUrl}/sitemap-news.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
     <loc>${baseUrl}/sitemap-documents.xml</loc>
     <lastmod>${today}</lastmod>
   </sitemap>

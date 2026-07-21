@@ -63,28 +63,37 @@ a{color:inherit}
 .hero-text,.hero-program-motto{max-width:620px;margin:0 0 18px;font-size:clamp(1rem,2vw,1.35rem)}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
 .seo-document-snapshot{max-width:1120px;margin:0 auto;padding:56px var(--page-gutter) 96px}.seo-document-snapshot header{max-width:860px;margin-bottom:44px}.seo-document-snapshot h1{margin:0 0 18px;color:var(--green-dark);font-size:clamp(2.25rem,5vw,4.5rem);line-height:1.04}.seo-document-snapshot h2{margin:52px 0 18px;color:var(--green-dark);font-size:clamp(1.55rem,3vw,2.25rem)}.seo-document-snapshot h3{margin:30px 0 12px;color:var(--green-dark)}.seo-document-snapshot p,.seo-document-snapshot li,.seo-document-snapshot dd{max-width:82ch}.seo-document-snapshot blockquote{margin:28px 0;padding:20px 24px;border-left:4px solid var(--gold);background:var(--bg-soft)}.seo-document-snapshot dt{margin-top:24px;color:var(--green-dark);font-weight:800}.seo-document-snapshot dd{margin:6px 0 0}.seo-document-snapshot-download{display:inline-flex;margin-top:18px;padding:12px 16px;border-radius:8px;background:var(--green);color:#fff;text-decoration:none;font-weight:700}
+.seo-video-watch-snapshot{max-width:1440px;margin:0 auto;padding:42px var(--page-gutter) 90px}.seo-video-watch-snapshot header{max-width:960px;margin-bottom:26px}.seo-video-watch-snapshot h1{margin:0 0 14px;color:var(--green-dark);font-size:clamp(2.25rem,5vw,4.8rem);line-height:1.02}.seo-video-watch-snapshot video{display:block;width:100%;max-height:calc(100vh - 240px);aspect-ratio:16/9;background:#050806;object-fit:contain}.seo-video-watch-snapshot footer{max-width:780px;padding-top:28px}
 @media(max-width:760px){.site-header{padding:12px 18px}.brand img{width:174px}.desktop-nav{display:none}.menu-button{display:inline-flex}.hero{padding:18px}.hero-banner{min-height:520px;border-radius:22px}.hero-banner-overlay{padding:28px}.hero-banner-overlay h1{font-size:clamp(2.6rem,16vw,4.5rem)}}
 `.trim();
 const videoAssets = [
   {
-    routes: ['/'],
+    id: 'predstaveni-projektu',
+    watchPath: '/videa/predstaveni-projektu',
     name: 'RESTART Integrace - krátké představení projektu',
     description:
       'Krátké video představující RESTART Integrace jako projekt druhých šancí, praktické podpory a návratu lidí do života.',
-    thumbnailUrl: `${baseUrl}/images/video/rest-art-intro-preview-strip-v1.jpg`,
+    thumbnailUrl: `${baseUrl}/videos/rest-art-intro-poster.png`,
     contentUrl: `${baseUrl}/videos/rest-art-intro-z-podkladu-v1-720p.mp4`,
-    embedUrl: `${baseUrl}/#projektove-video`,
     uploadDate: '2026-06-23',
+    duration: 'PT15S',
+    durationSeconds: 15,
+    width: 1280,
+    height: 720,
     familyFriendly: true
   },
   {
-    routes: ['/'],
+    id: 'logo-reveal',
+    watchPath: '/videa/logo-reveal',
     name: 'RESTART Integrace - logo reveal',
     description: 'Logo animace RESTART Integrace pro veřejnou prezentaci projektu druhých šancí.',
-    thumbnailUrl: `${baseUrl}/videos/restart-logo-reveal-poster.webp`,
+    thumbnailUrl: `${baseUrl}/videos/restart-logo-reveal-poster.png`,
     contentUrl: `${baseUrl}/videos/restart-logo-reveal.mp4`,
-    embedUrl: `${baseUrl}/#projektove-video`,
     uploadDate: '2026-06-23',
+    duration: 'PT6S',
+    durationSeconds: 6,
+    width: 1920,
+    height: 1080,
     familyFriendly: true
   }
 ];
@@ -126,6 +135,19 @@ const methodologyDocumentRoutes = methodologyDocuments.map((document) => ({
   priority: document.id === 'slovnik-pojmu' ? '0.76' : '0.72',
   changefreq: 'monthly',
   methodologyDocumentId: document.id
+}));
+
+const videoWatchRoutes = videoAssets.map((video) => ({
+  path: video.watchPath,
+  title: `${video.name} | RESTART Integrace`,
+  description: video.description,
+  keywords:
+    video.id === 'predstaveni-projektu'
+      ? 'RESTART Integrace video, představení projektu, druhá šance, sociální reintegrace, návrat do života'
+      : 'REST ART Integrace logo reveal, RESTART Integrace video, vizuální identita, projekt druhých šancí',
+  priority: '0.72',
+  changefreq: 'monthly',
+  videoId: video.id
 }));
 
 const routes = [
@@ -283,6 +305,7 @@ const routes = [
     priority: '0.5',
     changefreq: 'monthly'
   },
+  ...videoWatchRoutes,
   {
     path: '/webove-gdpr',
     title: 'Webové GDPR | RESTART Integrace',
@@ -340,6 +363,8 @@ function routeUrl(routePath) {
 }
 
 function routeOgImage(route) {
+  const video = videoAssets.find((item) => item.id === route.videoId);
+  if (video) return video.thumbnailUrl;
   return routeOgImages[route.path] || ogImage;
 }
 
@@ -371,6 +396,8 @@ function routeLabel(routePath) {
   if (story) return story.articleHeadline;
   const methodologyDocument = methodologyDocuments.find((item) => item.path === routePath);
   if (methodologyDocument) return methodologyDocument.shortTitle;
+  const video = videoAssets.find((item) => item.watchPath === routePath);
+  if (video) return video.name;
   return labels[routePath] || routePath.replace(/^\//, '').replace(/-/g, ' ');
 }
 
@@ -589,7 +616,7 @@ function deferRenderBlockingCss(html) {
 }
 
 function structuredData(route, canonical) {
-  const routeVideos = videoAssets.filter((video) => video.routes.includes(route.path));
+  const routeVideos = videoAssets.filter((video) => video.watchPath === route.path);
   const currentOgImage = routeOgImage(route);
 
   return {
@@ -663,10 +690,16 @@ function structuredData(route, canonical) {
         description: video.description,
         thumbnailUrl: [video.thumbnailUrl],
         uploadDate: video.uploadDate,
+        duration: video.duration,
         contentUrl: video.contentUrl,
-        embedUrl: video.embedUrl,
+        width: video.width,
+        height: video.height,
         inLanguage: 'cs-CZ',
         isFamilyFriendly: video.familyFriendly,
+        isAccessibleForFree: true,
+        mainEntityOfPage: {
+          '@id': `${canonical}#webpage`
+        },
         publisher: {
           '@id': `${baseUrl}/#organization`
         }
@@ -714,9 +747,30 @@ function renderMethodologyDocumentSnapshot(document) {
   </main>`;
 }
 
+function renderVideoWatchSnapshot(video) {
+  return `<main class="seo-video-watch-snapshot" data-seo-snapshot="video-watch-page">
+    <header>
+      <p class="section-label">Oficiální video projektu</p>
+      <h1>${escapeHtml(video.name)}</h1>
+      <p>${escapeHtml(video.description)}</p>
+    </header>
+    <video controls preload="metadata" poster="${escapeHtml(video.thumbnailUrl)}" width="${video.width}" height="${
+      video.height
+    }" aria-label="${escapeHtml(video.name)}">
+      <source src="${escapeHtml(video.contentUrl)}" type="video/mp4" />
+      Váš prohlížeč neumí přehrát toto video.
+    </video>
+    <footer>
+      <p>Video je součástí veřejné prezentace projektu RESTART Integrace.</p>
+      <a href="/">Zpět na úvod projektu</a>
+    </footer>
+  </main>`;
+}
+
 function renderRoute(route) {
   const canonical = routeUrl(route.path);
   const currentOgImage = routeOgImage(route);
+  const currentVideo = videoAssets.find((video) => video.id === route.videoId);
   let html = template;
   html = replaceTag(html, /<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(route.title)}</title>`);
   html = replaceTag(
@@ -742,6 +796,11 @@ function renderRoute(route) {
   );
   html = replaceTag(html, /<link\s+rel="canonical"\s+href="[^"]*"\s*\/>/, `<link rel="canonical" href="${canonical}" />`);
   html = replaceTag(html, /<meta\s+property="og:site_name"\s+content="[^"]*"\s*\/>/, `<meta property="og:site_name" content="${officialName}" />`);
+  html = replaceTag(
+    html,
+    /<meta\s+property="og:type"\s+content="[^"]*"\s*\/>/,
+    `<meta property="og:type" content="${currentVideo ? 'video.other' : 'website'}" />`
+  );
   html = replaceTag(html, /<meta\s+property="og:title"\s+content="[^"]*"\s*\/>/, `<meta property="og:title" content="${escapeHtml(route.title)}" />`);
   html = replaceTag(
     html,
@@ -776,9 +835,22 @@ function renderRoute(route) {
     /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(structuredData(route, canonical), null, 6)}\n    </script>`
   );
+  if (currentVideo) {
+    html = html.replace(
+      '</head>',
+      `    <meta property="og:video" content="${currentVideo.contentUrl}" />
+    <meta property="og:video:secure_url" content="${currentVideo.contentUrl}" />
+    <meta property="og:video:type" content="video/mp4" />
+    <meta property="og:video:width" content="${currentVideo.width}" />
+    <meta property="og:video:height" content="${currentVideo.height}" />
+  </head>`
+    );
+  }
   const methodologyDocument = methodologyDocuments.find((item) => item.id === route.methodologyDocumentId);
   if (methodologyDocument) {
     html = html.replace('<div id="root"></div>', `<div id="root">${renderMethodologyDocumentSnapshot(methodologyDocument)}</div>`);
+  } else if (currentVideo) {
+    html = html.replace('<div id="root"></div>', `<div id="root">${renderVideoWatchSnapshot(currentVideo)}</div>`);
   }
   return ensureGoogleTag(deferRenderBlockingCss(html));
 }
@@ -803,12 +875,14 @@ const donateSitemapRoutes = sitemapRoutes.filter((route) => route.path === '/zap
 const methodologySitemapRoutes = sitemapRoutes.filter(
   (route) => route.path === '/metodika' || route.path.startsWith('/metodika/')
 );
+const videoWatchSitemapRoutes = sitemapRoutes.filter((route) => route.path.startsWith('/videa/'));
 const pageSitemapRoutes = sitemapRoutes.filter(
   (route) =>
     !programSitemapRoutes.includes(route) &&
     !storySitemapRoutes.includes(route) &&
     !donateSitemapRoutes.includes(route) &&
-    !methodologySitemapRoutes.includes(route)
+    !methodologySitemapRoutes.includes(route) &&
+    !videoWatchSitemapRoutes.includes(route)
 );
 
 function renderRouteSitemap(routeList) {
@@ -911,21 +985,19 @@ const sitemapMedia = renderFileSitemap(mediaEntries);
 const sitemapVideos = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
 ${videoAssets
-  .flatMap((video) =>
-    video.routes.map(
-      (routePath) => `  <url>
-    <loc>${routeUrl(routePath)}</loc>
+  .map(
+    (video) => `  <url>
+    <loc>${routeUrl(video.watchPath)}</loc>
     <video:video>
       <video:thumbnail_loc>${escapeXml(video.thumbnailUrl)}</video:thumbnail_loc>
       <video:title>${escapeXml(video.name)}</video:title>
       <video:description>${escapeXml(video.description)}</video:description>
       <video:content_loc>${escapeXml(video.contentUrl)}</video:content_loc>
-      <video:player_loc>${escapeXml(video.embedUrl)}</video:player_loc>
       <video:publication_date>${video.uploadDate}</video:publication_date>
+      <video:duration>${video.durationSeconds}</video:duration>
       <video:family_friendly>${video.familyFriendly ? 'yes' : 'no'}</video:family_friendly>
     </video:video>
   </url>`
-    )
   )
   .join('\n')}
 </urlset>
@@ -982,7 +1054,7 @@ fs.writeFileSync(path.join(distDir, 'sitemap-media.xml'), sitemapMedia);
 fs.writeFileSync(path.join(distDir, 'sitemap-donate.xml'), sitemapDonate);
 fs.writeFileSync(path.join(distDir, 'sitemap-videos.xml'), sitemapVideos);
 console.log(
-  `Prerendered SEO HTML for ${routes.length} routes. Sitemap segments: pages=${pageSitemapRoutes.length}, programs=${programSitemapRoutes.length}, stories=${storySitemapRoutes.length}, methodology=${methodologySitemapRoutes.length}, documents=${documentEntries.length}, media=${mediaEntries.length}, donate=${donateSitemapRoutes.length}, videos=${videoAssets.length}.`
+  `Prerendered SEO HTML for ${routes.length} routes. Sitemap segments: pages=${pageSitemapRoutes.length}, programs=${programSitemapRoutes.length}, stories=${storySitemapRoutes.length}, methodology=${methodologySitemapRoutes.length}, documents=${documentEntries.length}, media=${mediaEntries.length}, donate=${donateSitemapRoutes.length}, videos=${videoWatchSitemapRoutes.length}.`
 );
 
 

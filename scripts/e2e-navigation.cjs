@@ -77,6 +77,32 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error('Methodology glossary should link to its source DOCX file.');
   }
 
+  await page.goto(`${baseUrl}/videa/predstaveni-projektu`, { waitUntil: 'networkidle' });
+  await page.getByRole('heading', { name: 'RESTART Integrace: krátké představení projektu', level: 1 }).waitFor();
+  const watchVideo = page.locator('.video-watch-page video');
+  if ((await watchVideo.count()) !== 1) {
+    throw new Error('A watch page must contain exactly one primary video player.');
+  }
+  const watchVideoSource = await watchVideo.locator('source').getAttribute('src');
+  if (watchVideoSource !== '/videos/rest-art-intro-z-podkladu-v1-720p.mp4') {
+    throw new Error(`Unexpected watch page video source: ${watchVideoSource}`);
+  }
+  const videoPosition = await watchVideo.evaluate((element) => ({
+    top: element.getBoundingClientRect().top,
+    viewportHeight: window.innerHeight
+  }));
+  if (videoPosition.top >= videoPosition.viewportHeight) {
+    throw new Error(`Primary video is below the first viewport: ${JSON.stringify(videoPosition)}`);
+  }
+  const videoCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+  if (!videoCanonical?.endsWith('/videa/predstaveni-projektu')) {
+    throw new Error(`Video watch page canonical URL mismatch: ${videoCanonical}`);
+  }
+  const videoSchema = await page.locator('#video-watch-structured-data').textContent();
+  if (!videoSchema?.includes('VideoObject') || !videoSchema.includes('rest-art-intro-z-podkladu-v1-720p.mp4')) {
+    throw new Error('Video watch page is missing matching VideoObject structured data.');
+  }
+
   await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'Co se v projektu děje', level: 1 }).waitFor();
   if ((await page.locator('.news-gallery-card').count()) < 3) {

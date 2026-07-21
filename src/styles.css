@@ -477,6 +477,10 @@ img {
   font-size: 1.02rem;
 }
 
+.project-video-copy .button {
+  margin-top: 8px;
+}
+
 .project-video-frame {
   margin: 0;
   border: 1px solid rgba(40, 122, 63, 0.24);
@@ -1874,6 +1878,154 @@ h3 {
 .project-reveal-card figcaption svg {
   flex: 0 0 auto;
   color: var(--gold);
+}
+
+.project-reveal-card figcaption span,
+.project-reveal-card figcaption a {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.project-reveal-card figcaption a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.project-reveal-card figcaption a:hover,
+.project-reveal-card figcaption a:focus-visible {
+  color: #f5d97d;
+}
+
+.video-watch-page {
+  display: grid;
+  gap: clamp(24px, 4vw, 46px);
+  padding-top: clamp(28px, 4vw, 52px);
+}
+
+.video-watch-header {
+  display: grid;
+  max-width: 1080px;
+}
+
+.video-watch-header > div:first-child {
+  display: grid;
+  gap: 12px;
+  max-width: 1000px;
+}
+
+.video-watch-header h1 {
+  max-width: 980px;
+  margin: 0;
+  color: var(--green-dark);
+  font-size: clamp(2.2rem, 5vw, 4.8rem);
+  letter-spacing: 0;
+  line-height: 1.02;
+}
+
+.video-watch-description dl {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 24px;
+  justify-content: start;
+  margin: 18px 0 0;
+}
+
+.video-watch-description dl div {
+  display: grid;
+  gap: 4px;
+}
+
+.video-watch-description dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+}
+
+.video-watch-description dd {
+  margin: 0;
+  color: var(--green-dark);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.video-watch-player {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 250px);
+  aspect-ratio: 16 / 9;
+  background: #050806;
+  object-fit: contain;
+}
+
+.video-watch-support {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.65fr) auto;
+  gap: clamp(24px, 4vw, 52px);
+  align-items: start;
+  padding: clamp(28px, 4vw, 48px) 0;
+  border-block: 1px solid var(--line);
+}
+
+.video-watch-support h2 {
+  max-width: 720px;
+  margin: 0;
+  color: var(--green-dark);
+  font-size: clamp(1.45rem, 2.5vw, 2.2rem);
+  letter-spacing: 0;
+}
+
+.video-watch-description > p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.video-watch-support .button {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .project-reveal-card figcaption,
+  .video-watch-header,
+  .video-watch-support {
+    grid-template-columns: 1fr;
+  }
+
+  .project-reveal-card figcaption {
+    display: grid;
+    align-items: start;
+  }
+
+  .video-watch-page {
+    gap: 22px;
+    padding-top: 24px;
+  }
+
+  .video-watch-header {
+    align-items: start;
+  }
+
+  .video-watch-header h1 {
+    font-size: clamp(2rem, 11vw, 3rem);
+  }
+
+  .video-watch-description dl {
+    gap: 18px;
+  }
+
+  .video-watch-player {
+    max-height: none;
+  }
+
+  .video-watch-support {
+    gap: 20px;
+  }
+
+  .video-watch-support .button {
+    justify-self: start;
+  }
 }
 
 .compact-section {
@@ -4240,6 +4392,12 @@ h3 {
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 20px 55px rgba(26, 51, 36, 0.18);
   backdrop-filter: blur(18px);
+}
+
+.cookie-consent.is-inline {
+  position: static;
+  width: min(1180px, calc(100% - 36px));
+  margin: 0 auto 32px;
 }
 
 .cookie-consent p {
@@ -8916,6 +9074,10 @@ h3 {
     left: 10px;
     grid-template-columns: 1fr;
     width: auto;
+  }
+
+  .cookie-consent.is-inline {
+    margin: 0 10px 28px;
   }
 
   .cookie-consent-actions,

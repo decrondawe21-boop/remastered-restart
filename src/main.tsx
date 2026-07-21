@@ -159,6 +159,57 @@ type MethodologyDocument = {
 
 const methodologyDocuments = methodologyDocumentsData as MethodologyDocument[];
 
+type VideoWatchPageData = {
+  id: string;
+  path: string;
+  shortTitle: string;
+  title: string;
+  eyebrow: string;
+  description: string;
+  caption: string;
+  contentUrl: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  duration: string;
+  width: number;
+  height: number;
+};
+
+const videoWatchPages: VideoWatchPageData[] = [
+  {
+    id: 'predstaveni-projektu',
+    path: '/videa/predstaveni-projektu',
+    shortTitle: 'Představení projektu',
+    title: 'RESTART Integrace: krátké představení projektu',
+    eyebrow: 'Oficiální video projektu',
+    description:
+      'Krátké video představuje RESTART Integrace jako projekt druhých šancí, praktické podpory a bezpečného návratu lidí do běžného života.',
+    caption: 'Proč projekt vzniká, komu pomáhá a jak propojuje práci, odpovědnost, podporu a stabilizaci.',
+    contentUrl: '/videos/rest-art-intro-z-podkladu-v1-720p.mp4',
+    thumbnailUrl: '/videos/rest-art-intro-poster.png',
+    uploadDate: '2026-06-23',
+    duration: 'PT15S',
+    width: 1280,
+    height: 720
+  },
+  {
+    id: 'logo-reveal',
+    path: '/videa/logo-reveal',
+    shortTitle: 'Logo reveal',
+    title: 'REST||ART Integrace: logo reveal projektu',
+    eyebrow: 'Vizuální identita projektu',
+    description:
+      'Krátká logo animace REST||ART Integrace představuje vizuální identitu projektu druhých šancí a návratu do společnosti.',
+    caption: 'Krátký vizuální podpis projektu REST||ART Integrace a jeho myšlenky nového začátku.',
+    contentUrl: '/videos/restart-logo-reveal.mp4',
+    thumbnailUrl: '/videos/restart-logo-reveal-poster.png',
+    uploadDate: '2026-06-23',
+    duration: 'PT6S',
+    width: 1920,
+    height: 1080
+  }
+];
+
 const navItems = [
   { href: '/co-delame', label: 'Co děláme' },
   { href: '/programy', label: 'Programy' },
@@ -189,7 +240,8 @@ const routeLabels: Record<string, string> = {
   '/zasady-ochrany-osobnich-udaju': 'Zásady ochrany osobních údajů',
   '/povinne-zverejnovani': 'Povinné zveřejňování',
   '/webove-gdpr': 'Webové GDPR',
-  ...Object.fromEntries(methodologyDocuments.map((document) => [document.path, document.shortTitle]))
+  ...Object.fromEntries(methodologyDocuments.map((document) => [document.path, document.shortTitle])),
+  ...Object.fromEntries(videoWatchPages.map((video) => [video.path, video.shortTitle]))
 };
 
 const storyDetailPrefix = '/pribehy-druhe-sance/';
@@ -336,6 +388,9 @@ const getRouteLabel = (path: string) => {
   if (path.startsWith('/metodika/')) {
     return methodologyDocuments.find((document) => document.path === path)?.shortTitle ?? 'Veřejná metodika';
   }
+  if (path.startsWith('/videa/')) {
+    return videoWatchPages.find((video) => video.path === path)?.shortTitle ?? 'Video';
+  }
   if (path.startsWith('/aktuality/')) return 'Aktuality';
   if (path.startsWith('/aktualita/')) return 'Aktualita';
   return 'Domů';
@@ -348,6 +403,7 @@ const normalizePath = (value: string) => {
   if (/^\/aktuality\/[^/]+(?:\/[^/]+)?$/.test(path)) return path;
   if (/^\/aktualita\/[^/]+$/.test(path)) return path;
   if (methodologyDocuments.some((document) => document.path === path)) return path;
+  if (videoWatchPages.some((video) => video.path === path)) return path;
   if (path.startsWith('/programy/') && getProgramBySlug(path.replace('/programy/', ''))) return path;
   return '/';
 };
@@ -3395,6 +3451,133 @@ function LazyVideo({
   );
 }
 
+function useVideoWatchSeo(video: VideoWatchPageData) {
+  React.useEffect(() => {
+    const absoluteUrl = `${window.location.origin}${video.path}`;
+    const absoluteVideoUrl = new URL(video.contentUrl, window.location.origin).href;
+    const absoluteThumbnailUrl = new URL(video.thumbnailUrl, window.location.origin).href;
+    const previousTitle = document.title;
+    document.title = `${video.title} | RESTART Integrace`;
+
+    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]') ?? document.createElement('link');
+    const canonicalCreated = !canonical.parentNode;
+    const previousCanonical = canonical.getAttribute('href');
+    if (canonicalCreated) {
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = absoluteUrl;
+
+    const changedMeta: Array<{ element: HTMLMetaElement; created: boolean; previous: string | null }> = [];
+    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
+      const meta = document.querySelector<HTMLMetaElement>(selector) ?? document.createElement('meta');
+      const created = !meta.parentNode;
+      changedMeta.push({ element: meta, created, previous: meta.getAttribute('content') });
+      if (created) {
+        meta.setAttribute(attribute, key);
+        document.head.appendChild(meta);
+      }
+      meta.content = content;
+    };
+
+    setMeta('meta[name="description"]', 'name', 'description', video.description);
+    setMeta('meta[property="og:title"]', 'property', 'og:title', video.title);
+    setMeta('meta[property="og:description"]', 'property', 'og:description', video.description);
+    setMeta('meta[property="og:url"]', 'property', 'og:url', absoluteUrl);
+    setMeta('meta[property="og:type"]', 'property', 'og:type', 'video.other');
+    setMeta('meta[property="og:image"]', 'property', 'og:image', absoluteThumbnailUrl);
+    setMeta('meta[property="og:video"]', 'property', 'og:video', absoluteVideoUrl);
+    setMeta('meta[property="og:video:type"]', 'property', 'og:video:type', 'video/mp4');
+
+    const schema = document.createElement('script');
+    schema.id = 'video-watch-structured-data';
+    schema.type = 'application/ld+json';
+    schema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: video.title,
+      description: video.description,
+      thumbnailUrl: [absoluteThumbnailUrl],
+      uploadDate: video.uploadDate,
+      duration: video.duration,
+      contentUrl: absoluteVideoUrl,
+      width: video.width,
+      height: video.height,
+      isAccessibleForFree: true,
+      inLanguage: 'cs-CZ',
+      mainEntityOfPage: absoluteUrl,
+      publisher: {
+        '@type': 'Organization',
+        name: 'RESTART Integrace',
+        url: window.location.origin,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${window.location.origin}/images/brand/restart-integrace-full-logo.png`
+        }
+      }
+    });
+    document.getElementById(schema.id)?.remove();
+    document.head.appendChild(schema);
+
+    return () => {
+      document.title = previousTitle;
+      if (canonicalCreated) canonical.remove();
+      else if (previousCanonical) canonical.href = previousCanonical;
+      changedMeta.forEach(({ element, created, previous }) => {
+        if (created) element.remove();
+        else if (previous !== null) element.content = previous;
+      });
+      schema.remove();
+    };
+  }, [video]);
+}
+
+function VideoWatchPage({ video }: { video: VideoWatchPageData }) {
+  useVideoWatchSeo(video);
+  const durationSeconds = video.duration === 'PT15S' ? '15 sekund' : '6 sekund';
+
+  return (
+    <section className="content-section video-watch-page">
+      <header className="video-watch-header">
+        <div>
+          <p className="section-label">{video.eyebrow}</p>
+          <h1>{video.title}</h1>
+        </div>
+      </header>
+
+      <video
+        className="video-watch-player"
+        controls
+        preload="metadata"
+        poster={video.thumbnailUrl}
+        width={video.width}
+        height={video.height}
+        aria-label={video.title}
+      >
+        <source src={video.contentUrl} type="video/mp4" />
+        Váš prohlížeč neumí přehrát toto video.
+      </video>
+
+      <div className="video-watch-support">
+        <div>
+          <p className="section-label">Obsah videa</p>
+          <h2>{video.caption}</h2>
+        </div>
+        <div className="video-watch-description">
+          <p>{video.description}</p>
+          <dl aria-label="Informace o videu">
+            <div><dt>Délka</dt><dd>{durationSeconds}</dd></div>
+            <div><dt>Publikováno</dt><dd><time dateTime={video.uploadDate}>23. 6. 2026</time></dd></div>
+          </dl>
+        </div>
+        <a className="button secondary" href="/">
+          Zpět na úvod <ArrowRight size={18} />
+        </a>
+      </div>
+    </section>
+  );
+}
+
 function ProjectRevealMini() {
   return (
     <section className="project-reveal-section" aria-labelledby="project-reveal-title">
@@ -3424,8 +3607,8 @@ function ProjectRevealMini() {
           />
         </div>
         <figcaption>
-          <Video size={18} />
-          <span>Mini animace projektu druhých šancí</span>
+          <span><Video size={18} /> Mini animace projektu druhých šancí</span>
+          <a href="/videa/logo-reveal">Samostatná stránka videa <ArrowRight size={16} /></a>
         </figcaption>
       </figure>
     </section>
@@ -3601,6 +3784,9 @@ function HomePage({
             Stručné představení projektu druhých šancí: proč vzniká, komu pomáhá a jak se do něj mohou zapojit lidé,
             firmy, instituce i podporovatelé.
           </p>
+          <a className="button secondary" href="/videa/predstaveni-projektu">
+            Otevřít stránku videa <ArrowRight size={18} />
+          </a>
         </div>
         <figure className="project-video-frame">
           <LazyVideo
@@ -4325,6 +4511,14 @@ const buildSiteSearchEntries = (news: NewsItem[]) => {
       ])
     ].join(' ')
   }));
+  const videoEntries = videoWatchPages.map((video) => ({
+    id: `video-${video.id}`,
+    category: 'Video',
+    title: video.title,
+    excerpt: video.description,
+    href: video.path,
+    searchableText: `${video.caption} ${video.shortTitle} oficiální video animace projektu druhá šance`
+  }));
   const mediaEntries = publicMediaKitAssets.map((asset) => ({
     id: `media-${asset.id}`,
     category: 'Média ke stažení',
@@ -4334,7 +4528,7 @@ const buildSiteSearchEntries = (news: NewsItem[]) => {
     searchableText: `${asset.fileName} ${asset.mimeType} ${asset.kind}`
   }));
   const unique = new Map<string, SiteSearchEntry>();
-  [...coreSearchEntries, ...staticEntries, ...programEntries, ...newsEntries, ...methodologyEntries, ...methodologyDocumentEntries, ...mediaEntries].forEach((entry) => {
+  [...coreSearchEntries, ...staticEntries, ...programEntries, ...newsEntries, ...methodologyEntries, ...methodologyDocumentEntries, ...videoEntries, ...mediaEntries].forEach((entry) => {
     const key = `${entry.href}|${entry.title}`;
     if (!unique.has(key)) unique.set(key, entry);
   });
@@ -5701,7 +5895,15 @@ const trackAnalyticsEvent = (eventName: string, params: Record<string, string | 
   gtag('event', eventName, params);
 };
 
-function CookieConsent({ forceOpen = false, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
+function CookieConsent({
+  forceOpen = false,
+  inline = false,
+  onClose
+}: {
+  forceOpen?: boolean;
+  inline?: boolean;
+  onClose?: () => void;
+}) {
   const [legacyAccepted, setLegacyAccepted] = useStoredState('restart-cookie-consent', false);
   const [preferences, setPreferences] = useStoredState<CookiePreferences | null>('restart-cookie-preferences', null);
   const [manageOpen, setManageOpen] = React.useState(false);
@@ -5854,7 +6056,7 @@ function CookieConsent({ forceOpen = false, onClose }: { forceOpen?: boolean; on
   }
 
   return (
-    <section className="cookie-consent reveal-fx" aria-labelledby="cookie-consent-title">
+    <section className={`cookie-consent reveal-fx${inline ? ' is-inline' : ''}`} aria-labelledby="cookie-consent-title">
       <div>
         <p className="section-label" id="cookie-consent-title">Cookies</p>
         <p>
@@ -7667,6 +7869,7 @@ React.useEffect(() => {
 
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
   const selectedMethodologyDocument = methodologyDocuments.find((document) => document.path === currentPath) ?? null;
+  const selectedVideo = videoWatchPages.find((video) => video.path === currentPath) ?? null;
   const selectedStoryId = currentPath.startsWith(storyDetailPrefix) ? decodeURIComponent(currentPath.slice(storyDetailPrefix.length)) : '';
   const selectedStory = selectedStoryId ? news.find((item) => item.id === selectedStoryId && isSecondChanceStory(item)) : null;
 
@@ -7696,6 +7899,8 @@ React.useEffect(() => {
       <ProgramsPage />
     ) : currentPath === '/metodika' ? (
       <MethodologyPage account={currentAccount} />
+    ) : selectedVideo ? (
+      <VideoWatchPage video={selectedVideo} />
     ) : selectedMethodologyDocument ? (
       <MethodologyDocumentPage document={selectedMethodologyDocument} />
     ) : selectedProgram ? (
@@ -7846,7 +8051,7 @@ React.useEffect(() => {
         </RevealFx>
       </main>
       <AppModal modal={modal} onClose={() => setModal(null)} />
-      <CookieConsent forceOpen={cookieSettingsOpen} onClose={() => setCookieSettingsOpen(false)} />
+      <CookieConsent forceOpen={cookieSettingsOpen} inline={Boolean(selectedVideo)} onClose={() => setCookieSettingsOpen(false)} />
       <footer className="site-footer">
         <div className="footer-brand-block">
           <p>REST||ART Integrace</p>

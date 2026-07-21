@@ -1,0 +1,365 @@
+[
+  {
+    "id": "manifest",
+    "path": "/metodika/manifest",
+    "shortTitle": "Manifest",
+    "title": "Manifest REST||ART Integrace",
+    "eyebrow": "Veřejný hodnotový dokument",
+    "lead": "Proč REST||ART Integrace vzniká, čemu věří a podle čeho chce být veřejně posuzována.",
+    "description": "Manifest REST||ART Integrace vysvětluje princip druhé šance, osobní odpovědnosti, práce, transparentnosti, ověřitelných dat a veřejné kontroly.",
+    "version": "Veřejná verze",
+    "status": "Hodnotové prohlášení",
+    "published": "2026-07-21",
+    "sourceFileName": "Manifest Rest-Art Integrace.docx",
+    "downloadDocx": "/documents/methodology/manifest-rest-art-integrace.docx",
+    "keywords": ["manifest REST ART Integrace", "druhá šance", "osobní odpovědnost", "reintegrace", "ONLY TRUE", "transparentnost"],
+    "sections": [
+      {
+        "id": "proc-vznikame",
+        "title": "Proč vznikáme",
+        "blocks": [
+          { "type": "paragraph", "text": "REST||ART INTEGRACE vznikl z přesvědčení, že žádný člověk by neměl být navždy definován nejhorším obdobím svého života. Věříme, že skutečná změna je možná tehdy, když společnost nabídne nejen druhou šanci, ale také podmínky, ve kterých ji lze skutečně využít." },
+          { "type": "paragraph", "text": "Žijeme ve společnosti, která umí trestat, ale jen obtížně vytváří podmínky pro skutečný návrat člověka do běžného života." },
+          { "type": "paragraph", "text": "Každý rok opouštějí výkon trestu stovky lidí s odhodláním začít znovu. Mnozí z nich však narážejí na nedůvěru, předsudky, nedostatek pracovních příležitostí nebo chybějící podporu v okamžiku, kdy ji potřebují nejvíce." },
+          { "type": "paragraph", "text": "Současně existují zaměstnavatelé, instituce i odborníci, kteří chtějí být součástí řešení, ale často postrádají společný rámec spolupráce. REST||ART INTEGRACE vzniká právě proto, aby tento prostor propojila." }
+        ]
+      },
+      {
+        "id": "odpovednost-a-prilezitost",
+        "title": "Odpovědnost a reálná příležitost",
+        "blocks": [
+          { "type": "list", "items": ["Nejsme organizací, která slibuje rychlá řešení.", "Nejsme organizací, která omlouvá minulost.", "Nejsme organizací, která nahrazuje odpovědnost jednotlivce."] },
+          { "type": "paragraph", "text": "Věříme, že změna je možná pouze tehdy, když se spojí osobní odpovědnost člověka s reálnou příležitostí ke změně." },
+          { "type": "paragraph", "text": "Naším cílem není pomáhat lidem zůstat závislými na pomoci. Naším cílem je vytvářet podmínky, aby pomoc jednou přestali potřebovat." },
+          { "type": "paragraph", "text": "Věříme, že práce není pouze zdrojem příjmu. Je prostředkem k obnovení důvěry, odpovědnosti, sebedůvěry a důstojnosti." },
+          { "type": "paragraph", "text": "Věříme, že bezpečnost společnosti a úspěšná reintegrace nejsou protiklady. Naopak. Jedna podporuje druhou." }
+        ]
+      },
+      {
+        "id": "only-true",
+        "title": "Princip ONLY TRUE",
+        "blocks": [
+          { "type": "paragraph", "text": "Stejně důležité jako pomáhat je také chránit veřejný zájem. Proto budujeme systém, který stojí na měřitelných výsledcích, ověřitelných datech a otevřeném vyhodnocování vlastní práce." },
+          { "type": "paragraph", "text": "Naše rozhodnutí nebudou řízena dojmy ani módními trendy. Budou vycházet z odborných poznatků, praktických zkušeností a skutečných výsledků." },
+          { "type": "quote", "text": "Každé tvrzení, které zveřejníme, bude podloženo ověřitelnými daty, odbornými zdroji nebo bude jednoznačně označeno jako zkušenost, návrh či pracovní hypotéza." },
+          { "type": "paragraph", "text": "Důvěru nelze budovat na nepřesnostech ani na přehánění." }
+        ]
+      },
+      {
+        "id": "otevreny-system",
+        "title": "Otevřený systém spolupráce",
+        "blocks": [
+          { "type": "paragraph", "text": "REST||ART INTEGRACE není jedním projektem. Je to otevřený systém spolupráce mezi lidmi, institucemi, zaměstnavateli a odbornou veřejností." },
+          { "type": "paragraph", "text": "Naším cílem není vytvořit další organizaci. Naším cílem je vytvořit standard, který bude dlouhodobě zvyšovat kvalitu reintegrace, podporovat odpovědnost jednotlivce a přispívat k bezpečnější společnosti." },
+          { "type": "paragraph", "text": "Nevyzýváme veřejnost, aby nám věřila. Vyzýváme ji, aby naši práci sledovala, ověřovala a hodnotila podle skutečných výsledků." },
+          { "type": "quote", "text": "Protože důvěra nevzniká slovy. Důvěra vzniká tím, co každý den děláme." }
+        ]
+      },
+      {
+        "id": "zakladni-presvedceni",
+        "title": "Základní přesvědčení",
+        "blocks": [
+          { "type": "quote", "text": "REST||ART INTEGRACE neobhajuje chyby. Neomlouvá. Ale říká: Než budeme hodnotit člověka, měli bychom porozumět jeho cestě." },
+          { "type": "paragraph", "text": "Věříme, že člověk není součtem svých chyb ani okolností, které ho potkaly. Jeho budoucnost by měla být určována tím, co je ochoten udělat dnes, ne pouze tím, co se stalo včera." },
+          { "type": "paragraph", "text": "Člověk nesmí být navždy definován svou nejhorší životní kapitolou." },
+          { "type": "paragraph", "text": "Trvalá změna lidského života nevzniká jedním rozhodnutím ani jednou službou, ale propojením práce, odpovědnosti, důvěry, komunity a příležitosti začít znovu." },
+          { "type": "paragraph", "text": "Věříme, že každý člověk může znovu vybudovat svůj život, pokud dostane příležitost převzít odpovědnost, pracovat na sobě a stát se součástí prostředí, které podporuje skutečnou změnu." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "charta",
+    "path": "/metodika/charta",
+    "shortTitle": "Charta",
+    "title": "Charta REST||ART Integrace",
+    "eyebrow": "Nejvyšší hodnotový rámec",
+    "lead": "Hodnoty, etické principy a veřejné závazky, podle nichž má být systém REST||ART Integrace řízen a hodnocen.",
+    "description": "Charta REST||ART Integrace stanovuje hodnoty, odpovědnost, etické principy, transparentnost a veřejné závazky systému sociální a pracovní reintegrace.",
+    "version": "Verze 0.9",
+    "status": "Schvalovací návrh",
+    "published": "2026-07-21",
+    "sourceFileName": "0-RI-CHR-V0.9-002_CHARTA.docx",
+    "downloadDocx": "/documents/methodology/charta-rest-art-integrace-v0-9.docx",
+    "keywords": ["Charta REST ART Integrace", "etické principy", "hodnoty reintegrace", "transparentnost", "veřejný závazek", "lidská důstojnost"],
+    "sections": [
+      {
+        "id": "preambule",
+        "title": "Preambule",
+        "blocks": [
+          { "type": "paragraph", "text": "REST||ART INTEGRACE vzniká z přesvědčení, že bezpečnější společnost nevzniká pouze výkonem práva, ale také vytvářením podmínek pro odpovědnou změnu člověka." },
+          { "type": "paragraph", "text": "Věříme, že druhá šance není samozřejmostí ani nárokem. Je příležitostí, která může být naplněna pouze tehdy, pokud se spojí osobní odpovědnost jednotlivce, odborná podpora, důvěryhodné partnerství a aktivní spolupráce společnosti." },
+          { "type": "paragraph", "text": "Touto Chartou vyjadřujeme hodnoty, principy a závazky, které budou dlouhodobě určovat směřování REST||ART INTEGRACE a všech navazujících programů, metodik a standardů." },
+          { "type": "paragraph", "text": "Charta představuje nejvyšší hodnotový dokument organizace. Je závazným rámcem pro rozhodování, tvorbu metodik, řízení organizace i každodenní práci všech osob jednajících jejím jménem." }
+        ]
+      },
+      {
+        "id": "identita",
+        "title": "Článek 1: Prohlášení identity",
+        "blocks": [
+          { "type": "heading", "text": "Kdo jsme" },
+          { "type": "paragraph", "text": "REST||ART INTEGRACE je nezávislá platforma zaměřená na vytváření, rozvoj a podporu systémových řešení v oblasti sociální reintegrace, zaměstnanosti, prevence sociálního vyloučení a odpovědného návratu člověka do běžného života." },
+          { "type": "list", "items": ["Nejsme organizací, která nahrazuje veřejné instituce.", "Nejsme organizací, která přebírá odpovědnost za rozhodnutí jednotlivce.", "Nejsme organizací založenou na poskytování jednorázové pomoci."] },
+          { "type": "paragraph", "text": "Jsme organizací, která propojuje odborné poznatky, praktické zkušenosti, zaměstnavatele, veřejné instituce, odbornou veřejnost a jednotlivce do jednoho dlouhodobě udržitelného systému spolupráce." },
+          { "type": "heading", "text": "Proč existujeme" },
+          { "type": "paragraph", "text": "Existujeme proto, že věříme, že skutečná změna člověka je možná. Nezaručujeme ji. Nevynucujeme ji. Vytváříme podmínky, ve kterých může vzniknout." },
+          { "type": "paragraph", "text": "Naším cílem není přepisovat minulost. Naším cílem je pomáhat vytvářet odpovědnou budoucnost." },
+          { "type": "heading", "text": "Co budujeme" },
+          { "type": "list", "items": ["Budujeme systém.", "Budujeme důvěru.", "Budujeme metodické standardy.", "Budujeme odborné partnerství.", "Budujeme pracovní příležitosti."] },
+          { "type": "paragraph", "text": "Budujeme prostředí, ve kterém může být druhá šance spojena s odpovědností, bezpečností a měřitelnými výsledky." }
+        ]
+      },
+      {
+        "id": "hodnoty",
+        "title": "Článek 2: Naše hodnoty",
+        "blocks": [
+          { "type": "paragraph", "text": "Veškerá činnost REST||ART INTEGRACE vychází z hodnot, které tvoří základ všech rozhodnutí organizace." },
+          { "type": "list", "items": ["důstojnost každého člověka", "osobní odpovědnost", "pravdivost a ověřitelnost", "odbornost", "partnerství", "bezpečnost společnosti", "práce jako prostředek obnovy samostatnosti", "transparentnost", "neustálé vzdělávání a rozvoj", "dlouhodobá udržitelnost"] },
+          { "type": "heading", "text": "Důstojnost člověka" },
+          { "type": "paragraph", "text": "Každý člověk má svou důstojnost bez ohledu na svou minulost. Současně věříme, že důstojnost je neoddělitelně spojena s osobní odpovědností. Naším cílem není hodnotit minulost člověka, ale vytvářet podmínky pro jeho budoucnost." },
+          { "type": "heading", "text": "Odpovědnost" },
+          { "type": "paragraph", "text": "Změna začíná převzetím odpovědnosti. Organizace nenahrazuje odpovědnost klienta. Klient nenahrazuje odpovědnost organizace. Každý účastník systému odpovídá za svou část společného procesu." },
+          { "type": "heading", "text": "Pravdivost" },
+          { "type": "paragraph", "text": "Přijímáme princip ONLY TRUE. Budeme zveřejňovat pouze informace, které jsou ověřené nebo jasně označené podle pravidel metodiky. Nebudeme vytvářet nepravdivé příběhy ani zkreslovat výsledky ve prospěch organizace. Přiznání chyby je projevem odpovědnosti, nikoli slabosti." },
+          { "type": "heading", "text": "Odbornost" },
+          { "type": "paragraph", "text": "Rozhodnutí organizace budou vycházet z odborných poznatků, praktických zkušeností a ověřitelných dat. Budeme podporovat další vzdělávání, výzkum a otevřenou odbornou diskusi." },
+          { "type": "heading", "text": "Práce" },
+          { "type": "paragraph", "text": "Práci chápeme jako jeden z nejdůležitějších nástrojů sociální integrace. Práce podporuje samostatnost, obnovuje důvěru a vytváří podmínky pro dlouhodobou stabilitu. Proto usilujeme o vytváření skutečných pracovních příležitostí, nikoliv pouze krátkodobých řešení." },
+          { "type": "heading", "text": "Partnerství" },
+          { "type": "paragraph", "text": "Úspěšná reintegrace nevzniká činností jediné organizace. Je výsledkem spolupráce jednotlivce, rodiny, zaměstnavatelů, veřejných institucí, odborníků a celé společnosti. REST||ART INTEGRACE vytváří prostor pro tuto spolupráci." },
+          { "type": "heading", "text": "Transparentnost" },
+          { "type": "paragraph", "text": "Budeme otevřeně informovat o své činnosti, metodice, výsledcích i výzvách. Pokud tomu nebrání zákonné nebo etické důvody, zpřístupníme veřejnosti informace umožňující posoudit naši práci. Důvěra vzniká otevřeností." }
+        ]
+      },
+      {
+        "id": "eticke-principy",
+        "title": "Článek 3: Etické principy",
+        "blocks": [
+          { "type": "paragraph", "text": "Každý, kdo jedná jménem REST||ART INTEGRACE, se zavazuje dodržovat následující principy:" },
+          { "type": "list", "items": ["Budeme vždy chránit lidskou důstojnost.", "Nikdy nebudeme zneužívat lidskou nouzi ani životní příběhy pro vlastní prospěch.", "Nebudeme manipulovat statistikami, daty ani výsledky.", "Budeme důsledně rozlišovat mezi ověřenými fakty, odbornými názory, praktickými zkušenostmi a pracovními hypotézami.", "Budeme přiznávat chyby a využívat je ke zlepšování systému.", "Budeme jednat nestranně, bez diskriminace a bez předsudků.", "Budeme předcházet střetu zájmů a případný střet otevřeně oznámíme.", "Budeme chránit soukromí a osobní údaje všech osob.", "Pomoc budeme poskytovat tak, aby vedla k větší samostatnosti, nikoliv k dlouhodobé závislosti.", "Každé rozhodnutí musí být obhajitelné odborně, eticky i lidsky."] }
+        ]
+      },
+      {
+        "id": "co-nikdy-neudelame",
+        "title": "Článek 4: Co nikdy neuděláme",
+        "blocks": [
+          { "type": "paragraph", "text": "Veřejně prohlašujeme, že:" },
+          { "type": "list", "items": ["nikdy nebudeme obchodovat s lidskou nouzí", "nikdy nebudeme vydávat domněnky za fakta", "nikdy nebudeme vytvářet nepravdivé nebo zavádějící příběhy", "nikdy nebudeme slibovat výsledky, které nemůžeme ovlivnit", "nikdy nebudeme upřednostňovat zájmy organizace před důstojností člověka", "nikdy nebudeme omlouvat protiprávní jednání ani zlehčovat jeho dopady", "nikdy nebudeme přijímat kompromisy, které by ohrozily bezpečnost společnosti nebo důvěryhodnost organizace"] }
+        ]
+      },
+      {
+        "id": "zlepsovani-a-zavazek",
+        "title": "Neustálé zlepšování a veřejný závazek",
+        "blocks": [
+          { "type": "paragraph", "text": "Každou zkušenost budeme využívat ke zlepšování systému. Nebudeme považovat metodiku za neměnnou. Budeme ji rozvíjet na základě praxe, výzkumu a zpětné vazby." },
+          { "type": "paragraph", "text": "Veřejně se zavazujeme, že:" },
+          { "type": "list", "items": ["budeme jednat odborně, pravdivě a transparentně", "budeme zveřejňovat metodiky a výsledky v rozsahu umožněném právními a etickými pravidly", "budeme své postupy průběžně vyhodnocovat", "budeme podporovat otevřenou odbornou diskusi", "budeme chránit důvěrnost informací a soukromí osob", "budeme rozvíjet organizaci na základě ověřených poznatků a zkušeností"] }
+        ]
+      },
+      {
+        "id": "vyzva-verejnosti",
+        "title": "Výzva veřejnosti",
+        "blocks": [
+          { "type": "paragraph", "text": "Nežádáme veřejnost o bezvýhradnou důvěru. Žádáme pouze o spravedlivé hodnocení na základě našich činů." },
+          { "type": "paragraph", "text": "Pokud zjistíte, že jednáme v rozporu s touto Chartou, upozorněte nás. Každý podnět posoudíme otevřeně, nestranně a s respektem." },
+          { "type": "quote", "text": "Důvěra nevzniká prohlášeními. Důvěra vzniká odpovědným jednáním." }
+        ]
+      },
+      {
+        "id": "zaverecne-prohlaseni",
+        "title": "Závěrečné prohlášení",
+        "blocks": [
+          { "type": "paragraph", "text": "Tato Charta představuje nejvyšší hodnotový rámec REST||ART INTEGRACE. Její principy jsou závazné pro tvorbu metodik, standardů, programů, interních předpisů i veřejných aktivit organizace." },
+          { "type": "paragraph", "text": "Každý další dokument vznikající v systému REST||ART INTEGRACE musí být s touto Chartou v souladu. Tam, kde vzniknou pochybnosti o správném postupu, mají přednost principy této Charty před dílčími metodickými doporučeními." },
+          { "type": "quote", "text": "Pomáháme lidem měnit budoucnost, nikoli přepisovat minulost." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slovnik-pojmu",
+    "path": "/metodika/slovnik-pojmu",
+    "shortTitle": "Slovník pojmů",
+    "title": "Slovník pojmů REST||ART Integrace",
+    "eyebrow": "Závazné referenční definice",
+    "lead": "Jednotné definice odborných a dokumentačních pojmů používaných v metodikách, standardech a programech REST||ART Integrace.",
+    "description": "Slovník pojmů REST||ART Integrace obsahuje závazné definice reintegrace, stabilizace, case managementu, mentorství, metodiky, standardů a dokumentové architektury.",
+    "version": "0-RI-STD-V0.9-003",
+    "status": "Schvalovací návrh",
+    "published": "2026-07-21",
+    "sourceFileName": "0-RI-STD-V0.9-003_Slovník pojmů.docx",
+    "downloadDocx": "/documents/methodology/slovnik-pojmu-rest-art-integrace-v0-9.docx",
+    "keywords": ["slovník pojmů reintegrace", "definice stabilizace", "case management", "sociální integrace", "metodika", "dokumentová architektura"],
+    "sections": [
+      {
+        "id": "ucel-a-pouzivani",
+        "title": "Účel a zásady používání",
+        "blocks": [
+          { "type": "paragraph", "text": "Tento dokument stanovuje závazné definice odborných pojmů používaných v systému REST||ART INTEGRACE. Každý pojem má pouze jednu platnou definici. Všechny metodiky, standardy, programy a interní dokumenty používají tyto definice jednotně." },
+          { "type": "list", "items": ["Každý odborný pojem je definován pouze v tomto dokumentu.", "Ostatní dokumenty na definice odkazují.", "Změna definice se provádí výhradně revizí tohoto dokumentu.", "Pokud vznikne nový odborný pojem, je nejprve zařazen do Slovníku pojmů a teprve následně používán v dalších dokumentech."] },
+          { "type": "paragraph", "text": "Nové pojmy, změny definic nebo zrušení definic podléhají schvalovacímu procesu podle Standardu tvorby a správy dokumentace. Žádná změna definice nesmí být provedena bez zaznamenání historie změn." },
+          { "type": "paragraph", "text": "Slovník pojmů je závazným referenčním dokumentem systému REST||ART INTEGRACE. V případě rozporu mezi definicí uvedenou v jiném dokumentu a tímto Slovníkem má vždy přednost definice uvedená v tomto dokumentu." }
+        ]
+      },
+      {
+        "id": "zakladni-definice",
+        "title": "Základní odborné pojmy",
+        "blocks": [
+          {
+            "type": "definitions",
+            "items": [
+              { "term": "Adaptace", "definition": "Proces postupného přizpůsobení člověka novému životnímu prostředí, pracovním podmínkám a společenským očekáváním po významné životní změně." },
+              { "term": "Bod zlomu", "definition": "Rozhodující okamžik nebo období, kdy je člověk připraven přijmout odpovědnost za změnu svého života a aktivně se zapojit do procesu osobního rozvoje a reintegrace. Bod zlomu nelze člověku nařídit. Lze jej rozpoznat, podpořit a vytvořit podmínky pro jeho využití." },
+              { "term": "Case management", "definition": "Koordinovaný proces plánování, řízení a vyhodnocování podpory poskytované klientovi s cílem dosáhnout stanovených cílů prostřednictvím spolupráce více subjektů." },
+              { "term": "Důstojnost", "definition": "Nezcizitelná hodnota každého člověka, která musí být respektována bez ohledu na jeho minulost, sociální situaci nebo životní okolnosti." },
+              { "term": "Individuální plán", "definition": "Dokumentovaný plán stanovující cíle, odpovědnosti, postupy a časový rámec spolupráce mezi klientem a organizací." },
+              { "term": "Integrace", "definition": "Proces začlenění člověka do společnosti při zachování jeho práv, povinností a schopnosti samostatně fungovat v běžném životě." },
+              { "term": "Klient", "definition": "Osoba, která dobrovolně vstoupila do některého z programů REST||ART INTEGRACE a aktivně spolupracuje na plnění sjednaných cílů." },
+              { "term": "Mentor", "definition": "Pracovník nebo spolupracovník organizace, který provází klienta procesem změny, poskytuje odbornou podporu, motivaci a koordinaci, aniž by přebíral odpovědnost za jeho rozhodnutí." },
+              { "term": "Metodika", "definition": "Soubor závazných pravidel, doporučených postupů a standardů upravujících odbornou činnost organizace." },
+              { "term": "ONLY TRUE", "definition": "Základní metodický princip REST||ART INTEGRACE. Každé tvrzení musí být jednoznačně označeno jako ověřený fakt, odborný názor, praktická zkušenost, metodické doporučení nebo pracovní hypotéza." },
+              { "term": "Partner", "definition": "Fyzická nebo právnická osoba spolupracující s REST||ART INTEGRACE při naplňování společných cílů." },
+              { "term": "Pracovní integrace", "definition": "Proces získání, udržení a dlouhodobého rozvoje legálního pracovního uplatnění vedoucího k ekonomické samostatnosti klienta." },
+              { "term": "Program", "definition": "Ucelený soubor činností zaměřených na konkrétní oblast podpory v rámci systému REST||ART INTEGRACE." },
+              { "term": "Recidiva", "definition": "Opakované protiprávní jednání osoby po předchozím odsouzení nebo výkonu trestu, posuzované podle platných právních předpisů nebo metodiky hodnocení programu." },
+              { "term": "Reintegrace", "definition": "Dlouhodobý proces, během kterého člověk obnovuje svou schopnost samostatně, odpovědně a legálně fungovat ve společnosti prostřednictvím práce, vzdělávání, sociálních vztahů a plnění občanských povinností." },
+              { "term": "REST||ART INTEGRACE", "definition": "Zastřešující systém metodik, standardů, programů, partnerství a odborných postupů zaměřených na podporu odpovědné sociální reintegrace a prevence sociálního vyloučení." },
+              { "term": "RESTART", "definition": "Program systému REST||ART INTEGRACE zaměřený na podporu osob při návratu do běžného života prostřednictvím koordinované práce, mentoringu, zaměstnanosti a individuálního plánování." },
+              { "term": "Rizikový faktor", "definition": "Okolnost nebo soubor okolností, které mohou zvyšovat pravděpodobnost neúspěšné reintegrace nebo opakovaného sociálně rizikového chování." },
+              { "term": "Standard", "definition": "Závazný dokument stanovující jednotný způsob provádění konkrétní odborné činnosti." },
+              { "term": "Stabilizace", "definition": "Období, během kterého klient dosahuje dlouhodobě udržitelného stavu v oblasti bydlení, zaměstnání, sociálních vztahů a osobní odpovědnosti." },
+              { "term": "Transparentnost", "definition": "Princip otevřeného a pravdivého informování o činnosti organizace při současném respektování ochrany osobních údajů, právních předpisů a etických zásad." },
+              { "term": "Veřejný zájem", "definition": "Zájem společnosti na bezpečnosti, právním státu, ochraně lidské důstojnosti a podpoře řešení, která přispívají ke snižování sociálních rizik a posilování odpovědného občanského života." }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dokumentacni-architektura",
+        "title": "Dokumentační a systémové pojmy",
+        "blocks": [
+          {
+            "type": "definitions",
+            "items": [
+              { "term": "D-021 — Knowledge Base", "definition": "Centrální znalostní základna systému obsahující metodiky, standardy, definice, výzkumné poznatky, analytické materiály, legislativní podklady, formuláře, šablony a další odborné dokumenty. Jde o řízený systém znalostí podléhající pravidlům tvorby, správy, revizí a verzování." },
+              { "term": "D-022 — Systém", "definition": "Metodicky řízený celek tvořený řídicími dokumenty, frameworkem, standardy, programy, procesy, partnery, výzkumem a Knowledge Base. Jednotlivé části jsou vzájemně provázány a společně naplňují poslání organizace." },
+              { "term": "D-023 — Architektura systému", "definition": "Soubor pravidel určujících strukturu systému REST||ART INTEGRACE, vzájemné vztahy jeho částí, jejich kompetence, návaznosti a způsob řízení. Zajišťuje dlouhodobou přehlednost, rozšiřitelnost a jednotnost celé organizace." },
+              { "term": "D-024 — Řídicí dokument", "definition": "Dokument stanovující závazná pravidla, principy nebo metodické požadavky platné pro celý systém REST||ART INTEGRACE. Řídicí dokumenty mají nejvyšší metodickou autoritu a tvoří základ řízení organizace." },
+              { "term": "D-025 — Standard", "definition": "Závazný dokument popisující jednotný způsob provádění konkrétní odborné činnosti nebo procesu. Standardy jsou závazné pro všechny programy a metodiky systému." },
+              { "term": "D-026 — Framework", "definition": "Metodická architektura systému REST||ART INTEGRACE. Vymezuje základní principy fungování systému, jeho procesy, role, návaznosti a způsob řízení jednotlivých částí." },
+              { "term": "D-027 — Change Log", "definition": "Řízená evidence všech schválených i navrhovaných změn dokumentace. Slouží k plánování revizí, sledování změn a řízení vývoje dokumentace bez narušení platných verzí dokumentů." },
+              { "term": "D-028 — Decision Log", "definition": "Chronologická evidence významných metodických, architektonických a organizačních rozhodnutí. Každé rozhodnutí obsahuje odůvodnění, očekávaný dopad a vazbu na související dokumenty." },
+              { "term": "D-029 — Revizní sprint", "definition": "Plánované období, během kterého jsou do schválených dokumentů systematicky zapracovány změny evidované v Change Logu. Cílem je zachovat stabilitu dokumentace a současně umožnit její řízený rozvoj." },
+              { "term": "D-030 — Priorita dokumentu", "definition": "Vyjadřuje význam dokumentu v rámci systému REST||ART INTEGRACE. Je určena číselnou klasifikací od 0 do 10, kde priorita 0 označuje základní řídicí dokumenty systému a vyšší čísla dokumenty s nižší strategickou důležitostí." },
+              { "term": "D-031 — Typ dokumentu", "definition": "Určuje účel a zařazení dokumentu v rámci dokumentační architektury. Příklady: Standard, Charta, Manifest, Framework, Metodika, Manuál, Směrnice, Formulář nebo Šablona." },
+              { "term": "D-032 — Stav dokumentu", "definition": "Vyjadřuje aktuální fázi životního cyklu dokumentu. Typické stavy jsou Návrh, Interní revize, Schvalovací návrh, Schváleno, Archivováno nebo Nahrazeno." },
+              { "term": "D-033 — Revize dokumentu", "definition": "Řízený proces odborného posouzení, aktualizace a schvalování změn. Každá revize musí být zaznamenána v historii změn dokumentu." },
+              { "term": "D-034 — Schválený dokument", "definition": "Dokument, který prošel schvalovacím procesem a představuje závaznou verzi platnou pro použití v systému REST||ART INTEGRACE. Další změny jsou prováděny prostřednictvím Change Logu a následné revize." },
+              { "term": "D-035 — Znalostní základna", "definition": "Souhrn všech ověřených znalostí, metodik, standardů, definic, zkušeností a výzkumných poznatků využívaných systémem REST||ART INTEGRACE. Je tvořena zejména dokumenty uloženými v Knowledge Base." },
+              { "term": "D-036 — Referenční definice", "definition": "Závazná definice odborného pojmu zařazená do Slovníku pojmů a označená jedinečným identifikátorem D-xxx. V ostatních dokumentech se na ni odkazuje prostřednictvím tohoto identifikátoru." },
+              { "term": "D-037 — Dokumentová architektura", "definition": "Pravidla pro členění, označování, správu, verzování, vzájemné vazby a životní cyklus všech dokumentů systému REST||ART INTEGRACE. Cílem je zajistit jednotnost, přehlednost, dohledatelnost a dlouhodobou správu dokumentace." }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "koncepcni-podklady",
+    "path": "/metodika/koncepcni-podklady",
+    "shortTitle": "Koncepční podklady",
+    "title": "Koncepční podklady pro REST||ART Integrace",
+    "eyebrow": "Otevřený pracovní rámec",
+    "lead": "Celková koncepce, cílové skupiny, plánované aktivity, role partnerů, financování a očekávané společenské přínosy.",
+    "description": "Koncepční podklady REST||ART Integrace popisují cílové skupiny, pracovní integraci, mentoring, komunitní prostředí, partnery, financování a očekávané přínosy.",
+    "version": "Pracovní podklady",
+    "status": "Otevřený konzultační dokument",
+    "published": "2026-07-21",
+    "sourceFileName": "PODKLADY-PRO-RESTART.docx",
+    "downloadDocx": "/documents/methodology/koncepcni-podklady-rest-art-integrace.docx",
+    "keywords": ["koncepce sociální reintegrace", "pracovní integrace", "mentoring", "cílové skupiny", "udržitelnost projektu", "spolupráce institucí"],
+    "sections": [
+      {
+        "id": "celkova-koncepce",
+        "title": "1. Celková koncepce projektu",
+        "blocks": [
+          { "type": "paragraph", "text": "RESTART INTEGRACE vzniká jako dlouhodobý systém pracovní a sociální reintegrace osob ohrožených sociálním vyloučením. Jeho cílem není vytvářet paralelní sociální službu ani nahrazovat činnost stávajících institucí a organizací. Smyslem projektu je propojit oblasti, které dnes často fungují odděleně, a vytvořit prostředí podporující dlouhodobou stabilizaci člověka." },
+          { "type": "paragraph", "text": "Projekt vychází z přesvědčení, že změna životní situace nevzniká jedním opatřením. Samotné zaměstnání, bydlení nebo odborné poradenství zpravidla nestačí. Trvalá změna je výsledkem kombinace více faktorů: osobní motivace, pracovních příležitostí, podpůrného prostředí, mentoringu, odborné spolupráce a dlouhodobého doprovázení." },
+          { "type": "paragraph", "text": "Proto je RESTART INTEGRACE budován jako modulární systém, jehož jednotlivé programy na sebe navazují a mohou být využívány podle individuálních potřeb klienta." },
+          { "type": "paragraph", "text": "Základní filozofií projektu je vytvářet podmínky, aby člověk postupně převzal odpovědnost za svůj život a dlouhodobě si udržel pozitivní změnu." }
+        ]
+      },
+      {
+        "id": "cilove-skupiny",
+        "title": "2. Cílové skupiny",
+        "blocks": [
+          { "type": "paragraph", "text": "Projekt je určen především osobám, které se z různých důvodů ocitly na okraji společnosti nebo jim takové riziko hrozí." },
+          { "type": "list", "items": ["osoby po výkonu trestu odnětí svobody", "osoby podmíněně propuštěné", "lidé bez domova", "osoby ohrožené ztrátou bydlení", "osoby se zkušeností se závislostí po absolvované léčbě nebo motivované ke změně", "dlouhodobě nezaměstnaní", "mladí lidé opouštějící ústavní nebo náhradní péči", "osoby nacházející se v dlouhodobé sociální krizi"] }
+        ]
+      },
+      {
+        "id": "planovane-aktivity",
+        "title": "3. Plánované aktivity",
+        "blocks": [
+          { "type": "heading", "text": "Pracovní integrace" },
+          { "type": "list", "items": ["zprostředkování zaměstnání", "spolupráce se zaměstnavateli v České republice i v zahraničí", "podpora při nástupu do zaměstnání", "dlouhodobé udržení pracovního místa"] },
+          { "type": "heading", "text": "Mentoring" },
+          { "type": "list", "items": ["individuální podpora klientů", "využití mentorů s osobní zkušeností", "pravidelné konzultace", "motivace a doprovázení při řešení běžných životních situací"] },
+          { "type": "heading", "text": "Komunitní prostředí" },
+          { "type": "list", "items": ["budování komunitního zázemí v Počeradech", "pracovní a volnočasové aktivity", "vzdělávání", "skupinová setkávání", "podpora vzájemné odpovědnosti"] },
+          { "type": "heading", "text": "Prevence a rozvoj kompetencí" },
+          { "type": "list", "items": ["program BOD ZLOMU zaměřený na včasnou podporu osob ohrožených sociálním vyloučením", "spolupráce s institucemi a odbornou veřejností", "finanční gramotnost", "pracovní návyky", "orientace v běžném životě", "osobní odpovědnost", "plánování dalšího rozvoje"] }
+        ]
+      },
+      {
+        "id": "subjekty-a-role",
+        "title": "4. Zapojené subjekty a jejich role",
+        "blocks": [
+          { "type": "paragraph", "text": "Projekt je budován jako otevřená platforma spolupráce." },
+          { "type": "heading", "text": "David Kozák International, s.r.o. - nositel projektu" },
+          { "type": "list", "items": ["financování projektu z vlastních prostředků", "organizační řízení", "metodický rozvoj", "koordinace jednotlivých programů", "komunikace s partnery"] },
+          { "type": "heading", "text": "Zaměstnavatelé" },
+          { "type": "paragraph", "text": "Poskytují pracovní příležitosti klientům projektu. V některých případech jde o zaměstnavatele v zahraničí, kde může změna prostředí přispět ke stabilizaci klienta." },
+          { "type": "heading", "text": "Dobrovolní mentoři" },
+          { "type": "paragraph", "text": "Poskytují individuální podporu klientům. Jejich úkolem není nahrazovat odborníky, ale pomáhat budovat důvěru, motivaci a dlouhodobou spolupráci." },
+          { "type": "heading", "text": "Odborní partneři - plánované zapojení" },
+          { "type": "list", "items": ["sociální práce", "psychologie", "adiktologie", "zaměstnanost", "vzdělávání", "evaluace", "veřejná správa"] },
+          { "type": "heading", "text": "Veřejné instituce" },
+          { "type": "paragraph", "text": "Projekt usiluje o dlouhodobou spolupráci zejména s Vězeňskou službou, Ministerstvem práce a sociálních věcí, obcemi a kraji, Úřadem práce a dalšími institucemi působícími v oblasti sociálního začleňování. Nechce nahrazovat jejich činnost, ale hledá možnosti spolupráce a vzájemného doplnění." }
+        ]
+      },
+      {
+        "id": "financovani",
+        "title": "5. Financování a udržitelnost",
+        "blocks": [
+          { "type": "paragraph", "text": "V současné době je projekt financován převážně z vlastních prostředků společnosti DKI. Od počátku je vedeno oddělené účetnictví projektu, které umožňuje transparentní evidenci nákladů." },
+          { "type": "paragraph", "text": "Současně vzniká metodická dokumentace, evidence klientů, dokumentace aktivit i systém průběžného vyhodnocování." },
+          { "type": "paragraph", "text": "Do budoucna projekt počítá s vícezdrojovým financováním." },
+          { "type": "list", "items": ["vlastní ekonomická činnost", "spolupráce se zaměstnavateli", "dotační programy", "nadační podpora", "dary", "partnerské projekty"] },
+          { "type": "paragraph", "text": "Cílem není dlouhodobá závislost na jednom zdroji financování, ale vytvoření stabilního modelu, který umožní další rozvoj projektu." }
+        ]
+      },
+      {
+        "id": "prinosy",
+        "title": "6. Předpokládané přínosy a očekávané výstupy",
+        "blocks": [
+          { "type": "heading", "text": "Pro klienty" },
+          { "type": "list", "items": ["vyšší zaměstnatelnost", "stabilní pracovní uplatnění", "rozvoj odpovědnosti", "posílení finanční gramotnosti", "stabilizace bydlení", "zlepšení sociálních vztahů", "vyšší samostatnost"] },
+          { "type": "heading", "text": "Pro zaměstnavatele" },
+          { "type": "list", "items": ["motivovaní zaměstnanci", "podpora při adaptaci pracovníků", "dlouhodobější udržení zaměstnání"] },
+          { "type": "heading", "text": "Pro veřejnou správu a společnost" },
+          { "type": "list", "items": ["rozšíření možností spolupráce", "ověřování inovativních postupů", "doplnění existující sítě podpory", "využití praktických zkušeností při dalším rozvoji systému sociální integrace"] },
+          { "type": "paragraph", "text": "Dlouhodobou ambicí projektu je přispět ke snižování sociálního vyloučení, podpoře zaměstnanosti, posilování osobní odpovědnosti a vytváření podmínek, které mohou v dlouhodobém horizontu přispět ke snížení recidivy a závislosti na sociálních dávkách." }
+        ]
+      },
+      {
+        "id": "otevreny-zaver",
+        "title": "7. Otevřený závěr pro odbornou diskusi",
+        "blocks": [
+          { "type": "paragraph", "text": "RESTART INTEGRACE nepředstavujeme jako hotový model ani jako jedinou správnou cestu. Představujeme jej jako vznikající systém založený na praktických zkušenostech, transparentním přístupu a ochotě spolupracovat." },
+          { "type": "paragraph", "text": "Naším cílem není nahrazovat existující řešení, ale společně s odbornou veřejností hledat způsoby, jak posílit dlouhodobou reintegraci lidí, kteří chtějí převzít odpovědnost za svůj život a stát se znovu plnohodnotnou součástí společnosti." }
+        ]
+      }
+    ]
+  }
+]

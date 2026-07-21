@@ -68,6 +68,7 @@ import {
   stats,
   supportPaths
 } from './content';
+import methodologyDocumentsData from './methodologyDocuments.json';
 import {
   getSession,
   addNewsComment,
@@ -128,6 +129,36 @@ import {
 } from './api';
 import './styles.css';
 
+type MethodologyDocumentBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'heading'; text: string }
+  | { type: 'quote'; text: string }
+  | { type: 'list'; items: string[] }
+  | { type: 'definitions'; items: Array<{ term: string; definition: string }> };
+
+type MethodologyDocument = {
+  id: string;
+  path: string;
+  shortTitle: string;
+  title: string;
+  eyebrow: string;
+  lead: string;
+  description: string;
+  version: string;
+  status: string;
+  published: string;
+  sourceFileName: string;
+  downloadDocx: string;
+  keywords: string[];
+  sections: Array<{
+    id: string;
+    title: string;
+    blocks: MethodologyDocumentBlock[];
+  }>;
+};
+
+const methodologyDocuments = methodologyDocumentsData as MethodologyDocument[];
+
 const navItems = [
   { href: '/co-delame', label: 'Co děláme' },
   { href: '/programy', label: 'Programy' },
@@ -157,7 +188,8 @@ const routeLabels: Record<string, string> = {
   '/media': 'Média',
   '/zasady-ochrany-osobnich-udaju': 'Zásady ochrany osobních údajů',
   '/povinne-zverejnovani': 'Povinné zveřejňování',
-  '/webove-gdpr': 'Webové GDPR'
+  '/webove-gdpr': 'Webové GDPR',
+  ...Object.fromEntries(methodologyDocuments.map((document) => [document.path, document.shortTitle]))
 };
 
 const storyDetailPrefix = '/pribehy-druhe-sance/';
@@ -301,6 +333,9 @@ const getRouteLabel = (path: string) => {
     const program = getProgramBySlug(path.replace('/programy/', ''));
     return program?.title ?? 'Program';
   }
+  if (path.startsWith('/metodika/')) {
+    return methodologyDocuments.find((document) => document.path === path)?.shortTitle ?? 'Veřejná metodika';
+  }
   if (path.startsWith('/aktuality/')) return 'Aktuality';
   if (path.startsWith('/aktualita/')) return 'Aktualita';
   return 'Domů';
@@ -312,6 +347,7 @@ const normalizePath = (value: string) => {
   if (/^\/pribehy-druhe-sance\/[^/]+$/.test(path)) return path;
   if (/^\/aktuality\/[^/]+(?:\/[^/]+)?$/.test(path)) return path;
   if (/^\/aktualita\/[^/]+$/.test(path)) return path;
+  if (methodologyDocuments.some((document) => document.path === path)) return path;
   if (path.startsWith('/programy/') && getProgramBySlug(path.replace('/programy/', ''))) return path;
   return '/';
 };
@@ -4183,9 +4219,15 @@ const coreSearchEntries: SiteSearchEntry[] = [
     id: 'methodology',
     category: 'Metodika',
     title: 'Metodika REST||ART Integrace',
-    excerpt: 'Životní cyklus klienta, principy práce, programové pilíře, měřitelnost a veřejná PDF metodika.',
+    excerpt: 'Životní cyklus klienta, programové pilíře, Manifest, Charta, Slovník pojmů a koncepční podklady.',
     href: '/metodika',
-    searchableText: JSON.stringify({ methodologyLifecycleSteps, methodologyPillars, methodologyPrinciples, methodologyVisuals })
+    searchableText: JSON.stringify({
+      methodologyLifecycleSteps,
+      methodologyPillars,
+      methodologyPrinciples,
+      methodologyVisuals,
+      methodologyDocuments
+    })
   },
   {
     id: 'news',
@@ -4262,6 +4304,27 @@ const buildSiteSearchEntries = (news: NewsItem[]) => {
     href: '/metodika',
     searchableText: `${download.fileName} ${download.mimeType}`
   }));
+  const methodologyDocumentEntries = methodologyDocuments.map((document) => ({
+    id: `methodology-document-${document.id}`,
+    category: 'Veřejná metodika',
+    title: document.title,
+    excerpt: document.lead,
+    href: document.path,
+    searchableText: [
+      document.description,
+      document.version,
+      document.status,
+      document.keywords.join(' '),
+      ...document.sections.flatMap((section) => [
+        section.title,
+        ...section.blocks.flatMap((block) => {
+          if ('text' in block) return [block.text];
+          if (block.type === 'list') return block.items;
+          return block.items.flatMap((item) => [item.term, item.definition]);
+        })
+      ])
+    ].join(' ')
+  }));
   const mediaEntries = publicMediaKitAssets.map((asset) => ({
     id: `media-${asset.id}`,
     category: 'Média ke stažení',
@@ -4271,7 +4334,7 @@ const buildSiteSearchEntries = (news: NewsItem[]) => {
     searchableText: `${asset.fileName} ${asset.mimeType} ${asset.kind}`
   }));
   const unique = new Map<string, SiteSearchEntry>();
-  [...coreSearchEntries, ...staticEntries, ...programEntries, ...newsEntries, ...methodologyEntries, ...mediaEntries].forEach((entry) => {
+  [...coreSearchEntries, ...staticEntries, ...programEntries, ...newsEntries, ...methodologyEntries, ...methodologyDocumentEntries, ...mediaEntries].forEach((entry) => {
     const key = `${entry.href}|${entry.title}`;
     if (!unique.has(key)) unique.set(key, entry);
   });
@@ -4391,6 +4454,161 @@ function MediaKitPage({ page, assets }: { page: (typeof staticPages)[string]; as
   );
 }
 
+function useMethodologyDocumentSeo(document: MethodologyDocument) {
+  React.useEffect(() => {
+    const title = `${document.title} | RESTART Integrace`;
+    const canonicalUrl = `${window.location.origin}${document.path}`;
+    const previousTitle = window.document.title;
+    window.document.title = title;
+
+    const description = window.document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    const previousDescription = description?.content;
+    if (description) description.content = document.description;
+
+    const canonical = window.document.querySelector<HTMLLinkElement>('link[rel="canonical"]') ?? window.document.createElement('link');
+    const canonicalCreated = !canonical.parentNode;
+    const previousCanonical = canonical.href;
+    if (canonicalCreated) {
+      canonical.rel = 'canonical';
+      window.document.head.appendChild(canonical);
+    }
+    canonical.href = canonicalUrl;
+
+    const schema = window.document.createElement('script');
+    schema.id = 'methodology-document-structured-data';
+    schema.type = 'application/ld+json';
+    const definitions = document.sections.flatMap((section) =>
+      section.blocks.flatMap((block) => (block.type === 'definitions' ? block.items : []))
+    );
+    schema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      '@id': `${canonicalUrl}#article`,
+      headline: document.title,
+      description: document.description,
+      datePublished: document.published,
+      dateModified: document.published,
+      inLanguage: 'cs-CZ',
+      articleSection: 'Metodika a veřejná dokumentace',
+      keywords: document.keywords,
+      author: { '@type': 'Organization', name: 'RESTART Integrace', url: `${window.location.origin}/` },
+      publisher: { '@type': 'Organization', name: 'RESTART Integrace', url: `${window.location.origin}/` },
+      mainEntityOfPage: canonicalUrl,
+      isBasedOn: `${window.location.origin}${document.downloadDocx}`,
+      ...(definitions.length
+        ? {
+            mainEntity: {
+              '@type': 'DefinedTermSet',
+              name: document.title,
+              hasDefinedTerm: definitions.map((item) => ({
+                '@type': 'DefinedTerm',
+                name: item.term,
+                description: item.definition,
+                url: `${canonicalUrl}#${slugifyPathSegment(item.term)}`
+              }))
+            }
+          }
+        : {})
+    });
+    window.document.head.appendChild(schema);
+
+    return () => {
+      window.document.title = previousTitle;
+      if (description && previousDescription !== undefined) description.content = previousDescription;
+      if (canonicalCreated) canonical.remove();
+      else canonical.href = previousCanonical;
+      schema.remove();
+    };
+  }, [document]);
+}
+
+function MethodologyDocumentBlockView({ block }: { block: MethodologyDocumentBlock }) {
+  if (block.type === 'paragraph') return <p>{block.text}</p>;
+  if (block.type === 'heading') return <h3>{block.text}</h3>;
+  if (block.type === 'quote') return <blockquote>{block.text}</blockquote>;
+  if (block.type === 'list') {
+    return (
+      <ul>
+        {block.items.map((item) => <li key={item}>{item}</li>)}
+      </ul>
+    );
+  }
+  return (
+    <dl className="methodology-definition-list">
+      {block.items.map((item) => (
+        <div id={slugifyPathSegment(item.term)} key={item.term}>
+          <dt>{item.term}</dt>
+          <dd>{item.definition}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function MethodologyDocumentPage({ document }: { document: MethodologyDocument }) {
+  useMethodologyDocumentSeo(document);
+  const relatedDocuments = methodologyDocuments.filter((item) => item.id !== document.id);
+
+  return (
+    <section className="content-section methodology-document-page">
+      <header className="methodology-document-header">
+        <div>
+          <p className="section-label">{document.eyebrow}</p>
+          <h1>{document.title}</h1>
+          <p className="methodology-document-lead">{document.lead}</p>
+        </div>
+        <div className="methodology-document-meta" aria-label="Informace o dokumentu">
+          <span><strong>Verze</strong>{document.version}</span>
+          <span><strong>Stav</strong>{document.status}</span>
+          <span><strong>Zveřejněno</strong><time dateTime={document.published}>{new Date(document.published).toLocaleDateString('cs-CZ')}</time></span>
+        </div>
+        <div className="methodology-actions">
+          <a className="button primary" href={document.downloadDocx} download={document.sourceFileName}>
+            <Download size={18} /> Stáhnout originál DOCX
+          </a>
+          <a className="button secondary" href="/metodika">
+            <ChevronLeft size={18} /> Zpět na metodiku
+          </a>
+        </div>
+      </header>
+
+      <div className="methodology-document-layout">
+        <aside className="methodology-document-toc" aria-label="Obsah dokumentu">
+          <p className="section-label">Na této stránce</p>
+          <nav>
+            {document.sections.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}
+          </nav>
+          <small>Zdroj: {document.sourceFileName}</small>
+        </aside>
+
+        <article className="methodology-document-content">
+          {document.sections.map((section) => (
+            <section id={section.id} key={section.id}>
+              <h2>{section.title}</h2>
+              {section.blocks.map((block, index) => <MethodologyDocumentBlockView block={block} key={`${section.id}-${index}`} />)}
+            </section>
+          ))}
+        </article>
+      </div>
+
+      <nav className="methodology-related-documents" aria-label="Související veřejné dokumenty">
+        <div>
+          <p className="section-label">Veřejná dokumentace</p>
+          <h2>Pokračujte v metodickém rámci</h2>
+        </div>
+        <div>
+          {relatedDocuments.map((item) => (
+            <a href={item.path} key={item.id}>
+              <span>{item.shortTitle}</span>
+              <ArrowRight size={18} aria-hidden="true" />
+            </a>
+          ))}
+        </div>
+      </nav>
+    </section>
+  );
+}
+
 function MethodologyPage({ account }: { account: AuthAccount | null }) {
   const isAdmin = account?.role === 'admin';
 
@@ -4491,6 +4709,30 @@ function MethodologyPage({ account }: { account: AuthAccount | null }) {
           ))}
         </div>
       </div>
+
+      <section className="methodology-document-library" aria-labelledby="verejna-dokumentace-title">
+        <div className="methodology-document-library-head">
+          <div>
+            <p className="section-label">Veřejná dokumentace</p>
+            <h2 id="verejna-dokumentace-title">Hodnoty, pravidla a společný slovník</h2>
+          </div>
+          <p>Každý dokument má vlastní veřejnou stránku, stabilní adresu a originální soubor ke stažení.</p>
+        </div>
+        <div className="methodology-document-library-grid">
+          {methodologyDocuments.map((document) => (
+            <article key={document.id}>
+              <div>
+                <p className="section-label">{document.version}</p>
+                <h3>{document.shortTitle}</h3>
+                <p>{document.lead}</p>
+              </div>
+              <a className="button secondary" href={document.path}>
+                Číst dokument <ArrowRight size={18} />
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <div className="methodology-downloads" aria-label="Veřejná metodika ke stažení">
         {methodologyDownloads.map((download) => (
@@ -7424,6 +7666,7 @@ React.useEffect(() => {
   };
 
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
+  const selectedMethodologyDocument = methodologyDocuments.find((document) => document.path === currentPath) ?? null;
   const selectedStoryId = currentPath.startsWith(storyDetailPrefix) ? decodeURIComponent(currentPath.slice(storyDetailPrefix.length)) : '';
   const selectedStory = selectedStoryId ? news.find((item) => item.id === selectedStoryId && isSecondChanceStory(item)) : null;
 
@@ -7453,6 +7696,8 @@ React.useEffect(() => {
       <ProgramsPage />
     ) : currentPath === '/metodika' ? (
       <MethodologyPage account={currentAccount} />
+    ) : selectedMethodologyDocument ? (
+      <MethodologyDocumentPage document={selectedMethodologyDocument} />
     ) : selectedProgram ? (
       <ProgramDetailPage program={selectedProgram} />
     ) : selectedStory ? (

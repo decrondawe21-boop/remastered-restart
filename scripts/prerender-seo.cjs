@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const methodologyDocuments = require('../src/methodologyDocuments.json');
 
 const baseUrl = 'https://restartintegrace.dk-i.cz';
 const ogImage = `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`;
@@ -61,6 +62,7 @@ a{color:inherit}
 .hero-banner-overlay .quiet-label{color:#d8efad}
 .hero-text,.hero-program-motto{max-width:620px;margin:0 0 18px;font-size:clamp(1rem,2vw,1.35rem)}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.seo-document-snapshot{max-width:1120px;margin:0 auto;padding:56px var(--page-gutter) 96px}.seo-document-snapshot header{max-width:860px;margin-bottom:44px}.seo-document-snapshot h1{margin:0 0 18px;color:var(--green-dark);font-size:clamp(2.25rem,5vw,4.5rem);line-height:1.04}.seo-document-snapshot h2{margin:52px 0 18px;color:var(--green-dark);font-size:clamp(1.55rem,3vw,2.25rem)}.seo-document-snapshot h3{margin:30px 0 12px;color:var(--green-dark)}.seo-document-snapshot p,.seo-document-snapshot li,.seo-document-snapshot dd{max-width:82ch}.seo-document-snapshot blockquote{margin:28px 0;padding:20px 24px;border-left:4px solid var(--gold);background:var(--bg-soft)}.seo-document-snapshot dt{margin-top:24px;color:var(--green-dark);font-weight:800}.seo-document-snapshot dd{margin:6px 0 0}.seo-document-snapshot-download{display:inline-flex;margin-top:18px;padding:12px 16px;border-radius:8px;background:var(--green);color:#fff;text-decoration:none;font-weight:700}
 @media(max-width:760px){.site-header{padding:12px 18px}.brand img{width:174px}.desktop-nav{display:none}.menu-button{display:inline-flex}.hero{padding:18px}.hero-banner{min-height:520px;border-radius:22px}.hero-banner-overlay{padding:28px}.hero-banner-overlay h1{font-size:clamp(2.6rem,16vw,4.5rem)}}
 `.trim();
 const videoAssets = [
@@ -115,6 +117,16 @@ const storyRoutes = [
     articleHeadline: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát'
   }
 ];
+
+const methodologyDocumentRoutes = methodologyDocuments.map((document) => ({
+  path: document.path,
+  title: `${document.title} | RESTART Integrace`,
+  description: document.description,
+  keywords: document.keywords.join(', '),
+  priority: document.id === 'slovnik-pojmu' ? '0.76' : '0.72',
+  changefreq: 'monthly',
+  methodologyDocumentId: document.id
+}));
 
 const routes = [
   {
@@ -232,12 +244,13 @@ const routes = [
     path: '/metodika',
     title: 'Metodika | RESTART Integrace',
     description:
-      'Veřejná metodika REST||ART Integrace ke stažení v PDF: životní cyklus klienta, šest programových pilířů, Stabilizační index a odpovědný rámec reintegrace.',
+      'Veřejná metodika REST||ART Integrace: životní cyklus klienta, Manifest, Charta, Slovník pojmů, koncepční podklady, programové pilíře a dokumenty ke stažení.',
     keywords:
-      'metodika REST||ART Integrace, metodika RESTART Integrace, PDF metodika, životní cyklus klienta, Stabilizační index, reintegrace, resocializace, JAILBREAK, RESET, STREETWISE, REWORK, BOD ZLOMU, STABILIZACE',
+      'metodika REST||ART Integrace, Manifest REST ART, Charta REST ART, Slovník pojmů reintegrace, koncepční podklady, životní cyklus klienta, Stabilizační index, reintegrace, resocializace, JAILBREAK, RESET, STREETWISE, REWORK, BOD ZLOMU, STABILIZACE',
     priority: '0.75',
     changefreq: 'monthly'
   },
+  ...methodologyDocumentRoutes,
   {
     path: '/povinne-zverejnovani',
     title: 'Povinné zveřejňování | RESTART Integrace',
@@ -356,6 +369,8 @@ function routeLabel(routePath) {
   };
   const story = storyRoutes.find((item) => item.path === routePath);
   if (story) return story.articleHeadline;
+  const methodologyDocument = methodologyDocuments.find((item) => item.path === routePath);
+  if (methodologyDocument) return methodologyDocument.shortTitle;
   return labels[routePath] || routePath.replace(/^\//, '').replace(/-/g, ' ');
 }
 
@@ -405,6 +420,32 @@ function articleGraph(route, canonical, image) {
       }
     ];
   }
+  const methodologyDocument = methodologyDocuments.find((item) => item.id === route.methodologyDocumentId);
+  if (methodologyDocument) {
+    return [
+      {
+        '@type': 'Article',
+        '@id': `${canonical}#article-${methodologyDocument.id}`,
+        headline: methodologyDocument.title,
+        description: methodologyDocument.description,
+        image,
+        datePublished: methodologyDocument.published,
+        dateModified: today,
+        inLanguage: 'cs-CZ',
+        articleSection: 'Metodika a veřejné dokumenty',
+        keywords: methodologyDocument.keywords,
+        author: {
+          '@id': `${baseUrl}/#organization`
+        },
+        publisher: {
+          '@id': `${baseUrl}/#organization`
+        },
+        mainEntityOfPage: {
+          '@id': `${canonical}#webpage`
+        }
+      }
+    ];
+  }
   if (!['/aktuality', '/pribehy-druhe-sance'].includes(route.path)) return [];
   return [
     {
@@ -431,6 +472,31 @@ function articleGraph(route, canonical, image) {
 }
 
 function routeSpecificGraph(route, canonical) {
+  const methodologyDocument = methodologyDocuments.find((item) => item.id === route.methodologyDocumentId);
+  if (methodologyDocument) {
+    const definitions = methodologyDocument.sections.flatMap((section) =>
+      section.blocks.flatMap((block) => (block.type === 'definitions' ? block.items : []))
+    );
+    if (definitions.length > 0) {
+      return [
+        {
+          '@type': 'DefinedTermSet',
+          '@id': `${canonical}#defined-term-set`,
+          name: methodologyDocument.title,
+          description: methodologyDocument.description,
+          url: canonical,
+          inLanguage: 'cs-CZ',
+          hasDefinedTerm: definitions.map((item) => ({
+            '@type': 'DefinedTerm',
+            name: item.term,
+            description: item.definition,
+            inDefinedTermSet: `${canonical}#defined-term-set`
+          }))
+        }
+      ];
+    }
+    return [];
+  }
   if (route.path !== '/programy/jailbreak') return [];
   return [
     {
@@ -609,6 +675,45 @@ function structuredData(route, canonical) {
   };
 }
 
+function renderMethodologyDocumentSnapshot(document) {
+  const renderBlock = (block) => {
+    if (block.type === 'paragraph') return `<p>${escapeHtml(block.text)}</p>`;
+    if (block.type === 'heading') return `<h3>${escapeHtml(block.text)}</h3>`;
+    if (block.type === 'quote') return `<blockquote><p>${escapeHtml(block.text)}</p></blockquote>`;
+    if (block.type === 'list') {
+      return `<ul>${block.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+    }
+    if (block.type === 'definitions') {
+      return `<dl>${block.items
+        .map((item) => `<div><dt>${escapeHtml(item.term)}</dt><dd>${escapeHtml(item.definition)}</dd></div>`)
+        .join('')}</dl>`;
+    }
+    return '';
+  };
+
+  return `<main class="seo-document-snapshot" data-seo-snapshot="methodology-document">
+    <header>
+      <p class="section-label">${escapeHtml(document.eyebrow)}</p>
+      <h1>${escapeHtml(document.title)}</h1>
+      <p>${escapeHtml(document.lead)}</p>
+      <p><strong>${escapeHtml(document.version)}</strong> · ${escapeHtml(document.status)} · zveřejněno ${escapeHtml(
+        document.published
+      )}</p>
+      <a class="seo-document-snapshot-download" href="${escapeHtml(document.downloadDocx)}" download>Stáhnout původní dokument DOCX</a>
+    </header>
+    <article>
+      ${document.sections
+        .map(
+          (section) => `<section id="${escapeHtml(section.id)}">
+        <h2>${escapeHtml(section.title)}</h2>
+        ${section.blocks.map(renderBlock).join('\n        ')}
+      </section>`
+        )
+        .join('\n      ')}
+    </article>
+  </main>`;
+}
+
 function renderRoute(route) {
   const canonical = routeUrl(route.path);
   const currentOgImage = routeOgImage(route);
@@ -671,6 +776,10 @@ function renderRoute(route) {
     /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(structuredData(route, canonical), null, 6)}\n    </script>`
   );
+  const methodologyDocument = methodologyDocuments.find((item) => item.id === route.methodologyDocumentId);
+  if (methodologyDocument) {
+    html = html.replace('<div id="root"></div>', `<div id="root">${renderMethodologyDocumentSnapshot(methodologyDocument)}</div>`);
+  }
   return ensureGoogleTag(deferRenderBlockingCss(html));
 }
 
@@ -691,8 +800,15 @@ const storySitemapRoutes = sitemapRoutes.filter(
   (route) => route.path === '/aktuality' || route.path === '/pribehy-druhe-sance' || route.path.startsWith('/pribehy-druhe-sance/')
 );
 const donateSitemapRoutes = sitemapRoutes.filter((route) => route.path === '/zapojeni' || route.path === '/darovat');
+const methodologySitemapRoutes = sitemapRoutes.filter(
+  (route) => route.path === '/metodika' || route.path.startsWith('/metodika/')
+);
 const pageSitemapRoutes = sitemapRoutes.filter(
-  (route) => !programSitemapRoutes.includes(route) && !storySitemapRoutes.includes(route) && !donateSitemapRoutes.includes(route)
+  (route) =>
+    !programSitemapRoutes.includes(route) &&
+    !storySitemapRoutes.includes(route) &&
+    !donateSitemapRoutes.includes(route) &&
+    !methodologySitemapRoutes.includes(route)
 );
 
 function renderRouteSitemap(routeList) {
@@ -788,6 +904,7 @@ const sitemapPages = renderRouteSitemap(pageSitemapRoutes);
 const sitemapPrograms = renderRouteSitemap(programSitemapRoutes);
 const sitemapStories = renderRouteSitemap(storySitemapRoutes);
 const sitemapDonate = renderRouteSitemap(donateSitemapRoutes);
+const sitemapMethodology = renderRouteSitemap(methodologySitemapRoutes);
 const sitemapDocuments = renderFileSitemap(documentEntries);
 const sitemapMedia = renderFileSitemap(mediaEntries);
 
@@ -837,6 +954,10 @@ const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
     <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
+    <loc>${baseUrl}/sitemap-methodology.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
     <loc>${baseUrl}/sitemap-media.xml</loc>
     <lastmod>${today}</lastmod>
   </sitemap>
@@ -856,11 +977,12 @@ fs.writeFileSync(path.join(distDir, 'sitemap-pages.xml'), sitemapPages);
 fs.writeFileSync(path.join(distDir, 'sitemap-programs.xml'), sitemapPrograms);
 fs.writeFileSync(path.join(distDir, 'sitemap-stories.xml'), sitemapStories);
 fs.writeFileSync(path.join(distDir, 'sitemap-documents.xml'), sitemapDocuments);
+fs.writeFileSync(path.join(distDir, 'sitemap-methodology.xml'), sitemapMethodology);
 fs.writeFileSync(path.join(distDir, 'sitemap-media.xml'), sitemapMedia);
 fs.writeFileSync(path.join(distDir, 'sitemap-donate.xml'), sitemapDonate);
 fs.writeFileSync(path.join(distDir, 'sitemap-videos.xml'), sitemapVideos);
 console.log(
-  `Prerendered SEO HTML for ${routes.length} routes. Sitemap segments: pages=${pageSitemapRoutes.length}, programs=${programSitemapRoutes.length}, stories=${storySitemapRoutes.length}, documents=${documentEntries.length}, media=${mediaEntries.length}, donate=${donateSitemapRoutes.length}, videos=${videoAssets.length}.`
+  `Prerendered SEO HTML for ${routes.length} routes. Sitemap segments: pages=${pageSitemapRoutes.length}, programs=${programSitemapRoutes.length}, stories=${storySitemapRoutes.length}, methodology=${methodologySitemapRoutes.length}, documents=${documentEntries.length}, media=${mediaEntries.length}, donate=${donateSitemapRoutes.length}, videos=${videoAssets.length}.`
 );
 
 

@@ -65,6 +65,18 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error('Whole-site search did not render results for metodika.');
   }
 
+  await page.goto(`${baseUrl}/metodika/slovnik-pojmu`, { waitUntil: 'networkidle' });
+  await page.getByRole('heading', { name: 'Slovník pojmů REST||ART Integrace', level: 1 }).waitFor();
+  await page.getByText('Case management', { exact: true }).first().waitFor();
+  const methodologyCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+  if (!methodologyCanonical?.endsWith('/metodika/slovnik-pojmu')) {
+    throw new Error(`Methodology document canonical URL mismatch: ${methodologyCanonical}`);
+  }
+  const methodologyDownload = page.getByRole('link', { name: /Stáhnout originál DOCX/ }).first();
+  if ((await methodologyDownload.getAttribute('href')) !== '/documents/methodology/slovnik-pojmu-rest-art-integrace-v0-9.docx') {
+    throw new Error('Methodology glossary should link to its source DOCX file.');
+  }
+
   await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'Co se v projektu děje', level: 1 }).waitFor();
   if ((await page.locator('.news-gallery-card').count()) < 3) {

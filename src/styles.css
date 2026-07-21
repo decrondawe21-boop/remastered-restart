@@ -9809,6 +9809,304 @@ h3 {
   letter-spacing: -0.035em !important;
 }
 
+/* Compact screen typography requested for dense, scan-friendly pages. */
+@media screen {
+  :root {
+    --page-gutter: clamp(14px, 2.4vw, 36px);
+  }
+
+  html {
+    font-size: 8pt;
+  }
+
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-family: var(--font-sans);
+    font-size: 8pt !important;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  :where(p, li, dd, dt, span, small, a, button, input, select, textarea, label, figcaption, th, td, time, cite) {
+    font-size: 8pt !important;
+    letter-spacing: 0 !important;
+  }
+
+  :where(h1, .page-header h1, .methodology-document-header h1, .program-detail-title h1, .hero-program-card h1, .hero-banner-overlay h1) {
+    margin-bottom: 8px;
+    font-size: 12pt !important;
+    font-weight: var(--weight-bold) !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+  }
+
+  :where(h2, h3, h4, h5, h6) {
+    margin-bottom: 6px;
+    font-size: 9pt !important;
+    font-weight: var(--weight-bold) !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0 !important;
+  }
+
+  :where(.section-label, .quiet-label, .hero-program-motto, .home-link strong, .program-pillar-card strong) {
+    font-size: 9pt !important;
+    font-weight: var(--weight-bold) !important;
+    letter-spacing: 0 !important;
+  }
+
+  .site-header {
+    gap: 16px;
+    min-height: 58px;
+    padding-block: 7px;
+  }
+
+  .brand img {
+    width: 168px;
+  }
+
+  .desktop-nav a,
+  .portal-entry-link,
+  .signup-link {
+    padding: 6px 8px;
+  }
+
+  .site-search,
+  .portal-entry-link,
+  .signup-link,
+  .session-chip {
+    min-height: 30px;
+  }
+
+  .header-cta,
+  .mobile-cta,
+  .button {
+    min-height: 30px;
+    padding: 6px 10px;
+  }
+
+  .page-header,
+  .hero,
+  .content-section,
+  .muted-section,
+  .split-section,
+  .contact-section,
+  .admin-section {
+    padding-block: clamp(24px, 4vw, 46px);
+  }
+
+  .slideshow-hero {
+    gap: 10px;
+    padding-block: clamp(16px, 2.4vw, 28px);
+  }
+
+  .section-intro {
+    margin-bottom: 18px;
+  }
+
+  .homepage-seo-section,
+  .project-video-section {
+    margin-bottom: 18px;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .project-video-section {
+    gap: 16px;
+  }
+
+  .home-link {
+    gap: 5px;
+    min-height: 96px;
+    padding: 14px;
+  }
+
+  :where(
+    .news-gallery-content,
+    .program-pillar-card div,
+    .program-story-card,
+    .program-contact-box,
+    .methodology-hero-copy,
+    .methodology-public-card,
+    .methodology-flow-card,
+    .methodology-standard-card,
+    .methodology-program-section,
+    .methodology-admin-section,
+    .methodology-style-section,
+    .methodology-gallery-section,
+    .methodology-document-library-grid article,
+    .admin-card
+  ) {
+    padding: 14px;
+  }
+
+  .methodology-page,
+  .methodology-document-page,
+  .methodology-document-content {
+    gap: 22px;
+  }
+
+  .methodology-document-header {
+    gap: 12px;
+    padding-block: 22px;
+  }
+
+  .methodology-document-header > div:first-child,
+  .methodology-document-content > section {
+    gap: 9px;
+  }
+
+  .methodology-document-layout {
+    grid-template-columns: minmax(180px, 220px) minmax(0, 980px);
+    gap: clamp(20px, 3vw, 42px);
+  }
+
+  .methodology-document-toc {
+    top: 78px;
+    gap: 10px;
+    padding-right: 14px;
+  }
+
+  .methodology-document-toc a {
+    padding: 6px 0;
+  }
+
+  .methodology-document-content > section {
+    scroll-margin-top: 82px;
+  }
+
+  .methodology-document-content > section + section {
+    padding-top: 20px;
+  }
+
+  .methodology-document-content p,
+  .methodology-document-content li,
+  .methodology-document-content dd {
+    font-size: 8pt !important;
+    line-height: 1.55;
+  }
+
+  .methodology-document-content blockquote {
+    margin: 5px 0;
+    padding: 12px 14px;
+    font-size: 9pt !important;
+    line-height: 1.45;
+  }
+
+  .methodology-definition-list > div {
+    gap: 18px;
+    padding: 11px 0;
+    scroll-margin-top: 82px;
+  }
+
+  .methodology-related-documents {
+    gap: 20px;
+    padding-block: 20px;
+  }
+
+  .methodology-document-library-grid article {
+    min-height: 0;
+  }
+
+  .methodology-document-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .methodology-download-link {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 2px;
+    color: var(--green-dark);
+    font-weight: var(--weight-bold);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .methodology-download-link:hover,
+  .methodology-download-link:focus-visible {
+    color: var(--gold);
+  }
+
+  .admin-head {
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .admin-grid,
+  .forms-layout {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .admin-card {
+    gap: 10px;
+  }
+
+  .admin-card input,
+  .admin-card select,
+  .admin-tabs button {
+    min-height: 32px;
+  }
+
+  .admin-card textarea {
+    min-height: 72px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .site-header {
+    min-height: 54px;
+  }
+
+  .brand img {
+    width: 142px;
+  }
+
+  .page-header,
+  .hero,
+  .content-section,
+  .muted-section,
+  .split-section,
+  .contact-section,
+  .admin-section {
+    padding-block: 20px;
+  }
+
+  .methodology-document-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .methodology-document-toc {
+    position: static;
+    padding: 12px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .methodology-document-toc nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+  }
+
+  .methodology-document-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .methodology-document-actions .button,
+  .methodology-download-link {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
 .print-sheet .print-header svg,
 .print-sheet-branded .print-header svg {
   width: 11mm !important;

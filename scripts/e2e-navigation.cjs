@@ -76,6 +76,52 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   if ((await methodologyDownload.getAttribute('href')) !== '/documents/methodology/slovnik-pojmu-rest-art-integrace-v0-9.docx') {
     throw new Error('Methodology glossary should link to its source DOCX file.');
   }
+  const glossarySectionLink = page.locator('.methodology-document-toc a').last();
+  const glossarySectionId = (await glossarySectionLink.getAttribute('href'))?.replace(/^#/, '');
+  if (!glossarySectionId) throw new Error('Methodology glossary table of contents has no section target.');
+  await glossarySectionLink.click();
+  await page.waitForFunction((sectionId) => window.location.hash === `#${sectionId}`, glossarySectionId);
+  await page.waitForFunction((sectionId) => {
+    const target = document.getElementById(sectionId);
+    if (!target) return false;
+    const top = target.getBoundingClientRect().top;
+    return top >= 0 && top <= 180;
+  }, glossarySectionId);
+  const glossarySectionBox = await page.locator(`#${glossarySectionId}`).boundingBox();
+  if (!glossarySectionBox || glossarySectionBox.y < 0 || glossarySectionBox.y > 180) {
+    throw new Error(`Methodology anchor did not scroll to its target: ${JSON.stringify(glossarySectionBox)}`);
+  }
+
+  await page.goto(`${baseUrl}/metodika`, { waitUntil: 'networkidle' });
+  const compactTypography = await page.evaluate(() => ({
+    body: Number.parseFloat(getComputedStyle(document.body).fontSize),
+    heading: Number.parseFloat(getComputedStyle(document.querySelector('h1')).fontSize),
+    subheading: Number.parseFloat(getComputedStyle(document.querySelector('h2')).fontSize),
+    paragraph: Number.parseFloat(getComputedStyle(document.querySelector('main p:not(.section-label)')).fontSize)
+  }));
+  const expectedTypography = { body: 10.667, heading: 16, subheading: 12, paragraph: 10.667 };
+  for (const [name, expected] of Object.entries(expectedTypography)) {
+    if (Math.abs(compactTypography[name] - expected) > 0.25) {
+      throw new Error(`Compact typography mismatch for ${name}: ${compactTypography[name]}px`);
+    }
+  }
+  const charterCard = page.locator('.methodology-document-library-grid article').filter({ hasText: 'Charta' });
+  if ((await charterCard.getByRole('link', { name: /Číst online/ }).getAttribute('href')) !== '/metodika/charta') {
+    throw new Error('Methodology charter card should link to its public HTML page.');
+  }
+  if ((await charterCard.getByRole('link', { name: /Stáhnout DOCX/ }).getAttribute('href')) !== '/documents/methodology/charta-rest-art-integrace-v0-9.docx') {
+    throw new Error('Methodology charter card should link to its source DOCX file.');
+  }
+  const charterDocumentResponse = await page.request.get(`${baseUrl}/documents/methodology/charta-rest-art-integrace-v0-9.docx`);
+  const charterDocumentBody = await charterDocumentResponse.body();
+  if (!charterDocumentResponse.ok() || charterDocumentBody.length < 100_000) {
+    throw new Error(`Methodology charter DOCX is not downloadable: ${charterDocumentResponse.status()}`);
+  }
+  await Promise.all([
+    page.waitForURL('**/metodika/charta'),
+    charterCard.getByRole('link', { name: /Číst online/ }).click()
+  ]);
+  await page.getByRole('heading', { name: 'Charta REST||ART Integrace', level: 1 }).waitFor();
 
   await page.goto(`${baseUrl}/videa/predstaveni-projektu`, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'RESTART Integrace: krátké představení projektu', level: 1 }).waitFor();

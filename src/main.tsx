@@ -2379,16 +2379,30 @@ function useHashPath() {
   const [path, setPath] = React.useState(() => currentBrowserPath());
 
   React.useEffect(() => {
+    const scrollToDocumentAnchor = () => {
+      const hash = window.location.hash;
+      if (!hash || hash.startsWith('#/')) return false;
+      const targetId = decodeURIComponent(hash.slice(1));
+      const target = window.document.getElementById(targetId);
+      if (!target) return false;
+      target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      return true;
+    };
     const onRouteChange = () => {
       setPath(currentBrowserPath());
       window.requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        if (!scrollToDocumentAnchor()) window.scrollTo({ top: 0, behavior: 'instant' });
       });
     };
-    window.addEventListener('hashchange', onRouteChange);
+    const onHashChange = () => {
+      window.requestAnimationFrame(() => {
+        if (!scrollToDocumentAnchor()) onRouteChange();
+      });
+    };
+    window.addEventListener('hashchange', onHashChange);
     window.addEventListener('popstate', onRouteChange);
     return () => {
-      window.removeEventListener('hashchange', onRouteChange);
+      window.removeEventListener('hashchange', onHashChange);
       window.removeEventListener('popstate', onRouteChange);
     };
   }, []);
@@ -4920,9 +4934,20 @@ function MethodologyPage({ account }: { account: AuthAccount | null }) {
                 <h3>{document.shortTitle}</h3>
                 <p>{document.lead}</p>
               </div>
-              <a className="button secondary" href={document.path}>
-                Číst dokument <ArrowRight size={18} />
-              </a>
+              <div className="methodology-document-actions">
+                <a className="button secondary" href={document.path}>
+                  Číst online <ArrowRight size={18} />
+                </a>
+                <a
+                  className="methodology-download-link"
+                  href={document.downloadDocx}
+                  target="_blank"
+                  rel="noreferrer"
+                  download={document.sourceFileName}
+                >
+                  <Download size={16} /> Stáhnout DOCX
+                </a>
+              </div>
             </article>
           ))}
         </div>

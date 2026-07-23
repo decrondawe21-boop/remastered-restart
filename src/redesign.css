@@ -1,0 +1,836 @@
+/* Experimental screen redesign based on RAI-STD-DOC-001. Print styles stay in styles.css. */
+@media screen {
+  :root {
+    --bg: #fbfaf5;
+    --bg-soft: #f1f4ee;
+    --bg-green: #e7efe8;
+    --text: #14241c;
+    --muted: #56675e;
+    --line: #cbd7ce;
+    --green: #155f46;
+    --green-dark: #0b3f30;
+    --green-deep: #062d23;
+    --green-soft: #e3ede5;
+    --gold: #c99a2e;
+    --gold-soft: #f4ead1;
+    --surface: #fffefa;
+    --shadow: 0 8px 22px rgba(9, 54, 39, 0.08);
+    --page-max: 1520px;
+    --page-gutter: clamp(18px, 3vw, 44px);
+  }
+
+  html {
+    font-size: 16px !important;
+  }
+
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-family: var(--font-sans);
+    font-size: 14px !important;
+    line-height: 1.52;
+    letter-spacing: 0;
+  }
+
+  :where(p, li, dd, dt, span, small, a, button, input, select, textarea, label, figcaption, th, td, time, cite) {
+    font-size: 14px !important;
+    letter-spacing: 0 !important;
+  }
+
+  small,
+  figcaption,
+  time,
+  .metric-card span,
+  .client-status-chip,
+  .client-id-chip {
+    font-size: 12px !important;
+  }
+
+  :where(h1, .page-header h1, .methodology-document-header h1, .program-detail-title h1, .hero-program-card h1, .hero-banner-overlay h1) {
+    margin-bottom: 10px;
+    font-size: clamp(30px, 3vw, 40px) !important;
+    font-weight: 800 !important;
+    line-height: 1.12 !important;
+    letter-spacing: 0 !important;
+  }
+
+  :where(h2) {
+    margin-bottom: 8px;
+    font-size: clamp(21px, 2vw, 26px) !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+  }
+
+  :where(h3) {
+    margin-bottom: 6px;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    letter-spacing: 0 !important;
+  }
+
+  :where(h4, h5, h6) {
+    margin-bottom: 5px;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0 !important;
+  }
+
+  :where(.section-label, .quiet-label, .hero-program-motto) {
+    margin-bottom: 7px;
+    color: var(--green-dark);
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.045em !important;
+  }
+
+  body {
+    background-color: var(--bg);
+  }
+
+  body::before {
+    background:
+      repeating-linear-gradient(0deg, rgba(7, 64, 45, 0.018) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(92deg, rgba(13, 76, 54, 0.014) 0 1px, transparent 1px 9px),
+      linear-gradient(180deg, rgba(255, 254, 250, 0.96), rgba(244, 247, 241, 0.9));
+    filter: none;
+  }
+
+  body::after {
+    display: none;
+  }
+
+  .weather-leaves {
+    opacity: 0.4;
+  }
+
+  .site-header {
+    gap: 18px;
+    min-height: 62px;
+    padding-block: 8px;
+    border-bottom-color: rgba(9, 64, 47, 0.18);
+    background: rgba(255, 254, 250, 0.96);
+    box-shadow: 0 4px 16px rgba(7, 53, 38, 0.06);
+  }
+
+  .brand img {
+    width: 174px;
+  }
+
+  .desktop-nav a,
+  .portal-entry-link,
+  .signup-link {
+    padding: 6px 9px;
+    font-size: 12px !important;
+  }
+
+  .site-search,
+  .portal-entry-link,
+  .signup-link,
+  .session-chip,
+  .header-cta,
+  .mobile-cta,
+  .button {
+    min-height: 34px;
+  }
+
+  .header-cta,
+  .mobile-cta,
+  .button {
+    padding: 7px 12px;
+    font-size: 12px !important;
+  }
+
+  .page-header {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(30px, 4vw, 48px);
+    border-bottom: 3px solid var(--gold);
+    background-color: var(--green-deep);
+    background-image:
+      repeating-linear-gradient(3deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 6px),
+      repeating-linear-gradient(91deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 10px),
+      linear-gradient(135deg, #083e2f, #0b533d 68%, #174f3c);
+    color: #fff;
+  }
+
+  .page-header::after {
+    position: absolute;
+    top: 0;
+    right: var(--page-gutter);
+    width: 126px;
+    height: 10px;
+    background: linear-gradient(90deg, #0c4b38 0 22%, #1c6a4d 22% 44%, #708d74 44% 66%, #fffefa 66% 80%, var(--gold) 80%);
+    content: "";
+  }
+
+  .page-header h1,
+  .page-header p:not(.section-label) {
+    color: #fff;
+  }
+
+  .page-header p:not(.section-label) {
+    max-width: 860px;
+    font-size: 15px !important;
+    line-height: 1.55;
+  }
+
+  .page-header .section-label {
+    color: #f0c862;
+  }
+
+  .hero,
+  .content-section,
+  .muted-section,
+  .split-section,
+  .contact-section,
+  .admin-section,
+  .solution-section,
+  .donate-section {
+    padding-block: clamp(32px, 4.5vw, 54px);
+  }
+
+  .slideshow-hero {
+    gap: 10px;
+    padding-block: clamp(18px, 2.6vw, 30px);
+    background: rgba(255, 254, 250, 0.86);
+  }
+
+  .section-intro {
+    margin-bottom: 20px;
+  }
+
+  .section-intro h2::after,
+  .methodology-document-content h2::after {
+    display: block;
+    width: 54px;
+    height: 3px;
+    margin-top: 10px;
+    background: var(--gold);
+    content: "";
+  }
+
+  .homepage-seo-section,
+  .project-video-section,
+  .practice-gallery-section,
+  .project-reveal-section,
+  .program-pillar-section {
+    margin-bottom: 18px;
+    padding-block: clamp(26px, 3.5vw, 42px);
+  }
+
+  .homepage-seo-section,
+  .project-video-section {
+    padding: 18px;
+    border-color: var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+
+  .project-video-section {
+    gap: 18px;
+  }
+
+  .compact-section {
+    padding-block: 28px;
+  }
+
+  .metric-grid,
+  .principle-grid,
+  .focus-grid,
+  .support-grid,
+  .home-link-grid {
+    gap: 10px;
+  }
+
+  .metric-card,
+  .principle-grid article,
+  .focus-card,
+  .support-grid article,
+  .home-link {
+    min-height: 0;
+    padding: 14px;
+    border-radius: 6px;
+    background: var(--surface);
+    box-shadow: 0 4px 12px rgba(10, 54, 40, 0.045);
+  }
+
+  .metric-card strong {
+    margin-bottom: 7px;
+    font-size: clamp(26px, 3vw, 38px) !important;
+  }
+
+  .home-link {
+    gap: 4px;
+  }
+
+  .home-link strong,
+  .program-pillar-card strong {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+  }
+
+  .program-row {
+    grid-template-columns: 42px 1fr;
+    gap: 12px;
+    padding: 13px;
+  }
+
+  .program-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .news-gallery-grid {
+    gap: 14px;
+  }
+
+  .news-gallery-card {
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+  }
+
+  .news-gallery-content {
+    gap: 9px;
+    padding: 14px;
+  }
+
+  .methodology-page,
+  .methodology-document-page,
+  .methodology-document-content {
+    gap: 24px;
+  }
+
+  .methodology-hero,
+  .methodology-split,
+  .methodology-style-section {
+    gap: 14px;
+  }
+
+  .methodology-hero-copy {
+    position: relative;
+    gap: 12px;
+    padding: 22px;
+    border-bottom: 3px solid var(--gold);
+    background-color: var(--green-deep);
+    background-image:
+      repeating-linear-gradient(4deg, rgba(255, 255, 255, 0.026) 0 1px, transparent 1px 6px),
+      repeating-linear-gradient(92deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 11px),
+      linear-gradient(135deg, #07382a, #0c5941);
+    color: #fff;
+  }
+
+  .methodology-hero-copy h1,
+  .methodology-hero-copy p,
+  .methodology-hero-copy .section-label {
+    color: #fff;
+  }
+
+  .methodology-hero-copy .section-label {
+    color: #f0c862;
+  }
+
+  :where(
+    .methodology-public-card,
+    .methodology-flow-card,
+    .methodology-standard-card,
+    .methodology-program-section,
+    .methodology-admin-section,
+    .methodology-style-section,
+    .methodology-gallery-section,
+    .methodology-document-library-grid article
+  ) {
+    gap: 12px;
+    min-height: 0;
+    padding: 16px;
+    border-radius: 6px;
+    background: var(--surface);
+  }
+
+  .methodology-principle-grid,
+  .methodology-pillar-grid,
+  .methodology-token-grid,
+  .methodology-visual-grid,
+  .methodology-document-library-grid,
+  .methodology-downloads {
+    gap: 10px;
+  }
+
+  .methodology-principle-grid article,
+  .methodology-pillar-grid article,
+  .methodology-token-grid article {
+    gap: 7px;
+    min-height: 0;
+    padding: 12px;
+    border-radius: 6px;
+  }
+
+  .methodology-flow-list {
+    gap: 7px;
+  }
+
+  .methodology-flow-list li {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 42px;
+    padding: 7px 9px;
+    border-radius: 5px;
+  }
+
+  .methodology-flow-list li::before {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .methodology-downloads article {
+    gap: 10px;
+    padding: 12px;
+    border-radius: 6px;
+  }
+
+  .methodology-document-library {
+    gap: 16px;
+    padding-block: 24px;
+  }
+
+  .methodology-document-library-head {
+    gap: 18px;
+  }
+
+  .methodology-document-library-grid article > div {
+    gap: 7px;
+  }
+
+  .methodology-document-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+  }
+
+  .methodology-download-link {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    padding: 5px 2px;
+    color: var(--green-dark);
+    font-size: 12px !important;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .methodology-document-header {
+    gap: 14px;
+    padding-block: 26px;
+  }
+
+  .methodology-document-header > div:first-child,
+  .methodology-document-content > section {
+    gap: 10px;
+  }
+
+  .methodology-document-lead {
+    font-size: 15px !important;
+    line-height: 1.55;
+  }
+
+  .methodology-document-meta {
+    gap: 10px;
+  }
+
+  .methodology-document-layout {
+    grid-template-columns: minmax(190px, 230px) minmax(0, 980px);
+    gap: clamp(22px, 3vw, 44px);
+  }
+
+  .methodology-document-toc {
+    top: 82px;
+    gap: 10px;
+    padding-right: 14px;
+  }
+
+  .methodology-document-toc a {
+    padding: 7px 0;
+    font-size: 12px !important;
+  }
+
+  .methodology-document-content > section {
+    scroll-margin-top: 88px;
+  }
+
+  .methodology-document-content > section + section {
+    padding-top: 22px;
+  }
+
+  .methodology-document-content p,
+  .methodology-document-content li,
+  .methodology-document-content dd {
+    font-size: 14px !important;
+    line-height: 1.58;
+  }
+
+  .methodology-document-content blockquote {
+    margin: 5px 0;
+    padding: 12px 14px;
+    border-left: 4px solid var(--gold);
+    background: var(--green-soft);
+    font-size: 14px !important;
+    line-height: 1.5;
+  }
+
+  .methodology-definition-list > div {
+    gap: 18px;
+    padding: 10px 0;
+  }
+
+  .methodology-related-documents {
+    gap: 16px;
+    padding-block: 20px;
+  }
+
+  .admin-section {
+    background: var(--bg);
+  }
+
+  .admin-shell {
+    border-radius: 6px;
+    background: #eef3ee;
+    box-shadow: var(--shadow);
+  }
+
+  .admin-head,
+  .workspace-topbar {
+    gap: 14px;
+    padding: 18px;
+    border-bottom: 3px solid var(--gold);
+    background-color: var(--green-deep);
+    background-image:
+      repeating-linear-gradient(4deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 6px),
+      linear-gradient(135deg, #07382a, #0d5942);
+    color: #fff;
+  }
+
+  .admin-head h2,
+  .admin-head p:not(.section-label),
+  .admin-head .section-label,
+  .workspace-topbar h1,
+  .workspace-topbar p:not(.section-label),
+  .workspace-topbar .section-label {
+    color: #fff;
+  }
+
+  .admin-head .section-label,
+  .workspace-topbar .section-label {
+    color: #f0c862;
+  }
+
+  .admin-tabs {
+    gap: 3px;
+    padding: 3px;
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .admin-tabs button {
+    min-height: 34px;
+    padding: 6px 10px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 12px !important;
+  }
+
+  .admin-tabs button.active {
+    background: #fffefa;
+    color: var(--green-dark);
+  }
+
+  .admin-grid,
+  .forms-layout {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .dashboard-grid {
+    display: block;
+    columns: 2;
+    column-gap: 10px;
+  }
+
+  .dashboard-grid > * {
+    width: 100%;
+    margin: 0 0 10px;
+    break-inside: avoid;
+  }
+
+  .forms-control-stack,
+  .admin-card,
+  .activity-list,
+  .placeholder-list,
+  .quick-action-grid {
+    gap: 9px;
+  }
+
+  .admin-card {
+    padding: 14px;
+    border-radius: 5px;
+    background: var(--surface);
+  }
+
+  .form-grid.two {
+    gap: 10px;
+  }
+
+  .admin-card label {
+    gap: 4px;
+    font-size: 12px !important;
+    font-weight: 600;
+  }
+
+  .admin-card input,
+  .admin-card select {
+    min-height: 36px;
+    padding: 6px 9px;
+    font-size: 13px !important;
+  }
+
+  .admin-card textarea {
+    min-height: 76px;
+    padding: 8px 9px;
+    font-size: 13px !important;
+  }
+
+  .checkbox-field {
+    min-height: 34px;
+  }
+
+  .client-list {
+    gap: 6px;
+  }
+
+  .client-list button {
+    gap: 5px;
+    padding: 9px 10px;
+  }
+
+  .table-lite {
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--surface);
+  }
+
+  .activity-list span,
+  .activity-feed-item,
+  .placeholder-list span,
+  .table-lite div,
+  .quick-action-grid button {
+    padding: 8px 10px;
+    border-radius: 5px;
+  }
+
+  .table-lite div {
+    min-height: 34px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    background: #fffefa;
+  }
+
+  .table-lite div:nth-child(even) {
+    background: #f3f6f1;
+  }
+
+  .table-lite div:last-child {
+    border-bottom: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--surface);
+  }
+
+  table th,
+  table td,
+  .cookie-table th,
+  .cookie-table td {
+    padding: 7px 9px;
+    border-right: 1px solid rgba(202, 216, 207, 0.8);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px !important;
+    line-height: 1.35;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  table th,
+  .cookie-table th {
+    background: var(--green-dark);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  table tr:nth-child(even) td {
+    background: #f2f5f0;
+  }
+
+  table tr:last-child td,
+  table th:last-child,
+  table td:last-child {
+    border-right: 0;
+  }
+
+  table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .client-hero {
+    gap: 16px;
+    padding-bottom: 18px;
+  }
+
+  .client-summary-card,
+  .client-progress-card,
+  .client-wide-card {
+    padding: 14px;
+  }
+
+  .site-footer {
+    border-top: 3px solid var(--gold);
+    background: #eef3ed;
+  }
+}
+
+@media screen and (max-width: 980px) {
+  .methodology-hero,
+  .methodology-split,
+  .methodology-style-section {
+    grid-template-columns: 1fr;
+  }
+
+  .methodology-principle-grid,
+  .methodology-document-library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 760px) {
+  :root {
+    --page-gutter: 16px;
+  }
+
+  body,
+  button,
+  input,
+  select,
+  textarea,
+  :where(p, li, dd, dt, span, a, button, input, select, textarea, label, th, td, cite) {
+    font-size: 14px !important;
+  }
+
+  :where(h1, .page-header h1, .methodology-document-header h1, .program-detail-title h1, .hero-program-card h1, .hero-banner-overlay h1) {
+    font-size: 28px !important;
+  }
+
+  .site-header {
+    min-height: 56px;
+  }
+
+  .brand img {
+    width: 146px;
+  }
+
+  .page-header,
+  .hero,
+  .content-section,
+  .muted-section,
+  .split-section,
+  .contact-section,
+  .admin-section,
+  .solution-section,
+  .donate-section {
+    padding-block: 24px;
+  }
+
+  .page-header::after {
+    right: 16px;
+    width: 90px;
+  }
+
+  .section-intro {
+    margin-bottom: 16px;
+  }
+
+  .metric-grid,
+  .principle-grid,
+  .focus-grid,
+  .support-grid,
+  .home-link-grid,
+  .methodology-principle-grid,
+  .methodology-pillar-grid,
+  .methodology-token-grid,
+  .methodology-document-library-grid,
+  .methodology-downloads {
+    grid-template-columns: 1fr;
+  }
+
+  .methodology-document-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .methodology-document-toc {
+    position: static;
+    padding: 10px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .methodology-document-toc nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 10px;
+  }
+
+  .methodology-document-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .methodology-document-actions .button,
+  .methodology-download-link {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .methodology-flow-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-head,
+  .workspace-topbar {
+    padding: 14px;
+  }
+
+  .admin-grid,
+  .forms-layout {
+    padding: 8px;
+  }
+
+  .dashboard-grid {
+    columns: 1;
+  }
+
+  .form-grid.two {
+    grid-template-columns: 1fr;
+  }
+}

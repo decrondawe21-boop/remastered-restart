@@ -128,6 +128,7 @@ import {
   type ApiUser
 } from './api';
 import './styles.css';
+import './redesign.css';
 
 type MethodologyDocumentBlock =
   | { type: 'paragraph'; text: string }

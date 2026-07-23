@@ -99,10 +99,15 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     subheading: Number.parseFloat(getComputedStyle(document.querySelector('h2')).fontSize),
     paragraph: Number.parseFloat(getComputedStyle(document.querySelector('main p:not(.section-label)')).fontSize)
   }));
-  const expectedTypography = { body: 10.667, heading: 16, subheading: 12, paragraph: 10.667 };
-  for (const [name, expected] of Object.entries(expectedTypography)) {
-    if (Math.abs(compactTypography[name] - expected) > 0.25) {
-      throw new Error(`Compact typography mismatch for ${name}: ${compactTypography[name]}px`);
+  const expectedTypography = {
+    body: [13.5, 14.5],
+    heading: [30, 40.5],
+    subheading: [20.5, 26.5],
+    paragraph: [13.5, 14.5]
+  };
+  for (const [name, [minimum, maximum]] of Object.entries(expectedTypography)) {
+    if (compactTypography[name] < minimum || compactTypography[name] > maximum) {
+      throw new Error(`Standardized typography mismatch for ${name}: ${compactTypography[name]}px`);
     }
   }
   const charterCard = page.locator('.methodology-document-library-grid article').filter({ hasText: 'Charta' });

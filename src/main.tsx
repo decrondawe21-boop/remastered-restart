@@ -2459,6 +2459,21 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
   );
 }
 
+function BrandLockup() {
+  return (
+    <span className="brand-lockup">
+      <img
+        src="/images/brand/restart-integrace-standard-tree-lockup.png"
+        alt="REST||ART Integrace"
+        width="1410"
+        height="625"
+        loading="eager"
+        decoding="async"
+      />
+    </span>
+  );
+}
+
 function Header({
   currentPath,
   account,
@@ -2506,7 +2521,7 @@ function Header({
     <>
       <header className="site-header">
         <a className="brand" href="/" aria-label="REST ART Integrace domů">
-          <img src="/images/sponsor-logo.webp" alt="" width="330" height="159" loading="eager" fetchPriority="high" decoding="async" />
+          <BrandLockup />
         </a>
         <button className="menu-button" type="button" aria-label="Otevřít menu" onClick={() => setOpen(true)}>
           <Menu size={22} />

@@ -90,6 +90,7 @@
 
   body {
     background-color: var(--bg);
+    overflow-x: clip;
   }
 
   body::before {
@@ -101,7 +102,18 @@
   }
 
   body::after {
-    display: none;
+    position: absolute;
+    inset: auto 0 auto auto;
+    top: 96px;
+    z-index: 2;
+    display: block;
+    width: min(36vw, 560px);
+    aspect-ratio: 1;
+    height: auto;
+    background: url("/images/brand/restart-integrace-standard-mark.png") left center / 145% auto no-repeat;
+    filter: none;
+    mix-blend-mode: multiply;
+    opacity: 0.04;
   }
 
   .weather-leaves {
@@ -117,8 +129,21 @@
     box-shadow: 0 4px 16px rgba(7, 53, 38, 0.06);
   }
 
-  .brand img {
-    width: 174px;
+  .brand {
+    color: var(--green-deep);
+    text-decoration: none;
+  }
+
+  .brand-lockup {
+    display: block;
+    line-height: 0;
+  }
+
+  .brand .brand-lockup > img {
+    display: block;
+    width: 190px;
+    height: auto;
+    object-fit: contain;
   }
 
   .desktop-nav a,
@@ -707,8 +732,51 @@
   }
 
   .site-footer {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     border-top: 3px solid var(--gold);
-    background: #eef3ed;
+    background-color: #020a07;
+    background-image:
+      linear-gradient(rgba(0, 7, 5, 0.34), rgba(0, 7, 5, 0.34)),
+      url("/images/brand/emerald-organic-texture.webp");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: #dce9e1;
+  }
+
+  .site-footer::before {
+    display: none;
+  }
+
+  .site-footer p,
+  .footer-nav strong,
+  .codex-credit strong {
+    color: #fff;
+  }
+
+  .footer-nav a,
+  .codex-credit {
+    color: #dce9e1;
+  }
+
+  .footer-nav a:hover,
+  .footer-nav a:focus-visible {
+    color: #f0c862;
+  }
+
+  .footer-cookie-button {
+    border-color: rgba(255, 255, 255, 0.42);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .footer-cookie-button:hover,
+  .footer-cookie-button:focus-visible {
+    border-color: var(--gold);
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
   }
 }
 
@@ -747,8 +815,16 @@
     min-height: 56px;
   }
 
-  .brand img {
-    width: 146px;
+  .brand .brand-lockup > img {
+    width: 158px;
+    height: auto;
+  }
+
+  body::after {
+    top: 74px;
+    right: 0;
+    width: 58vw;
+    background-size: 170% auto;
   }
 
   .page-header,

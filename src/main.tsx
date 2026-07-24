@@ -5881,7 +5881,23 @@ const weatherLeaves = [
   { left: '94%', size: 14, color: '#e1bd43', accent: '#5cae50', glow: 'rgba(255, 205, 66, 0.36)', opacity: 0.19, duration: '26s', delay: '-16s', drift: '104px', rotate: '26deg' },
   { left: '97%', size: 19, color: '#49c76b', accent: '#112f1d', glow: 'rgba(73, 235, 107, 0.3)', opacity: 0.18, duration: '31s', delay: '-22s', drift: '-130px', rotate: '-28deg' },
   { left: '13%', size: 8, color: '#cbff8a', accent: '#319044', glow: 'rgba(203, 255, 138, 0.32)', opacity: 0.2, duration: '17s', delay: '-1s', drift: '80px', rotate: '58deg' },
-  { left: '58%', size: 8, color: '#fff0a4', accent: '#b8933a', glow: 'rgba(255, 234, 132, 0.38)', opacity: 0.18, duration: '18s', delay: '-6s', drift: '-82px', rotate: '-54deg' }
+  { left: '58%', size: 8, color: '#fff0a4', accent: '#b8933a', glow: 'rgba(255, 234, 132, 0.38)', opacity: 0.18, duration: '18s', delay: '-6s', drift: '-82px', rotate: '-54deg' },
+  { left: '1%', size: 12, color: '#d9bf58', accent: '#315f35', glow: 'rgba(231, 196, 77, 0.38)', opacity: 0.27, duration: '22s', delay: '-15s', drift: '92px', rotate: '34deg' },
+  { left: '9%', size: 18, color: '#4aa95f', accent: '#163f2a', glow: 'rgba(74, 169, 95, 0.34)', opacity: 0.3, duration: '19s', delay: '-9s', drift: '-106px', rotate: '-26deg' },
+  { left: '18%', size: 14, color: '#b98f32', accent: '#426f3b', glow: 'rgba(213, 164, 53, 0.36)', opacity: 0.28, duration: '26s', delay: '-20s', drift: '118px', rotate: '48deg' },
+  { left: '27%', size: 23, color: '#3d8a4f', accent: '#d0aa45', glow: 'rgba(72, 156, 86, 0.34)', opacity: 0.29, duration: '24s', delay: '-3s', drift: '-136px', rotate: '-36deg' },
+  { left: '35%', size: 11, color: '#e2c25c', accent: '#2f6940', glow: 'rgba(226, 194, 92, 0.4)', opacity: 0.3, duration: '17s', delay: '-12s', drift: '74px', rotate: '18deg' },
+  { left: '43%', size: 20, color: '#5bb56d', accent: '#123b29', glow: 'rgba(91, 181, 109, 0.35)', opacity: 0.3, duration: '21s', delay: '-17s', drift: '-122px', rotate: '-44deg' },
+  { left: '47%', size: 13, color: '#b88d30', accent: '#67884b', glow: 'rgba(216, 170, 65, 0.36)', opacity: 0.27, duration: '28s', delay: '-25s', drift: '102px', rotate: '56deg' },
+  { left: '54%', size: 17, color: '#3e9f57', accent: '#c8a43d', glow: 'rgba(62, 159, 87, 0.36)', opacity: 0.31, duration: '18s', delay: '-8s', drift: '-96px', rotate: '-14deg' },
+  { left: '62%', size: 25, color: '#d2b34f', accent: '#2e6d3d', glow: 'rgba(222, 188, 78, 0.4)', opacity: 0.28, duration: '30s', delay: '-19s', drift: '148px', rotate: '38deg' },
+  { left: '66%', size: 10, color: '#61ba72', accent: '#17472e', glow: 'rgba(97, 186, 114, 0.34)', opacity: 0.32, duration: '16s', delay: '-5s', drift: '-68px', rotate: '-52deg' },
+  { left: '70%', size: 16, color: '#c49b38', accent: '#497c43', glow: 'rgba(212, 167, 61, 0.36)', opacity: 0.29, duration: '23s', delay: '-14s', drift: '116px', rotate: '24deg' },
+  { left: '77%', size: 21, color: '#438f53', accent: '#d5b64d', glow: 'rgba(74, 157, 91, 0.35)', opacity: 0.3, duration: '27s', delay: '-23s', drift: '-132px', rotate: '-32deg' },
+  { left: '84%', size: 12, color: '#e0be56', accent: '#356d3e', glow: 'rgba(224, 190, 86, 0.4)', opacity: 0.31, duration: '20s', delay: '-11s', drift: '84px', rotate: '42deg' },
+  { left: '89%', size: 18, color: '#58ad68', accent: '#183f2b', glow: 'rgba(88, 173, 104, 0.34)', opacity: 0.3, duration: '25s', delay: '-18s', drift: '-114px', rotate: '-20deg' },
+  { left: '93%', size: 22, color: '#b88e31', accent: '#4d8148', glow: 'rgba(207, 161, 55, 0.37)', opacity: 0.28, duration: '29s', delay: '-27s', drift: '142px', rotate: '30deg' },
+  { left: '99%', size: 14, color: '#4a9e5c', accent: '#d2ad44', glow: 'rgba(74, 158, 92, 0.34)', opacity: 0.3, duration: '22s', delay: '-7s', drift: '-88px', rotate: '-40deg' }
 ];
 
 function WeatherLeaves() {

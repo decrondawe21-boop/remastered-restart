@@ -117,7 +117,17 @@
   }
 
   .weather-leaves {
-    opacity: 0.4;
+    z-index: 2;
+    opacity: 0.76;
+  }
+
+  .weather-leaves span {
+    opacity: clamp(0.38, calc(var(--leaf-opacity) * 1.9), 0.56);
+    filter:
+      saturate(1.38)
+      contrast(1.08)
+      drop-shadow(0 0 8px var(--leaf-glow))
+      drop-shadow(0 3px 7px rgba(9, 45, 31, 0.2));
   }
 
   .site-header {
@@ -825,6 +835,14 @@
     right: 0;
     width: 58vw;
     background-size: 170% auto;
+  }
+
+  .weather-leaves {
+    opacity: 0.68;
+  }
+
+  .weather-leaves span:nth-child(n + 37) {
+    display: none;
   }
 
   .page-header,

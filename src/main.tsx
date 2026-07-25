@@ -2433,10 +2433,22 @@ function runWhenIdle(callback: () => void, timeout = 1600) {
   return () => window.clearTimeout(handle);
 }
 
-function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => void }) {
+function PageSearch({
+  onNotify,
+  onDone,
+  placement = 'header'
+}: {
+  onNotify: NotifyFn;
+  onDone?: () => void;
+  placement?: 'header' | 'mobile';
+}) {
   const [query, setQuery] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const searchInputId = React.useId();
+  const webMcpAttributes = {
+    toolname: placement === 'mobile' ? 'search_site_mobile' : 'search_site_header',
+    tooldescription: 'Vyhledá veřejné stránky, programy, aktuality, metodiku, dokumenty a možnosti podpory na webu REST||ART Integrace.'
+  };
 
   const submitSearch = (event: React.FormEvent) => {
     event.preventDefault();
@@ -2451,15 +2463,19 @@ function PageSearch({ onNotify, onDone }: { onNotify: NotifyFn; onDone?: () => v
   };
 
   return (
-    <form className="site-search" role="search" onSubmit={submitSearch}>
+    <form className="site-search" role="search" onSubmit={submitSearch} {...webMcpAttributes}>
       <label className="visually-hidden" htmlFor={searchInputId}>Vyhledat na celém webu</label>
       <Search size={16} aria-hidden="true" />
       <input
         id={searchInputId}
         ref={inputRef}
+        name="query"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder="Hledat na celém webu"
+        maxLength={160}
+        required
+        {...{ toolparamdescription: 'Hledaný výraz nebo téma v češtině.' }}
       />
       <button className="tooltip-link" type="submit" aria-label="Vyhledat na webu" data-tooltip="Vyhledat">
         <ArrowRight size={16} />
@@ -2596,7 +2612,7 @@ function Header({
           <button className="close-button" type="button" aria-label="Zavřít menu" onClick={() => setOpen(false)}>
             <X size={22} />
           </button>
-          <PageSearch onNotify={onNotify} onDone={() => setOpen(false)} />
+          <PageSearch onNotify={onNotify} onDone={() => setOpen(false)} placement="mobile" />
           {visibleNavItems.map((item) => (
             <a key={item.href} href={item.href} onClick={() => setOpen(false)}>
               {item.label}
@@ -4927,9 +4943,27 @@ function SearchPage({ news }: { news: NewsItem[] }) {
           <h1>Výsledky vyhledávání</h1>
           <p>Prohledáváme veřejné stránky, programy, aktuality, metodiku, dokumenty, média i možnosti podpory.</p>
         </div>
-        <form className="search-results-form" role="search" onSubmit={submit}>
+        <form
+          className="search-results-form"
+          role="search"
+          onSubmit={submit}
+          {...{
+            toolname: 'search_site_results',
+            tooldescription: 'Vyhledá a zobrazí veřejné výsledky napříč celým webem REST||ART Integrace.'
+          }}
+        >
           <Search size={20} aria-hidden="true" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Co hledáte?" aria-label="Hledat na celém webu" autoFocus />
+          <input
+            name="query"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Co hledáte?"
+            aria-label="Hledat na celém webu"
+            maxLength={160}
+            required
+            autoFocus
+            {...{ toolparamdescription: 'Hledaný výraz nebo téma v češtině.' }}
+          />
           <button className="button primary" type="submit">Vyhledat</button>
         </form>
       </div>
@@ -5732,19 +5766,45 @@ function ContactPage({ onNotify }: { onNotify: (tone: FeedbackTone, title: strin
             </a>
           </div>
         </div>
-        <form className="contact-form" id="kontakt-formular" onSubmit={prepareMessage}>
+        <form
+          className="contact-form"
+          id="kontakt-formular"
+          onSubmit={prepareMessage}
+          {...{
+            toolname: 'prepare_contact_message',
+            tooldescription: 'Připraví kontaktní zprávu pro REST||ART Integrace. Před odesláním musí uživatel obsah zkontrolovat a formulář ručně potvrdit.'
+          }}
+        >
           <h2>Kontaktní formulář</h2>
           <label>
             Jméno
-            <input name="name" />
+            <input
+              name="name"
+              autoComplete="name"
+              maxLength={120}
+              required
+              {...{ toolparamdescription: 'Jméno osoby, která projekt kontaktuje.' }}
+            />
           </label>
           <label>
             E-mail nebo telefon
-            <input name="contact" />
+            <input
+              name="contact"
+              autoComplete="email"
+              maxLength={160}
+              required
+              {...{ toolparamdescription: 'E-mailová adresa nebo telefon pro odpověď.' }}
+            />
           </label>
           <label>
             Zpráva
-            <textarea name="message" rows={6} />
+            <textarea
+              name="message"
+              rows={6}
+              maxLength={3000}
+              required
+              {...{ toolparamdescription: 'Text dotazu, žádosti o podporu nebo nabídky spolupráce.' }}
+            />
           </label>
           <button className="button primary" type="submit">
             Připravit zprávu

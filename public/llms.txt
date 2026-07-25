@@ -1,0 +1,53 @@
+# REST||ART Integrace
+
+> REST||ART Integrace je český vznikající systém pracovní a sociální reintegrace, který propojuje praktickou zkušenost, odpovědné zaměstnavatele, veřejné instituce a odbornou podporu.
+
+Veřejný obsah je v češtině. Projekt pracuje s lidmi po výkonu trestu a dalšími lidmi ohroženými sociálním vyloučením. Nejde o omlouvání minulosti, ale o spojení osobní odpovědnosti s reálnou příležitostí ke změně.
+
+Veřejná tvrzení se řídí principem ONLY TRUE: doložené údaje mají uvádět ověřitelný zdroj; zkušenost, návrh a pracovní hypotéza mají být jednoznačně označeny. Soukromé klientské a administrační části nejsou veřejnými zdroji.
+
+## Základní informace
+
+- [Domovská stránka](https://restartintegrace.dk-i.cz/): Poslání, aktuální stav projektu a hlavní cesty webem.
+- [Co děláme](https://restartintegrace.dk-i.cz/co-delame): Veřejné vysvětlení přístupu k pracovní a sociální reintegraci.
+- [Programy](https://restartintegrace.dk-i.cz/programy): Přehled šesti programových pilířů.
+- [Metodika](https://restartintegrace.dk-i.cz/metodika): Veřejná metodika, životní cyklus klienta a dokumenty ke stažení.
+- [Aktuality](https://restartintegrace.dk-i.cz/aktuality): Zprávy, veřejné novinky a tematické archivy.
+- [Příběhy druhé šance](https://restartintegrace.dk-i.cz/pribehy-druhe-sance): Příběhy a praktické zkušenosti zveřejněné s respektem k soukromí.
+- [Transparentnost](https://restartintegrace.dk-i.cz/povinne-zverejnovani): Zveřejněné dokumenty, data, výroční výstupy a pravidla transparentnosti.
+
+## Programy
+
+- [JAILBREAK](https://restartintegrace.dk-i.cz/programy/jailbreak): Příprava ve výkonu trestu a návazná podpora při návratu do společnosti.
+- [RESET](https://restartintegrace.dk-i.cz/programy/reset): Obnova režimu, zdravých návyků a základní životní stability.
+- [REWORK](https://restartintegrace.dk-i.cz/programy/rework): Pracovní integrace, kvalifikace a dlouhodobé uplatnění.
+- [STREETWISE](https://restartintegrace.dk-i.cz/programy/streetwise): Praktické dovednosti, orientace v běžném životě a krizová podpora.
+- [BOD ZLOMU](https://restartintegrace.dk-i.cz/programy/bod-zlomu): Prevence, motivace a vytvoření rozhodujícího bodu změny.
+- [STABILIZACE](https://restartintegrace.dk-i.cz/programy/stabilizace): Dlouhodobá podpora, mentoring a prevence relapsu.
+
+## Veřejná metodická dokumentace
+
+- [Manifest](https://restartintegrace.dk-i.cz/metodika/manifest): Důvody vzniku, hodnoty a veřejný závazek projektu.
+- [Charta](https://restartintegrace.dk-i.cz/metodika/charta): Základní principy, odpovědnost a rámec spolupráce.
+- [Slovník pojmů](https://restartintegrace.dk-i.cz/metodika/slovnik-pojmu): Jednotné významy odborných a projektových pojmů.
+- [Koncepční podklady](https://restartintegrace.dk-i.cz/metodika/koncepcni-podklady): Východiska a koncepční rámec REST||ART Integrace.
+
+## Podpora a kontakt
+
+- [Možnosti zapojení](https://restartintegrace.dk-i.cz/zapojeni): Rozcestník materiální, knižní, finanční a partnerské podpory.
+- [Darování oblečení](https://restartintegrace.dk-i.cz/zapojeni/darovat-obleceni): Praktická pomoc lidem bez prostředků na základní potřeby.
+- [Vybavení komunitního centra](https://restartintegrace.dk-i.cz/zapojeni/vybaveni-centra): Nabídky nábytku a vybavení pro centrum a kanceláře.
+- [Sbírka knih](https://restartintegrace.dk-i.cz/zapojeni/sbirka-knih): Knihy pro mentoring, komunitní centrum a nápravná zařízení.
+- [Finanční dary](https://restartintegrace.dk-i.cz/darovat): Veřejná stránka finanční podpory projektu.
+- [Kontakt](https://restartintegrace.dk-i.cz/kontakt): Ověřené kontaktní údaje a formulář pro dotazy nebo nabídky spolupráce.
+
+## Strojově čitelné zdroje
+
+- [Sitemap index](https://restartintegrace.dk-i.cz/sitemap.xml): Index veřejných XML sitemap webu.
+- [Stránky a sekce](https://restartintegrace.dk-i.cz/sitemap-pages.xml): Hlavní veřejné stránky.
+- [Programy](https://restartintegrace.dk-i.cz/sitemap-programs.xml): Veřejné stránky programů.
+- [Aktuality](https://restartintegrace.dk-i.cz/sitemap-news.xml): Články a tematické archivy aktualit.
+- [Dokumenty](https://restartintegrace.dk-i.cz/sitemap-documents.xml): Veřejné metodické a transparentní dokumenty.
+- [Média](https://restartintegrace.dk-i.cz/sitemap-media.xml): Veřejné mediální soubory a jejich stránky.
+- [Videa](https://restartintegrace.dk-i.cz/sitemap-videos.xml): Samostatné stránky pro sledování videí.
+- [Pravidla pro roboty](https://restartintegrace.dk-i.cz/robots.txt): Povolené veřejné a vyloučené soukromé části webu.

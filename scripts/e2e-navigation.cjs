@@ -8,6 +8,19 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   await page.goto(baseUrl, { waitUntil: 'networkidle' });
 
   const mainNav = page.getByRole('navigation', { name: 'Hlavní navigace' });
+  const llmsResponse = await page.request.get(`${baseUrl}/llms.txt`);
+  const llmsText = await llmsResponse.text();
+  if (!llmsResponse.ok() || !llmsText.startsWith('# REST||ART Integrace\n') || !llmsText.includes('\n> REST||ART Integrace')) {
+    throw new Error('llms.txt is missing or does not follow the expected Markdown structure.');
+  }
+  const headerWebMcpForm = page.locator('form[toolname="search_site_header"]');
+  if ((await headerWebMcpForm.count()) !== 1 || !(await headerWebMcpForm.getAttribute('tooldescription'))) {
+    throw new Error('Header search is missing a valid declarative WebMCP tool.');
+  }
+  const headerWebMcpQuery = headerWebMcpForm.locator('[name="query"]');
+  if (!(await headerWebMcpQuery.getAttribute('toolparamdescription')) || !(await headerWebMcpQuery.evaluate((element) => element.hasAttribute('required')))) {
+    throw new Error('Header WebMCP search parameter schema is incomplete.');
+  }
   if ((await mainNav.getByRole('link', { name: 'Admin', exact: true }).count()) !== 0) {
     throw new Error('Admin should not be a text item in the main navigation.');
   }
@@ -36,6 +49,16 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   await page.waitForURL('**/kontakt');
 
   const bodyText = await page.locator('body').innerText();
+  const contactWebMcpForm = page.locator('form[toolname="prepare_contact_message"]');
+  if ((await contactWebMcpForm.count()) !== 1 || await contactWebMcpForm.getAttribute('toolautosubmit') !== null) {
+    throw new Error('Contact WebMCP tool must exist and require manual submission.');
+  }
+  for (const fieldName of ['name', 'contact', 'message']) {
+    const field = contactWebMcpForm.locator(`[name="${fieldName}"]`);
+    if (!(await field.getAttribute('toolparamdescription')) || !(await field.evaluate((element) => element.hasAttribute('required')))) {
+      throw new Error(`Contact WebMCP schema is incomplete for ${fieldName}.`);
+    }
+  }
   if (!bodyText.includes('Nacházíte se:')) {
     throw new Error('Breadcrumb label is missing.');
   }
@@ -61,6 +84,9 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   await siteSearch.getByRole('button', { name: 'Vyhledat na webu' }).click();
   await page.waitForURL('**/vyhledavani?q=metodika');
   await page.getByRole('heading', { name: 'Výsledky vyhledávání', level: 1 }).waitFor();
+  if ((await page.locator('form[toolname="search_site_results"]').count()) !== 1) {
+    throw new Error('Search results page is missing its declarative WebMCP tool.');
+  }
   if ((await page.getByText(/výsled(?:ek|ky|ků) pro „metodika“/).count()) === 0) {
     throw new Error('Whole-site search did not render results for metodika.');
   }

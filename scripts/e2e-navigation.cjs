@@ -65,6 +65,28 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error('Whole-site search did not render results for metodika.');
   }
 
+  await page.goto(`${baseUrl}/zapojeni`, { waitUntil: 'networkidle' });
+  await page.getByRole('heading', { name: 'Pomoc může mít více podob', level: 1 }).waitFor();
+  const supportRoutes = [
+    ['/zapojeni/darovat-obleceni', 'Oblečení pro důstojný nový začátek'],
+    ['/zapojeni/vybaveni-centra', 'Dejte vybavení další smysluplné využití'],
+    ['/zapojeni/sbirka-knih', 'Knihy, které otevírají další cestu'],
+    ['/darovat', 'Proměňte podporu v konkrétní krok']
+  ];
+  for (const [supportPath, heading] of supportRoutes) {
+    const supportLink = page.locator(`a[href="${supportPath}"]`).first();
+    if ((await supportLink.count()) !== 1) {
+      throw new Error(`Support hub is missing a link to ${supportPath}.`);
+    }
+    await page.goto(`${baseUrl}${supportPath}`, { waitUntil: 'networkidle' });
+    await page.getByRole('heading', { name: heading, level: 1 }).waitFor();
+    const supportCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+    if (!supportCanonical?.endsWith(supportPath)) {
+      throw new Error(`Support page canonical URL mismatch for ${supportPath}: ${supportCanonical}`);
+    }
+    await page.getByRole('navigation', { name: 'Možnosti podpory' }).waitFor();
+  }
+
   await page.goto(`${baseUrl}/metodika/slovnik-pojmu`, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'Slovník pojmů REST||ART Integrace', level: 1 }).waitFor();
   await page.getByText('Case management', { exact: true }).first().waitFor();

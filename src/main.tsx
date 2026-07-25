@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Barcode,
   Bell,
+  BookOpen,
   Bold,
   ChevronLeft,
   CheckCircle2,
@@ -33,6 +34,7 @@ import {
   Menu,
   MoreHorizontal,
   Newspaper,
+  PackageOpen,
   Phone,
   Plus,
   Printer,
@@ -43,6 +45,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  Shirt,
   Star,
   Trash2,
   Underline,
@@ -230,6 +233,9 @@ const routeLabels: Record<string, string> = {
   '/aktuality': 'Aktuality',
   '/pribehy-druhe-sance': 'Příběhy druhé šance',
   '/zapojeni': 'Zapojení',
+  '/zapojeni/darovat-obleceni': 'Darovat oblečení',
+  '/zapojeni/vybaveni-centra': 'Vybavení centra',
+  '/zapojeni/sbirka-knih': 'Sbírka knih',
   '/darovat': 'Darovat',
   '/kontakt': 'Kontakt',
   '/kontakt/formular': 'Formulář',
@@ -256,7 +262,10 @@ const footerNavGroups = [
       { href: '/programy', label: 'Programy' },
       { href: '/aktuality', label: 'Aktuality' },
       { href: '/zapojeni', label: 'Zapojení' },
-      { href: '/darovat', label: 'Darovat' },
+      { href: '/zapojeni/darovat-obleceni', label: 'Darovat oblečení' },
+      { href: '/zapojeni/vybaveni-centra', label: 'Vybavení centra' },
+      { href: '/zapojeni/sbirka-knih', label: 'Sbírka knih' },
+      { href: '/darovat', label: 'Finanční dary' },
       { href: '/kontakt', label: 'Kontakt' }
     ]
   },
@@ -2567,7 +2576,8 @@ function Header({
                 href={item.href}
                 className={
                   currentPath === internalHrefPath(item.href) ||
-                  (item.href === '/programy' && currentPath.startsWith('/programy/'))
+                  (item.href === '/programy' && currentPath.startsWith('/programy/')) ||
+                  (item.href === '/zapojeni' && (currentPath.startsWith('/zapojeni/') || currentPath === '/darovat'))
                     ? 'active'
                     : ''
                 }
@@ -2624,6 +2634,7 @@ function Header({
 
 function Breadcrumb({ path }: { path: string }) {
   const programDetail = path.startsWith('/programy/') ? getProgramBySlug(path.replace('/programy/', '')) : null;
+  const supportDetail = path.startsWith('/zapojeni/') || path === '/darovat';
   const crumbs =
     programDetail
       ? [
@@ -2631,6 +2642,12 @@ function Breadcrumb({ path }: { path: string }) {
           { label: 'Programy', href: '/programy' },
           { label: programDetail.title }
         ]
+      : supportDetail
+        ? [
+            { label: 'Domů', href: '/' },
+            { label: 'Zapojení', href: '/zapojeni' },
+            { label: getRouteLabel(path) }
+          ]
       : path === '/kontakt'
       ? [
           { label: 'Domů', href: '/' },
@@ -4271,15 +4288,196 @@ function NewsPage({
   );
 }
 
-function SupportPage() {
+const supportOptions = [
+  {
+    href: '/zapojeni/darovat-obleceni',
+    shortTitle: 'Oblečení',
+    label: 'Základní potřeby',
+    title: 'Darujte oblečení',
+    text: 'Čisté a použitelné oblečení může pomoci lidem v programu STREETWISE i těm, kteří po propuštění nemají vlastní zázemí.',
+    icon: Shirt
+  },
+  {
+    href: '/zapojeni/vybaveni-centra',
+    shortTitle: 'Vybavení',
+    label: 'Komunitní zázemí',
+    title: 'Vybavení pro centrum',
+    text: 'Nábytek, kancelářské a další funkční vybavení využijeme při budování komunitního centra a zázemí projektu.',
+    icon: PackageOpen
+  },
+  {
+    href: '/zapojeni/sbirka-knih',
+    shortTitle: 'Knihy',
+    label: 'Vzdělávání',
+    title: 'Sbírka knih',
+    text: 'Knihy předáváme tam, kde mohou podpořit vzdělávání, mentoring, osobní rozvoj a smysluplné využití času.',
+    icon: BookOpen
+  },
+  {
+    href: '/darovat',
+    shortTitle: 'Finanční dary',
+    label: 'DONATE',
+    title: 'Finanční podpora',
+    text: 'Jednorázový nebo pravidelný dar pomáhá financovat mentoring, dopravu, materiál a konkrétní kroky stabilizace.',
+    icon: Heart
+  }
+];
+
+type MaterialSupportPageConfig = {
+  path: string;
+  label: string;
+  title: string;
+  text: string;
+  introTitle: string;
+  intro: string;
+  acceptedTitle: string;
+  accepted: string[];
+  helpsTitle: string;
+  helps: string[];
+  note: string;
+};
+
+const materialSupportPages: Record<string, MaterialSupportPageConfig> = {
+  '/zapojeni/darovat-obleceni': {
+    path: '/zapojeni/darovat-obleceni',
+    label: 'Dary oblečení',
+    title: 'Oblečení pro důstojný nový začátek',
+    text: 'Pomozte zajistit základní potřeby lidem, kteří nemají prostředky ani blízkého člověka, na kterého by se mohli obrátit.',
+    introTitle: 'Praktická pomoc ve chvíli, kdy je opravdu potřeba',
+    intro:
+      'Darované oblečení směřuje podle aktuální potřeby zejména k lidem bez stabilního zázemí v programu STREETWISE a k lidem vracejícím se z výkonu trestu. Předání vždy koordinujeme tak, aby odpovídalo velikosti, ročnímu období a skutečné situaci konkrétního člověka.',
+    acceptedTitle: 'Co dává smysl nabídnout',
+    accepted: [
+      'Čisté, vyprané a nepoškozené běžné oblečení.',
+      'Sezónní bundy, mikiny, kalhoty a pracovní oděvy.',
+      'Použitelnou obuv, batohy, tašky a základní doplňky.',
+      'Nové spodní prádlo, ponožky a hygienické potřeby v původním balení.'
+    ],
+    helpsTitle: 'Komu může dar pomoci',
+    helps: [
+      'Lidem bez domova nebo bez stabilního zázemí.',
+      'Lidem bez prostředků na zajištění základních potřeb.',
+      'Lidem po propuštění, kteří nemají rodinnou ani jinou oporu.',
+      'Klientům při nástupu do práce, na pohovor nebo při návratu do běžného režimu.'
+    ],
+    note: 'Oblečení prosím nevozte bez předchozí domluvy. Potvrdíme aktuální potřebu, velikosti i možnosti převzetí.'
+  },
+  '/zapojeni/vybaveni-centra': {
+    path: '/zapojeni/vybaveni-centra',
+    label: 'Vybavení centra',
+    title: 'Dejte vybavení další smysluplné využití',
+    text: 'Přijímáme nabídky funkčního vybavení pro komunitní centrum, kanceláře projektu a praktickou práci s klienty.',
+    introTitle: 'Zázemí, ve kterém se dá pracovat a začít znovu',
+    intro:
+      'Komunitní centrum a kanceláře potřebují jednoduché, bezpečné a funkční vybavení. Využití každé nabídky předem ověříme podle prostoru, dopravy a aktuálních priorit projektu.',
+    acceptedTitle: 'Co můžeme využít',
+    accepted: [
+      'Stoly, židle, křesla, skříně, police a úložné systémy.',
+      'Kancelářské vybavení, monitory, počítače, tiskárny a drobnou techniku.',
+      'Vybavení pro komunitní kuchyň, setkávání, workshopy a mentoring.',
+      'Nářadí, pracovní pomůcky a materiál pro údržbu a praktické programy.'
+    ],
+    helpsTitle: 'Kde vybavení slouží',
+    helps: [
+      'V kancelářích projektu a při individuálních konzultacích.',
+      'V komunitním centru a prostoru pro setkávání.',
+      'Při vzdělávání, mentoringu a přípravě na zaměstnání.',
+      'V praktických aktivitách, které rozvíjejí samostatnost a pracovní návyky.'
+    ],
+    note: 'Přijímáme pouze bezpečné a funkční věci. Před předáním si potvrdíme rozměry, stav, dopravu a konkrétní využití.'
+  },
+  '/zapojeni/sbirka-knih': {
+    path: '/zapojeni/sbirka-knih',
+    label: 'Sbírka knih',
+    title: 'Knihy, které otevírají další cestu',
+    text: 'Sbíráme kvalitní knihy pro komunitní centrum, mentoring a další místa, kde mohou podpořit vzdělávání a osobní rozvoj.',
+    introTitle: 'Kniha může být nástrojem změny i návratu k soustředění',
+    intro:
+      'Knihy třídíme podle tématu, stavu a skutečné potřeby. Část může sloužit v komunitním centru, při mentoringu nebo prostřednictvím partnerů tam, kde chybí přístup ke kvalitnímu čtení.',
+    acceptedTitle: 'Jaké knihy hledáme',
+    accepted: [
+      'Beletrii v dobrém stavu pro dospělé i mladé čtenáře.',
+      'Naučnou literaturu, slovníky, učebnice a knihy pro samostudium.',
+      'Knihy o osobním rozvoji, financích, právu, práci a zdravém životním stylu.',
+      'Aktuální odborné a řemeslné publikace využitelné při mentoringu a přípravě na práci.'
+    ],
+    helpsTitle: 'Kam mohou knihy směřovat',
+    helps: [
+      'Do knihovny komunitního centra REST||ART Integrace.',
+      'K mentorům a klientům podle jejich vzdělávacích cílů.',
+      'K partnerským organizacím a do míst s konkrétní poptávkou.',
+      'Do nápravných zařízení pouze po dohodě s danou institucí a podle jejích pravidel.'
+    ],
+    note: 'Nepřijímáme plesnivé, silně poškozené ani obsahově zastaralé knihy. Větší množství vždy nejprve konzultujte.'
+  }
+};
+
+function SupportSubnav({ activePath }: { activePath: string }) {
+  return (
+    <nav className="support-subnav" aria-label="Možnosti podpory">
+      <a href="/zapojeni" className={activePath === '/zapojeni' ? 'active' : ''} aria-current={activePath === '/zapojeni' ? 'page' : undefined}>
+        Přehled
+      </a>
+      {supportOptions.map((option) => (
+        <a
+          key={option.href}
+          href={option.href}
+          className={activePath === option.href ? 'active' : ''}
+          aria-current={activePath === option.href ? 'page' : undefined}
+        >
+          {option.shortTitle}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function SupportHubPage() {
+  useNewsSeo({
+    title: 'Zapojení a možnosti podpory',
+    description:
+      'Rozcestník podpory RESTART Integrace: darování oblečení, vybavení komunitního centra, sbírka knih, finanční dary a partnerství.',
+    path: '/zapojeni'
+  });
   return (
     <>
       <PageHeader
         label="Zapojení"
-        title="Spolupráce, která má konkrétní podobu"
-        text="Hledáme lidi, firmy, instituce a organizace, které chtějí pomoci vytvořit reálnou cestu zpět do života."
+        title="Pomoc může mít více podob"
+        text="Vyberte si způsob podpory, který vám dává smysl. Každá nabídka prochází domluvou, převzetím a konkrétním využitím."
       />
-      <section className="muted-section">
+      <section className="content-section support-hub">
+        <SupportSubnav activePath="/zapojeni" />
+        <SectionIntro
+          label="Rozcestník podpory"
+          title="Od základních potřeb po dlouhodobý rozvoj"
+          text="Materiální i finanční podpora doplňuje mentoring, pracovní reintegraci a stabilizaci. Nejdříve společně ověříme, co je právě potřeba a jak dar bezpečně převzít."
+        />
+        <div className="support-option-grid">
+          {supportOptions.map((option) => {
+            const Icon = option.icon;
+            return (
+              <article className="support-option-card" key={option.href}>
+                <span className="support-option-icon" aria-hidden="true">
+                  <Icon size={24} />
+                </span>
+                <p className="section-label">{option.label}</p>
+                <h2>{option.title}</h2>
+                <p>{option.text}</p>
+                <a href={option.href}>
+                  Zjistit podrobnosti <ArrowRight size={17} />
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+      <section className="muted-section support-partners">
+        <SectionIntro
+          label="Další spolupráce"
+          title="Zapojit se mohou lidé, firmy i instituce"
+          text="Vedle darů hledáme zaměstnavatele, odborníky, dobrovolníky a veřejné partnery, kteří chtějí spoluvytvářet připravený proces návratu do společnosti."
+        />
         <div className="support-grid">
           {supportPaths.map((path) => (
             <article key={path.title}>
@@ -4299,6 +4497,99 @@ function SupportPage() {
             );
           })}
         </div>
+      </section>
+    </>
+  );
+}
+
+function MaterialSupportPage({ config }: { config: MaterialSupportPageConfig }) {
+  useNewsSeo({
+    title: config.title,
+    description: config.text,
+    path: config.path
+  });
+  return (
+    <>
+      <PageHeader label={config.label} title={config.title} text={config.text} />
+      <section className="content-section support-detail-page">
+        <SupportSubnav activePath={config.path} />
+        <div className="support-detail-intro">
+          <p className="section-label">Smysl podpory</p>
+          <h2>{config.introTitle}</h2>
+          <p>{config.intro}</p>
+        </div>
+        <div className="support-detail-grid">
+          <article>
+            <h2>{config.acceptedTitle}</h2>
+            <ul>
+              {config.accepted.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+          <article>
+            <h2>{config.helpsTitle}</h2>
+            <ul>
+              {config.helps.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+        </div>
+      </section>
+      <section className="muted-section support-process-section">
+        <SectionIntro
+          label="Jak postupovat"
+          title="Domluva před předáním chrání dárce i příjemce"
+          text={config.note}
+        />
+        <ol className="support-process">
+          {[
+            ['1', 'Napište nám', 'Stručně popište, co nabízíte, množství, stav a místo předání.'],
+            ['2', 'Ověříme potřebu', 'Prověříme aktuální využití, kapacitu skladu a vhodný termín.'],
+            ['3', 'Domluvíme předání', 'Potvrdíme způsob dopravy, kontaktní osobu a místo převzetí.'],
+            ['4', 'Dar využijeme', 'Věc zařadíme tam, kde má konkrétní a smysluplné využití.']
+          ].map(([number, title, text]) => (
+            <li key={number}>
+              <strong>{number}</strong>
+              <div>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="support-contact-band">
+          <div>
+            <p className="section-label">Nabídnout dar</p>
+            <h2>Začněme krátkou domluvou</h2>
+            <p>Do zprávy uveďte typ daru, přibližné množství a město, odkud by bylo potřeba věci převzít.</p>
+          </div>
+          <a className="button primary" href="/kontakt">
+            Kontaktovat projekt <ArrowRight size={17} />
+          </a>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function MonetaryDonationPage() {
+  useNewsSeo({
+    title: 'Darovat a podpořit RESTART Integrace',
+    description:
+      'Podpořte RESTART Integrace přes bezpečný donate systém nebo přímý převod. Dary financují mentoring, pracovní restart a stabilizaci.',
+    path: '/darovat'
+  });
+  return (
+    <>
+      <PageHeader
+        label="Finanční podpora"
+        title="Proměňte podporu v konkrétní krok"
+        text="Jednorázový nebo pravidelný dar pomáhá financovat mentoring, dopravu, materiály, pracovní restart a stabilizaci."
+      />
+      <section className="content-section support-donate-nav">
+        <SupportSubnav activePath="/darovat" />
       </section>
       <section className="donate-section" id="darovat">
         <div className="donate-copy">
@@ -4472,10 +4763,37 @@ const coreSearchEntries: SiteSearchEntry[] = [
   {
     id: 'donate',
     category: 'Podpora',
-    title: 'Darovat a podpořit projekt',
-    excerpt: 'Finanční a materiální podpora mentoringu, dopravy, pracovních kroků a zázemí projektu.',
+    title: 'Finančně podpořit projekt',
+    excerpt: 'Jednorázová nebo pravidelná finanční podpora mentoringu, dopravy, pracovních kroků a zázemí projektu.',
     href: '/darovat',
-    searchableText: 'dar darovat donate podpora příspěvek finance transparentní účet materiál partner'
+    searchableText: 'dar darovat donate podpora příspěvek finance transparentní účet platební karta Stripe partner'
+  },
+  {
+    id: 'donate-clothes',
+    category: 'Materiální pomoc',
+    title: 'Darovat oblečení',
+    excerpt: 'Oblečení a základní potřeby pro lidi bez prostředků, klienty STREETWISE a osoby po propuštění z vězení.',
+    href: '/zapojeni/darovat-obleceni',
+    searchableText:
+      'darovat oblečení oděvy boty pracovní oděv hygiena základní potřeby STREETWISE bez domova po propuštění vězení materiální pomoc'
+  },
+  {
+    id: 'donate-equipment',
+    category: 'Materiální pomoc',
+    title: 'Vybavení komunitního centra a kanceláří',
+    excerpt: 'Nábytek, kancelářské vybavení, technika, nářadí a další funkční vybavení pro zázemí projektu.',
+    href: '/zapojeni/vybaveni-centra',
+    searchableText:
+      'darovat nábytek vybavení komunitní centrum kancelář stoly židle skříně počítače tiskárny technika nářadí materiál'
+  },
+  {
+    id: 'book-collection',
+    category: 'Sbírka',
+    title: 'Sbírka knih',
+    excerpt: 'Knihy pro komunitní centrum, mentoring, vzdělávání a další místa, kde jsou skutečně potřeba.',
+    href: '/zapojeni/sbirka-knih',
+    searchableText:
+      'darovat knihy sbírka knih komunitní knihovna mentoring vzdělávání učebnice beletrie nápravná zařízení věznice'
   },
   {
     id: 'contact',
@@ -7927,6 +8245,7 @@ React.useEffect(() => {
   const selectedProgram = currentPath.startsWith('/programy/') ? getProgramBySlug(currentPath.replace('/programy/', '')) : null;
   const selectedMethodologyDocument = methodologyDocuments.find((document) => document.path === currentPath) ?? null;
   const selectedVideo = videoWatchPages.find((video) => video.path === currentPath) ?? null;
+  const selectedMaterialSupportPage = materialSupportPages[currentPath] ?? null;
   const selectedStoryId = currentPath.startsWith(storyDetailPrefix) ? decodeURIComponent(currentPath.slice(storyDetailPrefix.length)) : '';
   const selectedStory = selectedStoryId ? news.find((item) => item.id === selectedStoryId && isSecondChanceStory(item)) : null;
 
@@ -7996,8 +8315,12 @@ React.useEffect(() => {
         discussion={newsDiscussion}
         storiesOnly
       />
-    ) : currentPath === '/zapojeni' || currentPath === '/darovat' ? (
-      <SupportPage />
+    ) : currentPath === '/zapojeni' ? (
+      <SupportHubPage />
+    ) : selectedMaterialSupportPage ? (
+      <MaterialSupportPage config={selectedMaterialSupportPage} />
+    ) : currentPath === '/darovat' ? (
+      <MonetaryDonationPage />
     ) : currentPath === '/media' ? (
       <MediaKitPage page={staticPages['/media']} assets={publicMediaKitAssets} />
     ) : currentPath === '/povinne-zverejnovani' ? (

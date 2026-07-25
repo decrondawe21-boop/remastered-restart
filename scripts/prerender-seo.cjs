@@ -246,10 +246,42 @@ const routes = [
   ...storyRoutes,
   {
     path: '/zapojeni',
-    title: 'Zapojení a podpora | RESTART Integrace',
+    title: 'Zapojení a možnosti podpory | RESTART Integrace',
     description:
-      'Zapojte se do RESTART Integrace jako partner, dobrovolník nebo dárce. Podpora pomáhá pokrýt mentoring, materiály, práci a zázemí.',
-    priority: '0.7',
+      'Rozcestník podpory RESTART Integrace: darování oblečení, vybavení komunitního centra, sbírka knih, finanční dary a partnerství.',
+    keywords:
+      'podpora RESTART Integrace, darovat oblečení, darovat nábytek, sbírka knih, finanční dar, komunitní centrum, STREETWISE, reintegrace',
+    priority: '0.8',
+    changefreq: 'monthly'
+  },
+  {
+    path: '/zapojeni/darovat-obleceni',
+    title: 'Darovat oblečení lidem v nouzi | RESTART Integrace',
+    description:
+      'Darujte čisté oblečení a základní potřeby lidem bez prostředků, klientům programu STREETWISE a lidem po propuštění z výkonu trestu.',
+    keywords:
+      'darovat oblečení, oblečení pro lidi v nouzi, pomoc po propuštění z vězení, STREETWISE, lidé bez domova, materiální pomoc, základní potřeby',
+    priority: '0.78',
+    changefreq: 'monthly'
+  },
+  {
+    path: '/zapojeni/vybaveni-centra',
+    title: 'Darovat vybavení komunitnímu centru | RESTART Integrace',
+    description:
+      'Nabídněte funkční nábytek, kancelářské vybavení, techniku nebo nářadí pro komunitní centrum a kanceláře projektu RESTART Integrace.',
+    keywords:
+      'darovat nábytek, vybavení komunitního centra, kancelářské vybavení, darovat techniku, darovat nářadí, materiální pomoc, RESTART Integrace',
+    priority: '0.76',
+    changefreq: 'monthly'
+  },
+  {
+    path: '/zapojeni/sbirka-knih',
+    title: 'Sbírka knih pro mentoring a komunitní centrum | RESTART Integrace',
+    description:
+      'Darujte kvalitní knihy pro komunitní centrum, mentoring, vzdělávání a místa, kde mohou podpořit osobní rozvoj a návrat do společnosti.',
+    keywords:
+      'sbírka knih, darovat knihy, knihy pro komunitní centrum, knihy pro mentoring, vzdělávání, knihy do věznic, RESTART Integrace',
+    priority: '0.76',
     changefreq: 'monthly'
   },
   {
@@ -365,6 +397,7 @@ function routeUrl(routePath) {
 function routeOgImage(route) {
   const video = videoAssets.find((item) => item.id === route.videoId);
   if (video) return video.thumbnailUrl;
+  if (route.path.startsWith('/zapojeni/')) return routeOgImages['/zapojeni'];
   return routeOgImages[route.path] || ogImage;
 }
 
@@ -381,6 +414,9 @@ function routeLabel(routePath) {
     '/programy/stabilizace': 'STABILIZACE',
     '/aktuality': 'Aktuality',
     '/zapojeni': 'Zapojení',
+    '/zapojeni/darovat-obleceni': 'Darovat oblečení',
+    '/zapojeni/vybaveni-centra': 'Vybavení centra',
+    '/zapojeni/sbirka-knih': 'Sbírka knih',
     '/darovat': 'Darovat',
     '/metodika': 'Metodika',
     '/povinne-zverejnovani': 'Povinné zveřejňování',
@@ -767,6 +803,30 @@ function renderVideoWatchSnapshot(video) {
   </main>`;
 }
 
+function renderSupportSnapshot(route) {
+  const supportLinks = [
+    ['/zapojeni', 'Přehled podpory'],
+    ['/zapojeni/darovat-obleceni', 'Darovat oblečení'],
+    ['/zapojeni/vybaveni-centra', 'Vybavení centra'],
+    ['/zapojeni/sbirka-knih', 'Sbírka knih'],
+    ['/darovat', 'Finanční dary']
+  ];
+  return `<main class="seo-support-snapshot" data-seo-snapshot="support-page">
+    <header>
+      <p class="section-label">Zapojení a podpora</p>
+      <h1>${escapeHtml(routeLabel(route.path))}</h1>
+      <p>${escapeHtml(route.description)}</p>
+    </header>
+    <nav aria-label="Možnosti podpory">
+      ${supportLinks
+        .map(([href, label]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`)
+        .join('\n      ')}
+    </nav>
+    <p>Každou materiální nabídku předem konzultujeme, aby odpovídala skutečné potřebě a možnostem převzetí.</p>
+    <a href="/kontakt">Kontaktovat projekt RESTART Integrace</a>
+  </main>`;
+}
+
 function renderRoute(route) {
   const canonical = routeUrl(route.path);
   const currentOgImage = routeOgImage(route);
@@ -851,6 +911,8 @@ function renderRoute(route) {
     html = html.replace('<div id="root"></div>', `<div id="root">${renderMethodologyDocumentSnapshot(methodologyDocument)}</div>`);
   } else if (currentVideo) {
     html = html.replace('<div id="root"></div>', `<div id="root">${renderVideoWatchSnapshot(currentVideo)}</div>`);
+  } else if (route.path === '/zapojeni' || route.path.startsWith('/zapojeni/') || route.path === '/darovat') {
+    html = html.replace('<div id="root"></div>', `<div id="root">${renderSupportSnapshot(route)}</div>`);
   }
   return ensureGoogleTag(deferRenderBlockingCss(html));
 }
@@ -871,7 +933,9 @@ const programSitemapRoutes = sitemapRoutes.filter((route) => route.path === '/pr
 const storySitemapRoutes = sitemapRoutes.filter(
   (route) => route.path === '/aktuality' || route.path === '/pribehy-druhe-sance' || route.path.startsWith('/pribehy-druhe-sance/')
 );
-const donateSitemapRoutes = sitemapRoutes.filter((route) => route.path === '/zapojeni' || route.path === '/darovat');
+const donateSitemapRoutes = sitemapRoutes.filter(
+  (route) => route.path === '/zapojeni' || route.path.startsWith('/zapojeni/') || route.path === '/darovat'
+);
 const methodologySitemapRoutes = sitemapRoutes.filter(
   (route) => route.path === '/metodika' || route.path.startsWith('/metodika/')
 );

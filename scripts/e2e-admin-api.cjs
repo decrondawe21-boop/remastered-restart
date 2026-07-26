@@ -94,6 +94,7 @@ async function requestRaw(path, options = {}) {
   let createdDocumentId = null;
   let createdNotificationId = null;
   let createdMaterialOfferId = null;
+  let createdHomepageContentId = null;
   let duplicateClientId = null;
   let uploadedMediaPath = null;
 
@@ -117,6 +118,61 @@ async function requestRaw(path, options = {}) {
       throw new Error(`Admin login failed: ${JSON.stringify(login.body)}`);
     }
     const cookie = login.response.headers.get('set-cookie');
+
+    createdHomepageContentId = `e2e-homepage-${stamp}`;
+    const unauthorizedHomepageWrite = await request('/api/homepage-content', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: createdHomepageContentId,
+        contentType: 'section',
+        title: 'Neoprávněný zápis',
+        body: 'Tento obsah se nesmí uložit.'
+      })
+    });
+    if (unauthorizedHomepageWrite.response.status !== 403) {
+      throw new Error(`Homepage content write is not admin protected: ${JSON.stringify(unauthorizedHomepageWrite.body)}`);
+    }
+
+    const savedHomepageContent = await request('/api/homepage-content', {
+      method: 'POST',
+      headers: { cookie },
+      body: JSON.stringify({
+        id: createdHomepageContentId,
+        contentType: 'section',
+        label: 'E2E',
+        title: `Test homepage ${stamp}`,
+        body: 'Dočasný obsah homepage.',
+        ctaLabel: 'Otevřít',
+        ctaHref: '/kontakt',
+        sortOrder: 999,
+        isActive: false
+      })
+    });
+    if (
+      !savedHomepageContent.response.ok ||
+      savedHomepageContent.body.item.id !== createdHomepageContentId ||
+      savedHomepageContent.body.item.isActive !== false
+    ) {
+      throw new Error(`Homepage content save failed: ${JSON.stringify(savedHomepageContent.body)}`);
+    }
+
+    const publicHomepageContent = await request('/api/homepage-content');
+    if (
+      !publicHomepageContent.response.ok ||
+      publicHomepageContent.body.items.some((item) => item.id === createdHomepageContentId)
+    ) {
+      throw new Error(`Inactive homepage content leaked publicly: ${JSON.stringify(publicHomepageContent.body)}`);
+    }
+
+    const adminHomepageContent = await request('/api/homepage-content', {
+      headers: { cookie }
+    });
+    if (
+      !adminHomepageContent.response.ok ||
+      !adminHomepageContent.body.items.some((item) => item.id === createdHomepageContentId && item.title === `Test homepage ${stamp}`)
+    ) {
+      throw new Error(`Admin homepage content list failed: ${JSON.stringify(adminHomepageContent.body)}`);
+    }
 
     const materialOffer = await request('/api/material-offers', {
       method: 'POST',
@@ -629,6 +685,7 @@ async function requestRaw(path, options = {}) {
     await query('DELETE FROM notifications WHERE id = ?', [createdNotificationId]);
     await query('DELETE FROM notifications WHERE category = ? AND body LIKE ?', ['Materiální dary', '%E2E Dárce%']);
     await query('DELETE FROM material_offers WHERE id = ?', [createdMaterialOfferId]);
+    await query('DELETE FROM homepage_content WHERE id = ?', [createdHomepageContentId]);
     await query('DELETE FROM notifications WHERE recipient_id = ? OR created_by = ?', [managedUserId, managedUserId]);
     await query('DELETE FROM notifications WHERE recipient_id = ? OR created_by = ?', [applicantUserId, applicantUserId]);
     await query('DELETE FROM notifications WHERE body LIKE ?', [`%${managedUserEmail}%`]);

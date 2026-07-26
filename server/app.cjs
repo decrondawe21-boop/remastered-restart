@@ -1245,6 +1245,22 @@ function publicSlide(row) {
   };
 }
 
+function homepageContentRow(row) {
+  return {
+    id: row.id,
+    contentType: row.contentType,
+    label: row.label || '',
+    title: row.title,
+    body: row.body,
+    imageUrl: row.imageUrl || '',
+    ctaLabel: row.ctaLabel || '',
+    ctaHref: row.ctaHref || '',
+    sortOrder: Number(row.sortOrder) || 0,
+    isActive: Boolean(row.isActive),
+    updatedAt: row.updatedAt
+  };
+}
+
 const institutionalCareLabelMap = {
   yes: 'Ano - dětský domov / ústavní péče',
   no: 'Ne',
@@ -1399,6 +1415,94 @@ async function saveSlide(request, response) {
     [id]
   );
   sendJson(response, 200, { slide: publicSlide(rows[0]) });
+}
+
+async function listHomepageContent(request, response) {
+  const user = await currentUser(request);
+  const canViewDrafts = user && ['admin', 'editor'].includes(user.role);
+  const rows = await query(
+    `SELECT
+       id,
+       content_type AS contentType,
+       label,
+       title,
+       body,
+       image_url AS imageUrl,
+       cta_label AS ctaLabel,
+       cta_href AS ctaHref,
+       sort_order AS sortOrder,
+       is_active AS isActive,
+       updated_at AS updatedAt
+     FROM homepage_content
+     ${canViewDrafts ? '' : 'WHERE is_active = 1'}
+     ORDER BY content_type ASC, sort_order ASC, created_at ASC
+     LIMIT 200`
+  );
+  sendJson(response, 200, { items: rows.map(homepageContentRow) });
+}
+
+async function saveHomepageContent(request, response) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const body = await readBody(request);
+  const missing = requireFields(body, ['id', 'title', 'body']);
+  if (missing) {
+    sendJson(response, 400, { error: missing });
+    return;
+  }
+  const contentType = ['section', 'gallery'].includes(body.contentType) ? body.contentType : 'section';
+  if (contentType === 'gallery' && !String(body.imageUrl || '').trim()) {
+    sendJson(response, 400, { error: 'imageUrl is required for gallery items.' });
+    return;
+  }
+  const sortOrder = Number.isFinite(Number(body.sortOrder)) ? Number(body.sortOrder) : 0;
+  const isActive = body.isActive === false ? 0 : 1;
+  await query(
+    `INSERT INTO homepage_content
+       (id, content_type, label, title, body, image_url, cta_label, cta_href, sort_order, is_active)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       content_type = VALUES(content_type),
+       label = VALUES(label),
+       title = VALUES(title),
+       body = VALUES(body),
+       image_url = VALUES(image_url),
+       cta_label = VALUES(cta_label),
+       cta_href = VALUES(cta_href),
+       sort_order = VALUES(sort_order),
+       is_active = VALUES(is_active)`,
+    [
+      String(body.id).trim().slice(0, 120),
+      contentType,
+      String(body.label || '').trim(),
+      String(body.title).trim(),
+      String(body.body).trim(),
+      String(body.imageUrl || '').trim(),
+      String(body.ctaLabel || '').trim(),
+      String(body.ctaHref || '').trim(),
+      sortOrder,
+      isActive
+    ]
+  );
+  const rows = await query(
+    `SELECT
+       id,
+       content_type AS contentType,
+       label,
+       title,
+       body,
+       image_url AS imageUrl,
+       cta_label AS ctaLabel,
+       cta_href AS ctaHref,
+       sort_order AS sortOrder,
+       is_active AS isActive,
+       updated_at AS updatedAt
+     FROM homepage_content
+     WHERE id = ?
+     LIMIT 1`,
+    [String(body.id).trim().slice(0, 120)]
+  );
+  sendJson(response, 200, { item: homepageContentRow(rows[0]) });
 }
 
 async function listClients(request, response) {
@@ -3342,6 +3446,8 @@ async function createApp(request, response) {
     if (request.method === 'DELETE' && commentMatch) return await deleteNewsComment(request, response, commentMatch[1]);
     if (request.method === 'GET' && url.pathname === '/api/slides') return await listSlides(request, response);
     if (request.method === 'POST' && url.pathname === '/api/slides') return await saveSlide(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/homepage-content') return await listHomepageContent(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/homepage-content') return await saveHomepageContent(request, response);
     if (request.method === 'GET' && url.pathname === '/api/clients') return await listClients(request, response);
     if (request.method === 'POST' && url.pathname === '/api/clients') return await createClient(request, response);
     const clientMatch = url.pathname.match(/^\/api\/clients\/([^/]+)$/);

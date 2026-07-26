@@ -53,6 +53,20 @@ export type ApiHomeSlide = {
   isActive: boolean;
 };
 
+export type ApiHomepageContentItem = {
+  id: string;
+  contentType: 'section' | 'gallery';
+  label: string;
+  title: string;
+  body: string;
+  imageUrl: string;
+  ctaLabel: string;
+  ctaHref: string;
+  sortOrder: number;
+  isActive: boolean;
+  updatedAt: string;
+};
+
 export type ApiClientRecord = {
   id: string;
   firstName: string;
@@ -437,6 +451,19 @@ export async function saveSlide(slide: ApiHomeSlide) {
     body: JSON.stringify(slide)
   });
   return body.slide;
+}
+
+export async function listHomepageContent() {
+  const body = await request<{ items: ApiHomepageContentItem[] }>('/api/homepage-content');
+  return body.items;
+}
+
+export async function saveHomepageContent(item: ApiHomepageContentItem) {
+  const body = await request<{ item: ApiHomepageContentItem }>('/api/homepage-content', {
+    method: 'POST',
+    body: JSON.stringify(item)
+  });
+  return body.item;
 }
 
 export async function listClients() {

@@ -89,6 +89,7 @@ import {
   listFormTemplates,
   listMedia,
   listMaterialOffers,
+  listHomepageContent,
   listNews,
   listNewsDiscussion,
   listNotifications,
@@ -110,6 +111,7 @@ import {
   saveMedia as saveMediaRecord,
   saveNews as saveNewsRecord,
   saveNotification as saveNotificationRecord,
+  saveHomepageContent as saveHomepageContentRecord,
   saveSlide as saveSlideRecord,
   submitProjectApplication,
   submitMaterialOffer,
@@ -132,6 +134,7 @@ import {
   type ApiMaterialOfferType,
   type ApiMaterialOfferTransport,
   type ApiMediaFile,
+  type ApiHomepageContentItem,
   type ApiNewsComment,
   type ApiNewsLike,
   type ApiHomeSlide,
@@ -521,6 +524,8 @@ type NewsDiscussion = {
 };
 
 type HomeSlide = ApiHomeSlide;
+type HomepageContentItem = ApiHomepageContentItem;
+type ContentEditorTab = 'hero' | 'gallery' | 'sections';
 
 type FormDraft = Record<string, string>;
 
@@ -2198,6 +2203,142 @@ const practicePhotoSlides = [
   }
 ];
 
+const defaultHomepageSections: HomepageContentItem[] = [
+  {
+    id: 'practice-gallery',
+    contentType: 'section',
+    label: 'ZÁZEMÍ V OBRAZECH',
+    title: 'Reálné místo, reálná práce.',
+    body:
+      'Skici ukazují směr projektu. Fotky drží stopu toho, jak zázemí opravdu vzniká: z materiálu, který se podaří zachránit, a z práce, která je vidět až krok za krokem.',
+    imageUrl: '',
+    ctaLabel: '',
+    ctaHref: '',
+    sortOrder: 10,
+    isActive: true,
+    updatedAt: ''
+  },
+  {
+    id: 'streetwise',
+    contentType: 'section',
+    label: 'STREETWISE',
+    title: 'Z věcí, které měly skončit, stavíme nové zázemí.',
+    body:
+      'REST||ART Integrace vzniká stejně jako naše bouda: z nalezeného materiálu, práce, trpělivosti a víry, že i to, co bylo odepsané, může znovu sloužit.',
+    imageUrl: '',
+    ctaLabel: 'STREETWISE',
+    ctaHref: '/programy/streetwise',
+    sortOrder: 20,
+    isActive: true,
+    updatedAt: ''
+  },
+  {
+    id: 'green-band',
+    contentType: 'section',
+    label: 'Hlavní poselství',
+    title: 'Začít znovu není selhání, je to síla.',
+    body: 'Mentoring, práce, bydlení a stabilizace v jednom srozumitelném systému podpory.',
+    imageUrl: '',
+    ctaLabel: 'Jak pracujeme',
+    ctaHref: '/co-delame',
+    sortOrder: 30,
+    isActive: true,
+    updatedAt: ''
+  },
+  {
+    id: 'economy',
+    contentType: 'section',
+    label: 'Ekonomika druhé šance',
+    title: 'Dát člověku cestu zpět je levnější než čekat na další pád.',
+    body: 'Nejde o hezkou frázi. Jde o praktický rozdíl mezi pasivním nákladem systému a aktivní reintegrací.',
+    imageUrl: '',
+    ctaLabel: '',
+    ctaHref: '',
+    sortOrder: 40,
+    isActive: true,
+    updatedAt: ''
+  },
+  {
+    id: 'solution',
+    contentType: 'section',
+    label: 'Řešení',
+    title: 'Není to klasická nezisková organizace. Je to systém návratu.',
+    body:
+      'REST||ART Integrace propojuje sociální práci, mentoring, firmy, obce, dokumenty, formuláře a každodenní praxi do jedné srozumitelné cesty.',
+    imageUrl: '',
+    ctaLabel: '',
+    ctaHref: '',
+    sortOrder: 50,
+    isActive: true,
+    updatedAt: ''
+  },
+  {
+    id: 'impact',
+    contentType: 'section',
+    label: 'Dopad',
+    title: 'Měřitelná změna, která má lidský i ekonomický smysl.',
+    body:
+      'Druhá šance je pro nás konkrétní výsledek: méně návratů do krize, více práce, bezpečnější bydlení a opora, která člověka nenechá zmizet.',
+    imageUrl: '',
+    ctaLabel: '',
+    ctaHref: '',
+    sortOrder: 60,
+    isActive: true,
+    updatedAt: ''
+  },
+  {
+    id: 'seo',
+    contentType: 'section',
+    label: 'Oficiální projekt druhých šancí',
+    title: 'Sociální začleňování, podpora po výkonu trestu a návrat do běžného života.',
+    body:
+      'RESTART Integrace propojuje mentoring, stabilizaci, práci, bydlení a komunitní podporu pro lidi, kteří potřebují bezpečný návrat do společnosti. Programy pomáhají po výkonu trestu, v sociální krizi, po ústavní péči i při dlouhodobé ztrátě práce nebo zázemí.',
+    imageUrl: '',
+    ctaLabel: '',
+    ctaHref: '',
+    sortOrder: 70,
+    isActive: true,
+    updatedAt: ''
+  },
+  {
+    id: 'partners',
+    contentType: 'section',
+    label: 'Pro partnery',
+    title: 'Spolupráce s námi není charita. Je to investice do návratu lidí i stability okolí.',
+    body:
+      'Hledáme partnery, kteří chtějí být součástí praktické změny: zaměstnavatele, obce, instituce, odborníky i lidi, kteří rozumí tomu, že druhá šance musí mít konkrétní kroky.',
+    imageUrl: '',
+    ctaLabel: 'Chci být partner',
+    ctaHref: '/zapojeni',
+    sortOrder: 80,
+    isActive: true,
+    updatedAt: ''
+  }
+];
+
+const defaultHomepageGallery: HomepageContentItem[] = practicePhotoSlides.map((slide, index) => ({
+  id: slide.id,
+  contentType: 'gallery',
+  label: '',
+  title: slide.title,
+  body: slide.text,
+  imageUrl: slide.imageUrl,
+  ctaLabel: '',
+  ctaHref: '',
+  sortOrder: (index + 1) * 10,
+  isActive: true,
+  updatedAt: ''
+}));
+
+const defaultHomepageContent = [...defaultHomepageSections, ...defaultHomepageGallery];
+
+const mergeHomepageContent = (items: HomepageContentItem[]) => {
+  const overrides = new Map(items.map((item) => [item.id, item]));
+  const mergedDefaults = defaultHomepageContent.map((item) => overrides.get(item.id) ?? item);
+  const defaultIds = new Set(defaultHomepageContent.map((item) => item.id));
+  return [...mergedDefaults, ...items.filter((item) => !defaultIds.has(item.id))];
+};
+
 const hasStarterHeroDeck = (slides: HomeSlide[]) =>
   slides.filter((slide) => slide.isActive && starterSlideIds.has(slide.id)).length === starterSlides.length;
 
@@ -3451,11 +3592,17 @@ function HomeSlideshow({ slides }: { slides: HomeSlide[] }) {
   );
 }
 
-function PracticePhotoSlideshow() {
+function PracticePhotoSlideshow({ content }: { content: HomepageContentItem[] }) {
+  const galleryIntro =
+    content.find((item) => item.id === 'practice-gallery' && item.contentType === 'section') ??
+    defaultHomepageSections[0];
+  const gallerySlides = content
+    .filter((item) => item.contentType === 'gallery' && item.isActive)
+    .sort((left, right) => left.sortOrder - right.sortOrder);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const manualPauseUntil = React.useRef(0);
-  const slideCount = practicePhotoSlides.length;
-  const activeSlide = practicePhotoSlides[activeIndex] ?? practicePhotoSlides[0];
+  const slideCount = gallerySlides.length;
+  const activeSlide = gallerySlides[activeIndex] ?? gallerySlides[0];
   const wrapIndex = (index: number) => (index + slideCount) % slideCount;
   const goToSlide = (index: number, manual = false) => {
     if (manual) manualPauseUntil.current = Date.now() + 9000;
@@ -3479,15 +3626,18 @@ function PracticePhotoSlideshow() {
     return () => window.clearInterval(timer);
   }, [slideCount]);
 
+  React.useEffect(() => {
+    if (activeIndex >= slideCount) setActiveIndex(0);
+  }, [activeIndex, slideCount]);
+
+  if (!galleryIntro.isActive || !activeSlide) return null;
+
   return (
     <section className="practice-gallery" aria-label="Fotky z praxe">
       <div className="practice-gallery-copy">
-        <p className="section-label">ZÁZEMÍ V OBRAZECH</p>
-        <h2>Reálné místo, reálná práce.</h2>
-        <p>
-          Skici ukazují směr projektu. Fotky drží stopu toho, jak zázemí opravdu vzniká: z materiálu, který se
-          podaří zachránit, a z práce, která je vidět až krok za krokem.
-        </p>
+        <p className="section-label">{galleryIntro.label}</p>
+        <h2>{galleryIntro.title}</h2>
+        <p>{galleryIntro.body}</p>
       </div>
       <div className="practice-gallery-stage">
         <figure className="practice-photo-frame">
@@ -3495,7 +3645,7 @@ function PracticePhotoSlideshow() {
           <figcaption>
             <span>{activeIndex + 1} / {slideCount}</span>
             <strong>{activeSlide.title}</strong>
-            <p>{activeSlide.text}</p>
+            <p>{activeSlide.body}</p>
           </figcaption>
         </figure>
         <div className="practice-gallery-controls">
@@ -3503,7 +3653,7 @@ function PracticePhotoSlideshow() {
             <ChevronLeft size={22} />
           </button>
           <div className="slide-dots compact" aria-label="Výběr fotky">
-            {practicePhotoSlides.map((slide, index) => (
+            {gallerySlides.map((slide, index) => (
               <button
                 key={slide.id}
                 type="button"
@@ -3722,6 +3872,7 @@ function ProjectRevealMini() {
 function HomePage({
   news,
   slides,
+  homepageContent,
   discussion,
   account,
   onToggleLike,
@@ -3732,6 +3883,7 @@ function HomePage({
 }: {
   news: NewsItem[];
   slides: HomeSlide[];
+  homepageContent: HomepageContentItem[];
   discussion: NewsDiscussion;
   account: AuthAccount | null;
   onToggleLike: (newsId: string) => Promise<void>;
@@ -3740,21 +3892,29 @@ function HomePage({
   onDeleteComment: (commentId: string) => Promise<void>;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
 }) {
+  const section = (id: string) =>
+    homepageContent.find((item) => item.id === id && item.contentType === 'section') ??
+    defaultHomepageSections.find((item) => item.id === id)!;
+  const streetwiseSection = section('streetwise');
+  const greenBandSection = section('green-band');
+  const economySection = section('economy');
+  const solutionSection = section('solution');
+  const impactSection = section('impact');
+  const seoSection = section('seo');
+  const partnersSection = section('partners');
+
   return (
     <>
       <HomeSlideshow slides={slides} />
-      <PracticePhotoSlideshow />
+      <PracticePhotoSlideshow content={homepageContent} />
 
-      <section className="streetwise-feature" aria-label="STREETWISE zázemí">
+      {streetwiseSection.isActive && <section className="streetwise-feature" aria-label="STREETWISE zázemí">
         <article className="streetwise-card streetwise-card-main">
-          <p className="section-label">STREETWISE</p>
-          <h2>Z věcí, které měly skončit, stavíme nové zázemí.</h2>
-          <p>
-            REST||ART Integrace vzniká stejně jako naše bouda: z nalezeného materiálu, práce, trpělivosti a víry, že
-            i to, co bylo odepsané, může znovu sloužit.
-          </p>
-          <a className="button primary" href="/programy/streetwise">
-            STREETWISE <ArrowRight size={18} />
+          <p className="section-label">{streetwiseSection.label}</p>
+          <h2>{streetwiseSection.title}</h2>
+          <p>{streetwiseSection.body}</p>
+          <a className="button primary" href={streetwiseSection.ctaHref || '/programy/streetwise'}>
+            {streetwiseSection.ctaLabel || 'STREETWISE'} <ArrowRight size={18} />
           </a>
         </article>
         <article className="streetwise-card">
@@ -3773,7 +3933,7 @@ function HomePage({
           <img src="/images/crops/streetwise/streetwise-bouda-stavba.webp" alt="" />
           <figcaption>Reálná stavba z nalezeného materiálu</figcaption>
         </figure>
-      </section>
+      </section>}
 
       <section className="stats-band" aria-label="Základní čísla">
         {stats.map((item) => (
@@ -3784,15 +3944,15 @@ function HomePage({
         ))}
       </section>
 
-      <section className="green-band">
+      {greenBandSection.isActive && <section className="green-band">
         <div>
-          <p>Začít znovu není selhání, je to síla.</p>
-          <span>Mentoring, práce, bydlení a stabilizace v jednom srozumitelném systému podpory.</span>
+          <p>{greenBandSection.title}</p>
+          <span>{greenBandSection.body}</span>
         </div>
-        <a className="button inverse" href="/co-delame">
-          Jak pracujeme
+        <a className="button inverse" href={greenBandSection.ctaHref || '/co-delame'}>
+          {greenBandSection.ctaLabel || 'Jak pracujeme'}
         </a>
-      </section>
+      </section>}
 
       <ProjectRevealMini />
 
@@ -3814,11 +3974,11 @@ function HomePage({
         </div>
       </section>
 
-      <section className="content-section compact-section">
+      {economySection.isActive && <section className="content-section compact-section">
         <SectionIntro
-          label="Ekonomika druhé šance"
-          title="Dát člověku cestu zpět je levnější než čekat na další pád."
-          text="Nejde o hezkou frázi. Jde o praktický rozdíl mezi pasivním nákladem systému a aktivní reintegrací."
+          label={economySection.label}
+          title={economySection.title}
+          text={economySection.body}
         />
         <div className="metric-grid">
           {realityCards.map((item) => (
@@ -3829,13 +3989,13 @@ function HomePage({
             </article>
           ))}
         </div>
-      </section>
+      </section>}
 
-      <section className="solution-section">
+      {solutionSection.isActive && <section className="solution-section">
         <SectionIntro
-          label="Řešení"
-          title="Není to klasická nezisková organizace. Je to systém návratu."
-          text="REST||ART Integrace propojuje sociální práci, mentoring, firmy, obce, dokumenty, formuláře a každodenní praxi do jedné srozumitelné cesty."
+          label={solutionSection.label}
+          title={solutionSection.title}
+          text={solutionSection.body}
         />
         <div className="principle-grid">
           {solutionPrinciples.map((item) => (
@@ -3845,13 +4005,13 @@ function HomePage({
             </article>
           ))}
         </div>
-      </section>
+      </section>}
 
-      <section className="content-section compact-section">
+      {impactSection.isActive && <section className="content-section compact-section">
         <SectionIntro
-          label="Dopad"
-          title="Měřitelná změna, která má lidský i ekonomický smysl."
-          text="Druhá šance je pro nás konkrétní výsledek: méně návratů do krize, více práce, bezpečnější bydlení a opora, která člověka nenechá zmizet."
+          label={impactSection.label}
+          title={impactSection.title}
+          text={impactSection.body}
         />
         <div className="metric-grid">
           {impactMetrics.map((item) => (
@@ -3862,23 +4022,19 @@ function HomePage({
             </article>
           ))}
         </div>
-      </section>
+      </section>}
 
-      <section className="homepage-seo-section" aria-labelledby="homepage-seo-title">
-        <p className="section-label">Oficiální projekt druhých šancí</p>
-        <h2 id="homepage-seo-title">Sociální začleňování, podpora po výkonu trestu a návrat do běžného života.</h2>
-        <p>
-          RESTART Integrace propojuje mentoring, stabilizaci, práci, bydlení a komunitní podporu pro lidi, kteří
-          potřebují bezpečný návrat do společnosti. Programy pomáhají po výkonu trestu, v sociální krizi, po ústavní
-          péči i při dlouhodobé ztrátě práce nebo zázemí.
-        </p>
+      {seoSection.isActive && <section className="homepage-seo-section" aria-labelledby="homepage-seo-title">
+        <p className="section-label">{seoSection.label}</p>
+        <h2 id="homepage-seo-title">{seoSection.title}</h2>
+        <p>{seoSection.body}</p>
         <div className="homepage-seo-points" aria-label="Hlavní oblasti podpory">
           <span>projekt druhých šancí</span>
           <span>sociální začleňování</span>
           <span>podpora po výkonu trestu</span>
           <span>práce, bydlení a stabilizace</span>
         </div>
-      </section>
+      </section>}
 
       <section className="project-video-section" id="projektove-video" aria-labelledby="project-video-title">
         <div className="project-video-copy">
@@ -3902,30 +4058,27 @@ function HomePage({
         </figure>
       </section>
 
-      <section className="split-section partner-message">
+      {partnersSection.isActive && <section className="split-section partner-message">
         <div>
-          <p className="section-label">Pro partnery</p>
-          <h2>Spolupráce s námi není charita. Je to investice do návratu lidí i stability okolí.</h2>
+          <p className="section-label">{partnersSection.label}</p>
+          <h2>{partnersSection.title}</h2>
         </div>
         <div className="text-column">
-          <p>
-            Hledáme partnery, kteří chtějí být součástí praktické změny: zaměstnavatele, obce, instituce, odborníky i
-            lidi, kteří rozumí tomu, že druhá šance musí mít konkrétní kroky.
-          </p>
+          <p>{partnersSection.body}</p>
           <p>
             Podpora projektu pomáhá pokrýt mentoring, první materiály, dopravu, dokumenty, pracovní přípravu a zázemí,
             kde může člověk začít znovu.
           </p>
           <div className="inline-actions">
-            <a className="button primary" href="/zapojeni">
-              Chci být partner <ArrowRight size={18} />
+            <a className="button primary" href={partnersSection.ctaHref || '/zapojeni'}>
+              {partnersSection.ctaLabel || 'Chci být partner'} <ArrowRight size={18} />
             </a>
             <a className="button secondary" href="/darujte">
               Podpořit projekt
             </a>
           </div>
         </div>
-      </section>
+      </section>}
 
       <section className="content-section">
         <SectionIntro
@@ -8348,6 +8501,10 @@ function App() {
   const [news, setNews] = useStoredState<NewsItem[]>('restart-public-news', starterNews);
   const [newsDiscussion, setNewsDiscussion] = React.useState<NewsDiscussion>({ likes: {}, comments: [] });
   const [slides, setSlides] = useStoredState<HomeSlide[]>('restart-home-slides', starterSlides);
+  const [homepageContent, setHomepageContent] = useStoredState<HomepageContentItem[]>(
+    'restart-homepage-content',
+    defaultHomepageContent
+  );
   const [formTemplates, setFormTemplates] = useStoredState<FormTemplate[]>('restart-form-templates', []);
   const [accounts, setAccounts] = useStoredState<AuthAccount[]>('restart-auth-accounts', starterAccounts);
   const [managedUsers, setManagedUsers] = React.useState<ManagedUser[]>([]);
@@ -8395,7 +8552,10 @@ function App() {
         if (items.length > 0) setSlides(shouldUseStarterHeroDeck(items) ? starterSlides : items);
       })
       .catch(() => undefined);
-  }, [setNews, setSlides]);
+    listHomepageContent()
+      .then((items) => setHomepageContent(mergeHomepageContent(items)))
+      .catch(() => undefined);
+  }, [setHomepageContent, setNews, setSlides]);
 
   React.useEffect(() => {
     if (currentPath !== '/povinne-zverejnovani') return;
@@ -8571,6 +8731,7 @@ React.useEffect(() => {
   const saveNewsViaApi = (item: NewsItem) => saveNewsRecord(item);
   const deleteNewsViaApi = (id: string) => deleteNewsRecord(id);
   const saveSlideViaApi = (item: HomeSlide) => saveSlideRecord(item);
+  const saveHomepageContentViaApi = (item: HomepageContentItem) => saveHomepageContentRecord(item);
   const saveDocumentViaApi = async (document: Omit<ClientDocument, 'createdAt'> & { createdAt?: string }) => {
     const saved = await saveDocumentRecord(document);
     setClientDocuments((current) => {
@@ -8821,6 +8982,7 @@ React.useEffect(() => {
           clients={clients}
           news={news}
           slides={slides}
+          homepageContent={homepageContent}
           formTemplates={formTemplates}
           managedUsers={managedUsers}
           projectApplications={projectApplications}
@@ -8833,11 +8995,13 @@ React.useEffect(() => {
           onClientsChange={setClients}
           onNewsChange={setNews}
           onSlidesChange={setSlides}
+          onHomepageContentChange={setHomepageContent}
           onClientSaveRequest={saveClientViaApi}
           onClientDeleteRequest={deleteClientViaApi}
           onNewsSaveRequest={saveNewsViaApi}
           onNewsDeleteRequest={deleteNewsViaApi}
           onSlideSaveRequest={saveSlideViaApi}
+          onHomepageContentSaveRequest={saveHomepageContentViaApi}
           onDocumentSaveRequest={saveDocumentViaApi}
           onMediaSaveRequest={saveMediaViaApi}
           onMediaUploadRequest={uploadMediaViaApi}
@@ -8872,6 +9036,7 @@ React.useEffect(() => {
       <HomePage
         news={news}
         slides={slides}
+        homepageContent={homepageContent}
         discussion={newsDiscussion}
         account={currentAccount}
         onToggleLike={toggleLikeViaApi}
@@ -8925,6 +9090,7 @@ function AdminWorkspace({
   clients,
   news,
   slides,
+  homepageContent,
   formTemplates,
   managedUsers,
   projectApplications,
@@ -8937,11 +9103,13 @@ function AdminWorkspace({
   onClientsChange,
   onNewsChange,
   onSlidesChange,
+  onHomepageContentChange,
   onClientSaveRequest,
   onClientDeleteRequest,
   onNewsSaveRequest,
   onNewsDeleteRequest,
   onSlideSaveRequest,
+  onHomepageContentSaveRequest,
   onDocumentSaveRequest,
   onMediaSaveRequest,
   onMediaUploadRequest,
@@ -8961,6 +9129,7 @@ function AdminWorkspace({
   clients: ClientRecord[];
   news: NewsItem[];
   slides: HomeSlide[];
+  homepageContent: HomepageContentItem[];
   formTemplates: FormTemplate[];
   managedUsers: ManagedUser[];
   projectApplications: ProjectApplication[];
@@ -8973,11 +9142,13 @@ function AdminWorkspace({
   onClientsChange: React.Dispatch<React.SetStateAction<ClientRecord[]>>;
   onNewsChange: React.Dispatch<React.SetStateAction<NewsItem[]>>;
   onSlidesChange: React.Dispatch<React.SetStateAction<HomeSlide[]>>;
+  onHomepageContentChange: React.Dispatch<React.SetStateAction<HomepageContentItem[]>>;
   onClientSaveRequest?: (client: ClientRecord) => Promise<ClientRecord>;
   onClientDeleteRequest?: (clientId: string) => Promise<{ ok: boolean; id: string; detachedDocuments: number }>;
   onNewsSaveRequest?: (item: NewsItem) => Promise<NewsItem>;
   onNewsDeleteRequest?: (id: string) => Promise<void>;
   onSlideSaveRequest?: (item: HomeSlide) => Promise<HomeSlide>;
+  onHomepageContentSaveRequest?: (item: HomepageContentItem) => Promise<HomepageContentItem>;
   onDocumentSaveRequest?: (document: Omit<ClientDocument, 'createdAt'> & { createdAt?: string }) => Promise<ClientDocument>;
   onMediaSaveRequest?: (media: Omit<MediaFile, 'createdAt' | 'uploadedBy'> & { createdAt?: string; uploadedBy?: string | null }) => Promise<MediaFile>;
   onMediaUploadRequest?: (mediaFile: File, category: string) => Promise<MediaUploadResult>;
@@ -9187,6 +9358,10 @@ function AdminWorkspace({
     sortOrder: 170,
     isActive: true
   });
+  const [contentEditorTab, setContentEditorTab] = React.useState<ContentEditorTab>('hero');
+  const [homepageContentForm, setHomepageContentForm] = React.useState<HomepageContentItem>(
+    defaultHomepageGallery[0]
+  );
   const [imageUploadBusy, setImageUploadBusy] = React.useState('');
   const [adminMessage, setAdminMessage] = React.useState('');
   const [adminMessageTone, setAdminMessageTone] = React.useState<FeedbackTone>('info');
@@ -9820,6 +9995,14 @@ function AdminWorkspace({
     if (fileUrl) setSlideForm((current) => ({ ...current, imageUrl: fileUrl }));
   };
 
+  const uploadHomepageContentImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+    const fileUrl = await uploadImageFromComputer(file, 'homepage-gallery');
+    if (fileUrl) setHomepageContentForm((current) => ({ ...current, imageUrl: fileUrl }));
+  };
+
   const saveNews = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!newsForm.title.trim()) return;
@@ -9934,6 +10117,47 @@ function AdminWorkspace({
       setAdminMessage('Slide je uložený v aktuální administraci.');
       onNotify('success', 'Slide uložen', 'Záznam byl uložen.');
     }
+  };
+
+  const saveHomepageContentItem = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!homepageContentForm.title.trim() || !homepageContentForm.body.trim()) {
+      onNotify('warning', 'Obsah není kompletní', 'Vyplňte nadpis a hlavní text.');
+      return;
+    }
+    if (homepageContentForm.contentType === 'gallery' && !homepageContentForm.imageUrl.trim()) {
+      onNotify('warning', 'Fotografie chybí', 'Vyberte obrázek z médií nebo jej nahrajte z počítače.');
+      return;
+    }
+    const id =
+      homepageContentForm.id ||
+      (homepageContentForm.contentType === 'gallery' ? `gallery-${crypto.randomUUID()}` : crypto.randomUUID());
+    let nextItem: HomepageContentItem = {
+      ...homepageContentForm,
+      id,
+      updatedAt: new Date().toISOString()
+    };
+    if (onHomepageContentSaveRequest) {
+      try {
+        nextItem = await onHomepageContentSaveRequest(nextItem);
+        setAdminMessageTone('success');
+        setAdminMessage('Obsah homepage je uložený v databázi.');
+        onNotify('success', 'Obsah uložen', nextItem.title);
+      } catch (error) {
+        setAdminMessageTone('error');
+        setAdminMessage(error instanceof Error ? error.message : 'Obsah se nepodařilo uložit.');
+        onNotify('error', 'Uložení selhalo', error instanceof Error ? error.message : 'Zkuste to prosím znovu.');
+        return;
+      }
+    }
+    onHomepageContentChange((current) => {
+      const exists = current.some((item) => item.id === nextItem.id);
+      const updated = exists
+        ? current.map((item) => (item.id === nextItem.id ? nextItem : item))
+        : [...current, nextItem];
+      return updated.sort((left, right) => left.sortOrder - right.sortOrder);
+    });
+    setHomepageContentForm(nextItem);
   };
 
   const updateClientField = (field: keyof ClientRecord, value: string) => {
@@ -10644,6 +10868,7 @@ function AdminWorkspace({
 
   const editSlide = (item: HomeSlide) => {
     setSlideForm(item);
+    setContentEditorTab('hero');
     selectAdminTab('content');
     onNotify('info', 'Slide načten k úpravě', item.title);
   };
@@ -10659,11 +10884,63 @@ function AdminWorkspace({
       sortOrder: Math.max(0, ...slides.map((slide) => slide.sortOrder)) + 10,
       isActive: true
     });
+    setContentEditorTab('hero');
     selectAdminTab('content');
     onNotify('info', 'Nový hero slide', 'Formulář je připravený.');
   };
 
+  const editHomepageContent = (item: HomepageContentItem) => {
+    setHomepageContentForm(item);
+    setContentEditorTab(item.contentType === 'gallery' ? 'gallery' : 'sections');
+    selectAdminTab('content');
+  };
+
+  const newHomepageGalleryItem = () => {
+    setHomepageContentForm({
+      id: '',
+      contentType: 'gallery',
+      label: '',
+      title: '',
+      body: '',
+      imageUrl: '',
+      ctaLabel: '',
+      ctaHref: '',
+      sortOrder:
+        Math.max(
+          0,
+          ...homepageContent.filter((item) => item.contentType === 'gallery').map((item) => item.sortOrder)
+        ) + 10,
+      isActive: true,
+      updatedAt: ''
+    });
+    setContentEditorTab('gallery');
+  };
+
+  const selectContentEditorTab = (tab: ContentEditorTab) => {
+    setContentEditorTab(tab);
+    if (tab === 'gallery' && homepageContentForm.contentType !== 'gallery') {
+      setHomepageContentForm(
+        homepageContent
+          .filter((item) => item.contentType === 'gallery')
+          .sort((left, right) => left.sortOrder - right.sortOrder)[0] ?? defaultHomepageGallery[0]
+      );
+    }
+    if (tab === 'sections' && homepageContentForm.contentType !== 'section') {
+      setHomepageContentForm(
+        homepageContent
+          .filter((item) => item.contentType === 'section')
+          .sort((left, right) => left.sortOrder - right.sortOrder)[0] ?? defaultHomepageSections[0]
+      );
+    }
+  };
+
   const currentAdminNav = adminNavItems.find((item) => item.id === activeTab) ?? adminNavItems[0];
+  const homepageGalleryItems = homepageContent
+    .filter((item) => item.contentType === 'gallery')
+    .sort((left, right) => left.sortOrder - right.sortOrder);
+  const homepageSectionItems = homepageContent
+    .filter((item) => item.contentType === 'section')
+    .sort((left, right) => left.sortOrder - right.sortOrder);
   const programChartPalette = ['#226f3f', '#4f8f16', '#bb8f3a', '#0f4b3d', '#7aa66a', '#d8b15f', '#6a8f7a', '#15382f'];
   const clientProgramStats = Array.from(
     clients.reduce((groups, client) => {
@@ -11987,7 +12264,44 @@ function AdminWorkspace({
         )}
 
         {activeTab === 'content' && (
-          <div className="admin-grid">
+          <div className="content-admin-workspace">
+            <div className="content-editor-tabs" role="tablist" aria-label="Části homepage">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={contentEditorTab === 'hero'}
+                className={contentEditorTab === 'hero' ? 'active' : ''}
+                onClick={() => selectContentEditorTab('hero')}
+              >
+                <Star size={17} /> Úvodní hero
+                <span>{slides.filter((item) => item.isActive).length}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={contentEditorTab === 'gallery'}
+                className={contentEditorTab === 'gallery' ? 'active' : ''}
+                onClick={() => selectContentEditorTab('gallery')}
+              >
+                <ImageIcon size={17} /> Slideshow homepage
+                <span>{homepageGalleryItems.filter((item) => item.isActive).length}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={contentEditorTab === 'sections'}
+                className={contentEditorTab === 'sections' ? 'active' : ''}
+                onClick={() => selectContentEditorTab('sections')}
+              >
+                <FileStack size={17} /> Další sekce
+                <span>{homepageSectionItems.filter((item) => item.isActive).length}</span>
+              </button>
+              <a className="button secondary" href="/" target="_blank" rel="noreferrer">
+                <Eye size={16} /> Náhled webu
+              </a>
+            </div>
+
+            {contentEditorTab === 'hero' && <div className="admin-grid content-editor-panel" role="tabpanel">
             <form className="admin-card hero-admin-form" onSubmit={saveSlide}>
               <div className="admin-card-header">
                 <div>
@@ -12093,6 +12407,242 @@ function AdminWorkspace({
                 ))}
               </div>
             </div>
+            </div>}
+
+            {contentEditorTab === 'gallery' && (
+              <div className="admin-grid content-editor-panel" role="tabpanel">
+                <form className="admin-card homepage-content-form" onSubmit={saveHomepageContentItem}>
+                  <div className="admin-card-header">
+                    <div>
+                      <p className="section-label">Fotogalerie homepage</p>
+                      <h3>{homepageContentForm.id ? 'Upravit snímek' : 'Nový snímek'}</h3>
+                      <p className="form-help">Tato slideshow je pod úvodním hero a ukazuje reálné fotografie z praxe.</p>
+                    </div>
+                    <button className="button secondary" type="button" onClick={newHomepageGalleryItem}>
+                      <Plus size={17} /> Nový snímek
+                    </button>
+                  </div>
+                  <label>
+                    Nadpis fotografie
+                    <input
+                      value={homepageContentForm.title}
+                      onChange={(event) => setHomepageContentForm((current) => ({ ...current, title: event.target.value }))}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Krátký popis
+                    <textarea
+                      rows={4}
+                      value={homepageContentForm.body}
+                      onChange={(event) => setHomepageContentForm((current) => ({ ...current, body: event.target.value }))}
+                      required
+                    />
+                  </label>
+                  <div className="field-stack">
+                    <label>
+                      Obrázek
+                      <input
+                        value={homepageContentForm.imageUrl}
+                        onChange={(event) => setHomepageContentForm((current) => ({ ...current, imageUrl: event.target.value }))}
+                        placeholder="URL obrázku nebo nahrajte soubor z počítače"
+                        required
+                      />
+                    </label>
+                    <span className="local-image-actions">
+                      <label className="button secondary local-image-upload">
+                        <Upload size={17} />
+                        {imageUploadBusy === 'homepage-gallery' ? 'Nahrávám…' : 'Nahrát z počítače'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={uploadHomepageContentImage}
+                          disabled={Boolean(imageUploadBusy)}
+                        />
+                      </label>
+                      <small>Po nahrání se veřejná cesta doplní automaticky.</small>
+                    </span>
+                  </div>
+                  {homepageContentForm.imageUrl && (
+                    <div className="homepage-gallery-admin-preview">
+                      <img src={resolvePublicFileUrl(homepageContentForm.imageUrl)} alt="" />
+                      <div>
+                        <strong>{homepageContentForm.title || 'Nadpis fotografie'}</strong>
+                        <p>{homepageContentForm.body || 'Popis fotografie'}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="form-grid two">
+                    <label>
+                      Pořadí
+                      <input
+                        type="number"
+                        value={homepageContentForm.sortOrder}
+                        onChange={(event) =>
+                          setHomepageContentForm((current) => ({ ...current, sortOrder: Number(event.target.value) }))
+                        }
+                      />
+                    </label>
+                    <label className="checkbox-field">
+                      <input
+                        type="checkbox"
+                        checked={homepageContentForm.isActive}
+                        onChange={(event) =>
+                          setHomepageContentForm((current) => ({ ...current, isActive: event.target.checked }))
+                        }
+                      />
+                      Zobrazit na webu
+                    </label>
+                  </div>
+                  <button className="button primary" type="submit">
+                    <Save size={18} /> Uložit snímek
+                  </button>
+                </form>
+
+                <div className="admin-card">
+                  <div className="admin-card-header">
+                    <div>
+                      <h3>Snímky z praxe</h3>
+                      <p className="form-help">Kliknutím načtete snímek k úpravě. Skryté zůstávají v archivu.</p>
+                    </div>
+                    <Badge tone="info">{homepageGalleryItems.length} celkem</Badge>
+                  </div>
+                  <div className="homepage-content-list">
+                    {homepageGalleryItems.map((item) => (
+                      <button
+                        className={homepageContentForm.id === item.id ? 'active' : ''}
+                        key={item.id}
+                        type="button"
+                        onClick={() => editHomepageContent(item)}
+                      >
+                        <img src={resolvePublicFileUrl(item.imageUrl)} alt="" />
+                        <span>
+                          <strong>{item.title}</strong>
+                          <small>Pořadí {item.sortOrder} · {item.isActive ? 'zobrazeno' : 'skryto'}</small>
+                        </span>
+                        {item.isActive ? <Eye size={16} /> : <EyeOff size={16} />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {contentEditorTab === 'sections' && (
+              <div className="admin-grid content-editor-panel" role="tabpanel">
+                <div className="admin-card">
+                  <div className="admin-card-header">
+                    <div>
+                      <p className="section-label">Homepage</p>
+                      <h3>Editovatelné sekce</h3>
+                      <p className="form-help">Vyberte blok. Změny se projeví na veřejné homepage po uložení.</p>
+                    </div>
+                    <Badge tone="info">{homepageSectionItems.length} sekcí</Badge>
+                  </div>
+                  <div className="homepage-section-list">
+                    {homepageSectionItems.map((item) => (
+                      <button
+                        className={homepageContentForm.id === item.id ? 'active' : ''}
+                        key={item.id}
+                        type="button"
+                        onClick={() => editHomepageContent(item)}
+                      >
+                        <span>
+                          <small>{item.label || 'Sekce'}</small>
+                          <strong>{item.title}</strong>
+                        </span>
+                        {item.isActive ? <Eye size={17} /> : <EyeOff size={17} />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <form className="admin-card homepage-content-form" onSubmit={saveHomepageContentItem}>
+                  <div className="admin-card-header">
+                    <div>
+                      <p className="section-label">Úprava sekce</p>
+                      <h3>{homepageContentForm.title}</h3>
+                      <p className="form-help">Technický klíč: {homepageContentForm.id}</p>
+                    </div>
+                    <Badge tone={homepageContentForm.isActive ? 'success' : 'warning'}>
+                      {homepageContentForm.isActive ? 'Zobrazeno' : 'Skryto'}
+                    </Badge>
+                  </div>
+                  <label>
+                    Štítek nad nadpisem
+                    <input
+                      value={homepageContentForm.label}
+                      onChange={(event) => setHomepageContentForm((current) => ({ ...current, label: event.target.value }))}
+                    />
+                  </label>
+                  <label>
+                    Nadpis
+                    <input
+                      value={homepageContentForm.title}
+                      onChange={(event) => setHomepageContentForm((current) => ({ ...current, title: event.target.value }))}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Hlavní text
+                    <textarea
+                      rows={6}
+                      value={homepageContentForm.body}
+                      onChange={(event) => setHomepageContentForm((current) => ({ ...current, body: event.target.value }))}
+                      required
+                    />
+                  </label>
+                  <div className="form-grid two">
+                    <label>
+                      Text tlačítka
+                      <input
+                        value={homepageContentForm.ctaLabel}
+                        onChange={(event) =>
+                          setHomepageContentForm((current) => ({ ...current, ctaLabel: event.target.value }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      Odkaz tlačítka
+                      <input
+                        value={homepageContentForm.ctaHref}
+                        onChange={(event) =>
+                          setHomepageContentForm((current) => ({ ...current, ctaHref: event.target.value }))
+                        }
+                      />
+                    </label>
+                    <label>
+                      Pořadí v administraci
+                      <input
+                        type="number"
+                        value={homepageContentForm.sortOrder}
+                        onChange={(event) =>
+                          setHomepageContentForm((current) => ({ ...current, sortOrder: Number(event.target.value) }))
+                        }
+                      />
+                    </label>
+                    <label className="checkbox-field">
+                      <input
+                        type="checkbox"
+                        checked={homepageContentForm.isActive}
+                        onChange={(event) =>
+                          setHomepageContentForm((current) => ({ ...current, isActive: event.target.checked }))
+                        }
+                      />
+                      Zobrazit sekci na webu
+                    </label>
+                  </div>
+                  <div className="homepage-section-preview">
+                    <small>{homepageContentForm.label}</small>
+                    <strong>{homepageContentForm.title}</strong>
+                    <p>{homepageContentForm.body}</p>
+                  </div>
+                  <button className="button primary" type="submit">
+                    <Save size={18} /> Uložit sekci
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         )}
 

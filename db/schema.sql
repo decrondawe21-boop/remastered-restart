@@ -221,6 +221,23 @@ CREATE TABLE IF NOT EXISTS home_slides (
   KEY home_slides_active_order_idx (is_active, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS homepage_content (
+  id VARCHAR(120) PRIMARY KEY,
+  content_type VARCHAR(40) NOT NULL DEFAULT 'section',
+  label VARCHAR(160) NULL,
+  title VARCHAR(255) NOT NULL,
+  body TEXT NOT NULL,
+  image_url VARCHAR(500) NULL,
+  cta_label VARCHAR(120) NULL,
+  cta_href VARCHAR(220) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY homepage_content_type_order_idx (content_type, sort_order),
+  KEY homepage_content_active_idx (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS media_files (
   id CHAR(36) PRIMARY KEY,
   title VARCHAR(220) NOT NULL,

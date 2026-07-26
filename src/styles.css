@@ -7590,6 +7590,208 @@ h3 {
   align-content: start;
 }
 
+.content-admin-workspace {
+  display: grid;
+  gap: 16px;
+}
+
+.content-editor-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7fbf8;
+}
+
+.content-editor-tabs > button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--green-dark);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.content-editor-tabs > button:hover,
+.content-editor-tabs > button:focus-visible {
+  border-color: #bdd3c1;
+  outline: none;
+  background: #fff;
+}
+
+.content-editor-tabs > button.active {
+  border-color: var(--green);
+  background: var(--green-dark);
+  color: #fff;
+}
+
+.content-editor-tabs > button span {
+  display: inline-flex;
+  min-width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--green-dark);
+  font-size: 0.72rem;
+}
+
+.content-editor-tabs > a {
+  align-self: center;
+}
+
+.content-editor-panel {
+  align-items: start;
+}
+
+.homepage-content-form {
+  align-content: start;
+}
+
+.homepage-gallery-admin-preview {
+  position: relative;
+  min-height: 230px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--green-dark);
+}
+
+.homepage-gallery-admin-preview::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 24%, rgba(6, 25, 17, 0.82));
+  content: '';
+}
+
+.homepage-gallery-admin-preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.homepage-gallery-admin-preview > div {
+  position: absolute;
+  inset: auto 18px 18px;
+  z-index: 1;
+  color: #fff;
+}
+
+.homepage-gallery-admin-preview strong,
+.homepage-gallery-admin-preview p {
+  display: block;
+}
+
+.homepage-gallery-admin-preview p {
+  max-width: 56ch;
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.homepage-content-list,
+.homepage-section-list {
+  display: grid;
+  gap: 7px;
+}
+
+.homepage-content-list button,
+.homepage-section-list button {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 10px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.homepage-content-list button {
+  grid-template-columns: 78px minmax(0, 1fr) auto;
+}
+
+.homepage-content-list button img {
+  width: 78px;
+  height: 52px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.homepage-content-list button span,
+.homepage-section-list button span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.homepage-content-list strong,
+.homepage-section-list strong {
+  overflow-wrap: anywhere;
+}
+
+.homepage-content-list small,
+.homepage-section-list small {
+  color: var(--muted);
+}
+
+.homepage-section-list button {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.homepage-content-list button:hover,
+.homepage-content-list button:focus-visible,
+.homepage-section-list button:hover,
+.homepage-section-list button:focus-visible,
+.homepage-content-list button.active,
+.homepage-section-list button.active {
+  border-color: var(--green);
+  outline: none;
+  background: #eef7f0;
+}
+
+.homepage-section-preview {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-left: 3px solid var(--gold);
+  background: #f4f8f4;
+}
+
+.homepage-section-preview small {
+  color: var(--green);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+}
+
+.homepage-section-preview strong {
+  font-size: 1.2rem;
+  line-height: 1.12;
+}
+
+.homepage-section-preview p {
+  margin: 0;
+  color: var(--muted);
+}
+
 .hero-admin-preview {
   position: relative;
   display: grid;
@@ -9807,6 +10009,25 @@ h3 {
   font-size: 1.45rem !important;
   line-height: 1.12 !important;
   letter-spacing: -0.035em !important;
+}
+
+@media (max-width: 760px) {
+  .content-editor-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .content-editor-tabs > a {
+    width: 100%;
+  }
+
+  .homepage-content-list button {
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+  }
+
+  .homepage-content-list button img {
+    width: 64px;
+    height: 48px;
+  }
 }
 
 /* Compact screen typography requested for dense, scan-friendly pages. */

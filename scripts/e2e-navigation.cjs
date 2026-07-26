@@ -202,7 +202,7 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error('Video watch page is missing matching VideoObject structured data.');
   }
 
-  await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'networkidle' });
+  await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('heading', { name: 'Co se v projektu děje', level: 1 }).waitFor();
   if ((await page.locator('.news-gallery-card').count()) < 3) {
     throw new Error('News listing should render the three-column card collection.');
@@ -226,7 +226,7 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error(`News detail canonical URL mismatch: ${canonicalHref}`);
   }
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'networkidle' });
+  await page.goto(`${baseUrl}/aktuality`, { waitUntil: 'domcontentloaded' });
   const mobileLayout = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     scrollWidth: document.documentElement.scrollWidth,

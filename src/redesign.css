@@ -1206,6 +1206,7 @@
   .material-offer-form input,
   .material-offer-form select,
   .material-offer-form textarea,
+  .material-offer-review-form input,
   .material-offer-review-form select,
   .material-offer-review-form textarea {
     width: 100%;
@@ -1226,6 +1227,7 @@
   .material-offer-form input:focus,
   .material-offer-form select:focus,
   .material-offer-form textarea:focus,
+  .material-offer-review-form input:focus,
   .material-offer-review-form select:focus,
   .material-offer-review-form textarea:focus {
     border-color: var(--green);
@@ -1403,6 +1405,41 @@
     color: #fff;
   }
 
+  .material-offer-toolbar {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto auto;
+    gap: 8px;
+    align-items: center;
+    margin-top: 14px;
+  }
+
+  .material-offer-toolbar .search-field {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 9px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+  }
+
+  .material-offer-toolbar input,
+  .material-offer-toolbar select {
+    min-width: 0;
+    min-height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+  }
+
+  .material-offer-toolbar .search-field input {
+    width: 100%;
+    min-height: 34px;
+    border: 0;
+    outline: 0;
+  }
+
   .material-offer-admin-list {
     display: grid;
     gap: 7px;
@@ -1547,13 +1584,16 @@
     gap: 8px;
   }
 
-  .material-offer-admin-photos a {
+  .material-offer-admin-photos button {
     display: grid;
     overflow: hidden;
+    padding: 0;
     border: 1px solid var(--line);
     border-radius: 5px;
+    background: #fff;
     color: var(--muted);
-    text-decoration: none;
+    text-align: left;
+    cursor: zoom-in;
   }
 
   .material-offer-admin-photos img {
@@ -1562,7 +1602,7 @@
     object-fit: cover;
   }
 
-  .material-offer-admin-photos a span {
+  .material-offer-admin-photos button span {
     overflow: hidden;
     padding: 6px 8px;
     text-overflow: ellipsis;
@@ -1571,13 +1611,166 @@
 
   .material-offer-review-form {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     padding-top: 14px;
     border-top: 1px solid var(--line);
   }
 
   .material-offer-review-form .button {
+    grid-column: 1 / -1;
     justify-self: start;
+  }
+
+  .material-offer-notification-state,
+  .material-offer-history,
+  .material-offer-danger-zone {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .material-offer-notification-state p {
+    margin: 4px 0;
+    color: var(--muted);
+  }
+
+  .material-offer-history ol {
+    display: grid;
+    gap: 8px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .material-offer-history li {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 2px 10px;
+    padding: 8px;
+    border-left: 3px solid var(--gold);
+    background: var(--green-soft);
+  }
+
+  .material-offer-history li span,
+  .material-offer-history li small {
+    color: var(--muted);
+  }
+
+  .material-offer-history li small {
+    grid-column: 2;
+  }
+
+  .material-email-templates {
+    grid-column: 1 / -1;
+  }
+
+  .material-email-template-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .material-email-template-list details {
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+  }
+
+  .material-email-template-list summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .material-email-template-list summary span {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .material-email-template-form {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .material-email-template-form label {
+    display: grid;
+    gap: 5px;
+    font-weight: 700;
+  }
+
+  .material-email-template-form input,
+  .material-email-template-form textarea {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    font: inherit;
+  }
+
+  .material-photo-lightbox {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    padding: 40px;
+    background: rgba(0, 18, 12, 0.88);
+    place-items: center;
+  }
+
+  .material-photo-lightbox > button {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--green-dark);
+    cursor: pointer;
+    place-items: center;
+  }
+
+  .material-photo-lightbox img {
+    max-width: min(1100px, 94vw);
+    max-height: 88vh;
+    object-fit: contain;
+  }
+
+  .material-offer-faq {
+    padding-top: 30px;
+  }
+
+  .material-offer-faq-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .material-offer-faq-list details {
+    align-self: start;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--surface);
+  }
+
+  .material-offer-faq-list summary {
+    padding: 12px;
+    color: var(--green-dark);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .material-offer-faq-list p {
+    margin: 0;
+    padding: 0 12px 12px;
   }
 
   .material-offer-empty-detail {
@@ -1606,6 +1799,16 @@
     gap: 18px;
     margin-top: 20px;
     padding: 16px;
+  }
+
+  .material-offer-toolbar,
+  .material-offer-review-form,
+  .material-offer-faq-list {
+    grid-template-columns: 1fr;
+  }
+
+  .material-offer-review-form .button {
+    grid-column: auto;
   }
 
   .material-offer-form-grid,

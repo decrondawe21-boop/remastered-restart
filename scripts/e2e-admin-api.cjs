@@ -145,6 +145,30 @@ async function requestRaw(path, options = {}) {
     }
     createdMaterialOfferId = materialOffer.body.offer.id;
 
+    const spoofedMaterialPhoto = await request('/api/material-offers', {
+      method: 'POST',
+      body: JSON.stringify({
+        offerType: 'books',
+        donorName: 'E2E Neplatný obrázek',
+        email: `spatny-obrazek.${stamp}@example.test`,
+        itemDescription: 'Kontrola MIME',
+        quantity: '1 kus',
+        locality: 'Počerady',
+        transport: 'agreement',
+        itemCondition: 'good',
+        privacyConsent: true,
+        photos: [{
+          fileName: 'neni-obrazek.jpg',
+          mimeType: 'image/jpeg',
+          fileSize: 12,
+          contentBase64: Buffer.from('neni obrazek').toString('base64')
+        }]
+      })
+    });
+    if (spoofedMaterialPhoto.response.status !== 400 || !String(spoofedMaterialPhoto.body?.error || '').includes('neodpovídá')) {
+      throw new Error(`Spoofed material photo was not rejected: ${JSON.stringify(spoofedMaterialPhoto.body)}`);
+    }
+
     const materialOfferList = await request('/api/admin/material-offers', { headers: { cookie } });
     const listedMaterialOffer = materialOfferList.body?.offers?.find((item) => item.id === createdMaterialOfferId);
     if (!materialOfferList.response.ok || !listedMaterialOffer || listedMaterialOffer.photos.length !== 1) {
@@ -159,10 +183,37 @@ async function requestRaw(path, options = {}) {
     const reviewedMaterialOffer = await request(`/api/admin/material-offers/${encodeURIComponent(createdMaterialOfferId)}`, {
       method: 'PATCH',
       headers: { cookie },
-      body: JSON.stringify({ status: 'pickup_planned', adminNote: 'Vyzvednutí domluveno v E2E testu.' })
+      body: JSON.stringify({
+        status: 'pickup_planned',
+        adminNote: 'Vyzvednutí domluveno v E2E testu.',
+        assignedTo: adminId,
+        pickupAt: '2026-08-10T09:30:00.000Z',
+        pickupAddress: 'Počerady 33',
+        retentionUntil: '2027-01-31'
+      })
     });
-    if (!reviewedMaterialOffer.response.ok || reviewedMaterialOffer.body.offer.status !== 'pickup_planned') {
+    if (
+      !reviewedMaterialOffer.response.ok ||
+      reviewedMaterialOffer.body.offer.status !== 'pickup_planned' ||
+      reviewedMaterialOffer.body.offer.assignedTo !== adminId ||
+      reviewedMaterialOffer.body.offer.pickupAddress !== 'Počerady 33' ||
+      !reviewedMaterialOffer.body.offer.events.some((event) => event.eventType === 'status_changed')
+    ) {
       throw new Error(`Material offer review failed: ${JSON.stringify(reviewedMaterialOffer.body)}`);
+    }
+
+    const emailTemplates = await request('/api/admin/email-templates', { headers: { cookie } });
+    const confirmationTemplate = emailTemplates.body?.templates?.find((template) => template.key === 'material_offer_donor_confirmation');
+    if (!emailTemplates.response.ok || !confirmationTemplate) {
+      throw new Error(`Email templates list failed: ${JSON.stringify(emailTemplates.body)}`);
+    }
+    const savedEmailTemplate = await request(`/api/admin/email-templates/${encodeURIComponent(confirmationTemplate.key)}`, {
+      method: 'PATCH',
+      headers: { cookie },
+      body: JSON.stringify(confirmationTemplate)
+    });
+    if (!savedEmailTemplate.response.ok || savedEmailTemplate.body.template.key !== confirmationTemplate.key) {
+      throw new Error(`Email template update failed: ${JSON.stringify(savedEmailTemplate.body)}`);
     }
 
     const uploadedMedia = await request('/api/media/upload', {

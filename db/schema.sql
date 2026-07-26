@@ -293,13 +293,38 @@ CREATE TABLE IF NOT EXISTS material_offers (
   status ENUM('new', 'reviewing', 'accepted', 'pickup_planned', 'received', 'declined', 'closed') NOT NULL DEFAULT 'new',
   admin_note TEXT NULL,
   reviewed_by CHAR(36) NULL,
+  assigned_to CHAR(36) NULL,
+  pickup_at DATETIME NULL,
+  pickup_address VARCHAR(255) NULL,
+  consent_version VARCHAR(40) NOT NULL DEFAULT '2026-07',
+  consent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  retention_until DATE NULL,
+  donor_notified_at DATETIME NULL,
+  admin_notified_at DATETIME NULL,
+  anonymized_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT material_offers_reviewed_by_fk FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL,
+  CONSTRAINT material_offers_assigned_to_fk FOREIGN KEY (assigned_to) REFERENCES users (id) ON DELETE SET NULL,
   KEY material_offers_status_created_idx (status, created_at),
   KEY material_offers_type_created_idx (offer_type, created_at),
+  KEY material_offers_assigned_idx (assigned_to, status),
+  KEY material_offers_retention_idx (retention_until, anonymized_at),
   KEY material_offers_locality_idx (locality)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE material_offers
+  ADD COLUMN IF NOT EXISTS assigned_to CHAR(36) NULL AFTER reviewed_by,
+  ADD COLUMN IF NOT EXISTS pickup_at DATETIME NULL AFTER assigned_to,
+  ADD COLUMN IF NOT EXISTS pickup_address VARCHAR(255) NULL AFTER pickup_at,
+  ADD COLUMN IF NOT EXISTS consent_version VARCHAR(40) NOT NULL DEFAULT '2026-07' AFTER pickup_address,
+  ADD COLUMN IF NOT EXISTS consent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER consent_version,
+  ADD COLUMN IF NOT EXISTS retention_until DATE NULL AFTER consent_at,
+  ADD COLUMN IF NOT EXISTS donor_notified_at DATETIME NULL AFTER retention_until,
+  ADD COLUMN IF NOT EXISTS admin_notified_at DATETIME NULL AFTER donor_notified_at,
+  ADD COLUMN IF NOT EXISTS anonymized_at DATETIME NULL AFTER admin_notified_at,
+  ADD INDEX IF NOT EXISTS material_offers_assigned_idx (assigned_to, status),
+  ADD INDEX IF NOT EXISTS material_offers_retention_idx (retention_until, anonymized_at);
 
 CREATE TABLE IF NOT EXISTS material_offer_photos (
   id CHAR(36) PRIMARY KEY,
@@ -313,6 +338,66 @@ CREATE TABLE IF NOT EXISTS material_offer_photos (
   CONSTRAINT material_offer_photos_offer_fk FOREIGN KEY (offer_id) REFERENCES material_offers (id) ON DELETE CASCADE,
   KEY material_offer_photos_offer_order_idx (offer_id, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS material_offer_events (
+  id CHAR(36) PRIMARY KEY,
+  offer_id CHAR(36) NOT NULL,
+  actor_id CHAR(36) NULL,
+  event_type VARCHAR(80) NOT NULL,
+  from_status VARCHAR(40) NULL,
+  to_status VARCHAR(40) NULL,
+  note TEXT NULL,
+  metadata_json JSON NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT material_offer_events_offer_fk FOREIGN KEY (offer_id) REFERENCES material_offers (id) ON DELETE CASCADE,
+  CONSTRAINT material_offer_events_actor_fk FOREIGN KEY (actor_id) REFERENCES users (id) ON DELETE SET NULL,
+  KEY material_offer_events_offer_created_idx (offer_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS material_offer_rate_limits (
+  limit_key CHAR(64) PRIMARY KEY,
+  window_started_at DATETIME NOT NULL,
+  attempts INT NOT NULL DEFAULT 0,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY material_offer_rate_limits_updated_idx (updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS email_templates (
+  template_key VARCHAR(80) PRIMARY KEY,
+  display_name VARCHAR(160) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  text_body TEXT NOT NULL,
+  html_body TEXT NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  updated_by CHAR(36) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT email_templates_updated_by_fk FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO email_templates (template_key, display_name, subject, text_body, html_body)
+VALUES
+  (
+    'material_offer_donor_confirmation',
+    'Potvrzení dárci',
+    'Přijali jsme nabídku č. {{offerId}} | REST||ART Integrace',
+    'Dobrý den {{donorName}},\n\nvaši nabídku {{offerType}} jsme přijali pod číslem {{offerId}}. Po prověření potřeby a dopravy se vám ozveme.\n\nLokalita: {{locality}}\nMnožství: {{quantity}}\n\nREST||ART Integrace',
+    '<p>Dobrý den {{donorName}},</p><p>vaši nabídku <strong>{{offerType}}</strong> jsme přijali pod číslem <strong>{{offerId}}</strong>. Po prověření potřeby a dopravy se vám ozveme.</p><p>Lokalita: {{locality}}<br>Množství: {{quantity}}</p><p>REST||ART Integrace</p>'
+  ),
+  (
+    'material_offer_admin_alert',
+    'Nová nabídka administraci',
+    'Nová nabídka {{offerType}} z lokality {{locality}}',
+    'Nová materiální nabídka\n\nDárce: {{donorName}}\nTyp: {{offerType}}\nLokalita: {{locality}}\nMnožství: {{quantity}}\nČíslo: {{offerId}}\n\nOtevřít administraci: {{adminUrl}}',
+    '<p><strong>Nová materiální nabídka</strong></p><p>Dárce: {{donorName}}<br>Typ: {{offerType}}<br>Lokalita: {{locality}}<br>Množství: {{quantity}}<br>Číslo: {{offerId}}</p><p><a href="{{adminUrl}}">Otevřít administraci</a></p>'
+  ),
+  (
+    'material_offer_status_update',
+    'Změna stavu nabídky',
+    'Aktualizace nabídky č. {{offerId}} | REST||ART Integrace',
+    'Dobrý den {{donorName}},\n\nstav vaší nabídky byl změněn na: {{statusLabel}}.\n\n{{pickupDetails}}\n\nREST||ART Integrace',
+    '<p>Dobrý den {{donorName}},</p><p>stav vaší nabídky byl změněn na: <strong>{{statusLabel}}</strong>.</p><p>{{pickupDetails}}</p><p>REST||ART Integrace</p>'
+  );
 
 CREATE TABLE IF NOT EXISTS password_resets (
   id CHAR(36) PRIMARY KEY,

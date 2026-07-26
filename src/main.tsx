@@ -85,6 +85,7 @@ import {
   getJailbreakBackgroundStats,
   listClients,
   listDocuments,
+  listEmailTemplates,
   listFormTemplates,
   listMedia,
   listMaterialOffers,
@@ -113,6 +114,8 @@ import {
   submitProjectApplication,
   submitMaterialOffer,
   toggleNewsLike,
+  anonymizeMaterialOffer,
+  updateEmailTemplate,
   updateMaterialOffer,
   updateNewsComment,
   updateUser as updateUserRecord,
@@ -121,6 +124,7 @@ import {
   type ApiClientDocument,
   type ApiClientRecord,
   type ApiFormTemplate,
+  type ApiEmailTemplate,
   type ApiJailbreakBackgroundStats,
   type ApiManagedUser,
   type ApiMaterialOffer,
@@ -4575,6 +4579,37 @@ type MaterialOfferDraft = {
 
 type MaterialOfferLocalPhoto = { file: File; previewUrl: string };
 
+async function compressMaterialOfferPhoto(file: File): Promise<File> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw new Error('Fotografie musí být ve formátu JPEG, PNG nebo WebP.');
+  }
+  if (file.size > 12_000_000) {
+    throw new Error('Zdrojová fotografie může mít nejvýše 12 MB.');
+  }
+  const bitmap = await createImageBitmap(file);
+  const maxDimension = 1600;
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext('2d', { alpha: false });
+  if (!context) {
+    bitmap.close();
+    throw new Error('Fotografii se nepodařilo zpracovat.');
+  }
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const toBlob = (quality: number) =>
+    new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Fotografii se nepodařilo zmenšit.'))), 'image/webp', quality)
+    );
+  let blob = await toBlob(0.82);
+  if (blob.size > 2_000_000) blob = await toBlob(0.66);
+  if (blob.size > 2_000_000) throw new Error('Fotografii se ani po zmenšení nepodařilo dostat pod 2 MB.');
+  const baseName = file.name.replace(/\.[^.]+$/, '').slice(0, 180) || 'fotografie';
+  return new File([blob], `${baseName}.webp`, { type: 'image/webp', lastModified: Date.now() });
+}
+
 const emptyMaterialOfferDraft = (): MaterialOfferDraft => ({
   donorName: '',
   email: '',
@@ -4597,7 +4632,12 @@ function MaterialOfferForm({ config }: { config: MaterialSupportPageConfig }) {
   const [completedOfferId, setCompletedOfferId] = React.useState('');
   const [fileInputKey, setFileInputKey] = React.useState(0);
   const photosRef = React.useRef<MaterialOfferLocalPhoto[]>([]);
+  const startedRef = React.useRef(false);
   photosRef.current = photos;
+
+  React.useEffect(() => {
+    trackAnalyticsEvent('material_offer_view', { offer_type: config.offerType });
+  }, [config.offerType]);
 
   React.useEffect(
     () => () => photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.previewUrl)),
@@ -4605,20 +4645,38 @@ function MaterialOfferForm({ config }: { config: MaterialSupportPageConfig }) {
   );
 
   const updateDraft = <K extends keyof MaterialOfferDraft>(key: K, value: MaterialOfferDraft[K]) => {
+    if (!startedRef.current) {
+      startedRef.current = true;
+      trackAnalyticsEvent('material_offer_start', { offer_type: config.offerType });
+    }
     setDraft((current) => ({ ...current, [key]: value }));
   };
 
-  const addPhotos = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const addPhotos = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(event.target.files || []);
-    const allowed = selected.filter((file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) && file.size <= 2_000_000);
     const available = Math.max(0, 4 - photos.length);
-    const accepted = allowed.slice(0, available).map((file) => ({ file, previewUrl: URL.createObjectURL(file) }));
-    if (accepted.length !== selected.length) {
-      setMessage({ tone: 'warning', title: 'Některé fotografie nebyly přidány', text: 'Povoleny jsou nejvýše 4 soubory JPEG, PNG nebo WebP, každý do 2 MB.' });
-    } else {
-      setMessage(null);
+    const candidates = selected.slice(0, available);
+    const accepted: MaterialOfferLocalPhoto[] = [];
+    const errors: string[] = [];
+    for (const file of candidates) {
+      try {
+        const compressed = await compressMaterialOfferPhoto(file);
+        accepted.push({ file: compressed, previewUrl: URL.createObjectURL(compressed) });
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : 'Fotografii se nepodařilo zpracovat.');
+      }
     }
+    if (selected.length > available) errors.push('Lze přiložit nejvýše 4 fotografie.');
+    setMessage(
+      errors.length > 0
+        ? { tone: 'warning', title: 'Některé fotografie nebyly přidány', text: [...new Set(errors)].join(' ') }
+        : null
+    );
     setPhotos((current) => [...current, ...accepted]);
+    if (accepted.length > 0 && !startedRef.current) {
+      startedRef.current = true;
+      trackAnalyticsEvent('material_offer_start', { offer_type: config.offerType });
+    }
     event.target.value = '';
   };
 
@@ -4633,6 +4691,7 @@ function MaterialOfferForm({ config }: { config: MaterialSupportPageConfig }) {
   const submitOffer = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!draft.email.trim() && !draft.phone.trim()) {
+      trackAnalyticsEvent('material_offer_validation_error', { offer_type: config.offerType, error_code: 'missing_contact' });
       setMessage({ tone: 'warning', title: 'Chybí kontakt', text: 'Doplňte alespoň e-mail nebo telefon, abychom mohli domluvit předání.' });
       return;
     }
@@ -4653,8 +4712,14 @@ function MaterialOfferForm({ config }: { config: MaterialSupportPageConfig }) {
       setDraft(emptyMaterialOfferDraft());
       setFileInputKey((current) => current + 1);
       setCompletedOfferId(offer.id);
+      startedRef.current = false;
+      trackAnalyticsEvent('material_offer_submit_success', { offer_type: config.offerType, photo_count: uploadedPhotos.length });
       setMessage({ tone: 'success', title: 'Nabídku jsme přijali', text: 'Děkujeme. Nabídku prověříme a ozveme se kvůli dalšímu postupu.' });
     } catch (error) {
+      trackAnalyticsEvent('material_offer_submit_error', {
+        offer_type: config.offerType,
+        error_code: error instanceof ApiRequestError ? `http_${error.status}` : 'client_error'
+      });
       setMessage({
         tone: 'error',
         title: 'Nabídku se nepodařilo odeslat',
@@ -4739,7 +4804,7 @@ function MaterialOfferForm({ config }: { config: MaterialSupportPageConfig }) {
           <label className="material-photo-picker">
             <ImagePlus size={22} aria-hidden="true" />
             <span>Přidat fotografie</span>
-            <small>JPEG, PNG nebo WebP do 2 MB</small>
+            <small>JPEG, PNG nebo WebP do 12 MB, automaticky zmenšíme</small>
             <input key={fileInputKey} name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={addPhotos} {...{ toolparamdescription: 'Volitelné fotografie nabízených věcí.' }} />
           </label>
           {photos.length > 0 && (
@@ -4773,11 +4838,50 @@ function MaterialOfferForm({ config }: { config: MaterialSupportPageConfig }) {
 }
 
 function MaterialSupportPage({ config }: { config: MaterialSupportPageConfig }) {
+  const faqItems = React.useMemo(
+    () => [
+      {
+        question: `Jak poznám, zda je nabídka ${materialOfferTypeLabels[config.offerType].toLowerCase()} vhodná?`,
+        answer: `Nabídku stručně popište a přiložte fotografie. Před převzetím ověříme aktuální potřebu, stav věcí, kapacitu a konkrétní využití.`
+      },
+      {
+        question: 'Musím věci přivézt osobně?',
+        answer: 'Nemusíte. Ve formuláři vyberte vlastní dopravu, vyzvednutí projektem nebo domluvu. Konkrétní možnost potvrdíme podle lokality a kapacity.'
+      },
+      {
+        question: 'Dostanu potvrzení o přijetí nabídky?',
+        answer: 'Pokud uvedete e-mail a e-mailová brána je dostupná, přijde potvrzení s číslem nabídky. Další postup s vámi domluvíme podle výsledku posouzení.'
+      },
+      {
+        question: 'Jsou moje údaje a fotografie veřejné?',
+        answer: 'Ne. Kontaktní údaje a fotografie slouží pouze k posouzení a vyřízení nabídky a nejsou veřejně publikovány.'
+      }
+    ],
+    [config.offerType]
+  );
   useNewsSeo({
     title: config.title,
     description: config.text,
     path: config.path
   });
+  React.useEffect(() => {
+    const id = `material-offer-faq-${config.offerType}`;
+    document.getElementById(id)?.remove();
+    const script = document.createElement('script');
+    script.id = id;
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqItems.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer }
+      }))
+    });
+    document.head.appendChild(script);
+    return () => script.remove();
+  }, [config.offerType, faqItems]);
   return (
     <>
       <PageHeader label={config.label} title={config.title} text={config.text} />
@@ -4830,6 +4934,21 @@ function MaterialSupportPage({ config }: { config: MaterialSupportPageConfig }) 
           ))}
         </ol>
         <MaterialOfferForm config={config} />
+      </section>
+      <section className="content-section material-offer-faq" aria-labelledby={`faq-${config.offerType}`}>
+        <SectionIntro
+          label="Časté otázky"
+          title="Co je dobré vědět před odesláním"
+          text="Krátké odpovědi k převzetí, dopravě, potvrzení a ochraně údajů."
+        />
+        <div className="material-offer-faq-list">
+          {faqItems.map((item) => (
+            <details key={item.question}>
+              <summary>{item.question}</summary>
+              <p>{item.answer}</p>
+            </details>
+          ))}
+        </div>
       </section>
     </>
   );
@@ -8239,6 +8358,7 @@ function App() {
   const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
   const [materialOffers, setMaterialOffers] = React.useState<MaterialOffer[]>([]);
+  const [emailTemplates, setEmailTemplates] = React.useState<ApiEmailTemplate[]>([]);
   const [sessionId, setSessionId] = useStoredState<string | null>('restart-auth-session', null);
   const [apiAccount, setApiAccount] = React.useState<AuthAccount | null>(null);
   const [modal, setModal] = React.useState<ModalState>(null);
@@ -8363,6 +8483,11 @@ function App() {
     listMaterialOffers()
       .then((items) => {
         if (isActive) setMaterialOffers(items);
+      })
+      .catch(() => undefined);
+    listEmailTemplates()
+      .then((items) => {
+        if (isActive) setEmailTemplates(items);
       })
       .catch(() => undefined);
     return () => {
@@ -8500,9 +8625,25 @@ React.useEffect(() => {
     await deleteUserRecord(userId);
     setManagedUsers((current) => current.filter((item) => item.id !== userId));
   };
-  const updateMaterialOfferViaApi = async (offerId: string, status: ApiMaterialOfferStatus, adminNote: string) => {
-    const saved = await updateMaterialOffer(offerId, { status, adminNote });
+  const updateMaterialOfferViaApi = async (
+    offerId: string,
+    update: Pick<MaterialOffer, 'status' | 'adminNote' | 'assignedTo' | 'pickupAt' | 'pickupAddress' | 'retentionUntil'>
+  ) => {
+    const saved = await updateMaterialOffer(offerId, update);
     setMaterialOffers((current) => current.map((offer) => (offer.id === saved.id ? saved : offer)));
+    return saved;
+  };
+  const anonymizeMaterialOfferViaApi = async (offerId: string) => {
+    await anonymizeMaterialOffer(offerId);
+    const refreshed = await listMaterialOffers();
+    setMaterialOffers(refreshed);
+  };
+  const updateEmailTemplateViaApi = async (
+    templateKey: string,
+    update: Pick<ApiEmailTemplate, 'subjectTemplate' | 'textTemplate' | 'htmlTemplate' | 'isActive'>
+  ) => {
+    const saved = await updateEmailTemplate(templateKey, update);
+    setEmailTemplates((current) => current.map((template) => (template.key === saved.key ? saved : template)));
     return saved;
   };
   const toggleLikeViaApi = async (newsId: string) => {
@@ -8687,6 +8828,7 @@ React.useEffect(() => {
           clientDocuments={clientDocuments}
           notifications={notifications}
           materialOffers={materialOffers}
+          emailTemplates={emailTemplates}
           discussion={newsDiscussion}
           onClientsChange={setClients}
           onNewsChange={setNews}
@@ -8706,6 +8848,8 @@ React.useEffect(() => {
           onUserResetPasswordRequest={resetManagedUserPasswordViaApi}
           onUserDeleteRequest={deleteManagedUserViaApi}
           onMaterialOfferUpdateRequest={updateMaterialOfferViaApi}
+          onMaterialOfferAnonymizeRequest={anonymizeMaterialOfferViaApi}
+          onEmailTemplateUpdateRequest={updateEmailTemplateViaApi}
           account={currentAccount}
           onLogout={logout}
           onNotify={notify}
@@ -8788,6 +8932,7 @@ function AdminWorkspace({
   clientDocuments,
   notifications,
   materialOffers,
+  emailTemplates,
   discussion,
   onClientsChange,
   onNewsChange,
@@ -8807,6 +8952,8 @@ function AdminWorkspace({
   onUserResetPasswordRequest,
   onUserDeleteRequest,
   onMaterialOfferUpdateRequest,
+  onMaterialOfferAnonymizeRequest,
+  onEmailTemplateUpdateRequest,
   account,
   onLogout,
   onNotify
@@ -8821,6 +8968,7 @@ function AdminWorkspace({
   clientDocuments: ClientDocument[];
   notifications: NotificationItem[];
   materialOffers: MaterialOffer[];
+  emailTemplates: ApiEmailTemplate[];
   discussion: NewsDiscussion;
   onClientsChange: React.Dispatch<React.SetStateAction<ClientRecord[]>>;
   onNewsChange: React.Dispatch<React.SetStateAction<NewsItem[]>>;
@@ -8841,7 +8989,15 @@ function AdminWorkspace({
   onProjectApplicationReviewRequest?: (applicationId: string, status: 'approved' | 'rejected', approvedRole: ApiRole, adminNote?: string) => Promise<ProjectApplication>;
   onUserResetPasswordRequest?: (userId: string) => Promise<ApiAdminPasswordResetResponse>;
   onUserDeleteRequest?: (userId: string) => Promise<void>;
-  onMaterialOfferUpdateRequest?: (offerId: string, status: ApiMaterialOfferStatus, adminNote: string) => Promise<MaterialOffer>;
+  onMaterialOfferUpdateRequest?: (
+    offerId: string,
+    update: Pick<MaterialOffer, 'status' | 'adminNote' | 'assignedTo' | 'pickupAt' | 'pickupAddress' | 'retentionUntil'>
+  ) => Promise<MaterialOffer>;
+  onMaterialOfferAnonymizeRequest?: (offerId: string) => Promise<void>;
+  onEmailTemplateUpdateRequest?: (
+    templateKey: string,
+    update: Pick<ApiEmailTemplate, 'subjectTemplate' | 'textTemplate' | 'htmlTemplate' | 'isActive'>
+  ) => Promise<ApiEmailTemplate>;
   account: AuthAccount;
   onLogout: () => void;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
@@ -8851,12 +9007,31 @@ function AdminWorkspace({
   const [focusedActivityId, setFocusedActivityId] = React.useState('');
   const [notificationSearch, setNotificationSearch] = React.useState('');
   const [materialOfferFilter, setMaterialOfferFilter] = React.useState<'all' | ApiMaterialOfferType>('all');
+  const [materialOfferStatusFilter, setMaterialOfferStatusFilter] = React.useState<'all' | ApiMaterialOfferStatus>('all');
+  const [materialOfferQuery, setMaterialOfferQuery] = React.useState('');
   const [selectedMaterialOfferId, setSelectedMaterialOfferId] = React.useState('');
   const [materialOfferStatusDraft, setMaterialOfferStatusDraft] = React.useState<ApiMaterialOfferStatus>('new');
   const [materialOfferAdminNote, setMaterialOfferAdminNote] = React.useState('');
+  const [materialOfferAssignedTo, setMaterialOfferAssignedTo] = React.useState('');
+  const [materialOfferPickupAt, setMaterialOfferPickupAt] = React.useState('');
+  const [materialOfferPickupAddress, setMaterialOfferPickupAddress] = React.useState('');
+  const [materialOfferRetentionUntil, setMaterialOfferRetentionUntil] = React.useState('');
+  const [materialOfferPhotoPreview, setMaterialOfferPhotoPreview] = React.useState<{ url: string; name: string } | null>(null);
   const [savingMaterialOffer, setSavingMaterialOffer] = React.useState(false);
+  const [savingEmailTemplate, setSavingEmailTemplate] = React.useState('');
+  const [emailTemplateDrafts, setEmailTemplateDrafts] = React.useState<Record<string, ApiEmailTemplate>>({});
   const selectedMaterialOffer = materialOffers.find((offer) => offer.id === selectedMaterialOfferId) ?? null;
-  const filteredMaterialOffers = materialOffers.filter((offer) => materialOfferFilter === 'all' || offer.offerType === materialOfferFilter);
+  const normalizedMaterialOfferQuery = materialOfferQuery.trim().toLocaleLowerCase('cs-CZ');
+  const filteredMaterialOffers = materialOffers.filter(
+    (offer) =>
+      (materialOfferFilter === 'all' || offer.offerType === materialOfferFilter) &&
+      (materialOfferStatusFilter === 'all' || offer.status === materialOfferStatusFilter) &&
+      (!normalizedMaterialOfferQuery ||
+        [offer.id, offer.donorName, offer.email, offer.phone, offer.locality, offer.itemDescription, offer.assignedName]
+          .join(' ')
+          .toLocaleLowerCase('cs-CZ')
+          .includes(normalizedMaterialOfferQuery))
+  );
   const newMaterialOfferCount = materialOffers.filter((offer) => offer.status === 'new').length;
   React.useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get('tab') as AdminSection | null;
@@ -8871,13 +9046,35 @@ function AdminWorkspace({
     if (!selectedMaterialOffer) return;
     setMaterialOfferStatusDraft(selectedMaterialOffer.status);
     setMaterialOfferAdminNote(selectedMaterialOffer.adminNote);
-  }, [selectedMaterialOffer?.id, selectedMaterialOffer?.status, selectedMaterialOffer?.adminNote]);
+    setMaterialOfferAssignedTo(selectedMaterialOffer.assignedTo || '');
+    setMaterialOfferPickupAt(selectedMaterialOffer.pickupAt ? selectedMaterialOffer.pickupAt.slice(0, 16) : '');
+    setMaterialOfferPickupAddress(selectedMaterialOffer.pickupAddress);
+    setMaterialOfferRetentionUntil(selectedMaterialOffer.retentionUntil ? selectedMaterialOffer.retentionUntil.slice(0, 10) : '');
+  }, [
+    selectedMaterialOffer?.id,
+    selectedMaterialOffer?.status,
+    selectedMaterialOffer?.adminNote,
+    selectedMaterialOffer?.assignedTo,
+    selectedMaterialOffer?.pickupAt,
+    selectedMaterialOffer?.pickupAddress,
+    selectedMaterialOffer?.retentionUntil
+  ]);
+  React.useEffect(() => {
+    setEmailTemplateDrafts(Object.fromEntries(emailTemplates.map((template) => [template.key, { ...template }])));
+  }, [emailTemplates]);
 
   const saveMaterialOfferReview = async () => {
     if (!selectedMaterialOffer || !onMaterialOfferUpdateRequest) return;
     setSavingMaterialOffer(true);
     try {
-      await onMaterialOfferUpdateRequest(selectedMaterialOffer.id, materialOfferStatusDraft, materialOfferAdminNote);
+      await onMaterialOfferUpdateRequest(selectedMaterialOffer.id, {
+        status: materialOfferStatusDraft,
+        adminNote: materialOfferAdminNote,
+        assignedTo: materialOfferAssignedTo || null,
+        pickupAt: materialOfferPickupAt ? new Date(materialOfferPickupAt).toISOString() : null,
+        pickupAddress: materialOfferPickupAddress,
+        retentionUntil: materialOfferRetentionUntil || selectedMaterialOffer.retentionUntil
+      });
       setAdminMessageTone('success');
       setAdminMessage('Stav materiální nabídky byl uložen.');
       onNotify('success', 'Nabídka aktualizována', 'Změna je uložená v administraci.');
@@ -8886,6 +9083,76 @@ function AdminWorkspace({
       setAdminMessage(error instanceof Error ? error.message : 'Nabídku se nepodařilo aktualizovat.');
     } finally {
       setSavingMaterialOffer(false);
+    }
+  };
+  const exportMaterialOffersCsv = () => {
+    const csvValue = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const rows = [
+      ['ID', 'Typ', 'Stav', 'Dárce', 'E-mail', 'Telefon', 'Lokalita', 'Množství', 'Doprava', 'Přiřazeno', 'Termín svozu', 'Adresa svozu', 'Vytvořeno'],
+      ...filteredMaterialOffers.map((offer) => [
+        offer.id,
+        materialOfferTypeLabels[offer.offerType],
+        materialOfferStatusOptions.find((option) => option.value === offer.status)?.label || offer.status,
+        offer.donorName,
+        offer.email,
+        offer.phone,
+        offer.locality,
+        offer.quantity,
+        materialOfferTransportLabels[offer.transport],
+        offer.assignedName,
+        offer.pickupAt || '',
+        offer.pickupAddress,
+        offer.createdAt
+      ])
+    ];
+    const blob = new Blob([`\uFEFF${rows.map((row) => row.map(csvValue).join(';')).join('\r\n')}`], {
+      type: 'text/csv;charset=utf-8'
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `materialni-nabidky-${todayIso()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  const printSelectedMaterialOffer = () => {
+    if (!selectedMaterialOffer) return;
+    const printable = window.open('', '_blank', 'noopener,noreferrer');
+    if (!printable) return;
+    const safe = (value: unknown) =>
+      String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    printable.document.write(`<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>Nabídka ${safe(selectedMaterialOffer.id)}</title>
+      <style>body{font:14px Arial,sans-serif;color:#14241c;max-width:800px;margin:32px auto}h1{color:#075b43}dt{font-weight:700}dd{margin:0 0 12px}hr{border:0;border-top:1px solid #bbb}</style></head><body>
+      <h1>Materiální nabídka</h1><p>${safe(selectedMaterialOffer.id)}</p><hr><dl>
+      <dt>Typ a stav</dt><dd>${safe(materialOfferTypeLabels[selectedMaterialOffer.offerType])} · ${safe(materialOfferStatusOptions.find((option) => option.value === selectedMaterialOffer.status)?.label)}</dd>
+      <dt>Dárce</dt><dd>${safe(selectedMaterialOffer.donorName)} · ${safe(selectedMaterialOffer.email)} · ${safe(selectedMaterialOffer.phone)}</dd>
+      <dt>Lokalita</dt><dd>${safe(selectedMaterialOffer.locality)}</dd><dt>Popis</dt><dd>${safe(selectedMaterialOffer.itemDescription)}</dd>
+      <dt>Množství</dt><dd>${safe(selectedMaterialOffer.quantity)}</dd><dt>Přiřazeno</dt><dd>${safe(selectedMaterialOffer.assignedName)}</dd>
+      <dt>Svoz</dt><dd>${safe(selectedMaterialOffer.pickupAt ? new Date(selectedMaterialOffer.pickupAt).toLocaleString('cs-CZ') : '')} ${safe(selectedMaterialOffer.pickupAddress)}</dd>
+      <dt>Interní poznámka</dt><dd>${safe(selectedMaterialOffer.adminNote)}</dd></dl></body></html>`);
+    printable.document.close();
+    printable.print();
+  };
+  const anonymizeSelectedMaterialOffer = async () => {
+    if (!selectedMaterialOffer || !onMaterialOfferAnonymizeRequest || !window.confirm('Trvale odstranit kontaktní údaje a fotografie této nabídky?')) return;
+    try {
+      await onMaterialOfferAnonymizeRequest(selectedMaterialOffer.id);
+      onNotify('success', 'Nabídka anonymizována', 'Kontaktní údaje a fotografie byly odstraněny.');
+    } catch (error) {
+      onNotify('error', 'Anonymizace se nezdařila', error instanceof Error ? error.message : 'Zkuste to znovu.');
+    }
+  };
+  const saveEmailTemplateDraft = async (templateKey: string) => {
+    const draft = emailTemplateDrafts[templateKey];
+    if (!draft || !onEmailTemplateUpdateRequest) return;
+    setSavingEmailTemplate(templateKey);
+    try {
+      await onEmailTemplateUpdateRequest(templateKey, draft);
+      onNotify('success', 'E-mailová šablona uložena');
+    } catch (error) {
+      onNotify('error', 'Šablonu se nepodařilo uložit', error instanceof Error ? error.message : 'Zkuste to znovu.');
+    } finally {
+      setSavingEmailTemplate('');
     }
   };
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
@@ -11839,6 +12106,29 @@ function AdminWorkspace({
                 </div>
                 <Badge tone={newMaterialOfferCount > 0 ? 'warning' : 'success'}>{newMaterialOfferCount} nových</Badge>
               </div>
+              <div className="material-offer-toolbar">
+                <label className="search-field">
+                  <Search size={16} aria-hidden="true" />
+                  <input
+                    type="search"
+                    value={materialOfferQuery}
+                    onChange={(event) => setMaterialOfferQuery(event.target.value)}
+                    placeholder="Jméno, lokalita, kontakt nebo ID"
+                    aria-label="Vyhledat materiální nabídku"
+                  />
+                </label>
+                <select
+                  value={materialOfferStatusFilter}
+                  onChange={(event) => setMaterialOfferStatusFilter(event.target.value as 'all' | ApiMaterialOfferStatus)}
+                  aria-label="Filtrovat podle stavu"
+                >
+                  <option value="all">Všechny stavy</option>
+                  {materialOfferStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+                <button className="button secondary" type="button" onClick={exportMaterialOffersCsv}>
+                  <Download size={16} /> CSV
+                </button>
+              </div>
               <div className="material-offer-filter" role="group" aria-label="Filtrovat nabídky podle typu">
                 {([
                   ['all', 'Vše'],
@@ -11913,6 +12203,7 @@ function AdminWorkspace({
                   <div className="material-offer-contact-actions">
                     {selectedMaterialOffer.email && <a className="button secondary" href={`mailto:${selectedMaterialOffer.email}`}><Mail size={17} /> {selectedMaterialOffer.email}</a>}
                     {selectedMaterialOffer.phone && <a className="button secondary" href={`tel:${selectedMaterialOffer.phone.replace(/\s+/g, '')}`}><Phone size={17} /> {selectedMaterialOffer.phone}</a>}
+                    <button className="button secondary" type="button" onClick={printSelectedMaterialOffer}><Printer size={17} /> Tisk / PDF</button>
                   </div>
 
                   <section className="material-offer-admin-photos">
@@ -11922,10 +12213,10 @@ function AdminWorkspace({
                     ) : (
                       <div>
                         {selectedMaterialOffer.photos.map((photo, index) => (
-                          <a key={photo.id} href={photo.url} target="_blank" rel="noreferrer" title="Otevřít fotografii v plné velikosti">
+                          <button key={photo.id} type="button" onClick={() => setMaterialOfferPhotoPreview({ url: photo.url, name: photo.fileName })} title="Otevřít fotografii v plné velikosti">
                             <img src={photo.url} alt={`Fotografie ${index + 1} k nabídce od ${selectedMaterialOffer.donorName}`} />
                             <span>{photo.fileName}</span>
-                          </a>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -11933,10 +12224,31 @@ function AdminWorkspace({
 
                   <div className="material-offer-review-form">
                     <label>
+                      Odpovědná osoba
+                      <select value={materialOfferAssignedTo} onChange={(event) => setMaterialOfferAssignedTo(event.target.value)}>
+                        <option value="">Nepřiřazeno</option>
+                        {managedUsers
+                          .filter((user) => user.isActive && ['admin', 'editor'].includes(user.role))
+                          .map((user) => <option key={user.id} value={user.id}>{user.name} · {roleLabels[user.role]}</option>)}
+                      </select>
+                    </label>
+                    <label>
                       Stav nabídky
                       <select value={materialOfferStatusDraft} onChange={(event) => setMaterialOfferStatusDraft(event.target.value as ApiMaterialOfferStatus)}>
                         {materialOfferStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                       </select>
+                    </label>
+                    <label>
+                      Termín svozu / převzetí
+                      <input type="datetime-local" value={materialOfferPickupAt} onChange={(event) => setMaterialOfferPickupAt(event.target.value)} />
+                    </label>
+                    <label>
+                      Adresa svozu
+                      <input maxLength={500} value={materialOfferPickupAddress} onChange={(event) => setMaterialOfferPickupAddress(event.target.value)} placeholder="Adresa nebo upřesnění místa" />
+                    </label>
+                    <label>
+                      Uchovat údaje do
+                      <input type="date" value={materialOfferRetentionUntil} onChange={(event) => setMaterialOfferRetentionUntil(event.target.value)} />
                     </label>
                     <label>
                       Interní poznámka
@@ -11946,9 +12258,70 @@ function AdminWorkspace({
                       <Save size={17} /> {savingMaterialOffer ? 'Ukládám...' : 'Uložit stav nabídky'}
                     </button>
                   </div>
+                  <section className="material-offer-notification-state">
+                    <h4>Oznámení a souhlas</h4>
+                    <p>Potvrzení dárci: {selectedMaterialOffer.donorNotifiedAt ? new Date(selectedMaterialOffer.donorNotifiedAt).toLocaleString('cs-CZ') : 'neodesláno'}</p>
+                    <p>Upozornění týmu: {selectedMaterialOffer.adminNotifiedAt ? new Date(selectedMaterialOffer.adminNotifiedAt).toLocaleString('cs-CZ') : 'neodesláno'}</p>
+                    <p>Souhlas: {selectedMaterialOffer.consentVersion || 'neuveden'} · {selectedMaterialOffer.consentAt ? new Date(selectedMaterialOffer.consentAt).toLocaleString('cs-CZ') : 'bez data'}</p>
+                  </section>
+                  <section className="material-offer-history">
+                    <h4>Historie nabídky</h4>
+                    {selectedMaterialOffer.events.length === 0 ? (
+                      <p className="empty-note">Zatím nejsou zaznamenané žádné změny.</p>
+                    ) : (
+                      <ol>
+                        {selectedMaterialOffer.events.map((event) => (
+                          <li key={event.id}>
+                            <span>{new Date(event.createdAt).toLocaleString('cs-CZ')}</span>
+                            <strong>{event.eventType === 'created' ? 'Nabídka přijata' : event.eventType === 'status_changed' ? 'Změna stavu' : event.eventType === 'anonymized' ? 'Anonymizace' : 'Úprava workflow'}</strong>
+                            <small>{event.actorName || 'Systém'}{event.note ? ` · ${event.note}` : ''}</small>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </section>
+                  <div className="material-offer-danger-zone">
+                    <button className="button danger" type="button" onClick={anonymizeSelectedMaterialOffer} disabled={Boolean(selectedMaterialOffer.anonymizedAt) || !onMaterialOfferAnonymizeRequest}>
+                      <Trash2 size={16} /> {selectedMaterialOffer.anonymizedAt ? 'Anonymizováno' : 'Anonymizovat údaje'}
+                    </button>
+                  </div>
                 </>
               )}
             </article>
+
+            <article className="admin-card material-email-templates">
+              <div className="admin-card-header">
+                <div>
+                  <h3>E-mailové šablony</h3>
+                  <p className="form-help">Proměnné: {'{{donorName}}'}, {'{{offerType}}'}, {'{{offerId}}'}, {'{{locality}}'}, {'{{quantity}}'}, {'{{statusLabel}}'}, {'{{pickupDetails}}'}, {'{{adminUrl}}'}.</p>
+                </div>
+                <Mail size={20} />
+              </div>
+              <div className="material-email-template-list">
+                {emailTemplates.map((template) => {
+                  const draft = emailTemplateDrafts[template.key] || template;
+                  return (
+                    <details key={template.key}>
+                      <summary>{template.displayName}<span>{draft.isActive ? 'aktivní' : 'vypnutá'}</span></summary>
+                      <div className="material-email-template-form">
+                        <label>Předmět<input value={draft.subjectTemplate} onChange={(event) => setEmailTemplateDrafts((current) => ({ ...current, [template.key]: { ...draft, subjectTemplate: event.target.value } }))} /></label>
+                        <label>Textová verze<textarea rows={6} value={draft.textTemplate} onChange={(event) => setEmailTemplateDrafts((current) => ({ ...current, [template.key]: { ...draft, textTemplate: event.target.value } }))} /></label>
+                        <label>HTML verze<textarea rows={7} value={draft.htmlTemplate} onChange={(event) => setEmailTemplateDrafts((current) => ({ ...current, [template.key]: { ...draft, htmlTemplate: event.target.value } }))} /></label>
+                        <label className="checkbox-field"><input type="checkbox" checked={draft.isActive} onChange={(event) => setEmailTemplateDrafts((current) => ({ ...current, [template.key]: { ...draft, isActive: event.target.checked } }))} /><span>Šablona je aktivní</span></label>
+                        <button className="button primary" type="button" onClick={() => saveEmailTemplateDraft(template.key)} disabled={savingEmailTemplate === template.key || !onEmailTemplateUpdateRequest}><Save size={16} /> {savingEmailTemplate === template.key ? 'Ukládám...' : 'Uložit šablonu'}</button>
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            </article>
+            {materialOfferPhotoPreview && createPortal(
+              <div className="material-photo-lightbox" role="dialog" aria-modal="true" aria-label={materialOfferPhotoPreview.name} onClick={() => setMaterialOfferPhotoPreview(null)}>
+                <button type="button" aria-label="Zavřít náhled" onClick={() => setMaterialOfferPhotoPreview(null)}><X size={22} /></button>
+                <img src={materialOfferPhotoPreview.url} alt={materialOfferPhotoPreview.name} onClick={(event) => event.stopPropagation()} />
+              </div>,
+              document.body
+            )}
           </div>
         )}
 

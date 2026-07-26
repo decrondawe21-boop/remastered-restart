@@ -177,6 +177,18 @@ export type ApiMaterialOfferPhoto = {
   url: string;
 };
 
+export type ApiMaterialOfferEvent = {
+  id: string;
+  eventType: string;
+  actorId: string | null;
+  actorName: string;
+  fromStatus: ApiMaterialOfferStatus | null;
+  toStatus: ApiMaterialOfferStatus | null;
+  note: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+};
+
 export type ApiMaterialOffer = {
   id: string;
   offerType: ApiMaterialOfferType;
@@ -192,8 +204,29 @@ export type ApiMaterialOffer = {
   status: ApiMaterialOfferStatus;
   adminNote: string;
   reviewedBy: string | null;
+  assignedTo: string | null;
+  assignedName: string;
+  pickupAt: string | null;
+  pickupAddress: string;
+  consentVersion: string;
+  consentAt: string | null;
+  retentionUntil: string | null;
+  donorNotifiedAt: string | null;
+  adminNotifiedAt: string | null;
+  anonymizedAt: string | null;
   photos: ApiMaterialOfferPhoto[];
+  events: ApiMaterialOfferEvent[];
   createdAt: string;
+  updatedAt: string;
+};
+
+export type ApiEmailTemplate = {
+  key: string;
+  displayName: string;
+  subjectTemplate: string;
+  textTemplate: string;
+  htmlTemplate: string;
+  isActive: boolean;
   updatedAt: string;
 };
 
@@ -603,11 +636,36 @@ export async function listMaterialOffers() {
 
 export async function updateMaterialOffer(
   offerId: string,
-  update: Pick<ApiMaterialOffer, 'status' | 'adminNote'>
+  update: Pick<ApiMaterialOffer, 'status' | 'adminNote' | 'assignedTo' | 'pickupAt' | 'pickupAddress' | 'retentionUntil'>
 ) {
   const body = await request<{ offer: ApiMaterialOffer }>(`/api/admin/material-offers/${encodeURIComponent(offerId)}`, {
     method: 'PATCH',
     body: JSON.stringify(update)
   });
   return body.offer;
+}
+
+export async function anonymizeMaterialOffer(offerId: string) {
+  await request<{ ok: boolean; id: string }>(`/api/admin/material-offers/${encodeURIComponent(offerId)}/anonymize`, {
+    method: 'POST'
+  });
+}
+
+export async function listEmailTemplates() {
+  const body = await request<{ templates: ApiEmailTemplate[] }>('/api/admin/email-templates');
+  return body.templates;
+}
+
+export async function updateEmailTemplate(
+  templateKey: string,
+  update: Pick<ApiEmailTemplate, 'subjectTemplate' | 'textTemplate' | 'htmlTemplate' | 'isActive'>
+) {
+  const body = await request<{ template: ApiEmailTemplate }>(
+    `/api/admin/email-templates/${encodeURIComponent(templateKey)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(update)
+    }
+  );
+  return body.template;
 }

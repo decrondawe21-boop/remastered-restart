@@ -168,7 +168,20 @@ const materialOfferTypes = ['clothing', 'equipment', 'books'];
 const materialOfferTransports = ['donor-delivery', 'project-pickup', 'agreement'];
 const materialOfferStatuses = ['new', 'reviewing', 'accepted', 'pickup_planned', 'received', 'declined', 'closed'];
 const materialOfferImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
-const materialOfferRateLimits = new Map();
+const materialOfferTypeLabels = {
+  clothing: 'oblečení',
+  equipment: 'vybavení',
+  books: 'knihy'
+};
+const materialOfferStatusLabels = {
+  new: 'Nová',
+  reviewing: 'Prověřujeme',
+  accepted: 'Přijato',
+  pickup_planned: 'Svoz naplánován',
+  received: 'Převzato',
+  declined: 'Odmítnuto',
+  closed: 'Uzavřeno'
+};
 const maxMaterialOfferPhotos = 4;
 const maxMaterialOfferPhotoBytes = 2_000_000;
 
@@ -381,6 +394,109 @@ async function sendPasswordResetEmail(user, resetUrl) {
     ].join('')
   });
   return true;
+}
+
+function escapeEmailHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderEmailTemplate(template, variables, html = false) {
+  return String(template || '').replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_match, key) => {
+    const value = variables[key] ?? '';
+    return html ? escapeEmailHtml(value) : String(value);
+  });
+}
+
+async function sendEmailTemplate(templateKey, recipients, variables) {
+  const transporter = getMailTransporter();
+  const to = [...new Set((Array.isArray(recipients) ? recipients : [recipients]).map((item) => String(item || '').trim()).filter(Boolean))];
+  if (!transporter || to.length === 0) return false;
+  const rows = await query(
+    `SELECT template_key, subject AS subject_template, text_body AS text_template,
+            html_body AS html_template, is_active
+     FROM email_templates WHERE template_key = ? LIMIT 1`,
+    [templateKey]
+  );
+  const template = rows[0];
+  if (!template || !template.is_active) return false;
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to,
+    subject: renderEmailTemplate(template.subject_template, variables),
+    text: renderEmailTemplate(template.text_template, variables),
+    html: renderEmailTemplate(template.html_template, variables, true)
+  });
+  return true;
+}
+
+async function materialOfferAdminEmails() {
+  const configured = String(process.env.MATERIAL_OFFER_ADMIN_EMAILS || '')
+    .split(/[;,]/)
+    .map((email) => email.trim())
+    .filter(Boolean);
+  const rows = await query(
+    `SELECT email FROM users
+     WHERE role IN ('admin', 'editor') AND is_active = 1 AND email IS NOT NULL AND email <> ''`
+  );
+  return [...new Set([...configured, ...rows.map((row) => String(row.email || '').trim()).filter(Boolean)])];
+}
+
+function materialOfferEmailVariables(offer, request) {
+  const pickupParts = [offer.pickup_at ? new Date(offer.pickup_at).toLocaleString('cs-CZ') : '', offer.pickup_address || ''].filter(Boolean);
+  return {
+    donorName: offer.donor_name || '',
+    offerType: materialOfferTypeLabels[offer.offer_type] || offer.offer_type || '',
+    offerId: offer.id || '',
+    locality: offer.locality || '',
+    quantity: offer.quantity || '',
+    statusLabel: materialOfferStatusLabels[offer.status] || offer.status || '',
+    pickupDetails: pickupParts.join(', '),
+    adminUrl: `${publicBaseUrl(request)}/admin?tab=materialOffers`
+  };
+}
+
+async function sendMaterialOfferCreatedEmails(offer, request) {
+  const variables = materialOfferEmailVariables(offer, request);
+  let donorSent = false;
+  let adminSent = false;
+  try {
+    if (offer.email) donorSent = await sendEmailTemplate('material_offer_donor_confirmation', offer.email, variables);
+  } catch (error) {
+    console.warn('[mail] material offer donor confirmation failed:', error.message);
+  }
+  try {
+    adminSent = await sendEmailTemplate('material_offer_admin_alert', await materialOfferAdminEmails(), variables);
+  } catch (error) {
+    console.warn('[mail] material offer admin alert failed:', error.message);
+  }
+  if (donorSent || adminSent) {
+    await query(
+      `UPDATE material_offers
+       SET donor_notified_at = IF(?, NOW(), donor_notified_at),
+           admin_notified_at = IF(?, NOW(), admin_notified_at)
+       WHERE id = ?`,
+      [donorSent ? 1 : 0, adminSent ? 1 : 0, offer.id]
+    ).catch((error) => console.warn('[mail] material offer notification timestamp failed:', error.message));
+  }
+}
+
+async function sendMaterialOfferStatusEmail(offer, request) {
+  if (!offer.email) return false;
+  try {
+    return await sendEmailTemplate(
+      'material_offer_status_update',
+      offer.email,
+      materialOfferEmailVariables(offer, request)
+    );
+  } catch (error) {
+    console.warn('[mail] material offer status update failed:', error.message);
+    return false;
+  }
 }
 
 async function createPasswordResetForUser(user, request) {
@@ -2685,7 +2801,27 @@ async function deleteNotification(request, response, notificationId) {
   sendJson(response, 200, { ok: true, id: notificationId });
 }
 
-function materialOfferRow(row, photos = []) {
+function materialOfferEventRow(row) {
+  return {
+    id: row.id,
+    eventType: row.event_type,
+    actorId: row.actor_id || null,
+    actorName: row.actor_name || '',
+    fromStatus: row.from_status || null,
+    toStatus: row.to_status || null,
+    note: row.note || '',
+    metadata: (() => {
+      try {
+        return row.metadata_json ? JSON.parse(row.metadata_json) : {};
+      } catch {
+        return {};
+      }
+    })(),
+    createdAt: row.created_at
+  };
+}
+
+function materialOfferRow(row, photos = [], events = []) {
   return {
     id: row.id,
     offerType: row.offer_type,
@@ -2701,7 +2837,18 @@ function materialOfferRow(row, photos = []) {
     status: row.status,
     adminNote: row.admin_note || '',
     reviewedBy: row.reviewed_by || null,
+    assignedTo: row.assigned_to || null,
+    assignedName: row.assigned_name || '',
+    pickupAt: row.pickup_at || null,
+    pickupAddress: row.pickup_address || '',
+    consentVersion: row.consent_version || '',
+    consentAt: row.consent_at || null,
+    retentionUntil: row.retention_until || null,
+    donorNotifiedAt: row.donor_notified_at || null,
+    adminNotifiedAt: row.admin_notified_at || null,
+    anonymizedAt: row.anonymized_at || null,
     photos,
+    events,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -2718,17 +2865,50 @@ function materialOfferPhotoRow(row) {
 }
 
 function materialOfferRateLimitKey(request) {
-  return String(request.headers['x-forwarded-for'] || request.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  const address = String(request.headers['x-forwarded-for'] || request.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  return crypto.createHash('sha256').update(`${process.env.AUTH_SECRET || 'material-offer'}:${address}`).digest('hex');
 }
 
-function materialOfferRequestAllowed(request) {
-  const key = materialOfferRateLimitKey(request);
-  const now = Date.now();
-  const windowStart = now - 30 * 60 * 1000;
-  const recent = (materialOfferRateLimits.get(key) || []).filter((timestamp) => timestamp > windowStart);
-  if (recent.length >= 5) return false;
-  materialOfferRateLimits.set(key, [...recent, now]);
+async function materialOfferRequestAllowed(request) {
+  const keyHash = materialOfferRateLimitKey(request);
+  const rows = await query(
+    `SELECT attempts FROM material_offer_rate_limits
+     WHERE limit_key = ? AND window_started_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+     LIMIT 1`,
+    [keyHash]
+  );
+  if (Number(rows[0]?.attempts || 0) >= 5) return false;
+  await query(
+    `INSERT INTO material_offer_rate_limits (limit_key, window_started_at, attempts)
+     VALUES (?, NOW(), 1)
+     ON DUPLICATE KEY UPDATE
+       attempts = IF(window_started_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE), attempts + 1, 1),
+       window_started_at = IF(window_started_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE), window_started_at, NOW())`,
+    [keyHash]
+  );
+  if (Math.random() < 0.05) {
+    await query('DELETE FROM material_offer_rate_limits WHERE window_started_at < DATE_SUB(NOW(), INTERVAL 2 DAY)').catch(() => undefined);
+  }
   return true;
+}
+
+function detectedImageMimeType(content) {
+  if (content.length >= 3 && content[0] === 0xff && content[1] === 0xd8 && content[2] === 0xff) return 'image/jpeg';
+  if (
+    content.length >= 8 &&
+    content[0] === 0x89 &&
+    content[1] === 0x50 &&
+    content[2] === 0x4e &&
+    content[3] === 0x47 &&
+    content[4] === 0x0d &&
+    content[5] === 0x0a &&
+    content[6] === 0x1a &&
+    content[7] === 0x0a
+  ) return 'image/png';
+  if (content.length >= 12 && content.toString('ascii', 0, 4) === 'RIFF' && content.toString('ascii', 8, 12) === 'WEBP') {
+    return 'image/webp';
+  }
+  return '';
 }
 
 function trimOfferField(value, maxLength) {
@@ -2736,7 +2916,7 @@ function trimOfferField(value, maxLength) {
 }
 
 async function submitMaterialOffer(request, response) {
-  if (!materialOfferRequestAllowed(request)) {
+  if (!(await materialOfferRequestAllowed(request))) {
     sendJson(response, 429, { error: 'Příliš mnoho nabídek. Zkuste to prosím později.' });
     return;
   }
@@ -2806,15 +2986,23 @@ async function submitMaterialOffer(request, response) {
       sendJson(response, 400, { error: 'Každá fotografie musí mít nejvýše 2 MB.' });
       return;
     }
-    decodedPhotos.push({ fileName, mimeType, content, sortOrder: index });
+    const detectedMimeType = detectedImageMimeType(content);
+    if (!detectedMimeType || detectedMimeType !== mimeType) {
+      sendJson(response, 400, { error: 'Obsah fotografie neodpovídá uvedenému formátu.' });
+      return;
+    }
+    decodedPhotos.push({ fileName, mimeType: detectedMimeType, content, sortOrder: index });
   }
 
   const id = randomId();
+  const retentionDays = Math.max(30, Math.min(730, Number.parseInt(process.env.MATERIAL_OFFER_RETENTION_DAYS || '180', 10) || 180));
   try {
     await query(
       `INSERT INTO material_offers
-       (id, offer_type, donor_name, email, phone, item_description, quantity, locality, transport, item_condition, note)
-       VALUES (?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?, ?, ?, ?, ?, NULLIF(?, ''))`,
+       (id, offer_type, donor_name, email, phone, item_description, quantity, locality, transport, item_condition, note,
+        consent_version, consent_at, retention_until)
+       VALUES (?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?, ?, ?, ?, ?, NULLIF(?, ''), 'material-offer-v1', NOW(),
+        DATE_ADD(CURDATE(), INTERVAL ${retentionDays} DAY))`,
       [id, offerType, donorName, email, phone, itemDescription, quantity, locality, transport, itemCondition, note]
     );
     for (const photo of decodedPhotos) {
@@ -2824,6 +3012,11 @@ async function submitMaterialOffer(request, response) {
         [randomId(), id, photo.fileName, photo.mimeType, photo.content.length, photo.content, photo.sortOrder]
       );
     }
+    await query(
+      `INSERT INTO material_offer_events (id, offer_id, event_type, to_status, note, metadata_json)
+       VALUES (?, ?, 'created', 'new', 'Nabídka byla přijata z veřejného formuláře.', ?)`,
+      [randomId(), id, JSON.stringify({ offerType, photoCount: decodedPhotos.length })]
+    );
   } catch (error) {
     await query('DELETE FROM material_offers WHERE id = ?', [id]).catch(() => undefined);
     throw error;
@@ -2836,13 +3029,20 @@ async function submitMaterialOffer(request, response) {
     category: 'Materiální dary',
     linkHref: '/admin?tab=materialOffers'
   });
+  const insertedRows = await query('SELECT * FROM material_offers WHERE id = ? LIMIT 1', [id]);
+  if (insertedRows[0]) await sendMaterialOfferCreatedEmails(insertedRows[0], request);
   sendJson(response, 201, { offer: { id, status: 'new', createdAt: new Date().toISOString() } });
 }
 
 async function listMaterialOffers(request, response) {
   const admin = await requireAdmin(request, response);
   if (!admin) return;
-  const rows = await query('SELECT * FROM material_offers ORDER BY created_at DESC');
+  const rows = await query(
+    `SELECT material_offers.*, assigned_user.name AS assigned_name
+     FROM material_offers
+     LEFT JOIN users assigned_user ON assigned_user.id = material_offers.assigned_to
+     ORDER BY material_offers.created_at DESC`
+  );
   if (rows.length === 0) {
     sendJson(response, 200, { offers: [] });
     return;
@@ -2853,13 +3053,29 @@ async function listMaterialOffers(request, response) {
      FROM material_offer_photos WHERE offer_id IN (${placeholders}) ORDER BY offer_id, sort_order`,
     rows.map((row) => row.id)
   );
+  const eventRows = await query(
+    `SELECT material_offer_events.*, users.name AS actor_name
+     FROM material_offer_events
+     LEFT JOIN users ON users.id = material_offer_events.actor_id
+     WHERE material_offer_events.offer_id IN (${placeholders})
+     ORDER BY material_offer_events.created_at DESC`,
+    rows.map((row) => row.id)
+  );
   const photosByOffer = new Map();
   for (const photo of photoRows) {
     const current = photosByOffer.get(photo.offer_id) || [];
     current.push(materialOfferPhotoRow(photo));
     photosByOffer.set(photo.offer_id, current);
   }
-  sendJson(response, 200, { offers: rows.map((row) => materialOfferRow(row, photosByOffer.get(row.id) || [])) });
+  const eventsByOffer = new Map();
+  for (const event of eventRows) {
+    const current = eventsByOffer.get(event.offer_id) || [];
+    current.push(materialOfferEventRow(event));
+    eventsByOffer.set(event.offer_id, current);
+  }
+  sendJson(response, 200, {
+    offers: rows.map((row) => materialOfferRow(row, photosByOffer.get(row.id) || [], eventsByOffer.get(row.id) || []))
+  });
 }
 
 async function updateMaterialOffer(request, response, offerId) {
@@ -2868,29 +3084,195 @@ async function updateMaterialOffer(request, response, offerId) {
   const body = await readBody(request);
   const status = trimOfferField(body.status, 40);
   const adminNote = trimOfferField(body.adminNote, 5000);
+  const assignedTo = trimOfferField(body.assignedTo, 80);
+  const pickupAddress = trimOfferField(body.pickupAddress, 500);
+  const pickupAt = body.pickupAt ? new Date(body.pickupAt) : null;
+  const retentionUntil = body.retentionUntil ? new Date(body.retentionUntil) : null;
   if (!materialOfferStatuses.includes(status)) {
     sendJson(response, 400, { error: 'Vyberte platný stav nabídky.' });
     return;
   }
+  if (pickupAt && Number.isNaN(pickupAt.getTime())) {
+    sendJson(response, 400, { error: 'Termín svozu nemá platný formát.' });
+    return;
+  }
+  if (retentionUntil && Number.isNaN(retentionUntil.getTime())) {
+    sendJson(response, 400, { error: 'Retenční datum nemá platný formát.' });
+    return;
+  }
+  if (assignedTo) {
+    const assigneeRows = await query(
+      `SELECT id FROM users WHERE id = ? AND role IN ('admin', 'editor') AND is_active = 1 LIMIT 1`,
+      [assignedTo]
+    );
+    if (!assigneeRows[0]) {
+      sendJson(response, 400, { error: 'Vyberte aktivního administrátora nebo editora.' });
+      return;
+    }
+  }
+  const existingRows = await query('SELECT * FROM material_offers WHERE id = ? LIMIT 1', [offerId]);
+  const existing = existingRows[0];
+  if (!existing) {
+    sendJson(response, 404, { error: 'Nabídka nebyla nalezena.' });
+    return;
+  }
   const result = await query(
-    `UPDATE material_offers SET status = ?, admin_note = NULLIF(?, ''), reviewed_by = ? WHERE id = ?`,
-    [status, adminNote, admin.id, offerId]
+    `UPDATE material_offers
+     SET status = ?, admin_note = NULLIF(?, ''), reviewed_by = ?, assigned_to = NULLIF(?, ''),
+         pickup_at = ?, pickup_address = NULLIF(?, ''),
+         retention_until = COALESCE(?, retention_until)
+     WHERE id = ?`,
+    [
+      status,
+      adminNote,
+      admin.id,
+      assignedTo,
+      pickupAt ? pickupAt.toISOString().slice(0, 19).replace('T', ' ') : null,
+      pickupAddress,
+      retentionUntil ? retentionUntil.toISOString().slice(0, 10) : null,
+      offerId
+    ]
   );
   if (!result.affectedRows) {
     sendJson(response, 404, { error: 'Nabídka nebyla nalezena.' });
     return;
   }
+  const changes = {
+    status,
+    adminNote,
+    assignedTo: assignedTo || null,
+    pickupAt: pickupAt?.toISOString() || null,
+    pickupAddress,
+    retentionUntil: retentionUntil?.toISOString() || existing.retention_until || null
+  };
   await query(
     `INSERT INTO audit_log (id, actor_id, entity_type, entity_id, action, payload_json)
      VALUES (?, ?, 'material_offer', ?, 'status_update', ?)`,
-    [randomId(), admin.id, offerId, JSON.stringify({ status, adminNote })]
+    [randomId(), admin.id, offerId, JSON.stringify(changes)]
   );
-  const rows = await query('SELECT * FROM material_offers WHERE id = ? LIMIT 1', [offerId]);
+  await query(
+    `INSERT INTO material_offer_events
+     (id, offer_id, actor_id, event_type, from_status, to_status, note, metadata_json)
+     VALUES (?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?)`,
+    [
+      randomId(),
+      offerId,
+      admin.id,
+      existing.status !== status ? 'status_changed' : 'workflow_updated',
+      existing.status,
+      status,
+      adminNote,
+      JSON.stringify(changes)
+    ]
+  );
+  const rows = await query(
+    `SELECT material_offers.*, assigned_user.name AS assigned_name
+     FROM material_offers
+     LEFT JOIN users assigned_user ON assigned_user.id = material_offers.assigned_to
+     WHERE material_offers.id = ? LIMIT 1`,
+    [offerId]
+  );
   const photoRows = await query(
     'SELECT id, offer_id, file_name, mime_type, file_size, sort_order FROM material_offer_photos WHERE offer_id = ? ORDER BY sort_order',
     [offerId]
   );
-  sendJson(response, 200, { offer: materialOfferRow(rows[0], photoRows.map(materialOfferPhotoRow)) });
+  const eventRows = await query(
+    `SELECT material_offer_events.*, users.name AS actor_name
+     FROM material_offer_events LEFT JOIN users ON users.id = material_offer_events.actor_id
+     WHERE material_offer_events.offer_id = ? ORDER BY material_offer_events.created_at DESC`,
+    [offerId]
+  );
+  if (existing.status !== status) await sendMaterialOfferStatusEmail(rows[0], request);
+  sendJson(response, 200, {
+    offer: materialOfferRow(rows[0], photoRows.map(materialOfferPhotoRow), eventRows.map(materialOfferEventRow))
+  });
+}
+
+async function anonymizeMaterialOffer(request, response, offerId) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const rows = await query('SELECT id, status, anonymized_at FROM material_offers WHERE id = ? LIMIT 1', [offerId]);
+  if (!rows[0]) {
+    sendJson(response, 404, { error: 'Nabídka nebyla nalezena.' });
+    return;
+  }
+  if (rows[0].anonymized_at) {
+    sendJson(response, 409, { error: 'Nabídka už byla anonymizována.' });
+    return;
+  }
+  await query('DELETE FROM material_offer_photos WHERE offer_id = ?', [offerId]);
+  await query(
+    `UPDATE material_offers
+     SET donor_name = 'Anonymizovaný dárce', email = NULL, phone = NULL, pickup_address = NULL,
+         note = NULL, admin_note = NULL, anonymized_at = NOW()
+     WHERE id = ?`,
+    [offerId]
+  );
+  await query(
+    `INSERT INTO material_offer_events (id, offer_id, actor_id, event_type, from_status, to_status, note)
+     VALUES (?, ?, ?, 'anonymized', ?, ?, 'Osobní údaje a fotografie byly odstraněny administrátorem.')`,
+    [randomId(), offerId, admin.id, rows[0].status, rows[0].status]
+  );
+  await query(
+    `INSERT INTO audit_log (id, actor_id, entity_type, entity_id, action, payload_json)
+     VALUES (?, ?, 'material_offer', ?, 'anonymize', '{}')`,
+    [randomId(), admin.id, offerId]
+  );
+  sendJson(response, 200, { ok: true, id: offerId });
+}
+
+function emailTemplateRow(row) {
+  return {
+    key: row.template_key,
+    displayName: row.display_name,
+    subjectTemplate: row.subject_template,
+    textTemplate: row.text_template,
+    htmlTemplate: row.html_template,
+    isActive: Boolean(row.is_active),
+    updatedAt: row.updated_at
+  };
+}
+
+async function listEmailTemplates(request, response) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const rows = await query(
+    `SELECT template_key, display_name, subject AS subject_template, text_body AS text_template,
+            html_body AS html_template, is_active, updated_at
+     FROM email_templates ORDER BY display_name`
+  );
+  sendJson(response, 200, { templates: rows.map(emailTemplateRow) });
+}
+
+async function updateEmailTemplate(request, response, templateKey) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const body = await readBody(request);
+  const subjectTemplate = trimOfferField(body.subjectTemplate, 255);
+  const textTemplate = trimOfferField(body.textTemplate, 20000);
+  const htmlTemplate = trimOfferField(body.htmlTemplate, 30000);
+  const isActive = body.isActive !== false;
+  if (!subjectTemplate || !textTemplate || !htmlTemplate) {
+    sendJson(response, 400, { error: 'Předmět, textová i HTML verze šablony jsou povinné.' });
+    return;
+  }
+  const result = await query(
+    `UPDATE email_templates
+     SET subject = ?, text_body = ?, html_body = ?, is_active = ?, updated_by = ?
+     WHERE template_key = ?`,
+    [subjectTemplate, textTemplate, htmlTemplate, isActive ? 1 : 0, admin.id, templateKey]
+  );
+  if (!result.affectedRows) {
+    sendJson(response, 404, { error: 'E-mailová šablona nebyla nalezena.' });
+    return;
+  }
+  const rows = await query(
+    `SELECT template_key, display_name, subject AS subject_template, text_body AS text_template,
+            html_body AS html_template, is_active, updated_at
+     FROM email_templates WHERE template_key = ? LIMIT 1`,
+    [templateKey]
+  );
+  sendJson(response, 200, { template: emailTemplateRow(rows[0]) });
 }
 
 async function getMaterialOfferPhoto(request, response, offerId, photoId) {
@@ -2969,8 +3351,13 @@ async function createApp(request, response) {
     if (request.method === 'GET' && url.pathname === '/api/admin/users') return await listUsers(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/applications') return await listProjectApplications(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/material-offers') return await listMaterialOffers(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/admin/email-templates') return await listEmailTemplates(request, response);
+    const emailTemplateMatch = url.pathname.match(/^\/api\/admin\/email-templates\/([^/]+)$/);
+    if (request.method === 'PATCH' && emailTemplateMatch) return await updateEmailTemplate(request, response, decodeURIComponent(emailTemplateMatch[1]));
     const materialOfferPhotoMatch = url.pathname.match(/^\/api\/admin\/material-offers\/([^/]+)\/photos\/([^/]+)$/);
     if (request.method === 'GET' && materialOfferPhotoMatch) return await getMaterialOfferPhoto(request, response, materialOfferPhotoMatch[1], materialOfferPhotoMatch[2]);
+    const materialOfferAnonymizeMatch = url.pathname.match(/^\/api\/admin\/material-offers\/([^/]+)\/anonymize$/);
+    if (request.method === 'POST' && materialOfferAnonymizeMatch) return await anonymizeMaterialOffer(request, response, materialOfferAnonymizeMatch[1]);
     const materialOfferMatch = url.pathname.match(/^\/api\/admin\/material-offers\/([^/]+)$/);
     if (request.method === 'PATCH' && materialOfferMatch) return await updateMaterialOffer(request, response, materialOfferMatch[1]);
     const projectApplicationMatch = url.pathname.match(/^\/api\/admin\/applications\/([^/]+)$/);

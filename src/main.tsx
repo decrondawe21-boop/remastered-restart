@@ -81,11 +81,13 @@ import {
   deleteNewsComment,
   deleteNews as deleteNewsRecord,
   fillFormPdf,
+  fileToBase64,
   getJailbreakBackgroundStats,
   listClients,
   listDocuments,
   listFormTemplates,
   listMedia,
+  listMaterialOffers,
   listNews,
   listNewsDiscussion,
   listNotifications,
@@ -109,7 +111,9 @@ import {
   saveNotification as saveNotificationRecord,
   saveSlide as saveSlideRecord,
   submitProjectApplication,
+  submitMaterialOffer,
   toggleNewsLike,
+  updateMaterialOffer,
   updateNewsComment,
   updateUser as updateUserRecord,
   ApiRequestError,
@@ -119,6 +123,10 @@ import {
   type ApiFormTemplate,
   type ApiJailbreakBackgroundStats,
   type ApiManagedUser,
+  type ApiMaterialOffer,
+  type ApiMaterialOfferStatus,
+  type ApiMaterialOfferType,
+  type ApiMaterialOfferTransport,
   type ApiMediaFile,
   type ApiNewsComment,
   type ApiNewsLike,
@@ -533,6 +541,33 @@ type ProjectApplication = ApiProjectApplication;
 type MediaFile = ApiMediaFile;
 type ClientDocument = ApiClientDocument;
 type NotificationItem = ApiNotification;
+type MaterialOffer = ApiMaterialOffer;
+const materialOfferTypeLabels: Record<ApiMaterialOfferType, string> = {
+  clothing: 'Oblečení',
+  equipment: 'Vybavení',
+  books: 'Knihy'
+};
+const materialOfferStatusOptions: Array<{ value: ApiMaterialOfferStatus; label: string }> = [
+  { value: 'new', label: 'Nová' },
+  { value: 'reviewing', label: 'Prověřujeme' },
+  { value: 'accepted', label: 'Přijata' },
+  { value: 'pickup_planned', label: 'Předání domluveno' },
+  { value: 'received', label: 'Převzata' },
+  { value: 'declined', label: 'Odmítnuta' },
+  { value: 'closed', label: 'Uzavřena' }
+];
+const materialOfferTransportLabels: Record<ApiMaterialOfferTransport, string> = {
+  'donor-delivery': 'Dárce může přivézt',
+  'project-pickup': 'Potřebuje odvoz projektu',
+  agreement: 'Dopravu domluvíme'
+};
+const materialOfferConditionLabels: Record<string, string> = {
+  new: 'Nové / nepoužité',
+  excellent: 'Velmi dobrý stav',
+  good: 'Dobrý, běžně použitelný stav',
+  usable: 'Použitelné s drobným opotřebením',
+  repair: 'Vyžaduje opravu nebo kompletaci'
+};
 const roleLabels: Record<ApiRole, string> = {
   admin: 'Administrátor',
   editor: 'Editor',
@@ -1203,6 +1238,7 @@ type AdminSection =
   | 'tools'
   | 'codeArchive'
   | 'media'
+  | 'materialOffers'
   | 'users'
   | 'notifications'
   | 'settings';
@@ -1277,6 +1313,7 @@ const adminNavItems: Array<WorkspaceNavItem<AdminSection>> = [
   { id: 'tools', label: 'Tools', text: 'ID, čárové kódy, QR', icon: Wrench },
   { id: 'codeArchive', label: 'Archiv kódů', text: 'CSV, čárové kódy, QR', icon: FolderOpen },
   { id: 'media', label: 'Média', text: 'Obrázky a dokumenty', icon: ImageIcon },
+  { id: 'materialOffers', label: 'Materiální dary', text: 'Oblečení, vybavení a knihy', icon: PackageOpen },
   { id: 'users', label: 'Uživatelé a role', text: 'Admin, editor, user', icon: UserCog },
   { id: 'notifications', label: 'Notifikace', text: 'Zprávy a upozornění', icon: Bell },
   { id: 'settings', label: 'Nastavení', text: 'Branding, SEO, bezpečnost', icon: Settings }
@@ -4341,6 +4378,7 @@ const supportOptions = [
 
 type MaterialSupportPageConfig = {
   path: string;
+  offerType: ApiMaterialOfferType;
   label: string;
   title: string;
   text: string;
@@ -4356,6 +4394,7 @@ type MaterialSupportPageConfig = {
 const materialSupportPages: Record<string, MaterialSupportPageConfig> = {
   '/zapojeni/darovat-obleceni': {
     path: '/zapojeni/darovat-obleceni',
+    offerType: 'clothing',
     label: 'Dary oblečení',
     title: 'Oblečení pro důstojný nový začátek',
     text: 'Pomozte zajistit základní potřeby lidem, kteří nemají prostředky ani blízkého člověka, na kterého by se mohli obrátit.',
@@ -4380,6 +4419,7 @@ const materialSupportPages: Record<string, MaterialSupportPageConfig> = {
   },
   '/zapojeni/vybaveni-centra': {
     path: '/zapojeni/vybaveni-centra',
+    offerType: 'equipment',
     label: 'Vybavení centra',
     title: 'Dejte vybavení další smysluplné využití',
     text: 'Přijímáme nabídky funkčního vybavení pro komunitní centrum, kanceláře projektu a praktickou práci s klienty.',
@@ -4404,6 +4444,7 @@ const materialSupportPages: Record<string, MaterialSupportPageConfig> = {
   },
   '/zapojeni/sbirka-knih': {
     path: '/zapojeni/sbirka-knih',
+    offerType: 'books',
     label: 'Sbírka knih',
     title: 'Knihy, které otevírají další cestu',
     text: 'Sbíráme kvalitní knihy pro komunitní centrum, mentoring a další místa, kde mohou podpořit vzdělávání a osobní rozvoj.',
@@ -4518,6 +4559,219 @@ function SupportHubPage() {
   );
 }
 
+type MaterialOfferDraft = {
+  donorName: string;
+  email: string;
+  phone: string;
+  itemDescription: string;
+  quantity: string;
+  locality: string;
+  transport: ApiMaterialOfferTransport;
+  itemCondition: string;
+  note: string;
+  privacyConsent: boolean;
+  website: string;
+};
+
+type MaterialOfferLocalPhoto = { file: File; previewUrl: string };
+
+const emptyMaterialOfferDraft = (): MaterialOfferDraft => ({
+  donorName: '',
+  email: '',
+  phone: '',
+  itemDescription: '',
+  quantity: '',
+  locality: '',
+  transport: 'agreement',
+  itemCondition: 'good',
+  note: '',
+  privacyConsent: false,
+  website: ''
+});
+
+function MaterialOfferForm({ config }: { config: MaterialSupportPageConfig }) {
+  const [draft, setDraft] = React.useState<MaterialOfferDraft>(emptyMaterialOfferDraft);
+  const [photos, setPhotos] = React.useState<MaterialOfferLocalPhoto[]>([]);
+  const [submitting, setSubmitting] = React.useState(false);
+  const [message, setMessage] = React.useState<{ tone: FeedbackTone; title: string; text: string } | null>(null);
+  const [completedOfferId, setCompletedOfferId] = React.useState('');
+  const [fileInputKey, setFileInputKey] = React.useState(0);
+  const photosRef = React.useRef<MaterialOfferLocalPhoto[]>([]);
+  photosRef.current = photos;
+
+  React.useEffect(
+    () => () => photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.previewUrl)),
+    []
+  );
+
+  const updateDraft = <K extends keyof MaterialOfferDraft>(key: K, value: MaterialOfferDraft[K]) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+  };
+
+  const addPhotos = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(event.target.files || []);
+    const allowed = selected.filter((file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) && file.size <= 2_000_000);
+    const available = Math.max(0, 4 - photos.length);
+    const accepted = allowed.slice(0, available).map((file) => ({ file, previewUrl: URL.createObjectURL(file) }));
+    if (accepted.length !== selected.length) {
+      setMessage({ tone: 'warning', title: 'Některé fotografie nebyly přidány', text: 'Povoleny jsou nejvýše 4 soubory JPEG, PNG nebo WebP, každý do 2 MB.' });
+    } else {
+      setMessage(null);
+    }
+    setPhotos((current) => [...current, ...accepted]);
+    event.target.value = '';
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((current) => {
+      const removed = current[index];
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return current.filter((_, photoIndex) => photoIndex !== index);
+    });
+  };
+
+  const submitOffer = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!draft.email.trim() && !draft.phone.trim()) {
+      setMessage({ tone: 'warning', title: 'Chybí kontakt', text: 'Doplňte alespoň e-mail nebo telefon, abychom mohli domluvit předání.' });
+      return;
+    }
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      const uploadedPhotos = await Promise.all(
+        photos.map(async ({ file }) => ({
+          fileName: file.name,
+          mimeType: file.type,
+          fileSize: file.size,
+          contentBase64: await fileToBase64(file)
+        }))
+      );
+      const offer = await submitMaterialOffer({ ...draft, offerType: config.offerType, photos: uploadedPhotos });
+      photos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
+      setPhotos([]);
+      setDraft(emptyMaterialOfferDraft());
+      setFileInputKey((current) => current + 1);
+      setCompletedOfferId(offer.id);
+      setMessage({ tone: 'success', title: 'Nabídku jsme přijali', text: 'Děkujeme. Nabídku prověříme a ozveme se kvůli dalšímu postupu.' });
+    } catch (error) {
+      setMessage({
+        tone: 'error',
+        title: 'Nabídku se nepodařilo odeslat',
+        text: error instanceof Error ? error.message : 'Zkuste to prosím znovu nebo využijte kontaktní stránku.'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const toolName = `offer_${config.offerType}`;
+  return (
+    <div className="material-offer-form-wrap" id="nabidnout-dar">
+      <div className="material-offer-form-heading">
+        <p className="section-label">Online nabídka</p>
+        <h2>Nabídnout {config.offerType === 'clothing' ? 'oblečení' : config.offerType === 'equipment' ? 'vybavení' : 'knihy'}</h2>
+        <p>Vyplnění zabere několik minut. Fotografie nám pomohou rychleji posoudit využití a dopravu.</p>
+      </div>
+      <form
+        className="material-offer-form"
+        onSubmit={submitOffer}
+        {...{
+          toolname: toolName,
+          tooldescription: `Připraví nabídku ${materialOfferTypeLabels[config.offerType].toLowerCase()} pro REST||ART Integrace. Uživatel musí údaje zkontrolovat a formulář ručně odeslat.`
+        }}
+      >
+        <div className="material-offer-form-grid">
+          <label>
+            Jméno a příjmení
+            <input name="donorName" autoComplete="name" required maxLength={180} value={draft.donorName} onChange={(event) => updateDraft('donorName', event.target.value)} {...{ toolparamdescription: 'Jméno osoby, která věci nabízí.' }} />
+          </label>
+          <label>
+            Lokalita
+            <input name="locality" autoComplete="address-level2" required maxLength={180} placeholder="Obec nebo město" value={draft.locality} onChange={(event) => updateDraft('locality', event.target.value)} {...{ toolparamdescription: 'Město nebo obec, kde se nabídka nachází.' }} />
+          </label>
+          <label>
+            E-mail
+            <input name="email" type="email" autoComplete="email" maxLength={190} value={draft.email} onChange={(event) => updateDraft('email', event.target.value)} {...{ toolparamdescription: 'Kontaktní e-mail dárce; povinný je e-mail nebo telefon.' }} />
+          </label>
+          <label>
+            Telefon
+            <input name="phone" type="tel" autoComplete="tel" maxLength={50} value={draft.phone} onChange={(event) => updateDraft('phone', event.target.value)} {...{ toolparamdescription: 'Kontaktní telefon dárce; povinný je telefon nebo e-mail.' }} />
+          </label>
+          <label className="material-offer-wide">
+            Co nabízíte
+            <textarea name="itemDescription" rows={4} required maxLength={5000} placeholder="Druh, velikosti, rozměry, témata knih nebo další důležité podrobnosti" value={draft.itemDescription} onChange={(event) => updateDraft('itemDescription', event.target.value)} {...{ toolparamdescription: 'Přesný popis nabízených věcí.' }} />
+          </label>
+          <label>
+            Množství
+            <input name="quantity" required maxLength={120} placeholder="Např. 3 krabice / 12 kusů" value={draft.quantity} onChange={(event) => updateDraft('quantity', event.target.value)} {...{ toolparamdescription: 'Přibližný počet kusů, krabic nebo objem nabídky.' }} />
+          </label>
+          <label>
+            Stav věcí
+            <select name="itemCondition" required value={draft.itemCondition} onChange={(event) => updateDraft('itemCondition', event.target.value)} {...{ toolparamdescription: 'Aktuální fyzický stav nabízených věcí.' }}>
+              <option value="new">Nové / nepoužité</option>
+              <option value="excellent">Velmi dobrý stav</option>
+              <option value="good">Dobrý, běžně použitelný stav</option>
+              <option value="usable">Použitelné s drobným opotřebením</option>
+              <option value="repair">Vyžaduje opravu nebo kompletaci</option>
+            </select>
+          </label>
+          <label className="material-offer-wide">
+            Doprava
+            <select name="transport" required value={draft.transport} onChange={(event) => updateDraft('transport', event.target.value as ApiMaterialOfferTransport)} {...{ toolparamdescription: 'Možnost dopravy nebo potřeba vyzvednutí nabídky.' }}>
+              <option value="agreement">Dopravu potřebujeme domluvit</option>
+              <option value="donor-delivery">Mohu věci přivézt</option>
+              <option value="project-pickup">Potřebuji vyzvednutí projektem</option>
+            </select>
+          </label>
+          <label className="material-offer-wide">
+            Poznámka
+            <textarea name="note" rows={3} maxLength={5000} placeholder="Časové možnosti, přístup k místu, rozměry nebo jiné okolnosti" value={draft.note} onChange={(event) => updateDraft('note', event.target.value)} {...{ toolparamdescription: 'Volitelné doplňující informace k předání.' }} />
+          </label>
+          <label className="material-offer-honeypot" aria-hidden="true">
+            Web
+            <input name="website" tabIndex={-1} autoComplete="off" value={draft.website} onChange={(event) => updateDraft('website', event.target.value)} />
+          </label>
+        </div>
+
+        <fieldset className="material-offer-photos">
+          <legend>Fotografie nabídky <span>volitelné, nejvýše 4</span></legend>
+          <label className="material-photo-picker">
+            <ImagePlus size={22} aria-hidden="true" />
+            <span>Přidat fotografie</span>
+            <small>JPEG, PNG nebo WebP do 2 MB</small>
+            <input key={fileInputKey} name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={addPhotos} {...{ toolparamdescription: 'Volitelné fotografie nabízených věcí.' }} />
+          </label>
+          {photos.length > 0 && (
+            <div className="material-photo-preview-grid" aria-label="Vybrané fotografie">
+              {photos.map((photo, index) => (
+                <figure key={`${photo.file.name}-${photo.previewUrl}`}>
+                  <img src={photo.previewUrl} alt={`Náhled fotografie ${index + 1}: ${photo.file.name}`} />
+                  <figcaption>{photo.file.name}</figcaption>
+                  <button type="button" onClick={() => removePhoto(index)} aria-label={`Odebrat fotografii ${photo.file.name}`} title="Odebrat fotografii"><Trash2 size={16} /></button>
+                </figure>
+              ))}
+            </div>
+          )}
+        </fieldset>
+
+        <label className="checkbox-field material-offer-consent">
+          <input name="privacyConsent" type="checkbox" required checked={draft.privacyConsent} onChange={(event) => updateDraft('privacyConsent', event.target.checked)} {...{ toolparamdescription: 'Souhlas se zpracováním kontaktních údajů kvůli vyřízení nabídky.' }} />
+          <span>Souhlasím se zpracováním kontaktních údajů za účelem posouzení a vyřízení nabídky. <a href="/zasady-ochrany-osobnich-udaju">Zásady ochrany osobních údajů</a>.</span>
+        </label>
+
+        {message && <Feedback variant={message.tone} title={message.title} description={`${message.text}${completedOfferId ? ` Číslo nabídky: ${completedOfferId}.` : ''}`} />}
+        <div className="material-offer-submit-row">
+          <button className="button primary" type="submit" disabled={submitting}>
+            {submitting ? 'Odesílám nabídku...' : 'Odeslat nabídku'} <ArrowRight size={17} />
+          </button>
+          <span>Údaje a fotografie nejsou veřejně publikovány.</span>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function MaterialSupportPage({ config }: { config: MaterialSupportPageConfig }) {
   useNewsSeo({
     title: config.title,
@@ -4575,16 +4829,7 @@ function MaterialSupportPage({ config }: { config: MaterialSupportPageConfig }) 
             </li>
           ))}
         </ol>
-        <div className="support-contact-band">
-          <div>
-            <p className="section-label">Nabídnout dar</p>
-            <h2>Začněme krátkou domluvou</h2>
-            <p>Do zprávy uveďte typ daru, přibližné množství a město, odkud by bylo potřeba věci převzít.</p>
-          </div>
-          <a className="button primary" href="/kontakt">
-            Kontaktovat projekt <ArrowRight size={17} />
-          </a>
-        </div>
+        <MaterialOfferForm config={config} />
       </section>
     </>
   );
@@ -7993,6 +8238,7 @@ function App() {
   const [jailbreakBackgroundStats, setJailbreakBackgroundStats] = React.useState<ApiJailbreakBackgroundStats | null>(null);
   const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
+  const [materialOffers, setMaterialOffers] = React.useState<MaterialOffer[]>([]);
   const [sessionId, setSessionId] = useStoredState<string | null>('restart-auth-session', null);
   const [apiAccount, setApiAccount] = React.useState<AuthAccount | null>(null);
   const [modal, setModal] = React.useState<ModalState>(null);
@@ -8112,6 +8358,11 @@ function App() {
     listNotifications()
       .then((items) => {
         if (isActive) setNotifications(items);
+      })
+      .catch(() => undefined);
+    listMaterialOffers()
+      .then((items) => {
+        if (isActive) setMaterialOffers(items);
       })
       .catch(() => undefined);
     return () => {
@@ -8248,6 +8499,11 @@ React.useEffect(() => {
   const deleteManagedUserViaApi = async (userId: string) => {
     await deleteUserRecord(userId);
     setManagedUsers((current) => current.filter((item) => item.id !== userId));
+  };
+  const updateMaterialOfferViaApi = async (offerId: string, status: ApiMaterialOfferStatus, adminNote: string) => {
+    const saved = await updateMaterialOffer(offerId, { status, adminNote });
+    setMaterialOffers((current) => current.map((offer) => (offer.id === saved.id ? saved : offer)));
+    return saved;
   };
   const toggleLikeViaApi = async (newsId: string) => {
     try {
@@ -8430,6 +8686,7 @@ React.useEffect(() => {
           mediaFiles={mediaFiles}
           clientDocuments={clientDocuments}
           notifications={notifications}
+          materialOffers={materialOffers}
           discussion={newsDiscussion}
           onClientsChange={setClients}
           onNewsChange={setNews}
@@ -8448,6 +8705,7 @@ React.useEffect(() => {
           onProjectApplicationReviewRequest={reviewProjectApplicationViaApi}
           onUserResetPasswordRequest={resetManagedUserPasswordViaApi}
           onUserDeleteRequest={deleteManagedUserViaApi}
+          onMaterialOfferUpdateRequest={updateMaterialOfferViaApi}
           account={currentAccount}
           onLogout={logout}
           onNotify={notify}
@@ -8529,6 +8787,7 @@ function AdminWorkspace({
   mediaFiles,
   clientDocuments,
   notifications,
+  materialOffers,
   discussion,
   onClientsChange,
   onNewsChange,
@@ -8547,6 +8806,7 @@ function AdminWorkspace({
   onProjectApplicationReviewRequest,
   onUserResetPasswordRequest,
   onUserDeleteRequest,
+  onMaterialOfferUpdateRequest,
   account,
   onLogout,
   onNotify
@@ -8560,6 +8820,7 @@ function AdminWorkspace({
   mediaFiles: MediaFile[];
   clientDocuments: ClientDocument[];
   notifications: NotificationItem[];
+  materialOffers: MaterialOffer[];
   discussion: NewsDiscussion;
   onClientsChange: React.Dispatch<React.SetStateAction<ClientRecord[]>>;
   onNewsChange: React.Dispatch<React.SetStateAction<NewsItem[]>>;
@@ -8580,6 +8841,7 @@ function AdminWorkspace({
   onProjectApplicationReviewRequest?: (applicationId: string, status: 'approved' | 'rejected', approvedRole: ApiRole, adminNote?: string) => Promise<ProjectApplication>;
   onUserResetPasswordRequest?: (userId: string) => Promise<ApiAdminPasswordResetResponse>;
   onUserDeleteRequest?: (userId: string) => Promise<void>;
+  onMaterialOfferUpdateRequest?: (offerId: string, status: ApiMaterialOfferStatus, adminNote: string) => Promise<MaterialOffer>;
   account: AuthAccount;
   onLogout: () => void;
   onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
@@ -8588,12 +8850,44 @@ function AdminWorkspace({
   const [focusedNewsId, setFocusedNewsId] = React.useState('');
   const [focusedActivityId, setFocusedActivityId] = React.useState('');
   const [notificationSearch, setNotificationSearch] = React.useState('');
+  const [materialOfferFilter, setMaterialOfferFilter] = React.useState<'all' | ApiMaterialOfferType>('all');
+  const [selectedMaterialOfferId, setSelectedMaterialOfferId] = React.useState('');
+  const [materialOfferStatusDraft, setMaterialOfferStatusDraft] = React.useState<ApiMaterialOfferStatus>('new');
+  const [materialOfferAdminNote, setMaterialOfferAdminNote] = React.useState('');
+  const [savingMaterialOffer, setSavingMaterialOffer] = React.useState(false);
+  const selectedMaterialOffer = materialOffers.find((offer) => offer.id === selectedMaterialOfferId) ?? null;
+  const filteredMaterialOffers = materialOffers.filter((offer) => materialOfferFilter === 'all' || offer.offerType === materialOfferFilter);
+  const newMaterialOfferCount = materialOffers.filter((offer) => offer.status === 'new').length;
   React.useEffect(() => {
     const tabParam = new URLSearchParams(window.location.search).get('tab') as AdminSection | null;
     if (tabParam && adminSectionIds.includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, []);
+  React.useEffect(() => {
+    if (!selectedMaterialOfferId && materialOffers[0]) setSelectedMaterialOfferId(materialOffers[0].id);
+  }, [materialOffers, selectedMaterialOfferId]);
+  React.useEffect(() => {
+    if (!selectedMaterialOffer) return;
+    setMaterialOfferStatusDraft(selectedMaterialOffer.status);
+    setMaterialOfferAdminNote(selectedMaterialOffer.adminNote);
+  }, [selectedMaterialOffer?.id, selectedMaterialOffer?.status, selectedMaterialOffer?.adminNote]);
+
+  const saveMaterialOfferReview = async () => {
+    if (!selectedMaterialOffer || !onMaterialOfferUpdateRequest) return;
+    setSavingMaterialOffer(true);
+    try {
+      await onMaterialOfferUpdateRequest(selectedMaterialOffer.id, materialOfferStatusDraft, materialOfferAdminNote);
+      setAdminMessageTone('success');
+      setAdminMessage('Stav materiální nabídky byl uložen.');
+      onNotify('success', 'Nabídka aktualizována', 'Změna je uložená v administraci.');
+    } catch (error) {
+      setAdminMessageTone('error');
+      setAdminMessage(error instanceof Error ? error.message : 'Nabídku se nepodařilo aktualizovat.');
+    } finally {
+      setSavingMaterialOffer(false);
+    }
+  };
   const [clientForm, setClientForm] = React.useState<ClientRecord>(emptyClient);
   const [selectedClientId, setSelectedClientId] = React.useState('');
   const [clientQuery, setClientQuery] = React.useState('');
@@ -10435,6 +10729,11 @@ function AdminWorkspace({
                 <p>souborů v knihovně</p>
               </article>
               <article className="admin-card metric-card" style={{ minHeight: 'auto', padding: '18px' }}>
+                <span>Nové materiální dary</span>
+                <strong>{newMaterialOfferCount}</strong>
+                <p>z {materialOffers.length} evidovaných nabídek</p>
+              </article>
+              <article className="admin-card metric-card" style={{ minHeight: 'auto', padding: '18px' }}>
                 <span>Bez interního ID</span>
                 <strong>{clientsWithoutOperationalId}</strong>
                 <p>klientů čeká na kód</p>
@@ -10457,6 +10756,7 @@ function AdminWorkspace({
                 <button type="button" onClick={() => selectAdminTab('content')}>Správa obsahu</button>
                 <button type="button" onClick={() => selectAdminTab('notifications')}>Poslat notifikaci</button>
                 <button type="button" onClick={() => selectAdminTab('media')}>Přidat médium</button>
+                <button type="button" onClick={() => selectAdminTab('materialOffers')}>Vyřídit materiální dary</button>
               </div>
             </article>
             <article className="admin-card">
@@ -11526,6 +11826,129 @@ function AdminWorkspace({
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'materialOffers' && (
+          <div className="material-offers-admin">
+            <article className="admin-card material-offers-list-panel">
+              <div className="admin-card-header">
+                <div>
+                  <h3>Materiální nabídky</h3>
+                  <p className="form-help">Oblečení, vybavení a knihy odeslané z veřejných formulářů.</p>
+                </div>
+                <Badge tone={newMaterialOfferCount > 0 ? 'warning' : 'success'}>{newMaterialOfferCount} nových</Badge>
+              </div>
+              <div className="material-offer-filter" role="group" aria-label="Filtrovat nabídky podle typu">
+                {([
+                  ['all', 'Vše'],
+                  ['clothing', 'Oblečení'],
+                  ['equipment', 'Vybavení'],
+                  ['books', 'Knihy']
+                ] as const).map(([value, label]) => (
+                  <button key={value} type="button" className={materialOfferFilter === value ? 'active' : ''} onClick={() => setMaterialOfferFilter(value)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="material-offer-admin-list">
+                {filteredMaterialOffers.length === 0 && <p className="empty-note">V této kategorii zatím nejsou žádné nabídky.</p>}
+                {filteredMaterialOffers.map((offer) => {
+                  const statusLabel = materialOfferStatusOptions.find((option) => option.value === offer.status)?.label || offer.status;
+                  return (
+                    <button
+                      key={offer.id}
+                      type="button"
+                      className={selectedMaterialOfferId === offer.id ? 'active' : ''}
+                      onClick={() => setSelectedMaterialOfferId(offer.id)}
+                    >
+                      <span className="material-offer-list-icon" aria-hidden="true">
+                        {offer.offerType === 'clothing' ? <Shirt size={19} /> : offer.offerType === 'books' ? <BookOpen size={19} /> : <PackageOpen size={19} />}
+                      </span>
+                      <span>
+                        <strong>{offer.donorName}</strong>
+                        <small>{materialOfferTypeLabels[offer.offerType]} · {offer.locality}</small>
+                      </span>
+                      <span className={`material-offer-status status-${offer.status}`}>{statusLabel}</span>
+                      <time dateTime={offer.createdAt}>{new Date(offer.createdAt).toLocaleDateString('cs-CZ')}</time>
+                    </button>
+                  );
+                })}
+              </div>
+            </article>
+
+            <article className="admin-card material-offer-detail-panel">
+              {!selectedMaterialOffer ? (
+                <div className="material-offer-empty-detail">
+                  <PackageOpen size={34} />
+                  <h3>Vyberte nabídku</h3>
+                  <p>Zobrazí se kontakt, fotografie, doprava a ovládání stavu.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="admin-card-header material-offer-detail-heading">
+                    <div>
+                      <p className="section-label">{materialOfferTypeLabels[selectedMaterialOffer.offerType]}</p>
+                      <h3>{selectedMaterialOffer.donorName}</h3>
+                      <p className="form-help">Nabídka {selectedMaterialOffer.id} · {new Date(selectedMaterialOffer.createdAt).toLocaleString('cs-CZ')}</p>
+                    </div>
+                    <span className={`material-offer-status status-${selectedMaterialOffer.status}`}>
+                      {materialOfferStatusOptions.find((option) => option.value === selectedMaterialOffer.status)?.label}
+                    </span>
+                  </div>
+
+                  <dl className="material-offer-facts">
+                    <div><dt>Množství</dt><dd>{selectedMaterialOffer.quantity}</dd></div>
+                    <div><dt>Stav věcí</dt><dd>{materialOfferConditionLabels[selectedMaterialOffer.itemCondition] || selectedMaterialOffer.itemCondition}</dd></div>
+                    <div><dt>Lokalita</dt><dd>{selectedMaterialOffer.locality}</dd></div>
+                    <div><dt>Doprava</dt><dd>{materialOfferTransportLabels[selectedMaterialOffer.transport]}</dd></div>
+                  </dl>
+
+                  <section className="material-offer-description">
+                    <h4>Popis nabídky</h4>
+                    <p>{selectedMaterialOffer.itemDescription}</p>
+                    {selectedMaterialOffer.note && <><h4>Poznámka dárce</h4><p>{selectedMaterialOffer.note}</p></>}
+                  </section>
+
+                  <div className="material-offer-contact-actions">
+                    {selectedMaterialOffer.email && <a className="button secondary" href={`mailto:${selectedMaterialOffer.email}`}><Mail size={17} /> {selectedMaterialOffer.email}</a>}
+                    {selectedMaterialOffer.phone && <a className="button secondary" href={`tel:${selectedMaterialOffer.phone.replace(/\s+/g, '')}`}><Phone size={17} /> {selectedMaterialOffer.phone}</a>}
+                  </div>
+
+                  <section className="material-offer-admin-photos">
+                    <h4>Fotografie <span>{selectedMaterialOffer.photos.length}</span></h4>
+                    {selectedMaterialOffer.photos.length === 0 ? (
+                      <p className="empty-note">Dárce nepřiložil žádné fotografie.</p>
+                    ) : (
+                      <div>
+                        {selectedMaterialOffer.photos.map((photo, index) => (
+                          <a key={photo.id} href={photo.url} target="_blank" rel="noreferrer" title="Otevřít fotografii v plné velikosti">
+                            <img src={photo.url} alt={`Fotografie ${index + 1} k nabídce od ${selectedMaterialOffer.donorName}`} />
+                            <span>{photo.fileName}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+
+                  <div className="material-offer-review-form">
+                    <label>
+                      Stav nabídky
+                      <select value={materialOfferStatusDraft} onChange={(event) => setMaterialOfferStatusDraft(event.target.value as ApiMaterialOfferStatus)}>
+                        {materialOfferStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                      </select>
+                    </label>
+                    <label>
+                      Interní poznámka
+                      <textarea rows={4} maxLength={5000} value={materialOfferAdminNote} onChange={(event) => setMaterialOfferAdminNote(event.target.value)} placeholder="Domluvený termín, odpovědná osoba, důvod odmítnutí…" />
+                    </label>
+                    <button className="button primary" type="button" onClick={saveMaterialOfferReview} disabled={savingMaterialOffer || !onMaterialOfferUpdateRequest}>
+                      <Save size={17} /> {savingMaterialOffer ? 'Ukládám...' : 'Uložit stav nabídky'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </article>
           </div>
         )}
 

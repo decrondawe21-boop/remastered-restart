@@ -165,6 +165,54 @@ export type ApiNotification = {
   createdAt: string;
 };
 
+export type ApiMaterialOfferType = 'clothing' | 'equipment' | 'books';
+export type ApiMaterialOfferStatus = 'new' | 'reviewing' | 'accepted' | 'pickup_planned' | 'received' | 'declined' | 'closed';
+export type ApiMaterialOfferTransport = 'donor-delivery' | 'project-pickup' | 'agreement';
+
+export type ApiMaterialOfferPhoto = {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  url: string;
+};
+
+export type ApiMaterialOffer = {
+  id: string;
+  offerType: ApiMaterialOfferType;
+  donorName: string;
+  email: string;
+  phone: string;
+  itemDescription: string;
+  quantity: string;
+  locality: string;
+  transport: ApiMaterialOfferTransport;
+  itemCondition: string;
+  note: string;
+  status: ApiMaterialOfferStatus;
+  adminNote: string;
+  reviewedBy: string | null;
+  photos: ApiMaterialOfferPhoto[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApiMaterialOfferPhotoUpload = {
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  contentBase64: string;
+};
+
+export type ApiMaterialOfferSubmission = Pick<
+  ApiMaterialOffer,
+  'offerType' | 'donorName' | 'email' | 'phone' | 'itemDescription' | 'quantity' | 'locality' | 'transport' | 'itemCondition' | 'note'
+> & {
+  photos: ApiMaterialOfferPhotoUpload[];
+  privacyConsent: boolean;
+  website?: string;
+};
+
 export type ApiProjectApplicationStatus = 'pending' | 'approved' | 'rejected';
 export type ApiProjectApplicationType = 'client' | 'volunteer' | 'investor' | 'patron' | 'contributor' | 'donor';
 
@@ -526,4 +574,40 @@ export async function deleteNotification(notificationId: string) {
   await request<{ ok: boolean; id: string }>(`/api/notifications/${encodeURIComponent(notificationId)}`, {
     method: 'DELETE'
   });
+}
+
+export async function fileToBase64(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = String(reader.result || '');
+      resolve(value.includes(',') ? value.slice(value.indexOf(',') + 1) : value);
+    };
+    reader.onerror = () => reject(reader.error || new Error('Soubor se nepodařilo načíst.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function submitMaterialOffer(offer: ApiMaterialOfferSubmission) {
+  const body = await request<{ offer: Pick<ApiMaterialOffer, 'id' | 'status' | 'createdAt'> }>('/api/material-offers', {
+    method: 'POST',
+    body: JSON.stringify(offer)
+  });
+  return body.offer;
+}
+
+export async function listMaterialOffers() {
+  const body = await request<{ offers: ApiMaterialOffer[] }>('/api/admin/material-offers');
+  return body.offers;
+}
+
+export async function updateMaterialOffer(
+  offerId: string,
+  update: Pick<ApiMaterialOffer, 'status' | 'adminNote'>
+) {
+  const body = await request<{ offer: ApiMaterialOffer }>(`/api/admin/material-offers/${encodeURIComponent(offerId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(update)
+  });
+  return body.offer;
 }

@@ -164,6 +164,13 @@ const documentMimeTypes = {
   '.doc': 'application/msword',
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 };
+const materialOfferTypes = ['clothing', 'equipment', 'books'];
+const materialOfferTransports = ['donor-delivery', 'project-pickup', 'agreement'];
+const materialOfferStatuses = ['new', 'reviewing', 'accepted', 'pickup_planned', 'received', 'declined', 'closed'];
+const materialOfferImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+const materialOfferRateLimits = new Map();
+const maxMaterialOfferPhotos = 4;
+const maxMaterialOfferPhotoBytes = 2_000_000;
 
 const isPortalRole = (role) => portalRoles.includes(String(role || ''));
 
@@ -2678,6 +2685,236 @@ async function deleteNotification(request, response, notificationId) {
   sendJson(response, 200, { ok: true, id: notificationId });
 }
 
+function materialOfferRow(row, photos = []) {
+  return {
+    id: row.id,
+    offerType: row.offer_type,
+    donorName: row.donor_name,
+    email: row.email || '',
+    phone: row.phone || '',
+    itemDescription: row.item_description,
+    quantity: row.quantity,
+    locality: row.locality,
+    transport: row.transport,
+    itemCondition: row.item_condition,
+    note: row.note || '',
+    status: row.status,
+    adminNote: row.admin_note || '',
+    reviewedBy: row.reviewed_by || null,
+    photos,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function materialOfferPhotoRow(row) {
+  return {
+    id: row.id,
+    fileName: row.file_name,
+    mimeType: row.mime_type,
+    fileSize: Number(row.file_size || 0),
+    url: `/api/admin/material-offers/${encodeURIComponent(row.offer_id)}/photos/${encodeURIComponent(row.id)}`
+  };
+}
+
+function materialOfferRateLimitKey(request) {
+  return String(request.headers['x-forwarded-for'] || request.socket.remoteAddress || 'unknown').split(',')[0].trim();
+}
+
+function materialOfferRequestAllowed(request) {
+  const key = materialOfferRateLimitKey(request);
+  const now = Date.now();
+  const windowStart = now - 30 * 60 * 1000;
+  const recent = (materialOfferRateLimits.get(key) || []).filter((timestamp) => timestamp > windowStart);
+  if (recent.length >= 5) return false;
+  materialOfferRateLimits.set(key, [...recent, now]);
+  return true;
+}
+
+function trimOfferField(value, maxLength) {
+  return String(value || '').trim().slice(0, maxLength);
+}
+
+async function submitMaterialOffer(request, response) {
+  if (!materialOfferRequestAllowed(request)) {
+    sendJson(response, 429, { error: 'Příliš mnoho nabídek. Zkuste to prosím později.' });
+    return;
+  }
+
+  const body = await readBody(request);
+  if (trimOfferField(body.website, 200)) {
+    sendJson(response, 201, { offer: { id: randomId(), status: 'new', createdAt: new Date().toISOString() } });
+    return;
+  }
+
+  const offerType = trimOfferField(body.offerType, 30);
+  const transport = trimOfferField(body.transport, 40);
+  const donorName = trimOfferField(body.donorName, 180);
+  const email = trimOfferField(body.email, 190);
+  const phone = trimOfferField(body.phone, 50);
+  const itemDescription = trimOfferField(body.itemDescription, 5000);
+  const quantity = trimOfferField(body.quantity, 120);
+  const locality = trimOfferField(body.locality, 180);
+  const itemCondition = trimOfferField(body.itemCondition, 80);
+  const note = trimOfferField(body.note, 5000);
+  const photos = Array.isArray(body.photos) ? body.photos : [];
+
+  if (!materialOfferTypes.includes(offerType)) {
+    sendJson(response, 400, { error: 'Vyberte platný typ nabídky.' });
+    return;
+  }
+  if (!materialOfferTransports.includes(transport)) {
+    sendJson(response, 400, { error: 'Vyberte způsob dopravy.' });
+    return;
+  }
+  if (!donorName || !itemDescription || !quantity || !locality || !itemCondition) {
+    sendJson(response, 400, { error: 'Doplňte jméno, popis, množství, lokalitu a stav věcí.' });
+    return;
+  }
+  if (!email && !phone) {
+    sendJson(response, 400, { error: 'Doplňte alespoň e-mail nebo telefon.' });
+    return;
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    sendJson(response, 400, { error: 'E-mail nemá platný formát.' });
+    return;
+  }
+  if (body.privacyConsent !== true) {
+    sendJson(response, 400, { error: 'Pro odeslání je nutný souhlas se zpracováním údajů.' });
+    return;
+  }
+  if (photos.length > maxMaterialOfferPhotos) {
+    sendJson(response, 400, { error: `Lze přiložit nejvýše ${maxMaterialOfferPhotos} fotografie.` });
+    return;
+  }
+
+  const decodedPhotos = [];
+  for (const [index, photo] of photos.entries()) {
+    const mimeType = trimOfferField(photo?.mimeType, 80).toLowerCase();
+    const fileName = trimOfferField(photo?.fileName, 255) || `fotografie-${index + 1}`;
+    if (!materialOfferImageTypes.includes(mimeType)) {
+      sendJson(response, 400, { error: 'Fotografie musí být ve formátu JPEG, PNG nebo WebP.' });
+      return;
+    }
+    let content;
+    try {
+      content = Buffer.from(String(photo?.contentBase64 || ''), 'base64');
+    } catch {
+      content = Buffer.alloc(0);
+    }
+    if (!content.length || content.length > maxMaterialOfferPhotoBytes) {
+      sendJson(response, 400, { error: 'Každá fotografie musí mít nejvýše 2 MB.' });
+      return;
+    }
+    decodedPhotos.push({ fileName, mimeType, content, sortOrder: index });
+  }
+
+  const id = randomId();
+  try {
+    await query(
+      `INSERT INTO material_offers
+       (id, offer_type, donor_name, email, phone, item_description, quantity, locality, transport, item_condition, note)
+       VALUES (?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?, ?, ?, ?, ?, NULLIF(?, ''))`,
+      [id, offerType, donorName, email, phone, itemDescription, quantity, locality, transport, itemCondition, note]
+    );
+    for (const photo of decodedPhotos) {
+      await query(
+        `INSERT INTO material_offer_photos (id, offer_id, file_name, mime_type, file_size, content, sort_order)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [randomId(), id, photo.fileName, photo.mimeType, photo.content.length, photo.content, photo.sortOrder]
+      );
+    }
+  } catch (error) {
+    await query('DELETE FROM material_offers WHERE id = ?', [id]).catch(() => undefined);
+    throw error;
+  }
+
+  await createSystemNotification({
+    title: 'Nová materiální nabídka',
+    body: `${donorName} nabízí ${offerType === 'clothing' ? 'oblečení' : offerType === 'equipment' ? 'vybavení' : 'knihy'} z lokality ${locality}.`,
+    tone: 'info',
+    category: 'Materiální dary',
+    linkHref: '/admin?tab=materialOffers'
+  });
+  sendJson(response, 201, { offer: { id, status: 'new', createdAt: new Date().toISOString() } });
+}
+
+async function listMaterialOffers(request, response) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const rows = await query('SELECT * FROM material_offers ORDER BY created_at DESC');
+  if (rows.length === 0) {
+    sendJson(response, 200, { offers: [] });
+    return;
+  }
+  const placeholders = rows.map(() => '?').join(', ');
+  const photoRows = await query(
+    `SELECT id, offer_id, file_name, mime_type, file_size, sort_order
+     FROM material_offer_photos WHERE offer_id IN (${placeholders}) ORDER BY offer_id, sort_order`,
+    rows.map((row) => row.id)
+  );
+  const photosByOffer = new Map();
+  for (const photo of photoRows) {
+    const current = photosByOffer.get(photo.offer_id) || [];
+    current.push(materialOfferPhotoRow(photo));
+    photosByOffer.set(photo.offer_id, current);
+  }
+  sendJson(response, 200, { offers: rows.map((row) => materialOfferRow(row, photosByOffer.get(row.id) || [])) });
+}
+
+async function updateMaterialOffer(request, response, offerId) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const body = await readBody(request);
+  const status = trimOfferField(body.status, 40);
+  const adminNote = trimOfferField(body.adminNote, 5000);
+  if (!materialOfferStatuses.includes(status)) {
+    sendJson(response, 400, { error: 'Vyberte platný stav nabídky.' });
+    return;
+  }
+  const result = await query(
+    `UPDATE material_offers SET status = ?, admin_note = NULLIF(?, ''), reviewed_by = ? WHERE id = ?`,
+    [status, adminNote, admin.id, offerId]
+  );
+  if (!result.affectedRows) {
+    sendJson(response, 404, { error: 'Nabídka nebyla nalezena.' });
+    return;
+  }
+  await query(
+    `INSERT INTO audit_log (id, actor_id, entity_type, entity_id, action, payload_json)
+     VALUES (?, ?, 'material_offer', ?, 'status_update', ?)`,
+    [randomId(), admin.id, offerId, JSON.stringify({ status, adminNote })]
+  );
+  const rows = await query('SELECT * FROM material_offers WHERE id = ? LIMIT 1', [offerId]);
+  const photoRows = await query(
+    'SELECT id, offer_id, file_name, mime_type, file_size, sort_order FROM material_offer_photos WHERE offer_id = ? ORDER BY sort_order',
+    [offerId]
+  );
+  sendJson(response, 200, { offer: materialOfferRow(rows[0], photoRows.map(materialOfferPhotoRow)) });
+}
+
+async function getMaterialOfferPhoto(request, response, offerId, photoId) {
+  const admin = await requireAdmin(request, response);
+  if (!admin) return;
+  const rows = await query(
+    'SELECT file_name, mime_type, file_size, content FROM material_offer_photos WHERE id = ? AND offer_id = ? LIMIT 1',
+    [photoId, offerId]
+  );
+  if (!rows[0]) {
+    sendJson(response, 404, { error: 'Fotografie nebyla nalezena.' });
+    return;
+  }
+  const photo = rows[0];
+  response.writeHead(200, {
+    'content-type': photo.mime_type,
+    'content-length': photo.file_size,
+    'content-disposition': `inline; filename="${String(photo.file_name).replace(/["\r\n]/g, '')}"`,
+    'cache-control': 'private, max-age=300',
+    'x-content-type-options': 'nosniff'
+  });
+  response.end(photo.content);
+}
+
 async function createApp(request, response) {
   try {
     const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
@@ -2706,6 +2943,7 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/auth/reset/confirm') return await confirmPasswordReset(request, response);
     if (request.method === 'GET' && url.pathname === '/api/applications/me') return await listMyProjectApplications(request, response);
     if (request.method === 'POST' && url.pathname === '/api/applications') return await submitProjectApplication(request, response);
+    if (request.method === 'POST' && url.pathname === '/api/material-offers') return await submitMaterialOffer(request, response);
     if (request.method === 'GET' && url.pathname === '/api/public/jailbreak-background-stats') return await publicJailbreakBackgroundStats(request, response);
     if (request.method === 'GET' && url.pathname === '/api/sitemap/news.xml') return await newsSitemap(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news') return await listNews(request, response);
@@ -2730,6 +2968,11 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/forms/fill-pdf') return await fillFormPdf(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/users') return await listUsers(request, response);
     if (request.method === 'GET' && url.pathname === '/api/admin/applications') return await listProjectApplications(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/admin/material-offers') return await listMaterialOffers(request, response);
+    const materialOfferPhotoMatch = url.pathname.match(/^\/api\/admin\/material-offers\/([^/]+)\/photos\/([^/]+)$/);
+    if (request.method === 'GET' && materialOfferPhotoMatch) return await getMaterialOfferPhoto(request, response, materialOfferPhotoMatch[1], materialOfferPhotoMatch[2]);
+    const materialOfferMatch = url.pathname.match(/^\/api\/admin\/material-offers\/([^/]+)$/);
+    if (request.method === 'PATCH' && materialOfferMatch) return await updateMaterialOffer(request, response, materialOfferMatch[1]);
     const projectApplicationMatch = url.pathname.match(/^\/api\/admin\/applications\/([^/]+)$/);
     if (request.method === 'PATCH' && projectApplicationMatch) return await reviewProjectApplication(request, response, projectApplicationMatch[1]);
     const userResetMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)\/reset-password$/);

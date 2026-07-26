@@ -1159,3 +1159,476 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media screen {
+  .material-offer-form-wrap {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.34fr) minmax(0, 1fr);
+    gap: 26px;
+    margin-top: 28px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-bottom: 3px solid var(--gold);
+    border-radius: 6px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .material-offer-form-heading {
+    align-self: start;
+    position: sticky;
+    top: 110px;
+  }
+
+  .material-offer-form-heading h2 {
+    margin: 6px 0 10px;
+  }
+
+  .material-offer-form {
+    display: grid;
+    gap: 18px;
+  }
+
+  .material-offer-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .material-offer-form label,
+  .material-offer-review-form label {
+    display: grid;
+    gap: 6px;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .material-offer-form input,
+  .material-offer-form select,
+  .material-offer-form textarea,
+  .material-offer-review-form select,
+  .material-offer-review-form textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .material-offer-form textarea,
+  .material-offer-review-form textarea {
+    resize: vertical;
+  }
+
+  .material-offer-form input:focus,
+  .material-offer-form select:focus,
+  .material-offer-form textarea:focus,
+  .material-offer-review-form select:focus,
+  .material-offer-review-form textarea:focus {
+    border-color: var(--green);
+    outline: 2px solid rgba(21, 95, 70, 0.15);
+    outline-offset: 1px;
+  }
+
+  .material-offer-wide {
+    grid-column: 1 / -1;
+  }
+
+  .material-offer-honeypot {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .material-offer-photos {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .material-offer-photos legend {
+    margin-bottom: 8px;
+    color: var(--text);
+    font-weight: 800;
+  }
+
+  .material-offer-photos legend span {
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .material-photo-picker {
+    display: grid !important;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2px 10px !important;
+    position: relative;
+    padding: 14px;
+    border: 1px dashed var(--green);
+    border-radius: 5px;
+    background: var(--green-soft);
+    color: var(--green-dark) !important;
+    cursor: pointer;
+  }
+
+  .material-photo-picker svg {
+    grid-row: 1 / 3;
+  }
+
+  .material-photo-picker small {
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .material-photo-picker input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .material-photo-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .material-photo-preview-grid figure {
+    display: grid;
+    grid-template-rows: 112px auto;
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+  }
+
+  .material-photo-preview-grid img {
+    width: 100%;
+    height: 112px;
+    object-fit: cover;
+  }
+
+  .material-photo-preview-grid figcaption {
+    overflow: hidden;
+    padding: 7px 9px;
+    color: var(--muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .material-photo-preview-grid button {
+    display: grid;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    background: rgba(20, 36, 28, 0.84);
+    color: #fff;
+    cursor: pointer;
+    place-items: center;
+  }
+
+  .material-offer-consent {
+    grid-template-columns: auto 1fr !important;
+    align-items: start !important;
+    font-weight: 400 !important;
+  }
+
+  .material-offer-consent input {
+    width: 18px;
+    min-height: 18px;
+    margin-top: 2px;
+  }
+
+  .material-offer-consent a {
+    color: var(--green-dark);
+    font-weight: 700;
+  }
+
+  .material-offer-submit-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .material-offer-submit-row > span {
+    color: var(--muted);
+  }
+
+  .material-offers-admin {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.72fr) minmax(0, 1.28fr);
+    gap: 16px;
+  }
+
+  .material-offers-list-panel,
+  .material-offer-detail-panel {
+    min-width: 0;
+  }
+
+  .material-offer-filter {
+    display: flex;
+    gap: 6px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+
+  .material-offer-filter button {
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .material-offer-filter button.active {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+  }
+
+  .material-offer-admin-list {
+    display: grid;
+    gap: 7px;
+    max-height: 720px;
+    overflow-y: auto;
+  }
+
+  .material-offer-admin-list > button {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 4px 9px;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .material-offer-admin-list > button.active {
+    border-color: var(--green);
+    box-shadow: inset 3px 0 0 var(--green);
+    background: var(--green-soft);
+  }
+
+  .material-offer-list-icon {
+    display: grid;
+    grid-row: 1 / 3;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--green-soft);
+    color: var(--green-dark);
+    place-items: center;
+  }
+
+  .material-offer-admin-list > button > span:nth-child(2) {
+    display: grid;
+    min-width: 0;
+  }
+
+  .material-offer-admin-list small,
+  .material-offer-admin-list time {
+    color: var(--muted);
+  }
+
+  .material-offer-admin-list time {
+    grid-column: 2 / 4;
+  }
+
+  .material-offer-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e8ece9;
+    color: #405148;
+    font-size: 12px !important;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .material-offer-status.status-new { background: #fff0c7; color: #78520a; }
+  .material-offer-status.status-reviewing { background: #dfeaf6; color: #214f78; }
+  .material-offer-status.status-accepted,
+  .material-offer-status.status-received { background: #dceee1; color: #175331; }
+  .material-offer-status.status-pickup_planned { background: #eee6f5; color: #5c3475; }
+  .material-offer-status.status-declined { background: #f5dddd; color: #7c2525; }
+
+  .material-offer-detail-heading {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px;
+  }
+
+  .material-offer-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    margin: 16px 0;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--line);
+  }
+
+  .material-offer-facts > div {
+    display: grid;
+    gap: 3px;
+    padding: 11px;
+    background: #fff;
+  }
+
+  .material-offer-facts dt {
+    color: var(--muted);
+    font-size: 12px !important;
+    font-weight: 700;
+  }
+
+  .material-offer-facts dd {
+    margin: 0;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .material-offer-description {
+    padding: 4px 0 14px;
+  }
+
+  .material-offer-description h4 {
+    margin: 10px 0 4px;
+  }
+
+  .material-offer-description p {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  .material-offer-contact-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 0;
+    border-block: 1px solid var(--line);
+  }
+
+  .material-offer-admin-photos {
+    padding: 14px 0;
+  }
+
+  .material-offer-admin-photos h4 {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .material-offer-admin-photos > div {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .material-offer-admin-photos a {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .material-offer-admin-photos img {
+    width: 100%;
+    height: 108px;
+    object-fit: cover;
+  }
+
+  .material-offer-admin-photos a span {
+    overflow: hidden;
+    padding: 6px 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .material-offer-review-form {
+    display: grid;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .material-offer-review-form .button {
+    justify-self: start;
+  }
+
+  .material-offer-empty-detail {
+    display: grid;
+    min-height: 340px;
+    color: var(--muted);
+    text-align: center;
+    place-content: center;
+    justify-items: center;
+  }
+}
+
+@media screen and (max-width: 980px) {
+  .material-offer-form-wrap,
+  .material-offers-admin {
+    grid-template-columns: 1fr;
+  }
+
+  .material-offer-form-heading {
+    position: static;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .material-offer-form-wrap {
+    gap: 18px;
+    margin-top: 20px;
+    padding: 16px;
+  }
+
+  .material-offer-form-grid,
+  .material-offer-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .material-offer-wide {
+    grid-column: auto;
+  }
+
+  .material-photo-preview-grid,
+  .material-offer-admin-photos > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .material-offer-submit-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .material-offer-submit-row .button,
+  .material-offer-contact-actions .button {
+    width: 100%;
+  }
+}

@@ -93,6 +93,7 @@ async function requestRaw(path, options = {}) {
   let createdMediaId = null;
   let createdDocumentId = null;
   let createdNotificationId = null;
+  let createdMaterialOfferId = null;
   let duplicateClientId = null;
   let uploadedMediaPath = null;
 
@@ -116,6 +117,53 @@ async function requestRaw(path, options = {}) {
       throw new Error(`Admin login failed: ${JSON.stringify(login.body)}`);
     }
     const cookie = login.response.headers.get('set-cookie');
+
+    const materialOffer = await request('/api/material-offers', {
+      method: 'POST',
+      body: JSON.stringify({
+        offerType: 'books',
+        donorName: 'E2E Dárce',
+        email: `darce.${stamp}@example.test`,
+        phone: '',
+        itemDescription: 'Testovací sada odborných knih',
+        quantity: '2 krabice',
+        locality: 'Počerady',
+        transport: 'agreement',
+        itemCondition: 'good',
+        note: 'E2E integrační test',
+        privacyConsent: true,
+        photos: [{
+          fileName: 'e2e-nabidka.png',
+          mimeType: 'image/png',
+          fileSize: 68,
+          contentBase64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+        }]
+      })
+    });
+    if (!materialOffer.response.ok || materialOffer.body.offer.status !== 'new') {
+      throw new Error(`Material offer submission failed: ${JSON.stringify(materialOffer.body)}`);
+    }
+    createdMaterialOfferId = materialOffer.body.offer.id;
+
+    const materialOfferList = await request('/api/admin/material-offers', { headers: { cookie } });
+    const listedMaterialOffer = materialOfferList.body?.offers?.find((item) => item.id === createdMaterialOfferId);
+    if (!materialOfferList.response.ok || !listedMaterialOffer || listedMaterialOffer.photos.length !== 1) {
+      throw new Error(`Material offer list failed: ${JSON.stringify(materialOfferList.body)}`);
+    }
+
+    const materialPhoto = await requestRaw(listedMaterialOffer.photos[0].url, { headers: { cookie } });
+    if (!materialPhoto.ok || materialPhoto.headers.get('content-type') !== 'image/png' || (await materialPhoto.arrayBuffer()).byteLength === 0) {
+      throw new Error('Protected material offer photo could not be loaded.');
+    }
+
+    const reviewedMaterialOffer = await request(`/api/admin/material-offers/${encodeURIComponent(createdMaterialOfferId)}`, {
+      method: 'PATCH',
+      headers: { cookie },
+      body: JSON.stringify({ status: 'pickup_planned', adminNote: 'Vyzvednutí domluveno v E2E testu.' })
+    });
+    if (!reviewedMaterialOffer.response.ok || reviewedMaterialOffer.body.offer.status !== 'pickup_planned') {
+      throw new Error(`Material offer review failed: ${JSON.stringify(reviewedMaterialOffer.body)}`);
+    }
 
     const uploadedMedia = await request('/api/media/upload', {
       method: 'POST',
@@ -528,6 +576,8 @@ async function requestRaw(path, options = {}) {
     await query('DELETE FROM client_documents WHERE id = ?', [createdDocumentId]);
     await query('DELETE FROM media_files WHERE id = ?', [createdMediaId]);
     await query('DELETE FROM notifications WHERE id = ?', [createdNotificationId]);
+    await query('DELETE FROM notifications WHERE category = ? AND body LIKE ?', ['Materiální dary', '%E2E Dárce%']);
+    await query('DELETE FROM material_offers WHERE id = ?', [createdMaterialOfferId]);
     await query('DELETE FROM notifications WHERE recipient_id = ? OR created_by = ?', [managedUserId, managedUserId]);
     await query('DELETE FROM notifications WHERE recipient_id = ? OR created_by = ?', [applicantUserId, applicantUserId]);
     await query('DELETE FROM notifications WHERE body LIKE ?', [`%${managedUserEmail}%`]);

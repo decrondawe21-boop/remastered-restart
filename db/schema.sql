@@ -278,6 +278,42 @@ CREATE TABLE IF NOT EXISTS notifications (
   KEY notifications_category_idx (category)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS material_offers (
+  id CHAR(36) PRIMARY KEY,
+  offer_type ENUM('clothing', 'equipment', 'books') NOT NULL,
+  donor_name VARCHAR(180) NOT NULL,
+  email VARCHAR(190) NULL,
+  phone VARCHAR(50) NULL,
+  item_description TEXT NOT NULL,
+  quantity VARCHAR(120) NOT NULL,
+  locality VARCHAR(180) NOT NULL,
+  transport ENUM('donor-delivery', 'project-pickup', 'agreement') NOT NULL,
+  item_condition VARCHAR(80) NOT NULL,
+  note TEXT NULL,
+  status ENUM('new', 'reviewing', 'accepted', 'pickup_planned', 'received', 'declined', 'closed') NOT NULL DEFAULT 'new',
+  admin_note TEXT NULL,
+  reviewed_by CHAR(36) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT material_offers_reviewed_by_fk FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL,
+  KEY material_offers_status_created_idx (status, created_at),
+  KEY material_offers_type_created_idx (offer_type, created_at),
+  KEY material_offers_locality_idx (locality)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS material_offer_photos (
+  id CHAR(36) PRIMARY KEY,
+  offer_id CHAR(36) NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(80) NOT NULL,
+  file_size INT NOT NULL,
+  content LONGBLOB NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT material_offer_photos_offer_fk FOREIGN KEY (offer_id) REFERENCES material_offers (id) ON DELETE CASCADE,
+  KEY material_offer_photos_offer_order_idx (offer_id, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS password_resets (
   id CHAR(36) PRIMARY KEY,
   user_id CHAR(36) NOT NULL,

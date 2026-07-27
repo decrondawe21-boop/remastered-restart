@@ -13,6 +13,7 @@
     "test:auth": "node scripts/e2e-auth.cjs",
     "test:api": "node scripts/e2e-api.cjs",
     "test:admin-api": "node scripts/e2e-admin-api.cjs",
+    "report:gsc": "node scripts/generate-gsc-report.cjs",
     "api:dev": "node server/index.cjs",
     "db:seed-admin": "node scripts/seed-admin.cjs",
     "db:migrate": "node scripts/migrate-db.cjs",

@@ -236,7 +236,12 @@ async function request(path, options = {}) {
     await query(
       `INSERT INTO news (id, title, excerpt, body, published_at, status)
        VALUES (?, ?, ?, ?, NOW(), 'published')`,
-      [testNewsId, `API test aktualita ${Date.now()}`, 'Dočasná aktualita pro API test.', '<p>Testovací obsah.</p>']
+      [
+        testNewsId,
+        `API test aktualita ${Date.now()}`,
+        'Dočasná aktualita pro API test.',
+        '<h1>Vnořený nadpis z editoru</h1><p>Testovací obsah.</p>'
+      ]
     );
 
     const news = await request('/api/news');
@@ -246,6 +251,17 @@ async function request(path, options = {}) {
     const firstNews = news.body.news.find((item) => item.id === testNewsId);
     if (!firstNews?.id) {
       throw new Error('News endpoint should return the temporary item for interaction tests.');
+    }
+    const seoTestNews = await fetch(
+      `${baseUrl}/api/seo/news-page?publicPath=aktuality-projektu/${encodeURIComponent(firstNews.slug)}`
+    );
+    const seoTestNewsHtml = await seoTestNews.text();
+    if (
+      !seoTestNews.ok ||
+      (seoTestNewsHtml.match(/<h1\b/gi) || []).length !== 1 ||
+      !seoTestNewsHtml.includes('<h3>Vnořený nadpis z editoru</h3>')
+    ) {
+      throw new Error(`Dynamic news heading normalization failed: status=${seoTestNews.status}`);
     }
 
     const discussion = await request('/api/news/discussion', {

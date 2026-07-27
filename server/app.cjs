@@ -190,7 +190,9 @@ function sanitizePublicArticleHtml(value) {
   return String(value || '')
     .replace(/<(script|style|iframe|object|embed|form)[^>]*>[\s\S]*?<\/\1>/gi, '')
     .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/\s(?:href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, '');
+    .replace(/\s(?:href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, '')
+    .replace(/<h1(\s[^>]*)?>/gi, '<h3$1>')
+    .replace(/<\/h1\s*>/gi, '</h3>');
 }
 
 function publicAbsoluteUrl(value) {

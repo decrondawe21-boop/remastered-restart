@@ -26,6 +26,7 @@ import {
   KeyRound,
   LayoutDashboard,
   Link,
+  Linkedin,
   List,
   LockKeyhole,
   LogOut,
@@ -1229,6 +1230,8 @@ type CookiePreferences = {
   version: string;
 };
 
+const COOKIE_PREFERENCES_EVENT = 'restart-cookie-preferences-changed';
+
 type CookieCatalogItem = {
   name: string;
   service: string;
@@ -1483,6 +1486,14 @@ const cookieCatalog: CookieCatalogItem[] = [
     duration: '3 měsíce',
     owner: 'Meta Platforms Ireland Ltd.',
     policyUrl: 'https://www.facebook.com/privacy/policy/'
+  },
+  {
+    name: 'li_gc',
+    service: 'LinkedIn profilový odznak',
+    category: 'marketing',
+    duration: '6 měsíců',
+    owner: 'LinkedIn Ireland Unlimited Company',
+    policyUrl: 'https://www.linkedin.com/legal/privacy-policy'
   },
   {
     name: '_gcl_au',
@@ -6242,7 +6253,131 @@ function TransparencyDocumentsPage({
   );
 }
 
-function ContactPage({ onNotify }: { onNotify: (tone: FeedbackTone, title: string, text?: string) => void }) {
+const linkedInProfileUrl = 'https://cz.linkedin.com/in/david-koz%C3%A1k-5b1ab5365?trk=profile-badge';
+
+function storedMarketingConsent() {
+  try {
+    const stored = window.localStorage.getItem('restart-cookie-preferences');
+    if (!stored) return false;
+    return (JSON.parse(stored) as Partial<CookiePreferences>).marketing === true;
+  } catch {
+    return false;
+  }
+}
+
+function LinkedInProfileBadge({ onOpenCookieSettings }: { onOpenCookieSettings: () => void }) {
+  const [marketingAllowed, setMarketingAllowed] = React.useState(storedMarketingConsent);
+  const [badgeReady, setBadgeReady] = React.useState(false);
+  const [badgeTimedOut, setBadgeTimedOut] = React.useState(false);
+  const badgeRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const syncFromStorage = () => setMarketingAllowed(storedMarketingConsent());
+    const syncFromPreferences = (event: Event) => {
+      const preferences = (event as CustomEvent<CookiePreferences>).detail;
+      setMarketingAllowed(preferences?.marketing === true);
+    };
+    window.addEventListener('storage', syncFromStorage);
+    window.addEventListener(COOKIE_PREFERENCES_EVENT, syncFromPreferences);
+    return () => {
+      window.removeEventListener('storage', syncFromStorage);
+      window.removeEventListener(COOKIE_PREFERENCES_EVENT, syncFromPreferences);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    setBadgeReady(false);
+    setBadgeTimedOut(false);
+    if (!marketingAllowed) return;
+    const scriptId = 'linkedin-profile-badge-script';
+    document.getElementById(scriptId)?.remove();
+    const observer = new MutationObserver(() => {
+      if (badgeRef.current?.querySelector('iframe')) setBadgeReady(true);
+    });
+    if (badgeRef.current) observer.observe(badgeRef.current, { childList: true, subtree: true });
+    const timeoutId = window.setTimeout(() => {
+      if (!badgeRef.current?.querySelector('iframe')) setBadgeTimedOut(true);
+    }, 4500);
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = 'https://platform.linkedin.com/badges/js/profile.js';
+    script.async = true;
+    script.defer = true;
+    script.type = 'text/javascript';
+    document.body.appendChild(script);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timeoutId);
+      script.remove();
+      document.querySelectorAll('script[src^="https://badges.linkedin"]').forEach((node) => node.remove());
+    };
+  }, [marketingAllowed]);
+
+  return (
+    <section className="linkedin-profile" aria-labelledby="linkedin-profile-title">
+      <div className="linkedin-profile-heading">
+        <span className="linkedin-profile-icon" aria-hidden="true"><Linkedin size={19} /></span>
+        <div>
+          <p className="section-label">LinkedIn</p>
+          <h2 id="linkedin-profile-title">Veřejný profil zakladatele</h2>
+        </div>
+      </div>
+      {marketingAllowed ? (
+        <>
+          <div className={`linkedin-badge-shell${badgeReady ? ' is-ready' : ''}`}>
+            <div
+              ref={badgeRef}
+              className="badge-base LI-profile-badge"
+              data-locale="cs_CZ"
+              data-size="large"
+              data-theme="light"
+              data-type="VERTICAL"
+              data-vanity="david-kozák-5b1ab5365"
+              data-version="v1"
+            >
+              <a className="badge-base__link LI-simple-link" href={linkedInProfileUrl} target="_blank" rel="noreferrer noopener">
+                David Kozák
+              </a>
+            </div>
+          </div>
+          {!badgeReady && (
+            <div className="linkedin-profile-placeholder is-compact" aria-live="polite">
+              <p>
+                {badgeTimedOut
+                  ? 'Oficiální odznak LinkedIn se nyní nepodařilo načíst. Veřejný profil zůstává dostupný přímo.'
+                  : 'Načítáme veřejný profil z LinkedInu…'}
+              </p>
+              <a className="button secondary" href={linkedInProfileUrl} target="_blank" rel="noreferrer noopener">
+                <Linkedin size={17} /> Otevřít LinkedIn
+              </a>
+            </div>
+          )}
+          <p className="linkedin-profile-note">Externí obsah poskytuje LinkedIn.</p>
+        </>
+      ) : (
+        <div className="linkedin-profile-placeholder">
+          <p>Odznak načteme pouze po povolení marketingových cookies. Veřejný profil lze otevřít i přímo.</p>
+          <div className="linkedin-profile-actions">
+            <a className="button secondary" href={linkedInProfileUrl} target="_blank" rel="noreferrer noopener">
+              <Linkedin size={17} /> Otevřít LinkedIn
+            </a>
+            <button className="button ghost" type="button" onClick={onOpenCookieSettings}>
+              <Settings size={17} /> Nastavení cookies
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ContactPage({
+  onNotify,
+  onOpenCookieSettings
+}: {
+  onNotify: (tone: FeedbackTone, title: string, text?: string) => void;
+  onOpenCookieSettings: () => void;
+}) {
   const prepareMessage = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -6282,6 +6417,7 @@ function ContactPage({ onNotify }: { onNotify: (tone: FeedbackTone, title: strin
               <Phone size={18} /> Zavolat
             </a>
           </div>
+          <LinkedInProfileBadge onOpenCookieSettings={onOpenCookieSettings} />
         </div>
         <form
           className="contact-form"
@@ -6891,13 +7027,15 @@ function CookieConsent({
   };
 
   const savePreferences = (nextStatistics = statistics, nextMarketing = marketing) => {
-    setPreferences({
+    const nextPreferences: CookiePreferences = {
       necessary: true,
       statistics: nextStatistics,
       marketing: nextMarketing,
       decidedAt: new Date().toISOString(),
       version: '2026-06'
-    });
+    };
+    setPreferences(nextPreferences);
+    window.dispatchEvent(new CustomEvent<CookiePreferences>(COOKIE_PREFERENCES_EVENT, { detail: nextPreferences }));
     setLegacyAccepted(true);
     setStatistics(nextStatistics);
     setMarketing(nextMarketing);
@@ -8944,7 +9082,7 @@ React.useEffect(() => {
     ) : currentPath === '/povinne-zverejnovani' ? (
       <TransparencyDocumentsPage documents={transparencyPublicDocuments} jailbreakBackgroundStats={jailbreakBackgroundStats} />
     ) : currentPath === '/kontakt' ? (
-      <ContactPage onNotify={notify} />
+      <ContactPage onNotify={notify} onOpenCookieSettings={() => setCookieSettingsOpen(true)} />
     ) : staticPage ? (
       <StaticInfoPage page={staticPage} />
     ) : currentPath === '/klient' ? (

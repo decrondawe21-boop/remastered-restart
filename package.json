@@ -8,6 +8,7 @@
     "build": "tsc && vite build && node scripts/prerender-seo.cjs",
     "preview": "vite preview",
     "test:copy": "node scripts/validate-copy.cjs",
+    "test:prerender": "node scripts/validate-prerender.cjs",
     "test:navigation": "node scripts/e2e-navigation.cjs",
     "test:auth": "node scripts/e2e-auth.cjs",
     "test:api": "node scripts/e2e-api.cjs",

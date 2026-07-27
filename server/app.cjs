@@ -38,6 +38,16 @@ function sendXml(response, statusCode, body, headers = {}) {
   response.end(body);
 }
 
+function sendHtml(response, statusCode, body, headers = {}) {
+  response.writeHead(statusCode, {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'public, max-age=300, stale-while-revalidate=3600',
+    'x-content-type-options': 'nosniff',
+    ...headers
+  });
+  response.end(body);
+}
+
 function sendRedirect(response, location, headers = {}) {
   response.writeHead(302, {
     location,
@@ -68,25 +78,60 @@ const builtInNewsSitemapRows = [
     id: 'news-brozury-druhe-sance',
     title: 'Nové brožury REST||ART Integrace jsou veřejně ke stažení',
     tag: 'Média a materiály',
-    date: '2026-06-26'
+    date: '2026-06-26',
+    excerpt:
+      'Veřejná knihovna obsahuje projektové brožury pro partnery, podporovatele i zájemce o program JAILBREAK.',
+    body:
+      '<p>Zveřejnili jsme nové projektové brožury REST||ART Integrace pro partnery, instituce, podporovatele a lidi, kteří chtějí rychle porozumět smyslu projektu.</p><h2>Značka druhé šance</h2><p>Materiály vysvětlují propojení prevence, doprovodu, práce, bydlení a stabilizace. Spolupráci chápeme jako společný směr, odpovědnost a ověřitelné výsledky.</p>'
   },
   {
     id: 'news-second-chance',
     title: 'Ne každý má možnosti. REST||ART umožňuje zkusit to znovu.',
     tag: 'Aktuality projektu',
-    date: '2026-06-03'
+    date: '2026-06-03',
+    excerpt:
+      'Druhá šance potřebuje konkrétní podmínky: práci, režim, bezpečné zázemí a podporu v okamžiku, kdy ji člověk skutečně potřebuje.',
+    body:
+      '<p>REST||ART Integrace propojuje praktickou pomoc s osobní odpovědností. Neobhajuje chyby ani neslibuje snadnou změnu. Vytváří cestu, na které lze znovu budovat práci, vztahy, režim a důvěru.</p>'
   },
   {
     id: 'news-meeting-support',
     title: '28.05.2026 - 10:00 schůzka',
     tag: 'Aktuality projektu',
-    date: '2026-05-28'
+    date: '2026-05-28',
+    excerpt: 'Jednání o podpoře projektu a dalším rozvoji programů RESTART Integrace.',
+    body:
+      '<p>Jednání se zaměřilo na možnosti podpory projektu, rozvoj programů a jejich praktického zázemí. Ověřené výsledky a konkrétní výstupy zveřejňujeme průběžně v aktualitách a transparentní sekci.</p>'
   },
   {
     id: 'news-people-on-edge',
     title: 'Lidé na okraji společnosti',
     tag: 'Aktuality projektu',
-    date: '2026-05-13'
+    date: '2026-05-13',
+    excerpt:
+      'Konkrétní cesta pro lidi mimo systém začíná bezpečným kontaktem a pokračuje mentoringem, prací a stabilizací.',
+    body:
+      '<p>Lidé na okraji společnosti nepotřebují další obecný slib. Potřebují dostupný první kontakt, srozumitelný plán, odpovědnost a návaznost mezi prací, bydlením, mentoringem a odbornou podporou.</p>'
+  },
+  {
+    id: 'story-z-praxe-ne-od-stolu',
+    title: 'REST||ART vznikl z praxe, ne od stolu',
+    tag: secondChanceStoryTag,
+    date: '2026-07-02',
+    excerpt:
+      'Zakladatelský příběh projektu: osobní cesta přes závislost, ulici, výkon trestu, návrat do práce a vznik systému druhých šancí.',
+    body:
+      '<p><strong>REST||ART Integrace nevznikl od stolu ani jako teoretická úvaha.</strong> Vychází z osobní zkušenosti se závislostí, bezdomovectvím, výkonem trestu a návratem do práce.</p><h2>Proč vznikl RESTART</h2><p>Zkušenost ukázala, že svoboda bez plánu, práce, bydlení, vztahů a následné opory často nestačí. Projekt proto převádí praxi do otevřeného metodického systému, který lze ověřovat a rozvíjet s odbornými partnery.</p>'
+  },
+  {
+    id: 'story-petr-s-druha-sance',
+    title: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát',
+    tag: secondChanceStoryTag,
+    date: '2026-06-24',
+    excerpt:
+      'Anonymizovaný příběh cesty přes ústavní péči, ulici, výkon trestu a rozhodnutí začít žít jinak.',
+    body:
+      '<p><strong>Příběh zveřejňujeme anonymizovaně a s respektem k soukromí klienta.</strong> Petr popisuje dětství bez pevného zázemí, ulici, výkon trestu i léčbu. Nehledá omluvu, ale cestu ke změně.</p><h2>Druhá šance v praxi</h2><p>Nejsilnější částí není popis pádu, ale rozhodnutí nevzdat se. Konkrétní plán, odpovědnost, práce, bydlení a dlouhodobá opora dávají tomuto rozhodnutí šanci vydržet.</p>'
   }
 ];
 
@@ -121,6 +166,41 @@ function escapeXml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function stripHtml(value) {
+  return String(value || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sanitizePublicArticleHtml(value) {
+  return String(value || '')
+    .replace(/<(script|style|iframe|object|embed|form)[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/\s(?:href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, '');
+}
+
+function publicAbsoluteUrl(value) {
+  const candidate = String(value || '');
+  if (!/^(https?:\/\/|\/)/i.test(candidate)) return '';
+  try {
+    return new URL(candidate, publicSiteUrl).href;
+  } catch {
+    return '';
+  }
 }
 
 async function uniqueNewsSlug(requestedSlug, title, id) {
@@ -803,7 +883,7 @@ async function confirmPasswordReset(request, response) {
   sendJson(response, 200, { ok: true, message: 'Heslo bylo úspěšně změněno. Můžete se přihlásit.' });
 }
 
-async function listNews(_request, response) {
+async function loadPublishedNewsRows(limit = 500) {
   let rows;
   try {
     rows = await query(
@@ -811,7 +891,8 @@ async function listNews(_request, response) {
        FROM news
        WHERE status = 'published'
        ORDER BY published_at DESC, created_at DESC
-       LIMIT 500`
+       LIMIT ?`,
+      [limit]
     );
   } catch (error) {
     if (!isUnknownColumnError(error)) throw error;
@@ -821,7 +902,8 @@ async function listNews(_request, response) {
          FROM news
          WHERE status = 'published'
          ORDER BY published_at DESC, created_at DESC
-         LIMIT 500`
+         LIMIT ?`,
+        [limit]
       );
     } catch (legacyError) {
       if (!isUnknownColumnError(legacyError)) throw legacyError;
@@ -830,11 +912,276 @@ async function listNews(_request, response) {
          FROM news
          WHERE status = 'published'
          ORDER BY published_at DESC, created_at DESC
-         LIMIT 500`
+         LIMIT ?`,
+        [limit]
       );
     }
   }
+  return rows;
+}
+
+async function listNews(_request, response) {
+  const rows = await loadPublishedNewsRows(500);
   sendJson(response, 200, { news: rows.map(publicNewsRow) });
+}
+
+let newsShellCache = { origin: '', html: '', expiresAt: 0 };
+
+function fallbackNewsShell() {
+  return `<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aktuality | RESTART Integrace</title>
+    <meta name="description" content="Aktuality a veřejné informace projektu RESTART Integrace." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href="${publicSiteUrl}/aktuality" />
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>`;
+}
+
+async function loadNewsShell(request) {
+  const forwardedHost = String(request.headers['x-forwarded-host'] || request.headers.host || '').split(',')[0].trim();
+  const localDevelopmentHost =
+    process.env.NODE_ENV !== 'production' && /^(?:localhost|127\.0\.0\.1)(?::\d+)?$/i.test(forwardedHost);
+  const deploymentHost = String(process.env.VERCEL_URL || '').trim();
+  const origin = deploymentHost
+    ? `https://${deploymentHost}`
+    : localDevelopmentHost
+      ? `http://${forwardedHost}`
+      : publicSiteUrl;
+  if (newsShellCache.html && newsShellCache.origin === origin && newsShellCache.expiresAt > Date.now()) {
+    return newsShellCache.html;
+  }
+  try {
+    const shellResponse = await fetch(`${origin}/index.html`, {
+      headers: { accept: 'text/html', 'user-agent': 'RESTART-SEO-renderer/1.0' },
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!shellResponse.ok) throw new Error(`Shell returned ${shellResponse.status}`);
+    const html = await shellResponse.text();
+    if (!html.includes('<div id="root"')) throw new Error('Shell root is missing');
+    newsShellCache = { origin, html, expiresAt: Date.now() + 5 * 60 * 1000 };
+    return html;
+  } catch {
+    return fallbackNewsShell();
+  }
+}
+
+function replaceHtmlMeta(html, pattern, replacement) {
+  return pattern.test(html) ? html.replace(pattern, replacement) : html;
+}
+
+function renderNewsArchiveSnapshot(tag, items) {
+  return `<main class="seo-route-snapshot" data-seo-snapshot="news-archive">
+    <header>
+      <p class="section-label">Archiv aktualit</p>
+      <h1>${escapeHtml(tag)}</h1>
+      <p>Veřejné aktuality projektu RESTART Integrace zařazené pod tematickým štítkem ${escapeHtml(tag)}.</p>
+    </header>
+    <section>
+      <h2>Publikované příspěvky</h2>
+      <ul>
+        ${items
+          .map(
+            (item) =>
+              `<li><a href="${escapeHtml(newsPublicPath(item))}"><strong>${escapeHtml(item.title)}</strong></a> <time datetime="${escapeHtml(
+                item.date
+              )}">${escapeHtml(item.date)}</time><p>${escapeHtml(item.excerpt || stripHtml(item.body).slice(0, 220))}</p></li>`
+          )
+          .join('\n        ')}
+      </ul>
+    </section>
+    <nav aria-label="Související stránky"><a href="/aktuality">Všechny aktuality</a><a href="/">Úvod</a></nav>
+  </main>`;
+}
+
+function renderNewsArticleSnapshot(item) {
+  const safeBody =
+    sanitizePublicArticleHtml(item.body) ||
+    `<p>${escapeHtml(item.excerpt || 'Veřejná aktualita projektu RESTART Integrace.')}</p>`;
+  const safeImage = publicAbsoluteUrl(item.imageUrl);
+  return `<main class="seo-route-snapshot" data-seo-snapshot="news-article">
+    <article>
+      <header>
+        <p class="section-label">${escapeHtml(item.tag || 'Aktuality projektu')}</p>
+        <h1>${escapeHtml(item.title)}</h1>
+        <p><time datetime="${escapeHtml(item.date)}">${escapeHtml(item.date)}</time></p>
+        <p>${escapeHtml(item.excerpt || stripHtml(item.body).slice(0, 260))}</p>
+        ${safeImage ? `<img src="${escapeHtml(safeImage)}" alt="${escapeHtml(item.title)}" loading="eager" />` : ''}
+      </header>
+      <section>
+        <h2>Podrobnosti</h2>
+        ${safeBody}
+      </section>
+    </article>
+    <nav aria-label="Související stránky"><a href="/aktuality">Všechny aktuality</a><a href="/kontakt">Kontakt</a></nav>
+  </main>`;
+}
+
+function renderNewsHtml(shell, { canonical, title, description, snapshot, item, isArchive }) {
+  const articleImage = publicAbsoluteUrl(item?.imageUrl);
+  const graph = {
+    '@context': 'https://schema.org',
+    '@type': isArchive ? 'CollectionPage' : 'NewsArticle',
+    ...(isArchive ? {} : { headline: title }),
+    name: title,
+    description,
+    url: canonical,
+    inLanguage: 'cs-CZ',
+    image: articleImage || undefined,
+    datePublished: item?.date || undefined,
+    dateModified: item?.date || undefined,
+    articleSection: item?.tag || undefined,
+    mainEntityOfPage: canonical,
+    publisher: {
+      '@type': 'Organization',
+      name: 'RESTART Integrace',
+      url: `${publicSiteUrl}/`
+    }
+  };
+  let html = shell;
+  html = replaceHtmlMeta(html, /<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)} | RESTART Integrace</title>`);
+  html = replaceHtmlMeta(
+    html,
+    /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/,
+    `<meta name="description" content="${escapeHtml(description)}" />`
+  );
+  html = replaceHtmlMeta(
+    html,
+    /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/,
+    `<link rel="canonical" href="${escapeHtml(canonical)}" />`
+  );
+  html = replaceHtmlMeta(
+    html,
+    /<meta\s+property="og:type"\s+content="[^"]*"\s*\/?>/,
+    `<meta property="og:type" content="${isArchive ? 'website' : 'article'}" />`
+  );
+  html = replaceHtmlMeta(
+    html,
+    /<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/,
+    `<meta property="og:title" content="${escapeHtml(title)}" />`
+  );
+  html = replaceHtmlMeta(
+    html,
+    /<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/,
+    `<meta property="og:description" content="${escapeHtml(description)}" />`
+  );
+  html = replaceHtmlMeta(
+    html,
+    /<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/,
+    `<meta property="og:url" content="${escapeHtml(canonical)}" />`
+  );
+  html = replaceHtmlMeta(
+    html,
+    /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/,
+    `<meta name="twitter:title" content="${escapeHtml(title)}" />`
+  );
+  html = replaceHtmlMeta(
+    html,
+    /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/,
+    `<meta name="twitter:description" content="${escapeHtml(description)}" />`
+  );
+  if (articleImage) {
+    html = replaceHtmlMeta(
+      html,
+      /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/,
+      `<meta property="og:image" content="${escapeHtml(articleImage)}" />`
+    );
+    html = replaceHtmlMeta(
+      html,
+      /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="twitter:image" content="${escapeHtml(articleImage)}" />`
+    );
+  }
+  const structuredDataTag = `<script type="application/ld+json">${JSON.stringify(graph).replace(
+    /</g,
+    '\\u003c'
+  )}</script>`;
+  html = /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/.test(html)
+    ? html.replace(/<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/, structuredDataTag)
+    : html.replace('</head>', `    ${structuredDataTag}\n  </head>`);
+  return html.replace(/<div id="root">[\s\S]*?<\/div>\s*<\/body>/, `<div id="root">${snapshot}</div>\n  </body>`);
+}
+
+async function newsSeoPage(request, response, url) {
+  const suffix = decodeURIComponent(String(url.searchParams.get('publicPath') || ''))
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/\.{2,}/g, '');
+  const scope = url.searchParams.get('scope') === 'stories' ? 'stories' : 'news';
+  if (!suffix) {
+    sendRedirect(response, scope === 'stories' ? '/pribehy-druhe-sance' : '/aktuality');
+    return;
+  }
+
+  const databaseRows = await loadPublishedNewsRows(5000);
+  const itemByPath = new Map();
+  [...builtInNewsSitemapRows, ...databaseRows]
+    .map(publicNewsRow)
+    .forEach((item) => itemByPath.set(newsPublicPath(item), item));
+  const items = Array.from(itemByPath.values());
+  const publicPath = scope === 'stories' ? `/pribehy-druhe-sance/${suffix}` : `/aktuality/${suffix}`;
+  const shell = await loadNewsShell(request);
+  const item = itemByPath.get(publicPath);
+
+  if (item) {
+    const canonical = `${publicSiteUrl}${publicPath}`;
+    const description = item.excerpt || stripHtml(item.body).slice(0, 300) || `Aktualita ${item.title}.`;
+    sendHtml(
+      response,
+      200,
+      renderNewsHtml(shell, {
+        canonical,
+        title: item.title,
+        description,
+        snapshot: renderNewsArticleSnapshot(item),
+        item,
+        isArchive: false
+      })
+    );
+    return;
+  }
+
+  if (scope === 'news' && !suffix.includes('/')) {
+    const archiveItems = items.filter(
+      (candidate) =>
+        candidate.tag !== secondChanceStoryTag && slugifyPathSegment(candidate.tag || 'Aktuality projektu') === suffix
+    );
+    if (archiveItems.length > 0) {
+      const tag = archiveItems[0].tag || 'Aktuality projektu';
+      const canonical = `${publicSiteUrl}${publicPath}`;
+      const description = `Archiv veřejných aktualit projektu RESTART Integrace se štítkem ${tag}.`;
+      sendHtml(
+        response,
+        200,
+        renderNewsHtml(shell, {
+          canonical,
+          title: tag,
+          description,
+          snapshot: renderNewsArchiveSnapshot(tag, archiveItems),
+          isArchive: true
+        })
+      );
+      return;
+    }
+  }
+
+  sendHtml(
+    response,
+    404,
+    renderNewsHtml(shell, {
+      canonical: `${publicSiteUrl}${publicPath}`,
+      title: 'Aktualita nebyla nalezena',
+      description: 'Požadovaná aktualita nebyla nalezena.',
+      snapshot: `<main class="seo-route-snapshot"><header><h1>Aktualita nebyla nalezena</h1><p>Požadovaný příspěvek není veřejně dostupný.</p></header><nav><a href="/aktuality">Zpět na aktuality</a></nav></main>`,
+      isArchive: true
+    }),
+    { 'x-robots-tag': 'noindex, follow' }
+  );
 }
 
 async function newsSitemap(_request, response) {
@@ -3432,6 +3779,7 @@ async function createApp(request, response) {
     if (request.method === 'POST' && url.pathname === '/api/material-offers') return await submitMaterialOffer(request, response);
     if (request.method === 'GET' && url.pathname === '/api/public/jailbreak-background-stats') return await publicJailbreakBackgroundStats(request, response);
     if (request.method === 'GET' && url.pathname === '/api/sitemap/news.xml') return await newsSitemap(request, response);
+    if (request.method === 'GET' && url.pathname === '/api/seo/news-page') return await newsSeoPage(request, response, url);
     if (request.method === 'GET' && url.pathname === '/api/news') return await listNews(request, response);
     if (request.method === 'POST' && url.pathname === '/api/news') return await saveNews(request, response);
     if (request.method === 'GET' && url.pathname === '/api/news/discussion') return await listNewsDiscussion(request, response);

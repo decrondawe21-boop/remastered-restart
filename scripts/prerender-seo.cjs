@@ -64,6 +64,7 @@ a{color:inherit}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
 .seo-document-snapshot{max-width:1120px;margin:0 auto;padding:56px var(--page-gutter) 96px}.seo-document-snapshot header{max-width:860px;margin-bottom:44px}.seo-document-snapshot h1{margin:0 0 18px;color:var(--green-dark);font-size:clamp(2.25rem,5vw,4.5rem);line-height:1.04}.seo-document-snapshot h2{margin:52px 0 18px;color:var(--green-dark);font-size:clamp(1.55rem,3vw,2.25rem)}.seo-document-snapshot h3{margin:30px 0 12px;color:var(--green-dark)}.seo-document-snapshot p,.seo-document-snapshot li,.seo-document-snapshot dd{max-width:82ch}.seo-document-snapshot blockquote{margin:28px 0;padding:20px 24px;border-left:4px solid var(--gold);background:var(--bg-soft)}.seo-document-snapshot dt{margin-top:24px;color:var(--green-dark);font-weight:800}.seo-document-snapshot dd{margin:6px 0 0}.seo-document-snapshot-download{display:inline-flex;margin-top:18px;padding:12px 16px;border-radius:8px;background:var(--green);color:#fff;text-decoration:none;font-weight:700}
 .seo-video-watch-snapshot{max-width:1440px;margin:0 auto;padding:42px var(--page-gutter) 90px}.seo-video-watch-snapshot header{max-width:960px;margin-bottom:26px}.seo-video-watch-snapshot h1{margin:0 0 14px;color:var(--green-dark);font-size:clamp(2.25rem,5vw,4.8rem);line-height:1.02}.seo-video-watch-snapshot video{display:block;width:100%;max-height:calc(100vh - 240px);aspect-ratio:16/9;background:#050806;object-fit:contain}.seo-video-watch-snapshot footer{max-width:780px;padding-top:28px}
+.seo-route-snapshot{max-width:1180px;margin:0 auto;padding:56px var(--page-gutter) 96px}.seo-route-snapshot>header{max-width:900px;margin-bottom:42px}.seo-route-snapshot h1{margin:0 0 18px;color:var(--green-dark);font-size:clamp(2.25rem,5vw,4.8rem);line-height:1.04}.seo-route-snapshot h2{margin:0 0 14px;color:var(--green-dark);font-size:clamp(1.45rem,3vw,2.15rem)}.seo-route-snapshot p,.seo-route-snapshot li{max-width:82ch}.seo-route-snapshot section{padding:30px 0;border-top:1px solid var(--line)}.seo-route-snapshot ul{display:grid;gap:8px;padding-left:22px}.seo-route-snapshot nav{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}.seo-route-snapshot nav a{padding:11px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--green-dark);font-weight:700;text-decoration:none}.seo-route-snapshot img{display:block;max-width:100%;height:auto;margin:24px 0}
 @media(max-width:760px){.site-header{padding:12px 18px}.brand img{width:174px}.desktop-nav{display:none}.menu-button{display:inline-flex}.hero{padding:18px}.hero-banner{min-height:520px;border-radius:22px}.hero-banner-overlay{padding:28px}.hero-banner-overlay h1{font-size:clamp(2.6rem,16vw,4.5rem)}}
 `.trim();
 const videoAssets = [
@@ -435,6 +436,460 @@ function routeLabel(routePath) {
   const video = videoAssets.find((item) => item.watchPath === routePath);
   if (video) return video.name;
   return labels[routePath] || routePath.replace(/^\//, '').replace(/-/g, ' ');
+}
+
+const programSnapshotContent = {
+  '/programy/jailbreak': {
+    audience: 'Lidé ve výkonu trestu, po propuštění a lidé, kteří potřebují připravený návrat do běžného života.',
+    purpose:
+      'JAILBREAK propojuje přípravu ještě před propuštěním s konkrétním plánem práce, bydlení, vztahů, režimu a následné stabilizace.',
+    items: [
+      'mentoring, korespondence a návštěvy',
+      'individuální plán návratu a příprava na podmíněné propuštění',
+      'pracovní a ubytovací návaznost',
+      'podpora rodinných vztahů a základní materiální pomoc',
+      'follow-up po propuštění a včasná reakce na riziko relapsu'
+    ]
+  },
+  '/programy/reset': {
+    audience: 'Lidé v krizi, závislosti nebo rozpadu každodenního režimu.',
+    purpose:
+      'RESET vytváří bezpečný prostor pro zastavení, pojmenování situace a postupnou obnovu zdravějšího rytmu, odpovědnosti a vztahů.',
+    items: [
+      'vstupní posouzení potřeb a rizik',
+      'individuální cíle a pravidelný mentoring',
+      'obnova denního režimu a praktických návyků',
+      'návaznost na odbornou, terapeutickou a komunitní podporu'
+    ]
+  },
+  '/programy/rework': {
+    audience: 'Lidé dlouhodobě mimo pracovní trh a lidé s bariérami při návratu do zaměstnání.',
+    purpose:
+      'REWORK používá práci jako prostředek obnovy identity, návyků a vlastní hodnoty. Zaměstnání není odměna, ale součást odpovědného návratu.',
+    items: [
+      'mapování schopností a pracovního směru',
+      'pracovní trénink, rekvalifikace a finanční gramotnost',
+      'spolupráce s odpovědnými zaměstnavateli',
+      'podpora při nástupu a průběžné vyhodnocování stability'
+    ]
+  },
+  '/programy/streetwise': {
+    audience: 'Lidé bez domova, bez bezpečného zázemí nebo mimo dosah běžných služeb.',
+    purpose:
+      'STREETWISE nabízí první dostupný kontakt, praktickou pomoc a cestu od akutní nouze ke stabilizaci. Důvěra je vždy spojena s odpovědností.',
+    items: [
+      'terénní a nízkoprahový kontakt',
+      'základní potřeby, oblečení a krizové nasměrování',
+      'pomoc s dokumenty, komunikací a individuálním plánem',
+      'návaznost na bydlení, práci, mentoring a odborné služby'
+    ]
+  },
+  '/programy/bod-zlomu': {
+    audience: 'Mladí lidé před odchodem z ústavní péče a při přechodu do samostatnosti.',
+    purpose:
+      'BOD ZLOMU vytváří rozhodující oporu dříve, než přijde selhání. Pomáhá převést motivaci do konkrétního směru, dovedností a bezpečných vztahů.',
+    items: [
+      'včasný mentoring a příprava na samostatnost',
+      'praktické dovednosti, finanční gramotnost a orientace v systému',
+      'podpora při hledání práce a bydlení',
+      'dlouhodobější bezpečný vztah a plán pro krizové situace'
+    ]
+  },
+  '/programy/stabilizace': {
+    audience: 'Lidé, kteří zvládli první změnu a potřebují ji udržet v běžném životě.',
+    purpose:
+      'STABILIZACE sleduje, zda změna drží v práci, bydlení, režimu, vztazích a komunitě. Podpora se postupně omezuje podle reálné samostatnosti.',
+    items: [
+      'průběžné hodnocení stabilizačního indexu',
+      'udržení zaměstnání, bydlení a každodenního režimu',
+      'prevence relapsu a včasná krizová intervence',
+      'follow-up po 30, 90, 180 a 365 dnech'
+    ]
+  }
+};
+
+const routeSnapshotContent = {
+  '/': {
+    eyebrow: 'Zkušenost, poznání, metodika, projekt',
+    heading: 'RESTART Integrace',
+    lead:
+      'REST||ART Integrace je vznikající systém pracovní a sociální reintegrace. Propojuje praktickou zkušenost, odpovědné zaměstnavatele, veřejné instituce a odbornou podporu, aby návrat do společnosti nebyl otázkou náhody, ale připraveného procesu.',
+    sections: [
+      {
+        title: 'Nevytváříme další službu',
+        paragraphs: [
+          'Většina projektů vzniká v pořadí problém, dotace, projekt. U nás je pořadí opačné: zkušenost, poznání, metodika, projekt. Systém vznikl z opakované zkušenosti s lidmi, kteří měli schopnosti i motivaci pracovat, ale systémové překážky jim návrat výrazně komplikovaly.',
+          'Člověka nedefinujeme jeho trestem ani minulostí. Příležitost ale nikdy neznamená omluvu. Důvěra je spojena s odpovědností, konkrétním plánem a ověřitelnými kroky.'
+        ]
+      },
+      {
+        title: 'Druhá šance v praxi',
+        items: [
+          'mentoring a individuální plán',
+          'práce, pracovní návyky a odpovědní zaměstnavatelé',
+          'bydlení, režim a stabilní zázemí',
+          'komunita, vztahy a návazná odborná podpora',
+          'měřitelné výsledky a otevřené vyhodnocování podle principu ONLY TRUE'
+        ]
+      }
+    ],
+    links: [
+      ['/co-delame', 'Jak systém funguje'],
+      ['/programy', 'Programy podpory'],
+      ['/metodika', 'Veřejná metodika'],
+      ['/zapojeni', 'Možnosti zapojení']
+    ]
+  },
+  '/co-delame': {
+    eyebrow: 'Co děláme',
+    heading: 'Obnova lidského potenciálu',
+    lead:
+      'Nejde pouze o zaměstnávání, projekt pro bývalé vězně ani náhradu sociální služby. RESTART Integrace vytváří praktický překlad mezi světem lidí, kteří se vracejí do společnosti, a světem zaměstnavatelů, institucí a odborných partnerů.',
+    sections: [
+      {
+        title: 'Základní principy',
+        items: [
+          'Člověk není jeho trest. Pracujeme s budoucím potenciálem, ne s minulostí jako identitou.',
+          'Důvěra není slepá. Klient dostává příležitost, odpovědnost a jasná pravidla.',
+          'Práce není odměna. Je prostředkem obnovy identity, sebedůvěry a důstojnosti.',
+          'Bod zlomu vytváříme dříve: ve vězení, škole, dětském domově nebo při prvním bezpečném kontaktu.',
+          'Největší změna nastává, když člověk začne věřit, že má budoucnost, a převezme za ni odpovědnost.'
+        ]
+      },
+      {
+        title: 'Od prvního kontaktu k samostatnosti',
+        paragraphs: [
+          'Spolupráce prochází vstupním posouzením, zařazením do vhodného programu, individuálním plánem, intervencemi a průběžným hodnocením. Po stabilizaci následuje follow-up, aby se případná krize zachytila dříve, než zničí dosaženou změnu.'
+        ]
+      }
+    ],
+    links: [
+      ['/programy', 'Prohlédnout programy'],
+      ['/metodika', 'Metodický rámec'],
+      ['/kontakt', 'Kontaktovat projekt']
+    ]
+  },
+  '/programy': {
+    eyebrow: 'Šest programových pilířů',
+    heading: 'Programy RESTART Integrace',
+    lead:
+      'JAILBREAK, RESET, REWORK, STREETWISE, BOD ZLOMU a STABILIZACE tvoří propojený systém. Klient nevstupuje do univerzální služby; podle situace dostává individuální plán, odpovědnosti a návaznost mezi jednotlivými formami podpory.',
+    sections: [
+      {
+        title: 'Jeden směr, rozdílné vstupní situace',
+        paragraphs: [
+          'Programy pokrývají přípravu na návrat z výkonu trestu, krizi a závislost, pracovní restart, nízkoprahovou pomoc, přechod mladých lidí do samostatnosti i dlouhodobé udržení změny. Společným cílem je samostatný člověk, který pomoc postupně přestane potřebovat.'
+        ],
+        items: Object.keys(programSnapshotContent).map((programPath) => routeLabel(programPath))
+      }
+    ],
+    links: Object.keys(programSnapshotContent).map((programPath) => [programPath, routeLabel(programPath)])
+  },
+  '/aktuality': {
+    eyebrow: 'Zprávy a veřejné informace',
+    heading: 'Aktuality',
+    lead:
+      'Zveřejňujeme průběžné informace o rozvoji projektu, spolupráci, metodice, datech, programech a příbězích druhé šance. Každá aktualita má vlastní adresu, datum, tematický štítek a dohledatelný zdroj.',
+    sections: [
+      {
+        title: 'Obsah podle principu ONLY TRUE',
+        paragraphs: [
+          'Ověřená fakta oddělujeme od praktické zkušenosti, návrhu a pracovní hypotézy. Nezveřejňujeme citlivé osobní údaje ani příběhy, které by klienty zneužívaly pro propagaci. Archiv aktualit je členěný podle témat, aby jej mohli snadno procházet lidé, vyhledávače i odborná veřejnost.'
+        ]
+      }
+    ],
+    links: [
+      ['/pribehy-druhe-sance', 'Příběhy druhé šance'],
+      ['/povinne-zverejnovani', 'Data a transparentnost'],
+      ['/media', 'Média']
+    ]
+  },
+  '/pribehy-druhe-sance': {
+    eyebrow: 'Citlivě a bez bulváru',
+    heading: 'Příběhy druhé šance',
+    lead:
+      'Příběhy ukazují cestu ke změně bez omlouvání minulosti a bez zjednodušování. Citlivé údaje chráníme, zkušenosti jasně označujeme a zveřejňujeme pouze to, co může pomoci porozumět reintegraci.',
+    sections: [
+      {
+        title: 'Minulost není jediný scénář budoucnosti',
+        paragraphs: [
+          'Druhá šance není smazání minulosti. Je to konkrétní plán, odpovědnost, práce, bydlení, režim a člověk, který pomůže udržet směr v okamžiku, kdy je návrat do běžného života křehký.'
+        ]
+      }
+    ],
+    links: storyRoutes.map((story) => [story.path, story.articleHeadline])
+  },
+  '/pribehy-druhe-sance/story-z-praxe-ne-od-stolu': {
+    eyebrow: 'Zakladatelský příběh',
+    heading: 'REST||ART vznikl z praxe, ne od stolu',
+    lead:
+      'Projekt je odpovědí na osobní zkušenost se závislostí, ulicí, výkonem trestu, návratem do práce a budováním stability. Nejde o omluvu minulosti, ale o převod zkušenosti do otevřeného a ověřitelného systému.',
+    sections: [
+      {
+        title: 'Když pomoc nepřichází včas',
+        paragraphs: [
+          'Cesta vedla přes ztrátu zázemí, bezdomovectví, neúspěšnou léčbu, relaps a šest let výkonu trestu. Ve vězení přišla zkušenost s pomocí ostatním odsouzeným, výukou, dluhy, přípravou na výstup i s limity přetíženého systému.',
+          'Po propuštění bez práce a zázemí následoval odchod za prací, splacení dluhů, podnikání a vlastní firma. Právě tehdy vznikla myšlenka propojit práci, bydlení, mentoring, dokumenty, vztahy a následnou stabilizaci do praktické cesty.'
+        ]
+      },
+      {
+        title: 'Praxe jako začátek, nikoli jediná autorita',
+        paragraphs: [
+          'Osobní zkušenost dává projektu schopnost překládat mezi lidmi s trestní minulostí a zaměstnavateli. Metodika se ale musí dále ověřovat, doplňovat odborníky a hodnotit podle skutečných výsledků.'
+        ]
+      }
+    ],
+    links: [
+      ['/metodika', 'Jak zkušenost převádíme do metodiky'],
+      ['/programy/jailbreak', 'Program JAILBREAK']
+    ]
+  },
+  '/pribehy-druhe-sance/story-petr-s-druha-sance': {
+    eyebrow: 'Anonymizovaný příběh',
+    heading: 'Petr S.: Dopis, ve kterém se člověk nechce vzdát',
+    lead:
+      'Petr ve svém dopise popisuje cestu přes ústavní péči, ulici, výkon trestu i léčbu. Nehledá výmluvu. Hledá způsob, jak začít žít jinak. Jméno je zkrácené a citlivé detaily zůstávají mimo veřejný prostor.',
+    sections: [
+      {
+        title: 'Život bez pevného zázemí',
+        paragraphs: [
+          'Petr vyrůstal mimo vlastní rodinu. Postupně přišla ulice, špatná rozhodnutí, trestná činnost, výkon trestu a pokusy o léčbu. Po propuštění se člověk může ocitnout formálně na svobodě, ale prakticky bez bydlení, práce, vztahů, režimu a důvěry.',
+          'Nejsilnější část dopisu není popis pádu. Je to rozhodnutí nevzdat se. Program JAILBREAK proto staví na konkrétním plánu, kontaktu, odpovědnosti, práci, bydlení a opoře pro první těžkou chvíli.'
+        ]
+      },
+      {
+        title: 'Druhá šance v praxi',
+        paragraphs: [
+          'Ne každý návrat se povede napoprvé. Každý ale musí někde začít: jedním dopisem, jedním ověřitelným krokem a rozhodnutím, že minulost už nebude jediným scénářem budoucnosti.'
+        ]
+      }
+    ],
+    links: [
+      ['/programy/jailbreak', 'Program JAILBREAK'],
+      ['/pribehy-druhe-sance', 'Další příběhy']
+    ]
+  },
+  '/metodika': {
+    eyebrow: 'Veřejný metodický rámec',
+    heading: 'Metodika RESTART Integrace',
+    lead:
+      'Veřejná část metodiky popisuje principy, životní cyklus klienta, programové pilíře, pravidla práce s tvrzeními a dokumenty, které může odborná i široká veřejnost číst, ověřovat a připomínkovat.',
+    sections: [
+      {
+        title: 'Otevřený systém, ne hotové dogma',
+        paragraphs: [
+          'Metodika převádí praktickou zkušenost do společného jazyka, měřitelných kroků a odpovědností. Manifest, Charta, Slovník pojmů a koncepční podklady mají samostatné veřejné stránky i původní dokumenty ke stažení.',
+          'Interní standardy pro tvorbu a správu dokumentů jsou dostupné pouze oprávněným administrátorům. Veřejnost vždy vidí obsah, který vysvětluje fungování programu a umožňuje jeho práci posuzovat.'
+        ]
+      }
+    ],
+    links: methodologyDocuments.map((document) => [document.path, document.shortTitle])
+  },
+  '/povinne-zverejnovani': {
+    eyebrow: 'Transparentnost',
+    heading: 'Povinné zveřejňování a veřejná data',
+    lead:
+      'Na jednom místě zpřístupňujeme výroční zprávy, metodické dokumenty, statistické podklady, provozní informace a další soubory určené veřejnosti. Každý dokument má popis, datum, formát a přímý odkaz.',
+    sections: [
+      {
+        title: 'ONLY TRUE',
+        paragraphs: [
+          'Každé veřejné tvrzení má být podloženo ověřitelnými daty nebo jednoznačně označeno jako odborný názor, praktická zkušenost, návrh či pracovní hypotéza. Zdroje statistických interpretací uvádíme přímo u grafů a textů.',
+          'Výsledky programu chceme hodnotit otevřeně. Bezpečnost společnosti a úspěšná reintegrace nejsou protiklady; kvalitní data umožňují sledovat, zda se deklarované cíle skutečně naplňují.'
+        ]
+      }
+    ],
+    links: [
+      ['/metodika', 'Veřejná metodika'],
+      ['/aktuality', 'Aktuality a data'],
+      ['/kontakt', 'Vyžádat informace']
+    ]
+  },
+  '/kontakt': {
+    eyebrow: 'Kontakt',
+    heading: 'Spojte se s RESTART Integrace',
+    lead:
+      'Kontakt je určen lidem hledajícím pomoc, rodinám, zaměstnavatelům, institucím, odborníkům, dobrovolníkům i dárcům. Citlivé osobní údaje neposílejte prostřednictvím veřejných komentářů.',
+    sections: [
+      {
+        title: 'Kontaktní údaje',
+        items: [
+          'E-mail: restart@dk-i.cz',
+          'Telefon: +420 778 564 279',
+          'Adresa: Počerady 33, 440 01 Výškov-Louny',
+          'Provozovatel: David Kozák International, s.r.o., IČ 23143614'
+        ],
+        paragraphs: [
+          'Podle tématu zprávu předáme odpovědné osobě. V akutním ohrožení zdraví nebo života kontaktujte příslušné tísňové a odborné služby.'
+        ]
+      }
+    ],
+    links: [
+      ['/zapojeni', 'Možnosti podpory'],
+      ['/pro-firmy', 'Spolupráce pro firmy']
+    ]
+  },
+  '/pro-firmy': {
+    eyebrow: 'Odpovědné zaměstnávání',
+    heading: 'Spolupráce pro firmy',
+    lead:
+      'RESTART Integrace propojuje zaměstnavatele s lidmi, kteří chtějí pracovat a převzít odpovědnost za svůj další směr. Firma na spolupráci nezůstává sama; součástí je příprava, mentoring a řešení rizik.',
+    sections: [
+      {
+        title: 'Co partnerství může zahrnovat',
+        items: [
+          'pracovní příležitosti a bezpečný nástup',
+          'pracovní trénink, rekvalifikaci nebo odborný mentoring',
+          'materiální a technickou podporu komunitního zázemí',
+          'sdílení know-how a rozvoj metodiky',
+          'měřitelné cíle a otevřené vyhodnocení spolupráce'
+        ]
+      }
+    ],
+    links: [
+      ['/kontakt', 'Projednat partnerství'],
+      ['/programy/rework', 'Program REWORK'],
+      ['/zapojeni/vybaveni-centra', 'Vybavení centra']
+    ]
+  },
+  '/media': {
+    eyebrow: 'Pro média a partnery',
+    heading: 'Média',
+    lead:
+      'Základní informace, vizuální materiály, veřejná videa a kontakty pro komunikaci o RESTART Integrace. Při práci s příběhy klientů chráníme soukromí a odmítáme bulvární zjednodušení.',
+    sections: [
+      {
+        title: 'Jak o projektu informujeme',
+        paragraphs: [
+          'RESTART Integrace je vznikající systém pracovní a sociální reintegrace založený na praktické zkušenosti a otevřené odborné spolupráci. Uvádíme, co již funguje, co je ve výstavbě a co je zatím pouze vizí.',
+          'Fotografie, videa a dokumenty musí mít dohledatelný původ a popis. Pro rozhovor, ověření tvrzení nebo vyžádání podkladů použijte kontaktní stránku.'
+        ]
+      }
+    ],
+    links: [
+      ['/videa/predstaveni-projektu', 'Video představení projektu'],
+      ['/povinne-zverejnovani', 'Veřejné dokumenty'],
+      ['/kontakt', 'Mediální kontakt']
+    ]
+  },
+  '/webove-gdpr': {
+    eyebrow: 'Soukromí na webu',
+    heading: 'Webové GDPR',
+    lead:
+      'Tato stránka vysvětluje práci s cookies, analytikou, kontaktními formuláři, klientskou zónou a technickými záznamy webu. Nezbytné zpracování oddělujeme od volitelného souhlasu.',
+    sections: [
+      {
+        title: 'Základní pravidla',
+        items: [
+          'analytické a marketingové ukládání je bez souhlasu vypnuté',
+          'formuláře sbírají pouze údaje potřebné pro vyřízení konkrétního požadavku',
+          'klientská a administrátorská zóna jsou chráněné a nejsou určeny k indexování',
+          'souhlas lze změnit prostřednictvím nastavení cookies'
+        ]
+      }
+    ],
+    links: [
+      ['/zasady-ochrany-osobnich-udaju', 'Zásady ochrany osobních údajů'],
+      ['/kontakt', 'Kontakt na správce']
+    ]
+  },
+  '/zasady-ochrany-osobnich-udaju': {
+    eyebrow: 'Ochrana osobních údajů',
+    heading: 'Zásady ochrany osobních údajů',
+    lead:
+      'Osobní údaje zpracováváme pouze pro konkrétní, srozumitelný a oprávněný účel. Zvláštní pozornost věnujeme citlivým situacím klientů, příběhům druhé šance a zabezpečení neveřejných zón.',
+    sections: [
+      {
+        title: 'Práva a odpovědnost',
+        paragraphs: [
+          'Subjekt údajů může podle příslušných podmínek požadovat přístup, opravu, výmaz, omezení zpracování, přenositelnost nebo vznést námitku. Údaje nepoužíváme k jinému účelu bez odpovídajícího právního základu.',
+          'Správcem souvisejících webových zpracování je provozovatel projektu. Dotazy a žádosti lze zaslat prostřednictvím kontaktních údajů uvedených na webu.'
+        ]
+      }
+    ],
+    links: [
+      ['/webove-gdpr', 'Cookies a webové formuláře'],
+      ['/kontakt', 'Kontakt na správce']
+    ]
+  }
+};
+
+function renderRouteSnapshot(route) {
+  const program = programSnapshotContent[route.path];
+  const content = program
+    ? {
+        eyebrow: 'Program RESTART Integrace',
+        heading: routeLabel(route.path),
+        lead: program.purpose,
+        sections: [
+          {
+            title: 'Pro koho je program určen',
+            paragraphs: [program.audience]
+          },
+          {
+            title: 'Co program propojuje',
+            items: program.items,
+            paragraphs: [
+              'Konkrétní rozsah podpory vždy vychází ze vstupního posouzení, individuálního plánu, dostupných kapacit a souhlasu klienta. Výsledky průběžně vyhodnocujeme.'
+            ]
+          }
+        ],
+        links: [
+          ['/programy', 'Všechny programy'],
+          ['/kontakt', 'Kontaktovat projekt'],
+          ['/metodika', 'Metodický rámec']
+        ]
+      }
+    : routeSnapshotContent[route.path];
+
+  if (!content) {
+    return `<main class="seo-route-snapshot" data-seo-snapshot="public-route">
+      <header>
+        <p class="section-label">${escapeHtml(routeLabel(route.path))}</p>
+        <h1>${escapeHtml(routeLabel(route.path))}</h1>
+        <p>${escapeHtml(route.description)}</p>
+      </header>
+      <section>
+        <h2>RESTART Integrace</h2>
+        <p>Oficiální veřejná stránka projektu RESTART Integrace. Obsah je součástí systému druhých šancí založeného na odpovědnosti, práci, mentoringu, stabilizaci a ověřitelných výsledcích.</p>
+      </section>
+      <nav aria-label="Související stránky">
+        <a href="/">Úvod</a>
+        <a href="/programy">Programy</a>
+        <a href="/kontakt">Kontakt</a>
+      </nav>
+    </main>`;
+  }
+
+  return `<main class="seo-route-snapshot" data-seo-snapshot="public-route">
+    <header>
+      <p class="section-label">${escapeHtml(content.eyebrow)}</p>
+      <h1>${escapeHtml(content.heading)}</h1>
+      <p>${escapeHtml(content.lead)}</p>
+    </header>
+    ${content.sections
+      .map(
+        (section) => `<section>
+      <h2>${escapeHtml(section.title)}</h2>
+      ${(section.paragraphs || []).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('\n      ')}
+      ${
+        section.items?.length
+          ? `<ul>${section.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+          : ''
+      }
+    </section>`
+      )
+      .join('\n    ')}
+    ${
+      content.links?.length
+        ? `<nav aria-label="Související stránky">
+      ${content.links
+        .map(([href, label]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`)
+        .join('\n      ')}
+    </nav>`
+        : ''
+    }
+  </main>`;
 }
 
 function breadcrumbGraph(route) {
@@ -811,7 +1266,7 @@ function renderSupportSnapshot(route) {
     ['/zapojeni/sbirka-knih', 'Sbírka knih'],
     ['/darovat', 'Finanční dary']
   ];
-  return `<main class="seo-support-snapshot" data-seo-snapshot="support-page">
+  return `<main class="seo-route-snapshot seo-support-snapshot" data-seo-snapshot="support-page">
     <header>
       <p class="section-label">Zapojení a podpora</p>
       <h1>${escapeHtml(routeLabel(route.path))}</h1>
@@ -913,6 +1368,8 @@ function renderRoute(route) {
     html = html.replace('<div id="root"></div>', `<div id="root">${renderVideoWatchSnapshot(currentVideo)}</div>`);
   } else if (route.path === '/zapojeni' || route.path.startsWith('/zapojeni/') || route.path === '/darovat') {
     html = html.replace('<div id="root"></div>', `<div id="root">${renderSupportSnapshot(route)}</div>`);
+  } else {
+    html = html.replace('<div id="root"></div>', `<div id="root">${renderRouteSnapshot(route)}</div>`);
   }
   return ensureGoogleTag(deferRenderBlockingCss(html));
 }

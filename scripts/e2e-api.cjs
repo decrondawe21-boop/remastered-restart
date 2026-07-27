@@ -78,6 +78,34 @@ async function request(path, options = {}) {
   let notificationId = '';
   try {
     await waitForServer();
+    const seoArticle = await fetch(
+      `${baseUrl}/api/seo/news-page?scope=stories&publicPath=story-petr-s-druha-sance`
+    );
+    const seoArticleHtml = await seoArticle.text();
+    if (
+      !seoArticle.ok ||
+      !seoArticleHtml.includes('<h1>Petr S.: Dopis, ve kterém se člověk nechce vzdát</h1>') ||
+      !seoArticleHtml.includes('data-seo-snapshot="news-article"') ||
+      !seoArticleHtml.includes(
+        '<link rel="canonical" href="https://restartintegrace.dk-i.cz/pribehy-druhe-sance/story-petr-s-druha-sance"'
+      ) ||
+      !seoArticleHtml.includes('"@type":"NewsArticle"')
+    ) {
+      throw new Error(`Dynamic news SEO page failed: status=${seoArticle.status}`);
+    }
+    const seoArchive = await fetch(
+      `${baseUrl}/api/seo/news-page?publicPath=aktuality-projektu`
+    );
+    const seoArchiveHtml = await seoArchive.text();
+    if (
+      !seoArchive.ok ||
+      !seoArchiveHtml.includes('<h1>Aktuality projektu</h1>') ||
+      !seoArchiveHtml.includes('data-seo-snapshot="news-archive"') ||
+      !seoArchiveHtml.includes('"@type":"CollectionPage"')
+    ) {
+      throw new Error(`Dynamic news tag archive failed: status=${seoArchive.status}`);
+    }
+
     email = `client.${Date.now()}@example.test`;
     const password = 'tajneheslo';
 

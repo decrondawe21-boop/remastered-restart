@@ -90,7 +90,11 @@
     },
     {
       "source": "/aktuality/:path*",
-      "destination": "/index.html"
+      "destination": "/api/index?path=seo/news-page&publicPath=:path*"
+    },
+    {
+      "source": "/pribehy-druhe-sance/:path*",
+      "destination": "/api/index?path=seo/news-page&scope=stories&publicPath=:path*"
     },
     {
       "source": "/aktualita/:path*",

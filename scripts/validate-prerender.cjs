@@ -91,6 +91,34 @@ if (!fs.existsSync(mediaSitemapPath)) {
   }
 }
 
+const videoDateTimePattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})/;
+for (const route of ['videa/predstaveni-projektu', 'videa/logo-reveal']) {
+  const videoPagePath = path.join(distDir, route, 'index.html');
+  if (!fs.existsSync(videoPagePath)) {
+    failures.push(`${route}: prerenderovaná stránka videa chybí.`);
+    continue;
+  }
+
+  const videoPage = fs.readFileSync(videoPagePath, 'utf8');
+  const uploadDate = videoPage.match(/"uploadDate"\s*:\s*"([^"]+)"/)?.[1] || '';
+  if (!videoDateTimePattern.test(uploadDate)) {
+    failures.push(`${route}: VideoObject.uploadDate neobsahuje úplný čas a časové pásmo.`);
+  }
+}
+
+const videoSitemapPath = path.join(distDir, 'sitemap-videos.xml');
+if (!fs.existsSync(videoSitemapPath)) {
+  failures.push('sitemap-videos.xml: soubor chybí.');
+} else {
+  const videoSitemap = fs.readFileSync(videoSitemapPath, 'utf8');
+  const publicationDates = [...videoSitemap.matchAll(/<video:publication_date>([^<]+)<\/video:publication_date>/g)].map(
+    (match) => match[1]
+  );
+  if (publicationDates.length === 0 || publicationDates.some((date) => !videoDateTimePattern.test(date))) {
+    failures.push('sitemap-videos.xml: datum publikace videa neobsahuje úplný čas a časové pásmo.');
+  }
+}
+
 if (failures.length > 0) {
   console.error(`Kontrola prerenderu selhala (${failures.length}):`);
   for (const failure of failures) console.error(`- ${failure}`);

@@ -207,7 +207,7 @@ const videoWatchPages: VideoWatchPageData[] = [
     caption: 'Proč projekt vzniká, komu pomáhá a jak propojuje práci, odpovědnost, podporu a stabilizaci.',
     contentUrl: '/videos/rest-art-intro-z-podkladu-v1-720p.mp4',
     thumbnailUrl: '/videos/rest-art-intro-poster.png',
-    uploadDate: '2026-06-23',
+    uploadDate: '2026-06-23T00:00:00+02:00',
     duration: 'PT15S',
     width: 1280,
     height: 720
@@ -223,7 +223,7 @@ const videoWatchPages: VideoWatchPageData[] = [
     caption: 'Krátký vizuální podpis projektu REST||ART Integrace a jeho myšlenky nového začátku.',
     contentUrl: '/videos/restart-logo-reveal.mp4',
     thumbnailUrl: '/videos/restart-logo-reveal-poster.png',
-    uploadDate: '2026-06-23',
+    uploadDate: '2026-06-23T00:00:00+02:00',
     duration: 'PT6S',
     width: 1920,
     height: 1080

@@ -1,6 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["fra1"],
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.restartintegrace.dk-i.cz"
+        }
+      ],
+      "destination": "https://restartintegrace.dk-i.cz/:path*",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/assets/:path*",

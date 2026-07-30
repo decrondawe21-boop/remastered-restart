@@ -73,6 +73,24 @@ if (!robots.includes(`Sitemap: ${baseUrl}/sitemap.xml`)) {
 const sitemapIndex = fs.readFileSync(path.join(distDir, 'sitemap.xml'), 'utf8');
 if (!sitemapIndex.includes('<sitemapindex')) failures.push('sitemap.xml: soubor není sitemap index.');
 
+const mediaSitemapPath = path.join(distDir, 'sitemap-media.xml');
+if (!fs.existsSync(mediaSitemapPath)) {
+  failures.push('sitemap-media.xml: soubor chybí.');
+} else {
+  const mediaSitemap = fs.readFileSync(mediaSitemapPath, 'utf8');
+  if (!mediaSitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"')) {
+    failures.push('sitemap-media.xml: chybí jmenný prostor obrazové sitemapy.');
+  }
+  if (!/<image:image>[\s\S]*?<image:loc>https:\/\/restartintegrace\.dk-i\.cz\//.test(mediaSitemap)) {
+    failures.push('sitemap-media.xml: neobsahuje žádné obrazové záznamy.');
+  }
+  const submittedPageUrls = [...mediaSitemap.matchAll(/<url>[\s\S]*?<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+  const directBinaryPage = submittedPageUrls.find((url) => /\.(?:avif|gif|jpe?g|mp4|png|webm|webp)(?:$|\?)/i.test(url));
+  if (directBinaryPage) {
+    failures.push(`sitemap-media.xml: binární soubor je chybně odeslaný jako stránka (${directBinaryPage}).`);
+  }
+}
+
 if (failures.length > 0) {
   console.error(`Kontrola prerenderu selhala (${failures.length}):`);
   for (const failure of failures) console.error(`- ${failure}`);

@@ -22,16 +22,51 @@ function getPool() {
       database: process.env.DB_NAME,
       charset: 'utf8mb4',
       waitForConnections: true,
-      connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 5)
+      connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 5),
+      connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT_MS || 4000),
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 0
     });
   }
   return pool;
 }
 
+const transientConnectionErrors = new Set([
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EPIPE',
+  'ETIMEDOUT',
+  'PROTOCOL_CONNECTION_LOST'
+]);
+
+function isReadOnlyQuery(sql) {
+  return /^(?:SELECT|SHOW|DESCRIBE|EXPLAIN|WITH)\b/i.test(String(sql || '').trim());
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
 async function query(sql, params = []) {
-  const [rows] = await getPool().execute(sql, params);
-  return rows;
+  const attempts = isReadOnlyQuery(sql) ? 2 : 1;
+  let lastError;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const [rows] = await getPool().execute(sql, params);
+      return rows;
+    } catch (error) {
+      lastError = error;
+      if (attempt >= attempts || !transientConnectionErrors.has(error?.code)) throw error;
+
+      const stalePool = pool;
+      pool = undefined;
+      stalePool?.end().catch(() => {});
+      await wait(150 * attempt);
+    }
+  }
+
+  throw lastError;
 }
 
 module.exports = { getPool, query };
-

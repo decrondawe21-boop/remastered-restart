@@ -1476,6 +1476,47 @@ ${uniqueEntries(entries)
 `;
 }
 
+function preferredImageEntries(entries) {
+  const preferred = new Map();
+  const priority = { '.webp': 4, '.avif': 3, '.jpg': 2, '.jpeg': 2, '.png': 1 };
+
+  for (const entry of entries) {
+    const url = new URL(entry.loc);
+    const extension = path.extname(url.pathname).toLowerCase();
+    if (!priority[extension]) continue;
+    const key = url.pathname.slice(0, -extension.length).toLowerCase();
+    const current = preferred.get(key);
+    if (!current || priority[extension] > priority[path.extname(new URL(current.loc).pathname).toLowerCase()]) {
+      preferred.set(key, entry);
+    }
+  }
+
+  return Array.from(preferred.values());
+}
+
+function renderImageSitemap(groups) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${groups
+  .filter((group) => group.images.length > 0)
+  .map(
+    (group) => `  <url>
+    <loc>${escapeXml(`${baseUrl}${group.path}`)}</loc>
+${group.images
+  .map(
+    (entry) => `    <image:image>
+      <image:loc>${escapeXml(entry.loc)}</image:loc>
+    </image:image>`
+  )
+  .join('\n')}
+  </url>`
+  )
+  .join('\n')}
+</urlset>
+`;
+}
+
 const documentEntries = uniqueEntries([
   {
     loc: `${baseUrl}/documents/methodology/metodika-restart-integrace.pdf`,
@@ -1491,9 +1532,50 @@ const mediaEntries = uniqueEntries([
   ...collectPublicFiles('images/media', ['.png', '.jpg', '.jpeg', '.webp'], (publicPath) => publicPath.includes('/internal/')),
   ...collectPublicFiles('images/crops', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/statistics', ['.png', '.jpg', '.jpeg', '.webp']),
-  ...collectPublicFiles('images/og', ['.png', '.jpg', '.jpeg', '.webp']),
-  ...collectPublicFiles('videos', ['.mp4', '.webm', '.webp', '.png'], (publicPath) => publicPath.includes('rest-art-logo-reveal-standard'))
+  ...collectPublicFiles('images/og', ['.png', '.jpg', '.jpeg', '.webp'])
 ]);
+const preferredMediaImages = preferredImageEntries(mediaEntries);
+const mediaImageGroups = [
+  {
+    path: '/',
+    images: preferredMediaImages.filter(
+      (entry) =>
+        entry.loc.includes('/images/crops/camera-202607/') ||
+        entry.loc.includes('/images/crops/new-photos/') ||
+        entry.loc.includes('/images/crops/roses-20260608/') ||
+        entry.loc.endsWith('/images/og/restart-integrace-homepage-1200x630.png') ||
+        entry.loc.endsWith('/images/og/restart-integrace-og-1200x630.png')
+    )
+  },
+  {
+    path: '/programy/streetwise',
+    images: preferredMediaImages.filter((entry) => entry.loc.includes('/images/crops/streetwise/'))
+  },
+  {
+    path: '/povinne-zverejnovani',
+    images: preferredMediaImages.filter(
+      (entry) =>
+        entry.loc.includes('/images/statistics/') ||
+        entry.loc.endsWith('/images/og/restart-integrace-povinne-zverejnovani-1200x630.png')
+    )
+  },
+  {
+    path: '/pribehy-druhe-sance',
+    images: preferredMediaImages.filter((entry) =>
+      entry.loc.endsWith('/images/og/restart-integrace-pribehy-1200x630.png')
+    )
+  },
+  {
+    path: '/zapojeni',
+    images: preferredMediaImages.filter((entry) =>
+      entry.loc.endsWith('/images/og/restart-integrace-zapojeni-1200x630.png')
+    )
+  },
+  {
+    path: '/media',
+    images: preferredMediaImages.filter((entry) => entry.loc.includes('/images/media/'))
+  }
+];
 
 const sitemapPages = renderRouteSitemap(pageSitemapRoutes);
 const sitemapPrograms = renderRouteSitemap(programSitemapRoutes);
@@ -1501,7 +1583,7 @@ const sitemapStories = renderRouteSitemap(storySitemapRoutes);
 const sitemapDonate = renderRouteSitemap(donateSitemapRoutes);
 const sitemapMethodology = renderRouteSitemap(methodologySitemapRoutes);
 const sitemapDocuments = renderFileSitemap(documentEntries);
-const sitemapMedia = renderFileSitemap(mediaEntries);
+const sitemapMedia = renderImageSitemap(mediaImageGroups);
 
 const sitemapVideos = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">

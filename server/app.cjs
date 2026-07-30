@@ -1120,7 +1120,15 @@ async function newsSeoPage(request, response, url) {
     return;
   }
 
-  const databaseRows = await loadPublishedNewsRows(5000);
+  let databaseRows = [];
+  try {
+    databaseRows = await loadPublishedNewsRows(5000);
+  } catch (error) {
+    if (error?.code !== 'ETIMEDOUT' && error?.code !== 'ECONNRESET' && error?.code !== 'PROTOCOL_CONNECTION_LOST') {
+      throw error;
+    }
+    console.warn('[seo] Published news database is temporarily unavailable; serving built-in article fallbacks.');
+  }
   const itemByPath = new Map();
   [...builtInNewsSitemapRows, ...databaseRows]
     .map(publicNewsRow)
@@ -1187,7 +1195,7 @@ async function newsSeoPage(request, response, url) {
 }
 
 async function newsSitemap(_request, response) {
-  let rows;
+  let rows = [];
   try {
     rows = await query(
       `SELECT id, title, slug, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date
@@ -1197,14 +1205,19 @@ async function newsSitemap(_request, response) {
        LIMIT 5000`
     );
   } catch (error) {
-    if (!isUnknownColumnError(error)) throw error;
-    rows = await query(
-      `SELECT id, title, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date
-       FROM news
-       WHERE status = 'published'
-       ORDER BY published_at DESC, created_at DESC
-       LIMIT 5000`
-    );
+    if (isUnknownColumnError(error)) {
+      rows = await query(
+        `SELECT id, title, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date
+         FROM news
+         WHERE status = 'published'
+         ORDER BY published_at DESC, created_at DESC
+         LIMIT 5000`
+      );
+    } else if (error?.code === 'ETIMEDOUT' || error?.code === 'ECONNRESET' || error?.code === 'PROTOCOL_CONNECTION_LOST') {
+      console.warn('[seo] Published news database is temporarily unavailable; serving the built-in sitemap.');
+    } else {
+      throw error;
+    }
   }
 
   const itemByPath = new Map();

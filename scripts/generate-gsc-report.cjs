@@ -239,7 +239,7 @@ async function main() {
     '',
     ...priorityUrls.map((url, index) => `${index + 1}. ${url}`),
     '',
-    'Není vhodné ručně odesílat všech 146 URL. Ručně odešlete klíčové rozcestníky a několik reprezentativních detailů; zbytek má Google objevit přes sitemap a interní odkazy.',
+    `Není vhodné ručně odesílat všech ${uniqueEntries.length} URL. Ručně odešlete klíčové rozcestníky a několik reprezentativních detailů; zbytek má Google objevit přes sitemap a interní odkazy.`,
     '',
     '## Pravidelná kontrola',
     '',

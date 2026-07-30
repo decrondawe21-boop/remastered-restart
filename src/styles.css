@@ -1667,6 +1667,97 @@ h3 {
   line-height: 1.35;
 }
 
+.program-visual-story {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(26px, 4vw, 58px);
+  align-items: center;
+  border-block: 1px solid var(--line);
+}
+
+.program-visual-story figure {
+  display: grid;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #06110d;
+  box-shadow: var(--shadow);
+}
+
+.program-visual-story figure a,
+.program-visual-story figure img {
+  display: block;
+  width: 100%;
+}
+
+.program-visual-story figure img {
+  height: auto;
+}
+
+.program-visual-story figcaption {
+  padding: 12px 16px;
+  background: var(--green-dark);
+  color: #fff;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.program-visual-copy {
+  display: grid;
+  gap: 16px;
+  align-content: center;
+}
+
+.program-visual-copy h2,
+.methodology-system-head h2 {
+  margin: 0;
+  color: var(--green-dark);
+  line-height: 1.04;
+}
+
+.program-visual-copy > p:not(.section-label),
+.methodology-system-head > p,
+.methodology-system-legend p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.program-visual-principles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 4px 0 0;
+  padding: 0;
+  border-block: 1px solid var(--line);
+  list-style: none;
+}
+
+.program-visual-principles li {
+  display: grid;
+  gap: 6px;
+  padding: 18px 18px 18px 0;
+}
+
+.program-visual-principles li:nth-child(even) {
+  padding-inline: 18px 0;
+  border-left: 1px solid var(--line);
+}
+
+.program-visual-principles li:nth-child(n + 3) {
+  border-top: 1px solid var(--line);
+}
+
+.program-visual-principles strong {
+  color: var(--green-dark);
+}
+
+.program-visual-principles span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .hero-aside {
   overflow: hidden;
   border: 1px solid var(--line);
@@ -6006,6 +6097,72 @@ h3 {
   gap: clamp(28px, 4vw, 54px);
 }
 
+.methodology-system-model {
+  display: grid;
+  gap: 24px;
+  padding-block: clamp(30px, 4vw, 52px);
+  border-block: 1px solid var(--line);
+}
+
+.methodology-system-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.7fr);
+  gap: 28px;
+  align-items: end;
+}
+
+.methodology-system-head h2 {
+  max-width: 760px;
+}
+
+.methodology-system-figure {
+  display: grid;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f5f8f3;
+}
+
+.methodology-system-figure a,
+.methodology-system-figure img {
+  display: block;
+  width: 100%;
+}
+
+.methodology-system-figure img {
+  height: auto;
+}
+
+.methodology-system-figure figcaption {
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.methodology-system-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--line);
+}
+
+.methodology-system-legend article {
+  display: grid;
+  gap: 8px;
+  padding: 18px 22px;
+}
+
+.methodology-system-legend article + article {
+  border-left: 1px solid var(--line);
+}
+
+.methodology-system-legend h3 {
+  margin: 0;
+  color: var(--green-dark);
+  font-size: 1rem;
+}
+
 .methodology-hero,
 .methodology-split,
 .methodology-style-section {
@@ -8815,6 +8972,7 @@ h3 {
   .methodology-split,
   .methodology-style-section,
   .methodology-document-library-head,
+  .methodology-system-head,
   .methodology-document-layout,
   .methodology-related-documents,
   .contact-section,
@@ -8905,6 +9063,19 @@ h3 {
 
   .streetwise-feature {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .program-visual-story {
+    grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .methodology-system-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .methodology-system-legend article + article {
+    border-top: 1px solid var(--line);
+    border-left: 0;
   }
 
   .editor-body-grid,
@@ -9530,6 +9701,29 @@ h3 {
   .program-detail-hero,
   .program-detail-hero.has-image {
     grid-template-columns: 1fr;
+  }
+
+  .program-visual-story {
+    grid-template-columns: 1fr;
+  }
+
+  .program-visual-story figure {
+    width: min(100%, 620px);
+    justify-self: center;
+  }
+
+  .program-visual-principles {
+    grid-template-columns: 1fr;
+  }
+
+  .program-visual-principles li,
+  .program-visual-principles li:nth-child(even) {
+    padding-inline: 0;
+    border-left: 0;
+  }
+
+  .program-visual-principles li + li {
+    border-top: 1px solid var(--line);
   }
 
   .program-detail-title {

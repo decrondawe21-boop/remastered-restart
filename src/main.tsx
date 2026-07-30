@@ -4197,6 +4197,7 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
   const Icon = program.icon;
   const pillarVisual = getProgramPillarVisual(program.title);
   const heroImage = program.image ?? pillarVisual;
+  const isStreetwise = program.title === 'STREETWISE';
   const [activeActivityIndex, setActiveActivityIndex] = React.useState<number | null>(null);
   const activeActivity =
     activeActivityIndex !== null ? program.activityDetails?.[activeActivityIndex] ?? null : null;
@@ -4289,6 +4290,38 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
           })}
         </div>
       </section>
+      {isStreetwise ? (
+        <section className="content-section program-visual-story streetwise-program-visual" aria-labelledby="streetwise-visual-title">
+          <figure>
+            <a href="/images/program-pillars/streetwise-program-vizual.webp" target="_blank" rel="noreferrer">
+              <img
+                src="/images/program-pillars/streetwise-program-vizual.webp"
+                alt="Vizuál programu STREETWISE s člověkem při práci a principy praktických dovedností, režimu, odpovědnosti a druhé šance."
+                width={1280}
+                height={1280}
+                loading="lazy"
+              />
+            </a>
+            <figcaption>
+              Veřejný vizuál programu STREETWISE: dovednosti, disciplína, důstojnost a nový směr.
+            </figcaption>
+          </figure>
+          <div className="program-visual-copy">
+            <p className="section-label">STREETWISE v jednom obrazu</p>
+            <h2 id="streetwise-visual-title">Praktický krok má smysl, když vede k samostatnosti</h2>
+            <p>
+              Vizuální koncept shrnuje směr programu. Praktické dovednosti, denní režim a návazná podpora nejsou cílem
+              samy o sobě. Jsou oporou pro člověka, který znovu přebírá odpovědnost za svůj život.
+            </p>
+            <ul className="program-visual-principles">
+              <li><strong>Praktické dovednosti</strong><span>Konkrétní úkol, viditelný výsledek a zkušenost, že změnu lze dokončit.</span></li>
+              <li><strong>Režim a odpovědnost</strong><span>Jasná pravidla, pravidelnost a spolehlivost, na které se dá stavět.</span></li>
+              <li><strong>Krok za krokem</strong><span>Realistický plán rozdělený na malé kroky, které člověk dokáže udržet.</span></li>
+              <li><strong>Druhá šance skutečně</strong><span>Minulost nezmizí, ale dnešní rozhodnutí může změnit další směr.</span></li>
+            </ul>
+          </div>
+        </section>
+      ) : null}
       {activeActivity
         ? createPortal(
             <div
@@ -5813,6 +5846,45 @@ function MethodologyPage({ account }: { account: AuthAccount | null }) {
           ))}
         </div>
       </div>
+
+      <section className="methodology-system-model" aria-labelledby="methodology-system-model-title">
+        <div className="methodology-system-head">
+          <div>
+            <p className="section-label">Vizuální model systému</p>
+            <h2 id="methodology-system-model-title">Jak se zkušenost mění v měřitelný systém spolupráce</h2>
+          </div>
+          <p>
+            REST||ART Integrace propojuje práci s konkrétním člověkem a síť partnerů. Metodika určuje postup,
+            dokumentace drží odpovědnost a měření ukazuje, co skutečně funguje.
+          </p>
+        </div>
+        <figure className="methodology-system-figure">
+          <a href="/images/methodology/vizualni-model-rest-art-integrace.webp" target="_blank" rel="noreferrer">
+            <img
+              src="/images/methodology/vizualni-model-rest-art-integrace.webp"
+              alt="Diagram systému REST ART Integrace: cílové skupiny postupují přes programy, metodiku, dokumentaci a měření; zaměstnavatelé, obce, instituce, dobrovolníci, komunita a partneři tvoří spolupracující síť. Společným výsledkem je stabilní člověk."
+              width={1168}
+              height={576}
+              loading="lazy"
+            />
+          </a>
+          <figcaption>Vizuální mapa metodického toku, spolupracující sítě a společného výsledku.</figcaption>
+        </figure>
+        <div className="methodology-system-legend">
+          <article>
+            <h3>Metodický tok</h3>
+            <p>Cílové skupiny → programy → metodika → dokumentace → měření → výstupy.</p>
+          </article>
+          <article>
+            <h3>Síť spolupráce</h3>
+            <p>Zaměstnavatelé, obce, instituce, dobrovolníci, komunita a odborní partneři přinášejí konkrétní návaznost.</p>
+          </article>
+          <article>
+            <h3>Společný výsledek</h3>
+            <p>Stabilní člověk, který dokáže převzít odpovědnost, pracovat na sobě a udržet změnu v běžném životě.</p>
+          </article>
+        </div>
+      </section>
 
       <section className="methodology-document-library" aria-labelledby="verejna-dokumentace-title">
         <div className="methodology-document-library-head">

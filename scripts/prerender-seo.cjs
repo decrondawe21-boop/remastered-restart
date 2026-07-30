@@ -1015,6 +1015,66 @@ function routeSpecificGraph(route, canonical) {
     }
     return [];
   }
+  if (route.path === '/programy/streetwise') {
+    return [
+      {
+        '@type': 'Service',
+        '@id': `${canonical}#service-streetwise`,
+        name: 'STREETWISE',
+        alternateName: ['Program STREETWISE', 'STREETWISE - první bezpečný krok'],
+        description:
+          'STREETWISE je program RESTART Integrace pro první dostupný kontakt, praktickou pomoc, režim, odpovědnost a cestu od akutní nouze ke stabilizaci.',
+        serviceType: 'Nízkoprahová podpora a sociální stabilizace',
+        provider: {
+          '@id': `${baseUrl}/#organization`
+        },
+        areaServed: {
+          '@type': 'Country',
+          name: 'Česká republika'
+        },
+        audience: {
+          '@type': 'Audience',
+          audienceType: 'Lidé bez stabilního zázemí, lidé mimo dosah systému a osoby ohrožené sociálním vyloučením'
+        },
+        image: {
+          '@id': `${baseUrl}/images/program-pillars/streetwise-program-vizual.webp#image`
+        },
+        mainEntityOfPage: {
+          '@id': `${canonical}#webpage`
+        }
+      },
+      {
+        '@type': 'ImageObject',
+        '@id': `${baseUrl}/images/program-pillars/streetwise-program-vizual.webp#image`,
+        contentUrl: `${baseUrl}/images/program-pillars/streetwise-program-vizual.webp`,
+        name: 'STREETWISE: dovednosti, disciplína, důstojnost a nový směr',
+        caption:
+          'Vizuál programu STREETWISE s principy praktických dovedností, režimu, odpovědnosti, postupných kroků a skutečné druhé šance.',
+        encodingFormat: 'image/webp',
+        width: 1280,
+        height: 1280,
+        inLanguage: 'cs-CZ',
+        representativeOfPage: true
+      }
+    ];
+  }
+  if (route.path === '/metodika') {
+    return [
+      {
+        '@type': 'ImageObject',
+        '@id': `${baseUrl}/images/methodology/vizualni-model-rest-art-integrace.webp#image`,
+        contentUrl: `${baseUrl}/images/methodology/vizualni-model-rest-art-integrace.webp`,
+        name: 'Vizuální model systému REST ART Integrace',
+        caption:
+          'Diagram metodického toku, spolupracující sítě a společného výsledku systému REST ART Integrace.',
+        encodingFormat: 'image/webp',
+        width: 1168,
+        height: 576,
+        inLanguage: 'cs-CZ',
+        representativeOfPage: true
+      }
+    ];
+  }
   if (route.path !== '/programy/jailbreak') return [];
   return [
     {
@@ -1531,6 +1591,8 @@ const documentEntries = uniqueEntries([
 const mediaEntries = uniqueEntries([
   ...collectPublicFiles('images/media', ['.png', '.jpg', '.jpeg', '.webp'], (publicPath) => publicPath.includes('/internal/')),
   ...collectPublicFiles('images/crops', ['.png', '.jpg', '.jpeg', '.webp']),
+  ...collectPublicFiles('images/program-pillars', ['.png', '.jpg', '.jpeg', '.webp']),
+  ...collectPublicFiles('images/methodology', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/statistics', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/og', ['.png', '.jpg', '.jpeg', '.webp'])
 ]);
@@ -1549,7 +1611,17 @@ const mediaImageGroups = [
   },
   {
     path: '/programy/streetwise',
-    images: preferredMediaImages.filter((entry) => entry.loc.includes('/images/crops/streetwise/'))
+    images: preferredMediaImages.filter(
+      (entry) =>
+        entry.loc.includes('/images/crops/streetwise/') ||
+        entry.loc.endsWith('/images/program-pillars/streetwise-program-vizual.webp')
+    )
+  },
+  {
+    path: '/metodika',
+    images: preferredMediaImages.filter((entry) =>
+      entry.loc.endsWith('/images/methodology/vizualni-model-rest-art-integrace.webp')
+    )
   },
   {
     path: '/povinne-zverejnovani',

@@ -572,6 +572,215 @@ export const partnerTypes = [
 
 export const starterNews = [
   {
+    id: 'field-update-paletove-posezeni-2026-08',
+    slug: 'makame-dal-paletove-posezeni-vznika-u-nas',
+    title: 'Makáme dál: z palet roste vlastní posezení',
+    date: '2026-08-04',
+    tag: 'Práce v terénu',
+    excerpt:
+      'Inspirovali jsme se jednoduchým vzorem a pustili se do práce. Z použitých palet už vzniklo vlastní posezení — krok za krokem, vlastníma rukama a z materiálu, který dostal další využití.',
+    imageUrl: '/images/updates/srpen-2026/zakladna/03-zazemi-lavice.jpg',
+    body: [
+      '<p>Vzor nám ukázal směr. Rozhodující část ale vznikla až u nás: rozebrat materiál, vybrat použitelné díly, poskládat a zpevnit konstrukci a postupně z ní udělat funkční kus nábytku.</p>',
+      '<div class="progress-comparison">',
+      '<figure class="progress-comparison-card progress-comparison-card--work"><div class="progress-comparison-media"><img src="/images/updates/srpen-2026/zakladna/03-zazemi-lavice.jpg" alt="Naše paletové posezení u základny REST||ART"><span class="progress-comparison-label">Naše práce</span></div><figcaption><strong>Vzniklo přímo u nás</strong><span>Lavice z použitých palet už stojí před zázemím a dostala první sedáky.</span></figcaption></figure>',
+      '<figure class="progress-comparison-card progress-comparison-card--reference"><div class="progress-comparison-media"><img src="/images/updates/srpen-2026/paletove-posezeni-vzor.jpg" alt="Pinterestová inspirace pro paletové posezení"><span class="progress-comparison-label">Inspirace</span></div><figcaption><strong>Obrázek, od kterého jsme se odrazili</strong><span>Nekopírujeme hotový výrobek. Hledáme vlastní řešení podle rozměrů a materiálu, který máme k dispozici.</span></figcaption></figure>',
+      '</div>',
+      '<div class="project-photo-story"><img src="/images/updates/srpen-2026/paletove-posezeni-vyroba.jpg" alt="Rozpracovaná paletová lavice před dokončením"><div class="project-photo-story-copy"><span>Průběh výroby</span><strong>Od rozebraných palet k použitelnému posezení</strong><p>Ještě před několika dny byla vidět hlavně hrubá konstrukce. Teď už je z nápadu skutečný kus vybavení, na kterém se dá dál pracovat a který může sloužit.</p></div></div>',
+      '<h2>Co ještě doladíme</h2>',
+      '<ul><li>finální zpevnění a kontrolu celé konstrukce,</li><li>broušení hran a přípravu povrchu,</li><li>ochranný nátěr a dokončovací detaily,</li><li>pohodlnější sedáky a finální umístění v zázemí.</li></ul>',
+      '<p><strong>Ukazujeme i průběh, ne jen hotový výsledek.</strong> Právě na něm je nejlépe vidět, že na místě opravdu pracujeme a každý další krok posouvá základnu dopředu.</p>'
+    ].join('')
+  },
+  {
+    id: 'field-update-zazemi-2026-08',
+    slug: 'bouda-z-darovanych-materialu-pevny-zaklad',
+    title: 'Z darovaných materiálů stavíme pevné zázemí',
+    date: '2026-08-04',
+    tag: 'Stavíme svépomocí',
+    excerpt:
+      'Není to katalogová stavba — vzniká z toho, co nám kdo daruje. Má ale pevné základy, uvnitř už slouží a připravené plechy na střechu čekají na snýtování.',
+    imageUrl: '/images/updates/srpen-2026/zakladna/18-zakladna-celkem.jpg',
+    body: [
+      '<p>Na první pohled není dokonalá — a ani si na to nehraje. Boudu REST||ART stavíme svépomocí z materiálů, které nám lidé darují nebo které dokážeme znovu smysluplně využít. Podstatné je, že stojí na pevném základu a už teď vytváří funkční zázemí.</p>',
+      '<div class="project-status"><span class="project-status-badge">Stav k 4. srpnu 2026</span><strong>Uvnitř už slouží. Zvenku pokračujeme.</strong><p>Modrá plachta je stále pouze dočasné zakrytí. Plechová střecha je připravená v garáži a čeká na snýtování.</p></div>',
+      '<h2>Posun je vidět i během několika dní</h2>',
+      '<div class="progress-comparison">',
+      '<figure class="progress-comparison-card progress-comparison-card--reference"><div class="progress-comparison-media"><img src="/images/updates/srpen-2026/bouda-z-darovanych-materialu.jpg" alt="Bouda REST||ART na začátku srpna během stavby"><span class="progress-comparison-label">1. srpna</span></div><figcaption><strong>Rozpracované zázemí</strong><span>Přední část byla ještě zaplněná materiálem a pracovalo se hlavně na základní podobě stavby.</span></figcaption></figure>',
+      '<figure class="progress-comparison-card progress-comparison-card--work"><div class="progress-comparison-media"><img src="/images/updates/srpen-2026/zakladna/18-zakladna-celkem.jpg" alt="Bouda a pracovní část základny o několik dní později"><span class="progress-comparison-label">4. srpna</span></div><figcaption><strong>Prostor už začíná fungovat</strong><span>Vstup, pracovní část i okolí se postupně čistí, skládají a připravují k běžnému používání.</span></figcaption></figure>',
+      '</div>',
+      '<h2>Uvnitř se opravdu bydlí a pracuje</h2>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/20-bouda-interier-1.jpg" alt="První část interiéru boudy REST||ART"><figcaption>Obytná část s lůžkem, úložnými skříněmi a podlahou skládanou z dostupných dílů.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/21-bouda-interier-2.jpg" alt="Druhá část interiéru boudy REST||ART"><figcaption>Druhá část interiéru slouží pro ukládání věcí, jednoduché cvičení i každodenní provoz.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/22-pracovni-prostor.jpg" alt="Pracovní a úložný prostor vedle boudy"><figcaption>Pracovní a úložný prostor vzniká postupně podle toho, jaký materiál se podaří získat.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/23-venkovni-stul.jpg" alt="Provizorní bar a venkovní pracovní stůl"><figcaption>Provizorní bar a pracovní stůl: jednoduché, funkční a postavené z toho, co bylo po ruce.</figcaption></figure>',
+      '</div>',
+      '<h2>Co už je hotové a co nás čeká</h2>',
+      '<ul><li>pevný základ a nosná část stavby,</li><li>zařízený a používaný vnitřní prostor,</li><li>připravené plechy pro dokončení střechy,</li><li>další opláštění, srovnání a dokončovací práce podle dostupného materiálu.</li></ul>'
+    ].join('')
+  },
+  {
+    id: 'field-update-zahrada-2026-08',
+    slug: 'zahrada-dostava-svou-tvar',
+    title: 'Zahrada dostává svou tvář: březen versus červenec',
+    date: '2026-08-04',
+    tag: 'Proměna místa',
+    excerpt:
+      'Stejný kout na jaře a na konci července ukazuje skutečnou změnu. Vedle záhonů vznikají cesty, jezírko, skalky, truhlíky i drobné prvky vyrobené vlastníma rukama.',
+    imageUrl: '/images/updates/srpen-2026/zakladna/10-ruze.jpg',
+    body: [
+      '<p>Nejde jen o velké stavební zásahy. Atmosféru místa vytváří i každodenní péče: srovnat záhon, položit kameny, ošetřit rostliny, upravit cestu a vrátit drobným koutům smysl.</p>',
+      '<div class="progress-comparison">',
+      '<figure class="progress-comparison-card progress-comparison-card--reference"><div class="progress-comparison-media"><img src="/images/updates/srpen-2026/zakladna/27-zahrada-brezen.jpg" alt="Zahradní kout v březnu 2026 na začátku úprav"><span class="progress-comparison-label">Březen 2026</span></div><figcaption><strong>Začínali jsme od základu</strong><span>Geotextilie, kameny a první obrysy záhonů. Místo teprve hledalo svou podobu.</span></figcaption></figure>',
+      '<figure class="progress-comparison-card progress-comparison-card--work"><div class="progress-comparison-media"><img src="/images/updates/srpen-2026/zakladna/28-zahrada-cervenec.jpg" alt="Stejný zahradní kout na konci července 2026"><span class="progress-comparison-label">Červenec 2026</span></div><figcaption><strong>Stejný kout o čtyři měsíce později</strong><span>Růže, rozrostlé záhony, upravené cesty a jasně ohraničený prostor ukazují každodenní práci.</span></figcaption></figure>',
+      '</div>',
+      '<div class="project-photo-story"><img src="/images/updates/srpen-2026/zakladna/11-cesta-k-zakladne.jpg" alt="Nově upravovaná cesta k základně REST||ART"><div class="project-photo-story-copy"><span>Cesta k základně</span><strong>Každý metr skládáme postupně</strong><p>Na cestě je vidět mnoho nového. Obrubníky i část povrchů jsme pokládali sami a postupně doplňujeme plůtky, výsadbu i další detaily.</p></div></div>',
+      '<h2>Další místa, která dostávají smysl</h2>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card project-gallery-card--wide"><img src="/images/updates/srpen-2026/zakladna/17-jezirka.jpg" alt="Nově vybudované jezírko se skalkou a původní jezírko v pozadí"><figcaption>Nové jezírko jsme celé vykopali, osadili a doplnili skalkou. Čerpadlo nalezené v kontejneru se podařilo zprovoznit; v pozadí je původní jezírko.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/06-truhliky.jpg" alt="Truhlíky a vyřezávané dekorace u příjezdové cesty"><figcaption>Námi postavené truhlíky u příjezdové cesty a první vyřezávané dekorace, které chceme postupně rozmístit podél cest.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/26-nova-skalka.jpg" alt="Nově zakládaná skalka mezi paletami"><figcaption>Nově založená skalka je stále ve výstavbě. Kameny, výsadbu i celé ohraničení skládáme postupně.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/01-kompost.jpg" alt="Ručně sestavený kompostér na zahradní zbytky"><figcaption>Po domácku stlučený kompostér využívá plevel i zbytky, které nesnědí zvířata, aby se materiál vrátil ke květinám jako hnojivo.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/02-kad-voda.jpg" alt="Nalezená káď s vodou zarůstající zelení"><figcaption>Vyhozená káď s vodou už začíná obrůstat zelení. Je to jeden z budoucích projektů, který ještě čeká na dokončení.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/13-kocour-rajcata-obrubnik.jpg" alt="Kocour u rajčat a nově položeného obrubníku"><figcaption>U rajčat vzniká plůtek, který oddělí záhon od cesty. Obrubník podél cesty jsme položili sami — pod dohledem druhého kocoura.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/09-kocour-hlida-cestu.jpg" alt="Kocour na hlavní cestě do základny"><figcaption>Jeden ze dvou pravidelných hlídačů na hlavní cestičce do základny.</figcaption></figure>',
+      '</div>',
+      '<p><strong>Skutečný restart není jednorázové gesto.</strong> Je to vytrvalost, opakovaná práce a viditelný posun — záhon po záhonu a krok po kroku.</p>'
+    ].join('')
+  },
+  {
+    id: 'field-update-reuse-zakladna-2026-08',
+    slug: 'zakladna-roste-z-toho-co-dostalo-druhou-sanci',
+    title: 'Základna roste z toho, co dostalo druhou šanci',
+    date: '2026-08-04',
+    tag: 'Práce v terénu',
+    excerpt:
+      'Darované palety, místní dřevo, nalezené vybavení i vlastní ruční práce. Na jednom místě je vidět, jak z věcí určených k vyhození vznikají ploty, pracovní kouty a praktické zázemí.',
+    imageUrl: '/images/updates/srpen-2026/zakladna/08-proutene-kreslo-zakladna.jpg',
+    body: [
+      '<p>Velká část základny nevzniká nákupem hotových řešení. Pracujeme s tím, co nám někdo daruje, co se podaří zachránit nebo co lze přestavět. Výsledek proto není katalogový, ale je skutečný, funkční a každým týdnem o kus dál.</p>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card project-gallery-card--wide"><img src="/images/updates/srpen-2026/zakladna/04-darovane-palety.jpg" alt="Velká zásoba palet darovaných anonymním podnikem"><figcaption>Palety nám daroval podnik, který si nepřál být jmenován. Právě z podobného materiálu vzniká nábytek, oplocení i další části zázemí.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/05-plot-drevo.jpg" alt="Dokončovaný plot kolem darované hromady dřeva"><figcaption>Aktuálně dokončujeme plot kolem hromady dřeva, které nanosili místní. Z tohoto materiálu vznikla také bouda REST||ART.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/25-novy-plot.jpg" alt="Námi postavený venkovní plot"><figcaption>Nový plot zvenčí. Na místě, kde dříve zůstávala jen otevřená mezera, je dnes jasně ohraničený vstup.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/14-pracovni-stul.jpg" alt="Pracovní stůl s darovaným a zajištěným nářadím"><figcaption>Pracovní stůl s nářadím. Většina vybavení je darovaná nebo nalezená; nákladnější nástroje zajistila společnost David Kozák International, s.r.o.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/15-plovouci-podlaha.jpg" alt="Připravená plovoucí podlaha pro interiér základny"><figcaption>Složená plovoucí podlaha čeká na další použití uvnitř základny.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/07-vstupni-brana.jpg" alt="Vstupní brána a cesta do základny"><figcaption>Vstupní brána otevírá hlavní cestu do základny, kterou postupně upravujeme a doplňujeme.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/updates/srpen-2026/zakladna/08-proutene-kreslo-zakladna.jpg" alt="Ručně pletené proutěné křeslo před boudou REST||ART"><figcaption>Ručně pletené proutěné křeslo, bouda REST||ART a nový plot v jednom záběru — několik různých podob práce na jednom místě.</figcaption></figure>',
+      '</div>',
+      '<p>Recyklace tu není jen heslo. Každá zachráněná paleta, opravený předmět nebo znovu použitá deska snižuje náklady a současně vytváří konkrétní prostor pro práci, setkávání a další rozvoj projektu.</p>'
+    ].join('')
+  },
+  {
+    id: '0db6fc6b-1eea-42a0-ab3a-a6d381397d4f',
+    slug: 'opszp',
+    title: 'Dokumentace OPSZP',
+    date: '2026-06-10',
+    tag: 'Média a materiály',
+    excerpt: 'Podklady REST||ART pro konzultaci v rámci OPSZP.',
+    imageUrl: '/images/updates/archiv-2026/opszp-podklad-1.webp',
+    body: [
+      '<p>Zveřejňujeme dvě strany podkladového materiálu REST||ART připraveného pro odbornou konzultaci.</p>',
+      '<figure><img src="/images/updates/archiv-2026/opszp-podklad-1.webp" alt="První strana podkladu REST||ART pro konzultaci OPSZP"><figcaption>Podklad pro konzultaci — strana 1.</figcaption></figure>',
+      '<figure><img src="/images/updates/archiv-2026/opszp-podklad-2.webp" alt="Druhá strana podkladu REST||ART pro konzultaci OPSZP"><figcaption>Podklad pro konzultaci — strana 2.</figcaption></figure>'
+    ].join('')
+  },
+  {
+    id: '76719b7a-e6cd-4fd9-a35b-68e3ef0d05f1',
+    slug: 'majerpropusten',
+    title: 'Jaroslav Majer jde ven!',
+    date: '2026-05-17',
+    tag: 'JAILBREAK',
+    excerpt: 'Můžete slavit — Jaroslav Majer byl podmíněně propuštěn a dostal další šanci.',
+    imageUrl: '/images/updates/archiv-2026/jaroslav-majer-propusten.jpg',
+    body: '<p><strong>Jaroslav Majer byl podmíněně propuštěn.</strong> Dostává tak další šanci a REST||ART bude u navazujících kroků, které mají pomoci proměnit rozhodnutí soudu ve skutečný návrat do běžného života.</p><p>Navazující text doplní Andrea Janichová, partnerka pana Majera. Děkujeme všem, kdo jeho další cestu podporují.</p>'
+  },
+  {
+    id: '0d718647-7a13-4c93-9543-34e75adfee5a',
+    slug: 'podmineneho-propusteni',
+    title: 'Jaroslav Majer zítra čeká projednání PP',
+    date: '2026-05-14',
+    tag: 'JAILBREAK',
+    excerpt: 'Jaroslava Majera zítra čeká projednání žádosti o podmíněné propuštění.',
+    imageUrl: '/images/updates/archiv-2026/jaroslav-majer-pp.jpg',
+    body: [
+      '<p>Zítřejší den může být pro <strong><u>Jaroslava Majera</u></strong> zásadním milníkem. Na programu je projednání jeho žádosti o podmíněné propuštění, které může významně ovlivnit jeho další životní cestu i možnosti návratu do běžného života.</p>',
+      '<p>Podmíněné propuštění představuje v českém právním systému důležitý nástroj resocializace. Nejde pouze o právní rozhodnutí soudu, ale také o posouzení dosavadního chování odsouzeného, jeho přístupu k nápravě a připravenosti začlenit se zpět do společnosti.</p>',
+      '<p><strong>REST||ART Integrace</strong> dlouhodobě upozorňuje na význam druhých šancí, individuální podpory a systémové práce s lidmi po výkonu trestu. Úspěšná reintegrace není důležitá jen pro samotného člověka, ale i pro bezpečnost a stabilitu celé společnosti.</p>',
+      '<p>Zítřejší projednání proto nevnímáme pouze jako administrativní krok, ale jako moment, který může otevřít prostor pro nový začátek. Budeme situaci dále sledovat a o dalším vývoji informovat.</p>',
+      '<p><em>Redakce REST||ART Integrace</em></p>'
+    ].join('')
+  },
+  {
+    id: '21e08d15-89ce-4317-8abc-a29e8eabe3d1',
+    slug: 'start',
+    title: 'Nový Start pro REST||ART',
+    date: '2026-05-04',
+    tag: 'Aktuality projektu',
+    excerpt:
+      'Po ukončení působení v Ústí nad Labem se projekt přesunul na venkov, kde příroda, zahrada a větší prostor otevírají nové možnosti.',
+    imageUrl: '/images/updates/archiv-2026/novy-start.jpg',
+    body: [
+      '<h2>REST||ART se přestěhoval</h2>',
+      '<p>Po ukončení smlouvy v Ústí nad Labem se projekt přesunul na venkov, kde příroda a velká zahrada přinášejí nové možnosti. Komunitní práce, péče o zahradu a dostatek místa mohou vytvořit zázemí, ve kterém si lidé odpočinou, najedí se a připraví na další krok.</p>',
+      '<p>Není to příběh o negativitě, ale o novém začátku a nových možnostech. Právě o tom REST||ART je. Místo na začátku proměny dnes dokumentují nové srpnové aktuality.</p>'
+    ].join('')
+  },
+  {
+    id: '0b5b706c-8219-46c7-9521-d2e9f7497791',
+    slug: 'emotional',
+    title: 'Emotional',
+    date: '2026-05-01',
+    tag: 'Média a materiály',
+    excerpt: 'Krátké video zachycující osobní a emotivní rovinu projektu REST||ART.',
+    imageUrl: '/images/updates/archiv-2026/emotional.png',
+    body: '<p>Projekt není jen systém, metodika a soubor kroků. Nese také lidskou a osobní rovinu, ze které REST||ART vznikl.</p><div class="news-video"><iframe src="https://www.youtube.com/embed/lLa_FUYBAZg?si=CHxle2fFaRIl0bkt" title="Emotional — video REST||ART" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>'
+  },
+  {
+    id: '7d5463f2-6cd7-4ab9-a20a-efb4e5359d33',
+    slug: 'architektura-druhe-sance',
+    title: 'REST||ART: Architektura druhé šance',
+    date: '2026-04-28',
+    tag: 'Metodika',
+    excerpt: 'Vizuální představení systému podpory, který propojuje jednotlivé kroky druhé šance.',
+    imageUrl: '/images/updates/archiv-2026/architektura-druhe-sance-cover.png',
+    body: '<p>Architektura druhé šance ukazuje, že stabilní návrat nevzniká jedním izolovaným opatřením. Potřebuje propojit zázemí, práci, doprovod, odpovědnost i dlouhodobou oporu.</p><figure><img src="/images/updates/archiv-2026/architektura-druhe-sance-cover.png" alt="Vizuální architektura druhé šance REST||ART"><figcaption>REST||ART — architektura druhé šance.</figcaption></figure>'
+  },
+  {
+    id: '647e36e0-ab6e-4ac5-ae6b-005a73ab1f77',
+    slug: 'zadost-o-pp-kaleja-jiri-rest-art-se-pripojuje',
+    title: 'Žádost o PP: Kaleja Jiří — REST||ART znovu odpovídá',
+    date: '2026-04-11',
+    tag: 'JAILBREAK',
+    excerpt:
+      'REST||ART obdržel další dopis s plánem podání žádosti o podmíněné propuštění od registrovaného člena Jiřího Kaleji a připravil konkrétní příslib návazné podpory.',
+    body: [
+      '<p>REST||ART obdržel další dopis s plánem podání žádosti o podmíněné propuštění od registrovaného člena Jiřího Kaleji. I přes omezené možnosti se aktivně zapojuje do aktivit a pravidelně zasílá ruční výrobky pro domov seniorů v Ústí nad Labem.</p>',
+      '<h2>Příslib postpenitenciární péče</h2>',
+      '<p>Projekt potvrzuje připravenost spolupracovat na resocializaci po případném podmíněném propuštění a nabídnout podporu od prvního dne po výstupu.</p>',
+      '<ol><li><strong>Doprovod a asistence při výstupu:</strong> kontakt bezprostředně po propuštění a pomoc s prvními nezbytnými kroky.</li><li><strong>Ubytování:</strong> zajištění návazného zázemí.</li><li><strong>Pracovní uplatnění:</strong> pomoc s nástupem do zaměstnání a pracovního režimu.</li><li><strong>Odborné poradenství:</strong> pravidelné schůzky zaměřené na sociální stabilizaci a řešení dluhů.</li></ol>',
+      '<h2>Proč se k žádosti připojujeme</h2>',
+      '<p>Dosavadní komunikace ukazuje aktivní přístup k řešení situace a snahu o nápravu. REST||ART je v případě kladného rozhodnutí připraven poskytnout pomoc při hledání zaměstnání, dluhové poradenství, sociální asistenci a pravidelný mentoring zaměřený na prevenci recidivy.</p>',
+      '<p>Domníváme se, že konkrétní podpůrná síť významně zvyšuje šanci, že propuštěný člověk povede řádný život. Nejde jen o formální souhlas, ale o převzetí reálné role pomoci a doprovodu během zkušební doby.</p>'
+    ].join('')
+  },
+  {
+    id: '58ffbf24-864b-4771-bc1f-ca77a4da9dd5',
+    slug: 'zadost-o-pp-majer-jaroslav-rest-art-se-pripojuje',
+    title: 'Žádost o PP: Majer Jaroslav — REST||ART se připojuje',
+    date: '2026-04-03',
+    tag: 'JAILBREAK',
+    excerpt:
+      'REST||ART se připojuje k žádosti o podmíněné propuštění a potvrzuje návaznou podporu po výstupu: doprovod, ubytování, práci, sociální asistenci a mentoring.',
+    body: [
+      '<p>REST||ART se připojuje k žádosti o podmíněné propuštění pana Majera Jaroslava a potvrzuje připravenost převzít návaznou postpenitenciární podporu ihned po výstupu.</p>',
+      '<h2>Co po propuštění zajišťujeme</h2>',
+      '<ul><li>doprovod při výstupu a stabilizační kontakt v prvních dnech,</li><li>zajištěné ubytování,</li><li>předjednané pracovní uplatnění a pomoc s nástupem do režimu,</li><li>sociální asistenci a orientaci v běžném fungování po výkonu trestu,</li><li>dluhové poradenství a průběžný mentoring během zkušební doby.</li></ul>',
+      '<p>Cílem je, aby propuštění nebylo jednorázovým aktem, ale reálným přechodem do stabilnějšího života. REST||ART se v tomto případě nepřipojuje jen formálně, ale deklaruje konkrétní kapacitu a odpovědnost za návaznou podporu.</p>'
+    ].join('')
+  },
+  {
     id: 'news-brozury-druhe-sance',
     title: 'Nové brožury REST||ART Integrace jsou veřejně ke stažení',
     date: '2026-06-26',

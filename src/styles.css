@@ -3668,6 +3668,196 @@ h3 {
   font-size: 0.86rem;
 }
 
+.news-body .progress-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 8px 0 18px;
+}
+
+.news-body .progress-comparison-card {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid rgba(20, 62, 41, 0.14);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(21, 48, 32, 0.1);
+}
+
+.news-body .progress-comparison-card--work {
+  border-top: 4px solid var(--green);
+}
+
+.news-body .progress-comparison-card--reference {
+  border-top: 4px solid var(--gold);
+}
+
+.news-body .progress-comparison-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #e6ece7;
+}
+
+.news-body .progress-comparison-media img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+.news-body .progress-comparison-label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(12, 31, 21, 0.88);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.news-body .progress-comparison-card figcaption {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px 18px;
+}
+
+.news-body .progress-comparison-card figcaption strong {
+  color: var(--green-dark);
+  font-size: 1rem;
+}
+
+.news-body .project-status {
+  display: grid;
+  gap: 9px;
+  margin: 8px 0 14px;
+  padding: 22px;
+  border-left: 5px solid var(--gold);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #edf5ef 0%, #f8f4e7 100%);
+}
+
+.news-body .project-status-badge {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--green-dark);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.news-body .project-status strong {
+  color: var(--green-dark);
+  font-size: 1.12rem;
+}
+
+.news-body .project-photo-story {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(240px, 0.92fr);
+  overflow: hidden;
+  margin: 8px 0 14px;
+  border: 1px solid rgba(20, 62, 41, 0.14);
+  border-radius: 12px;
+  background: #f4f7f4;
+}
+
+.news-body .project-photo-story > img {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  max-height: none;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+.news-body .project-photo-story-copy {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: clamp(22px, 4vw, 38px);
+}
+
+.news-body .project-photo-story-copy > span {
+  color: var(--gold-dark);
+  font-size: 0.74rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.news-body .project-photo-story-copy strong {
+  color: var(--green-dark);
+  font-size: 1.18rem;
+  line-height: 1.25;
+}
+
+.news-body .project-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 8px 0 18px;
+}
+
+.news-body .project-gallery-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid rgba(20, 62, 41, 0.13);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.news-body .project-gallery-card--wide {
+  grid-column: 1 / -1;
+}
+
+.news-body .project-gallery-card img {
+  width: 100%;
+  height: 260px;
+  max-height: none;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+.news-body .project-gallery-card--wide img {
+  height: min(420px, 48vw);
+}
+
+.news-body .project-gallery-card figcaption {
+  padding: 13px 15px 15px;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .news-body .progress-comparison,
+  .news-body .project-gallery,
+  .news-body .project-photo-story {
+    grid-template-columns: 1fr;
+  }
+
+  .news-body .project-gallery-card--wide {
+    grid-column: auto;
+  }
+
+  .news-body .project-gallery-card img,
+  .news-body .project-gallery-card--wide img {
+    height: auto;
+    max-height: 420px;
+  }
+}
+
 .news-video {
   position: relative;
   overflow: hidden;

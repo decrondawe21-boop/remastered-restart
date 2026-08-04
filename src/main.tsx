@@ -491,6 +491,9 @@ const newsTagPath = (tag: string) => `/aktuality/${slugifyPathSegment(tag)}`;
 
 const newsTagOptions = [
   'Aktuality projektu',
+  'Práce v terénu',
+  'Stavíme svépomocí',
+  'Proměna místa',
   'JAILBREAK',
   'RESET',
   'REWORK',
@@ -1575,17 +1578,62 @@ const clientStatusClass = (status: string) => {
   return 'is-default';
 };
 
-const newsHtmlTags = new Set(['A', 'B', 'BLOCKQUOTE', 'BR', 'EM', 'H1', 'H2', 'H3', 'H4', 'I', 'IFRAME', 'IMG', 'LI', 'OL', 'P', 'STRONG', 'U', 'UL']);
+const newsHtmlTags = new Set([
+  'A',
+  'B',
+  'BLOCKQUOTE',
+  'BR',
+  'DIV',
+  'EM',
+  'FIGCAPTION',
+  'FIGURE',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'HR',
+  'I',
+  'IFRAME',
+  'IMG',
+  'LI',
+  'OL',
+  'P',
+  'SPAN',
+  'STRONG',
+  'U',
+  'UL'
+]);
 const newsAlignmentClasses = new Set(['align-left', 'align-center', 'align-right', 'align-justify']);
+const newsLayoutClasses = new Set([
+  'progress-comparison',
+  'progress-comparison-card',
+  'progress-comparison-card--work',
+  'progress-comparison-card--reference',
+  'progress-comparison-media',
+  'progress-comparison-label',
+  'project-status',
+  'project-status-badge',
+  'project-photo-story',
+  'project-photo-story-copy',
+  'project-gallery',
+  'project-gallery-card',
+  'project-gallery-card--wide',
+  'news-video'
+]);
+const newsHtmlClasses = new Set([...newsAlignmentClasses, ...newsLayoutClasses]);
 const newsHtmlAttrs = new Map([
   ['A', new Set(['href', 'target', 'rel', 'title'])],
+  ['DIV', new Set(['class'])],
+  ['FIGCAPTION', new Set(['class'])],
+  ['FIGURE', new Set(['class'])],
   ['H1', new Set(['class'])],
   ['H2', new Set(['class'])],
   ['H3', new Set(['class'])],
   ['H4', new Set(['class'])],
   ['IMG', new Set(['src', 'alt', 'title', 'loading', 'width', 'height'])],
   ['IFRAME', new Set(['src', 'title', 'allow', 'allowfullscreen', 'loading'])],
-  ['P', new Set(['class'])]
+  ['P', new Set(['class'])],
+  ['SPAN', new Set(['class'])]
 ]);
 
 function isSafeNewsUrl(tagName: string, attrName: string, value: string) {
@@ -1641,7 +1689,7 @@ function cleanNewsHtml(value = '', fallbackImageAlt = 'Obrázek k aktualitě') {
       for (const attribute of Array.from(element.attributes)) {
         const attrName = attribute.name.toLowerCase();
         if (attrName === 'class' && allowedAttrs.has(attrName)) {
-          const safeClasses = attribute.value.split(/\s+/).filter((className) => newsAlignmentClasses.has(className));
+          const safeClasses = attribute.value.split(/\s+/).filter((className) => newsHtmlClasses.has(className));
           if (safeClasses.length > 0) {
             element.setAttribute('class', safeClasses.join(' '));
           } else {

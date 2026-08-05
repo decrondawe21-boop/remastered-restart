@@ -71,9 +71,150 @@ function isUnknownColumnError(error) {
   return error && (error.code === 'ER_BAD_FIELD_ERROR' || error.errno === 1054);
 }
 
+const transientDatabaseErrorCodes = new Set(['ECONNREFUSED', 'ECONNRESET', 'EPIPE', 'ETIMEDOUT', 'PROTOCOL_CONNECTION_LOST']);
+
+function isTransientDatabaseError(error) {
+  return transientDatabaseErrorCodes.has(error?.code);
+}
+
 const publicSiteUrl = String(process.env.PUBLIC_SITE_URL || 'https://restartintegrace.dk-i.cz').replace(/\/$/, '');
 const secondChanceStoryTag = 'Příběhy druhé šance';
 const builtInNewsSitemapRows = [
+  {
+    id: 'field-update-paletove-posezeni-2026-08',
+    slug: 'makame-dal-paletove-posezeni-vznika-u-nas',
+    title: 'Makáme dál: z palet roste vlastní posezení',
+    tag: 'Práce v terénu',
+    date: '2026-08-04',
+    imageUrl: '/images/updates/srpen-2026/zakladna/03-zazemi-lavice.jpg',
+    excerpt:
+      'Inspirovali jsme se jednoduchým vzorem a pustili se do práce. Z použitých palet už vzniklo vlastní posezení — krok za krokem, vlastníma rukama a z materiálu, který dostal další využití.',
+    body:
+      '<p>Z použitých palet postupně vzniká funkční posezení pro základnu REST||ART. Ukazujeme nejen hotový výsledek, ale také cestu od rozebraného materiálu přes zpevnění konstrukce až po broušení, nátěr a finální sedáky.</p>'
+  },
+  {
+    id: 'field-update-zazemi-2026-08',
+    slug: 'bouda-z-darovanych-materialu-pevny-zaklad',
+    title: 'Z darovaných materiálů stavíme pevné zázemí',
+    tag: 'Stavíme svépomocí',
+    date: '2026-08-04',
+    imageUrl: '/images/updates/srpen-2026/zakladna/18-zakladna-celkem.jpg',
+    excerpt:
+      'Není to katalogová stavba — vzniká z toho, co nám kdo daruje. Má ale pevné základy, uvnitř už slouží a připravené plechy na střechu čekají na snýtování.',
+    body:
+      '<p>Boudu REST||ART stavíme svépomocí z darovaných a zachráněných materiálů. Uvnitř už vytváří funkční zázemí, zatímco zvenku pokračují práce na střeše, opláštění a uspořádání pracovního prostoru.</p>'
+  },
+  {
+    id: 'field-update-zahrada-2026-08',
+    slug: 'zahrada-dostava-svou-tvar',
+    title: 'Zahrada dostává svou tvář: březen versus červenec',
+    tag: 'Proměna místa',
+    date: '2026-08-04',
+    imageUrl: '/images/updates/srpen-2026/zakladna/10-ruze.jpg',
+    excerpt:
+      'Stejný kout na jaře a na konci července ukazuje skutečnou změnu. Vedle záhonů vznikají cesty, jezírko, skalky, truhlíky i drobné prvky vyrobené vlastníma rukama.',
+    body:
+      '<p>Porovnání stejného místa v březnu a červenci ukazuje každodenní práci na zahradě. Postupně přibývají cesty, jezírko, skalky, truhlíky, obrubníky i výsadba.</p>'
+  },
+  {
+    id: 'field-update-reuse-zakladna-2026-08',
+    slug: 'zakladna-roste-z-toho-co-dostalo-druhou-sanci',
+    title: 'Základna roste z toho, co dostalo druhou šanci',
+    tag: 'Práce v terénu',
+    date: '2026-08-04',
+    imageUrl: '/images/updates/srpen-2026/zakladna/08-proutene-kreslo-zakladna.jpg',
+    excerpt:
+      'Darované palety, místní dřevo, nalezené vybavení i vlastní ruční práce. Na jednom místě je vidět, jak z věcí určených k vyhození vznikají ploty, pracovní kouty a praktické zázemí.',
+    body:
+      '<p>Zachráněné palety, místní dřevo a nalezené vybavení se na základně mění v ploty, nábytek, pracovní kouty a další praktické zázemí. Recyklace tu není heslo, ale každodenní způsob práce.</p>'
+  },
+  {
+    id: '0db6fc6b-1eea-42a0-ab3a-a6d381397d4f',
+    slug: 'opszp',
+    title: 'Dokumentace OPSZP',
+    tag: 'Média a materiály',
+    date: '2026-06-10',
+    imageUrl: '/images/updates/archiv-2026/opszp-podklad-1.webp',
+    excerpt: 'Podklady REST||ART pro konzultaci v rámci OPSZP.',
+    body: '<p>Zveřejňujeme podkladový materiál REST||ART připravený pro odbornou konzultaci v rámci OPSZP.</p>'
+  },
+  {
+    id: '76719b7a-e6cd-4fd9-a35b-68e3ef0d05f1',
+    slug: 'majerpropusten',
+    title: 'Jaroslav Majer jde ven!',
+    tag: 'JAILBREAK',
+    date: '2026-05-17',
+    imageUrl: '/images/updates/archiv-2026/jaroslav-majer-propusten.jpg',
+    excerpt: 'Můžete slavit — Jaroslav Majer byl podmíněně propuštěn a dostal další šanci.',
+    body:
+      '<p>Jaroslav Majer byl podmíněně propuštěn. REST||ART bude u navazujících kroků, které mají pomoci proměnit rozhodnutí soudu ve skutečný návrat do běžného života.</p>'
+  },
+  {
+    id: '0d718647-7a13-4c93-9543-34e75adfee5a',
+    slug: 'podmineneho-propusteni',
+    title: 'Jaroslav Majer zítra čeká projednání PP',
+    tag: 'JAILBREAK',
+    date: '2026-05-14',
+    imageUrl: '/images/updates/archiv-2026/jaroslav-majer-pp.jpg',
+    excerpt: 'Jaroslava Majera zítra čeká projednání žádosti o podmíněné propuštění.',
+    body:
+      '<p>Projednání žádosti o podmíněné propuštění může být zásadním milníkem další životní cesty. REST||ART dlouhodobě upozorňuje na význam připravené návazné podpory a konkrétního plánu návratu.</p>'
+  },
+  {
+    id: '21e08d15-89ce-4317-8abc-a29e8eabe3d1',
+    slug: 'start',
+    title: 'Nový Start pro REST||ART',
+    tag: 'Aktuality projektu',
+    date: '2026-05-04',
+    imageUrl: '/images/updates/archiv-2026/novy-start.jpg',
+    excerpt:
+      'Po ukončení působení v Ústí nad Labem se projekt přesunul na venkov, kde příroda, zahrada a větší prostor otevírají nové možnosti.',
+    body:
+      '<p>Projekt se přesunul na venkov, kde příroda, zahrada a větší prostor otevírají nové možnosti pro komunitní práci, praktické zázemí a další rozvoj.</p>'
+  },
+  {
+    id: '0b5b706c-8219-46c7-9521-d2e9f7497791',
+    slug: 'emotional',
+    title: 'Emotional',
+    tag: 'Média a materiály',
+    date: '2026-05-01',
+    imageUrl: '/images/updates/archiv-2026/emotional.png',
+    excerpt: 'Krátké video zachycující osobní a emotivní rovinu projektu REST||ART.',
+    body: '<p>Projekt není jen systém, metodika a soubor kroků. Nese také lidskou a osobní rovinu, ze které REST||ART vznikl.</p>'
+  },
+  {
+    id: '7d5463f2-6cd7-4ab9-a20a-efb4e5359d33',
+    slug: 'architektura-druhe-sance',
+    title: 'REST||ART: Architektura druhé šance',
+    tag: 'Metodika',
+    date: '2026-04-28',
+    imageUrl: '/images/updates/archiv-2026/architektura-druhe-sance-cover.png',
+    excerpt: 'Vizuální představení systému podpory, který propojuje jednotlivé kroky druhé šance.',
+    body:
+      '<p>Architektura druhé šance propojuje zázemí, práci, doprovod, odpovědnost a dlouhodobou oporu do jednoho návazného systému.</p>'
+  },
+  {
+    id: '647e36e0-ab6e-4ac5-ae6b-005a73ab1f77',
+    slug: 'zadost-o-pp-kaleja-jiri-rest-art-se-pripojuje',
+    title: 'Žádost o PP: Kaleja Jiří — REST||ART znovu odpovídá',
+    tag: 'JAILBREAK',
+    date: '2026-04-11',
+    excerpt:
+      'REST||ART obdržel další dopis s plánem podání žádosti o podmíněné propuštění od registrovaného člena Jiřího Kaleji a připravil konkrétní příslib návazné podpory.',
+    body:
+      '<p>REST||ART potvrzuje připravenost spolupracovat na resocializaci po případném podmíněném propuštění a nabídnout podporu od prvního dne po výstupu.</p>'
+  },
+  {
+    id: '58ffbf24-864b-4771-bc1f-ca77a4da9dd5',
+    slug: 'zadost-o-pp-majer-jaroslav-rest-art-se-pripojuje',
+    title: 'Žádost o PP: Majer Jaroslav — REST||ART se připojuje',
+    tag: 'JAILBREAK',
+    date: '2026-04-03',
+    excerpt:
+      'REST||ART se připojuje k žádosti o podmíněné propuštění a potvrzuje návaznou podporu po výstupu: doprovod, ubytování, práci, sociální asistenci a mentoring.',
+    body:
+      '<p>REST||ART se připojuje k žádosti a potvrzuje připravenost nabídnout po výstupu konkrétní doprovod, zázemí, pracovní návaznost, sociální asistenci a mentoring.</p>'
+  },
   {
     id: 'news-brozury-druhe-sance',
     title: 'Nové brožury REST||ART Integrace jsou veřejně ke stažení',
@@ -951,27 +1092,38 @@ async function loadNewsShell(request) {
   const localDevelopmentHost =
     process.env.NODE_ENV !== 'production' && /^(?:localhost|127\.0\.0\.1)(?::\d+)?$/i.test(forwardedHost);
   const deploymentHost = String(process.env.VERCEL_URL || '').trim();
-  const origin = deploymentHost
-    ? `https://${deploymentHost}`
-    : localDevelopmentHost
-      ? `http://${forwardedHost}`
-      : publicSiteUrl;
-  if (newsShellCache.html && newsShellCache.origin === origin && newsShellCache.expiresAt > Date.now()) {
+  const publicHost = new URL(publicSiteUrl).host;
+  const origins = Array.from(
+    new Set(
+      [
+        forwardedHost === publicHost ? publicSiteUrl : '',
+        localDevelopmentHost ? `http://${forwardedHost}` : '',
+        deploymentHost ? `https://${deploymentHost}` : '',
+        publicSiteUrl
+      ].filter(Boolean)
+    )
+  );
+  if (newsShellCache.html && origins.includes(newsShellCache.origin) && newsShellCache.expiresAt > Date.now()) {
     return newsShellCache.html;
   }
-  try {
-    const shellResponse = await fetch(`${origin}/index.html`, {
-      headers: { accept: 'text/html', 'user-agent': 'RESTART-SEO-renderer/1.0' },
-      signal: AbortSignal.timeout(5000)
-    });
-    if (!shellResponse.ok) throw new Error(`Shell returned ${shellResponse.status}`);
-    const html = await shellResponse.text();
-    if (!html.includes('<div id="root"')) throw new Error('Shell root is missing');
-    newsShellCache = { origin, html, expiresAt: Date.now() + 5 * 60 * 1000 };
-    return html;
-  } catch {
-    return fallbackNewsShell();
+
+  for (const origin of origins) {
+    try {
+      const shellResponse = await fetch(`${origin}/`, {
+        headers: { accept: 'text/html', 'user-agent': 'RESTART-SEO-renderer/1.0' },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (!shellResponse.ok) continue;
+      const html = await shellResponse.text();
+      if (!html.includes('<div id="root"') || !/<script[^>]+src=["'][^"']*\/assets\//i.test(html)) continue;
+      newsShellCache = { origin, html, expiresAt: Date.now() + 5 * 60 * 1000 };
+      return html;
+    } catch {
+      // Try the next trusted origin. Preview deployments can be protected while the public origin remains available.
+    }
   }
+
+  return fallbackNewsShell();
 }
 
 function replaceHtmlMeta(html, pattern, replacement) {
@@ -1124,9 +1276,7 @@ async function newsSeoPage(request, response, url) {
   try {
     databaseRows = await loadPublishedNewsRows(5000);
   } catch (error) {
-    if (error?.code !== 'ETIMEDOUT' && error?.code !== 'ECONNRESET' && error?.code !== 'PROTOCOL_CONNECTION_LOST') {
-      throw error;
-    }
+    if (!isTransientDatabaseError(error)) throw error;
     console.warn('[seo] Published news database is temporarily unavailable; serving built-in article fallbacks.');
   }
   const itemByPath = new Map();
@@ -1213,7 +1363,7 @@ async function newsSitemap(_request, response) {
          ORDER BY published_at DESC, created_at DESC
          LIMIT 5000`
       );
-    } else if (error?.code === 'ETIMEDOUT' || error?.code === 'ECONNRESET' || error?.code === 'PROTOCOL_CONNECTION_LOST') {
+    } else if (isTransientDatabaseError(error)) {
       console.warn('[seo] Published news database is temporarily unavailable; serving the built-in sitemap.');
     } else {
       throw error;

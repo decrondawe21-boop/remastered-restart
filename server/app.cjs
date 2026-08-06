@@ -114,7 +114,7 @@ const builtInNewsSitemapRows = [
     excerpt:
       'Není to katalogová stavba — vzniká z toho, co nám kdo daruje. Má ale pevné základy, uvnitř už slouží a připravené plechy na střechu čekají na snýtování.',
     body:
-      '<p>Boudu REST||ART stavíme svépomocí z darovaných a zachráněných materiálů. Uvnitř už vytváří funkční zázemí, zatímco zvenku pokračují práce na střeše, opláštění a uspořádání pracovního prostoru.</p>'
+      '<p>Boudu REST||ART stavíme svépomocí z darovaných a zachráněných materiálů. Uvnitř už vytváří funkční zázemí, zatímco zvenku pokračují práce na střeše, opláštění a uspořádání pracovního prostoru.</p><h2>Z čeho bouda vzniká</h2><p>Prkna a další kusy dřeva nám v delším časovém rozpětí darovali různí lidé. Z této různorodé zásoby je postavená prakticky celá bouda. Nový plot pomáhá hromadu materiálu vymezit a udržet okolí přehlednější.</p>'
   },
   {
     id: 'field-update-zahrada-2026-08',

@@ -628,6 +628,9 @@ export const starterNews = [
     body: [
       '<p>Na první pohled není dokonalá — a ani si na to nehraje. Boudu REST||ART stavíme svépomocí z materiálů, které nám lidé darují nebo které dokážeme znovu smysluplně využít. Podstatné je, že stojí na pevném základu a už teď vytváří funkční zázemí.</p>',
       '<div class="project-status"><span class="project-status-badge">Stav k 4. srpnu 2026</span><strong>Uvnitř už slouží. Zvenku pokračujeme.</strong><p>Modrá plachta je stále pouze dočasné zakrytí. Plechová střecha je připravená v garáži a čeká na snýtování.</p></div>',
+      '<h2>Z čeho bouda vzniká</h2>',
+      '<div class="project-photo-story"><img src="/images/updates/srpen-2026/zakladna/29-darovane-drevo-za-plotem.jpg" alt="Hromada darovaného dřeva ohraničená plotem vedle základny"><div class="project-photo-story-copy"><span>Materiál od různých dárců</span><strong>Dřevo se hromadilo delší dobu, bouda z něj vzniká postupně</strong><p>Prkna a další kusy dřeva nám v delším časovém rozpětí darovali různí lidé. Právě z této různorodé zásoby je postavená prakticky celá bouda.</p></div></div>',
+      '<p>Na první pohled to možná vypadá trochu jako po výbuchu. Ve skutečnosti je za tím dlouhodobé shromažďování použitelného materiálu, třídění a postupná práce. Nový plot pomáhá hromadu vymezit a udržet okolí přehlednější.</p>',
       '<h2>Posun je vidět i během několika dní</h2>',
       '<div class="progress-comparison">',
       '<figure class="progress-comparison-card progress-comparison-card--reference"><div class="progress-comparison-media"><img src="/images/updates/srpen-2026/bouda-z-darovanych-materialu.jpg" alt="Bouda REST||ART na začátku srpna během stavby"><span class="progress-comparison-label">1. srpna</span></div><figcaption><strong>Rozpracované zázemí</strong><span>Přední část byla ještě zaplněná materiálem a pracovalo se hlavně na základní podobě stavby.</span></figcaption></figure>',

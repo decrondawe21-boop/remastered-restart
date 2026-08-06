@@ -419,7 +419,7 @@ async function uniqueNewsSlug(requestedSlug, title, id) {
   return candidate;
 }
 
-const publicRoot = path.resolve(__dirname, '..', 'public');
+const publicDocumentsRoot = path.resolve(__dirname, '..', 'public', 'documents');
 const portalRoles = ['applicant', 'client', 'volunteer', 'investor', 'patron', 'contributor', 'donor', 'user'];
 const assignableRoles = ['admin', 'editor', ...portalRoles];
 const applicationRoles = ['client', 'volunteer', 'investor', 'patron', 'contributor', 'donor'];
@@ -481,8 +481,9 @@ async function servePublicDocument(request, response, url) {
     return true;
   }
 
-  const filePath = path.resolve(publicRoot, `.${decodedPath}`);
-  if (!filePath.startsWith(`${publicRoot}${path.sep}`)) {
+  const relativePath = decodedPath.slice('/documents/'.length);
+  const filePath = path.resolve(publicDocumentsRoot, relativePath);
+  if (!filePath.startsWith(`${publicDocumentsRoot}${path.sep}`)) {
     sendJson(response, 403, { error: 'Forbidden.' });
     return true;
   }
@@ -2517,8 +2518,9 @@ function safePdfFormPath(fileUrl) {
   if (!decodedPath.startsWith('/documents/forms/') || path.extname(decodedPath).toLowerCase() !== '.pdf') {
     throw new Error('Only operational form PDFs can be prefilled.');
   }
-  const filePath = path.resolve(publicRoot, `.${decodedPath}`);
-  if (!filePath.startsWith(`${publicRoot}${path.sep}`)) {
+  const relativePath = decodedPath.slice('/documents/'.length);
+  const filePath = path.resolve(publicDocumentsRoot, relativePath);
+  if (!filePath.startsWith(`${publicDocumentsRoot}${path.sep}`)) {
     throw new Error('Invalid PDF path.');
   }
   return filePath;

@@ -480,6 +480,7 @@ type NewsItem = {
 };
 
 const storyTag = 'Příběhy druhé šance';
+const mediaMaterialsTag = 'Média a materiály';
 const isSecondChanceStory = (item: Pick<NewsItem, 'tag'>) => item.tag === storyTag;
 const storyPath = (item: Pick<NewsItem, 'id'>) => `${storyDetailPrefix}${encodeURIComponent(item.id)}`;
 const newsTagLabel = (item: Pick<NewsItem, 'tag'>) => item.tag?.trim() || 'Aktuality projektu';
@@ -4437,6 +4438,7 @@ function ProgramDetailPage({ program }: { program: (typeof programs)[number] }) 
 
 function NewsDetailPage({
   item,
+  relatedItems,
   discussion,
   account,
   onToggleLike,
@@ -4446,6 +4448,7 @@ function NewsDetailPage({
   onNotify
 }: {
   item: NewsItem;
+  relatedItems: NewsItem[];
   discussion: NewsDiscussion;
   account: AuthAccount | null;
   onToggleLike: (newsId: string) => Promise<void>;
@@ -4489,6 +4492,41 @@ function NewsDetailPage({
         ) : (
           <p>{item.excerpt}</p>
         )}
+        {item.tag === mediaMaterialsTag ? (
+          <aside className="news-resource-links" aria-labelledby="news-resource-links-title">
+            <div>
+              <p className="section-label">Veřejné zdroje</p>
+              <h2 id="news-resource-links-title">Navazující materiály</h2>
+              <p>Brožury, metodické vizuály a videa jsou dostupné bez registrace.</p>
+            </div>
+            <div>
+              <a href="/media">
+                <FileText size={20} />
+                <span><strong>Média ke stažení</strong><small>PDF, plakát, fotografie a znak</small></span>
+                <ArrowRight size={18} />
+              </a>
+              <a href="/metodika#metodika-vizualy">
+                <ImageIcon size={20} />
+                <span><strong>Vizuální knihovna</strong><small>Diagramy, modely a programové ikony</small></span>
+                <ArrowRight size={18} />
+              </a>
+              <a href="/videa/predstaveni-projektu">
+                <Video size={20} />
+                <span><strong>Videa projektu</strong><small>Samostatné sledovací stránky</small></span>
+                <ArrowRight size={18} />
+              </a>
+            </div>
+          </aside>
+        ) : null}
+        {relatedItems.length > 0 ? (
+          <section className="news-related-section" aria-labelledby="related-news-title">
+            <div className="news-related-heading">
+              <p className="section-label">Pokračujte dál</p>
+              <h2 id="related-news-title">Související příspěvky</h2>
+            </div>
+            <NewsGrid news={relatedItems} discussion={discussion} />
+          </section>
+        ) : null}
         <NewsDiscussionPanel
           item={item}
           discussion={discussion}
@@ -4501,6 +4539,78 @@ function NewsDetailPage({
         />
       </section>
     </>
+  );
+}
+
+function MediaMaterialsOverview() {
+  const collections = [
+    {
+      href: '/media',
+      title: 'Brožury a soubory',
+      text: 'Veřejné PDF, plakát, fotografie a sekundární znak ke stažení.',
+      icon: FileText
+    },
+    {
+      href: '/metodika#metodika-vizualy',
+      title: 'Metodické vizuály',
+      text: 'Model systému, životní cyklus, programové pilíře a síť spolupráce.',
+      icon: ImageIcon
+    },
+    {
+      href: '/programy',
+      title: 'Programové podklady',
+      text: 'Přehled programů JAILBREAK, RESET, STREETWISE, REWORK, BOD ZLOMU a STABILIZACE.',
+      icon: FileStack
+    },
+    {
+      href: '/videa/predstaveni-projektu',
+      title: 'Videa projektu',
+      text: 'Krátké představení projektu a navazující vizuální obsah.',
+      icon: Video
+    }
+  ];
+
+  return (
+    <div className="media-materials-overview">
+      <div className="media-materials-lead">
+        <div>
+          <p className="section-label">Ověřitelné a veřejné</p>
+          <h2>Materiály, které vysvětlují systém v souvislostech</h2>
+          <p>
+            Na jednom místě propojujeme veřejné brožury, metodické diagramy, programové podklady a videa.
+            Každý materiál vede k původnímu souboru nebo k vlastní indexovatelné stránce s kontextem.
+          </p>
+          <div className="media-materials-actions">
+            <a className="button primary" href="/media">
+              <Download size={18} /> Otevřít soubory ke stažení
+            </a>
+            <a className="button secondary" href="/metodika#metodika-vizualy">
+              Prohlédnout metodické vizuály <ArrowRight size={18} />
+            </a>
+          </div>
+        </div>
+        <figure>
+          <img
+            src="/images/methodology/vizualni-model-rest-art-integrace.webp"
+            alt="Vizuální model REST ART Integrace propojující cílové skupiny, metodiku a partnery"
+            loading="eager"
+          />
+          <figcaption>Vizuální model systému REST||ART Integrace</figcaption>
+        </figure>
+      </div>
+      <div className="media-materials-collections" aria-label="Typy veřejných materiálů">
+        {collections.map(({ href, title, text, icon: Icon }) => (
+          <a key={href} href={href}>
+            <Icon size={23} aria-hidden="true" />
+            <span>
+              <strong>{title}</strong>
+              <small>{text}</small>
+            </span>
+            <ArrowRight size={18} aria-hidden="true" />
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -4524,14 +4634,17 @@ function NewsPage({
     a.localeCompare(b, 'cs')
   );
   const activeTag = activeTagSlug ? availableTags.find((tag) => slugifyPathSegment(tag) === activeTagSlug) : undefined;
+  const isMediaMaterialsArchive = activeTag === mediaMaterialsTag;
   const displayedNews = storiesOnly
     ? secondChanceStories
     : activeTag
       ? sortedNews.filter((item) => !isSecondChanceStory(item) && newsTagSlug(item) === activeTagSlug)
       : sortedNews;
-  const seoTitle = storiesOnly ? 'Příběhy druhé šance' : activeTag ? `Aktuality: ${activeTag}` : 'Aktuality';
+  const seoTitle = storiesOnly ? 'Příběhy druhé šance' : isMediaMaterialsArchive ? 'Média a materiály' : activeTag ? `Aktuality: ${activeTag}` : 'Aktuality';
   const seoDescription = storiesOnly
     ? 'Anonymizované příběhy lidí, kteří se vracejí do běžného života.'
+    : isMediaMaterialsArchive
+      ? 'Veřejná knihovna brožur, metodických vizuálů, programových podkladů a videí projektu REST||ART Integrace.'
     : activeTag
       ? `Novinky projektu RESTART Integrace v rubrice ${activeTag}.`
       : 'Novinky z projektu, praxe, programů a komunitní spolupráce RESTART Integrace.';
@@ -4544,10 +4657,20 @@ function NewsPage({
     <>
       <PageHeader
         label={storiesOnly ? 'Příběhy druhé šance' : activeTag || 'Aktuality'}
-        title={storiesOnly ? 'Skutečné příběhy bez bulváru' : activeTag ? `Aktuality: ${activeTag}` : 'Co se v projektu děje'}
+        title={
+          storiesOnly
+            ? 'Skutečné příběhy bez bulváru'
+            : isMediaMaterialsArchive
+              ? 'Veřejná knihovna projektu'
+              : activeTag
+                ? `Aktuality: ${activeTag}`
+                : 'Co se v projektu děje'
+        }
         text={
           storiesOnly
             ? 'Anonymizované příběhy lidí, kteří se snaží vrátit do běžného života. Bez senzace, s respektem a důrazem na změnu.'
+            : isMediaMaterialsArchive
+              ? 'Brožury, metodické vizuály, programové podklady a videa s jasným původem, popisem a návazností na celý systém REST||ART Integrace.'
             : 'Novinky z projektu, příběhy z praxe a důležité informace o podpoře, programech a komunitní spolupráci.'
         }
       />
@@ -4581,6 +4704,13 @@ function NewsPage({
             </div>
           </aside>
         )}
+        {isMediaMaterialsArchive ? <MediaMaterialsOverview /> : null}
+        {isMediaMaterialsArchive ? (
+          <div className="news-related-heading media-materials-news-heading">
+            <p className="section-label">Nově zveřejněno</p>
+            <h2>Aktuality k médiím a materiálům</h2>
+          </div>
+        ) : null}
         <NewsGrid
           news={displayedNews}
           discussion={discussion}
@@ -9065,9 +9195,30 @@ React.useEffect(() => {
     setEmailTemplates((current) => current.map((template) => (template.key === saved.key ? saved : template)));
     return saved;
   };
+
+  const syncMissingNewsForInteraction = async (newsId: string) => {
+    if (currentAccount?.role !== 'admin') return false;
+    const localItem = news.find((item) => item.id === newsId);
+    if (!localItem) return false;
+    const savedItem = await saveNewsRecord(localItem);
+    setNews((current) => current.map((item) => (item.id === newsId ? { ...item, ...savedItem } : item)));
+    return true;
+  };
+
+  const runNewsInteraction = async <T,>(newsId: string, interaction: () => Promise<T>) => {
+    try {
+      return await interaction();
+    } catch (error) {
+      if (!(error instanceof ApiRequestError) || error.status !== 404 || !(await syncMissingNewsForInteraction(newsId))) {
+        throw error;
+      }
+      return interaction();
+    }
+  };
+
   const toggleLikeViaApi = async (newsId: string) => {
     try {
-      const like = await toggleNewsLike(newsId);
+      const like = await runNewsInteraction(newsId, () => toggleNewsLike(newsId));
       setNewsDiscussion((current) => ({
         ...current,
         likes: { ...current.likes, [newsId]: like }
@@ -9079,7 +9230,7 @@ React.useEffect(() => {
   };
   const addCommentViaApi = async (newsId: string, text: string, parentId?: string | null) => {
     try {
-      const comment = await addNewsComment(newsId, text, parentId);
+      const comment = await runNewsInteraction(newsId, () => addNewsComment(newsId, text, parentId));
       setNewsDiscussion((current) => ({
         ...current,
         comments: [...current.comments, comment]
@@ -9137,6 +9288,18 @@ React.useEffect(() => {
   const selectedNewsId = currentPath.startsWith(newsDetailPrefix) ? decodeURIComponent(currentPath.slice(newsDetailPrefix.length)) : '';
   const selectedLegacyNews = selectedNewsId ? news.find((item) => item.id === selectedNewsId && !isSecondChanceStory(item)) : null;
   const selectedNews = selectedNewsBySlug || selectedLegacyNews;
+  const selectedNewsRelatedItems = selectedNews
+    ? news
+        .filter((item) => item.id !== selectedNews.id && newsTagLabel(item) === newsTagLabel(selectedNews))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 3)
+    : [];
+  const selectedStoryRelatedItems = selectedStory
+    ? news
+        .filter((item) => item.id !== selectedStory.id && isSecondChanceStory(item))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 3)
+    : [];
 
   const staticPage = staticPages[currentPath];
   const transparencyPublicDocuments = publicMediaFiles
@@ -9160,6 +9323,7 @@ React.useEffect(() => {
     ) : selectedStory ? (
       <NewsDetailPage
         item={selectedStory}
+        relatedItems={selectedStoryRelatedItems}
         discussion={newsDiscussion}
         account={currentAccount}
         onToggleLike={toggleLikeViaApi}
@@ -9171,6 +9335,7 @@ React.useEffect(() => {
     ) : selectedNews ? (
       <NewsDetailPage
         item={selectedNews}
+        relatedItems={selectedNewsRelatedItems}
         discussion={newsDiscussion}
         account={currentAccount}
         onToggleLike={toggleLikeViaApi}

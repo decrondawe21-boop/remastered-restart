@@ -216,10 +216,44 @@ const builtInNewsSitemapRows = [
       '<p>REST||ART se připojuje k žádosti a potvrzuje připravenost nabídnout po výstupu konkrétní doprovod, zázemí, pracovní návaznost, sociální asistenci a mentoring.</p>'
   },
   {
+    id: 'news-darovane-knihy-a-jeden-nalez',
+    title: 'Darované knihy dorazily. A přibyl i jeden nečekaný nález',
+    tag: 'Komunita',
+    date: '2026-08-05',
+    imageUrl: '/images/news/darovane-knihy/dobrodruzne-knihy-kod.jpg',
+    excerpt:
+      'Do vznikající knihovny jsme převzali několik krabic darovaných knih a zachránili také jeden nalezený soubor. Děkujeme všem, kdo dávají knihám i jejich budoucím čtenářům další šanci.',
+    body:
+      '<p><strong>Naše sbírka knih se během července znovu rozrostla.</strong> Dorazilo k nám několik balíků a krabic darovaných knih – beletrie, dobrodružné romány, naučná literatura i starší edice, které mohou dál sloužit.</p><h2>Knihy, které nemusely skončit bez užitku</h2><p>Vedle darů jsme převzali také jeden nalezený soubor knih, kterému hrozilo, že zůstane zapomenutý. I ten čeká stejné pečlivé třídění jako ostatní.</p><img src="/images/news/darovane-knihy/nalezeny-soubor-knih.jpg" alt="Nalezený soubor knih před roztříděním" width="1200" height="900" loading="lazy" /><p><em>Nalezený soubor knih před roztříděním.</em></p><h2>Co bude následovat</h2><p>Knihy postupně prohlédneme, očistíme a roztřídíme podle stavu a zaměření. Použitelné tituly zařadíme do připravované sbírky; s ostatními naložíme odpovědně.</p><img src="/images/news/darovane-knihy/edice-aloise-jiraska.jpg" alt="Darovaná edice knih Aloise Jiráska" width="1200" height="675" loading="lazy" /><p><em>Část darované edice Aloise Jiráska.</em></p><img src="/images/news/darovane-knihy/krabice-beletrie-a-naucnych-knih.jpg" alt="Krabice darované beletrie a naučných knih" width="1200" height="853" loading="lazy" /><p><em>V zásilkách je beletrie, naučná literatura i knihy pro volný čas.</em></p><img src="/images/news/darovane-knihy/darovane-knihy-v-krabici.jpg" alt="Další darované knihy uložené v krabici" width="900" height="1200" loading="lazy" /><img src="/images/news/darovane-knihy/dobrodruzne-knihy-v-krabici.jpg" alt="Darované dobrodružné knihy v krabici" width="900" height="1200" loading="lazy" /><p><strong>Děkujeme všem dárcům.</strong> Darem knih nepředáváte jen věc. Pomáháte vytvářet prostor pro klid, vzdělávání a nový začátek lidí, se kterými projekt pracuje.</p><p>Chcete se také zapojit? Podrobnosti najdete na stránce <a href="/zapojeni/sbirka-knih">Sbírka knih</a>.</p>'
+  },
+  {
+    id: 'news-vizualni-knihovna-metodiky',
+    title: 'Vizuální knihovna metodiky je nově dostupná na jednom místě',
+    tag: 'Média a materiály',
+    date: '2026-07-30',
+    imageUrl: '/images/methodology/vizualni-model-rest-art-integrace.webp',
+    excerpt:
+      'Diagram systému, životní cyklus klienta, šest programových pilířů i síť spolupráce jsou veřejně dostupné v přehledné vizuální knihovně.',
+    body:
+      '<p>Rozšířili jsme veřejnou část metodiky o vizuální podklady, které pomáhají rychle pochopit propojení cílových skupin, programů, partnerů, měření a výstupů.</p><h2>Od cílové skupiny ke stabilnímu člověku</h2><p>Ústřední diagram spojuje metodicky řízenou práci s klientem se zaměstnavateli, obcemi, institucemi, dobrovolníky, komunitou a odbornými partnery.</p><p><a href="/metodika#metodika-vizualy">Otevřít vizuální knihovnu metodiky</a>.</p>'
+  },
+  {
+    id: 'news-oficialni-videa-projektu',
+    title: 'Oficiální videa projektu mají vlastní sledovací stránky',
+    tag: 'Média a materiály',
+    date: '2026-07-29',
+    imageUrl: '/videos/rest-art-intro-poster.png',
+    excerpt:
+      'Krátké představení projektu a animace vizuální identity jsou dostupné na samostatných stránkách s popisem, titulky a údaji pro vyhledávače.',
+    body:
+      '<p>Veřejná videa REST||ART Integrace mají samostatné sledovací stránky s vlastní adresou, náhledem, popisem a strukturovanými daty.</p><h2>Krátké představení projektu</h2><p><a href="/videa/predstaveni-projektu">Přehrát představení projektu</a>.</p><h2>Vizuální identita</h2><p><a href="/videa/logo-reveal">Přehrát logo reveal</a>.</p>'
+  },
+  {
     id: 'news-brozury-druhe-sance',
     title: 'Nové brožury REST||ART Integrace jsou veřejně ke stažení',
     tag: 'Média a materiály',
     date: '2026-06-26',
+    imageUrl: '/images/media/restart-projekt-infografika.png',
     excerpt:
       'Veřejná knihovna obsahuje projektové brožury pro partnery, podporovatele i zájemce o program JAILBREAK.',
     body:
@@ -1131,12 +1165,26 @@ function replaceHtmlMeta(html, pattern, replacement) {
 }
 
 function renderNewsArchiveSnapshot(tag, items) {
+  const mediaMaterialsIntro =
+    tag === 'Média a materiály'
+      ? `<section>
+      <h2>Veřejná knihovna projektu</h2>
+      <p>Brožury, metodické vizuály, programové podklady a videa projektu REST||ART Integrace s jasným původem a kontextem.</p>
+      <ul>
+        <li><a href="/media">Brožury, plakát a fotografie ke stažení</a></li>
+        <li><a href="/metodika#metodika-vizualy">Vizuální knihovna metodiky</a></li>
+        <li><a href="/programy">Programové podklady</a></li>
+        <li><a href="/videa/predstaveni-projektu">Oficiální videa projektu</a></li>
+      </ul>
+    </section>`
+      : '';
   return `<main class="seo-route-snapshot" data-seo-snapshot="news-archive">
     <header>
       <p class="section-label">Archiv aktualit</p>
       <h1>${escapeHtml(tag)}</h1>
       <p>Veřejné aktuality projektu RESTART Integrace zařazené pod tematickým štítkem ${escapeHtml(tag)}.</p>
     </header>
+    ${mediaMaterialsIntro}
     <section>
       <h2>Publikované příspěvky</h2>
       <ul>
@@ -1150,7 +1198,7 @@ function renderNewsArchiveSnapshot(tag, items) {
           .join('\n        ')}
       </ul>
     </section>
-    <nav aria-label="Související stránky"><a href="/aktuality">Všechny aktuality</a><a href="/">Úvod</a></nav>
+    <nav aria-label="Související stránky"><a href="/aktuality">Všechny aktuality</a><a href="/media">Média ke stažení</a><a href="/metodika">Metodika</a><a href="/">Úvod</a></nav>
   </main>`;
 }
 
@@ -1173,7 +1221,7 @@ function renderNewsArticleSnapshot(item) {
         ${safeBody}
       </section>
     </article>
-    <nav aria-label="Související stránky"><a href="/aktuality">Všechny aktuality</a><a href="/kontakt">Kontakt</a></nav>
+    <nav aria-label="Související stránky"><a href="/aktuality/${escapeHtml(slugifyPathSegment(item.tag || 'Aktuality projektu'))}">Další příspěvky v rubrice</a><a href="/aktuality">Všechny aktuality</a><a href="/media">Média ke stažení</a><a href="/kontakt">Kontakt</a></nav>
   </main>`;
 }
 
@@ -1314,7 +1362,10 @@ async function newsSeoPage(request, response, url) {
     if (archiveItems.length > 0) {
       const tag = archiveItems[0].tag || 'Aktuality projektu';
       const canonical = `${publicSiteUrl}${publicPath}`;
-      const description = `Archiv veřejných aktualit projektu RESTART Integrace se štítkem ${tag}.`;
+      const description =
+        tag === 'Média a materiály'
+          ? 'Veřejná knihovna brožur, metodických vizuálů, programových podkladů a videí projektu REST||ART Integrace.'
+          : `Archiv veřejných aktualit projektu RESTART Integrace se štítkem ${tag}.`;
       sendHtml(
         response,
         200,
@@ -1533,6 +1584,60 @@ function publicComment(row, user) {
   };
 }
 
+async function findPublishedNewsForInteraction(newsId) {
+  const selectNews = () => query('SELECT id, title FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
+  let rows = await selectNews();
+  if (rows.length > 0) return rows;
+
+  const builtInItem = builtInNewsSitemapRows.find((item) => item.id === newsId);
+  if (!builtInItem) return rows;
+
+  const slug = slugifyPathSegment(builtInItem.slug || builtInItem.title || builtInItem.id);
+  try {
+    await query(
+      `INSERT IGNORE INTO news (id, title, slug, tag, image_url, excerpt, body, published_at, status, author_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'published', NULL)`,
+      [
+        builtInItem.id,
+        builtInItem.title,
+        slug,
+        builtInItem.tag || null,
+        builtInItem.imageUrl || null,
+        builtInItem.excerpt,
+        builtInItem.body || null,
+        `${builtInItem.date} 00:00:00`
+      ]
+    );
+  } catch (error) {
+    if (!isUnknownColumnError(error)) throw error;
+    try {
+      await query(
+        `INSERT IGNORE INTO news (id, title, tag, image_url, excerpt, body, published_at, status, author_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'published', NULL)`,
+        [
+          builtInItem.id,
+          builtInItem.title,
+          builtInItem.tag || null,
+          builtInItem.imageUrl || null,
+          builtInItem.excerpt,
+          builtInItem.body || null,
+          `${builtInItem.date} 00:00:00`
+        ]
+      );
+    } catch (legacyError) {
+      if (!isUnknownColumnError(legacyError)) throw legacyError;
+      await query(
+        `INSERT IGNORE INTO news (id, title, excerpt, body, published_at, status, author_id)
+         VALUES (?, ?, ?, ?, ?, 'published', NULL)`,
+        [builtInItem.id, builtInItem.title, builtInItem.excerpt, builtInItem.body || null, `${builtInItem.date} 00:00:00`]
+      );
+    }
+  }
+
+  rows = await selectNews();
+  return rows;
+}
+
 async function listNewsDiscussion(request, response) {
   const user = await currentUser(request);
   const likeRows = await query(
@@ -1577,7 +1682,7 @@ async function toggleNewsLike(request, response, newsId) {
     sendJson(response, 401, { error: 'Login required.' });
     return;
   }
-  const newsRows = await query('SELECT id, title FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
+  const newsRows = await findPublishedNewsForInteraction(newsId);
   if (newsRows.length === 0) {
     sendJson(response, 404, { error: 'News item not found.' });
     return;
@@ -1629,7 +1734,7 @@ async function addNewsComment(request, response, newsId) {
     sendJson(response, 400, { error: 'Comment is too long.' });
     return;
   }
-  const newsRows = await query('SELECT id, title FROM news WHERE id = ? AND status = ? LIMIT 1', [newsId, 'published']);
+  const newsRows = await findPublishedNewsForInteraction(newsId);
   if (newsRows.length === 0) {
     sendJson(response, 404, { error: 'News item not found.' });
     return;

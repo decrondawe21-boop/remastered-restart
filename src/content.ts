@@ -781,10 +781,71 @@ export const starterNews = [
     ].join('')
   },
   {
+    id: 'news-darovane-knihy-a-jeden-nalez',
+    title: 'Darované knihy dorazily. A přibyl i jeden nečekaný nález',
+    date: '2026-08-05',
+    tag: 'Komunita',
+    imageUrl: '/images/news/darovane-knihy/dobrodruzne-knihy-kod.jpg',
+    excerpt:
+      'Do vznikající knihovny jsme převzali několik krabic darovaných knih a zachránili také jeden nalezený soubor. Děkujeme všem, kdo dávají knihám i jejich budoucím čtenářům další šanci.',
+    body: [
+      '<p><strong>Naše sbírka knih se během července znovu rozrostla.</strong> Dorazilo k nám několik balíků a krabic darovaných knih – beletrie, dobrodružné romány, naučná literatura i starší edice, které mohou dál sloužit.</p>',
+      '<h2>Knihy, které nemusely skončit bez užitku</h2>',
+      '<p>Vedle darů jsme převzali také jeden nalezený soubor knih, kterému hrozilo, že zůstane zapomenutý. I ten čeká stejné pečlivé třídění jako ostatní.</p>',
+      '<img src="/images/news/darovane-knihy/nalezeny-soubor-knih.jpg" alt="Nalezený soubor knih před roztříděním" width="1200" height="900" loading="lazy" />',
+      '<p><em>Nalezený soubor knih před roztříděním.</em></p>',
+      '<h2>Co bude následovat</h2>',
+      '<p>Knihy postupně prohlédneme, očistíme a roztřídíme podle stavu a zaměření. Použitelné tituly zařadíme do připravované sbírky; s ostatními naložíme odpovědně.</p>',
+      '<img src="/images/news/darovane-knihy/edice-aloise-jiraska.jpg" alt="Darovaná edice knih Aloise Jiráska" width="1200" height="675" loading="lazy" />',
+      '<p><em>Část darované edice Aloise Jiráska.</em></p>',
+      '<img src="/images/news/darovane-knihy/krabice-beletrie-a-naucnych-knih.jpg" alt="Krabice darované beletrie a naučných knih" width="1200" height="853" loading="lazy" />',
+      '<p><em>V zásilkách je beletrie, naučná literatura i knihy pro volný čas.</em></p>',
+      '<img src="/images/news/darovane-knihy/darovane-knihy-v-krabici.jpg" alt="Další darované knihy uložené v krabici" width="900" height="1200" loading="lazy" />',
+      '<img src="/images/news/darovane-knihy/dobrodruzne-knihy-v-krabici.jpg" alt="Darované dobrodružné knihy v krabici" width="900" height="1200" loading="lazy" />',
+      '<p><strong>Děkujeme všem dárcům.</strong> Darem knih nepředáváte jen věc. Pomáháte vytvářet prostor pro klid, vzdělávání a nový začátek lidí, se kterými projekt pracuje.</p>',
+      '<p>Chcete se také zapojit? Podrobnosti najdete na stránce <a href="/zapojeni/sbirka-knih">Sbírka knih</a>.</p>'
+    ].join('')
+  },
+  {
+    id: 'news-vizualni-knihovna-metodiky',
+    title: 'Vizuální knihovna metodiky je nově dostupná na jednom místě',
+    date: '2026-07-30',
+    tag: 'Média a materiály',
+    imageUrl: '/images/methodology/vizualni-model-rest-art-integrace.webp',
+    excerpt:
+      'Diagram systému, životní cyklus klienta, šest programových pilířů i síť spolupráce jsou veřejně dostupné v přehledné vizuální knihovně.',
+    body: [
+      '<p>Rozšířili jsme veřejnou část metodiky o vizuální podklady, které pomáhají rychle pochopit, jak REST||ART Integrace propojuje cílové skupiny, programy, partnery, měření a konkrétní výstupy.</p>',
+      '<h2>Od cílové skupiny ke stabilnímu člověku</h2>',
+      '<p>Ústřední diagram ukazuje dvě části jednoho systému. Na jedné straně stojí metodicky řízená práce s klientem, na druhé zaměstnavatelé, obce, instituce, dobrovolníci, komunita a odborní partneři. Jejich propojení vytváří podmínky pro dlouhodobou stabilizaci.</p>',
+      '<h2>Co je v knihovně dostupné</h2>',
+      '<ul><li>vizuální model REST||ART Integrace,</li><li>životní cyklus klienta,</li><li>šest programových pilířů,</li><li>síť spolupráce,</li><li>časová osa a milníky projektu,</li><li>samostatné programové ikony.</li></ul>',
+      '<p><a href="/metodika#metodika-vizualy">Otevřít vizuální knihovnu metodiky</a> nebo přejít na <a href="/media">veřejné materiály ke stažení</a>.</p>'
+    ].join('')
+  },
+  {
+    id: 'news-oficialni-videa-projektu',
+    title: 'Oficiální videa projektu mají vlastní sledovací stránky',
+    date: '2026-07-29',
+    tag: 'Média a materiály',
+    imageUrl: '/videos/rest-art-intro-poster.png',
+    excerpt:
+      'Krátké představení projektu a animace vizuální identity jsou dostupné na samostatných stránkách s popisem, titulky a údaji pro vyhledávače.',
+    body: [
+      '<p>Veřejná videa REST||ART Integrace jsme oddělili do samostatných sledovacích stránek. Každé video má vlastní adresu, náhled, popis a strukturovaná data, aby mu rozuměli návštěvníci, vyhledávače i asistivní technologie.</p>',
+      '<h2>Krátké představení projektu</h2>',
+      '<p>Patnáctisekundové video stručně představuje druhou šanci, praktickou podporu a bezpečný návrat do běžného života. <a href="/videa/predstaveni-projektu">Přehrát představení projektu</a>.</p>',
+      '<h2>Vizuální identita</h2>',
+      '<p>Krátká logo animace slouží jako vizuální podpis projektu pro prezentace a veřejnou komunikaci. <a href="/videa/logo-reveal">Přehrát logo reveal</a>.</p>',
+      '<p>Brožury, plakát a další veřejné podklady jsou dostupné v <a href="/media">knihovně médií ke stažení</a>.</p>'
+    ].join('')
+  },
+  {
     id: 'news-brozury-druhe-sance',
     title: 'Nové brožury REST||ART Integrace jsou veřejně ke stažení',
     date: '2026-06-26',
     tag: 'Média a materiály',
+    imageUrl: '/images/media/restart-projekt-infografika.png',
     excerpt:
       'Zveřejnili jsme projektové brožury pro partnery, podporovatele i zájemce o program JAILBREAK. Materiály shrnují, proč REST||ART není jen další projekt, ale značka druhé šance v praxi.',
     body: [
@@ -793,7 +854,8 @@ export const starterNews = [
       '<p>REST||ART Integrace nevnímáme jako tabulku, výkaz nebo formální značku na obálku žádosti. Je to odpověď na situace, kdy člověk po pádu najde stigma, bariéru a další propad místo otevřených dveří.</p>',
       '<p>Brožury popisují základní myšlenku: nečekat, až lidé znovu spadnou, ale zároveň je nenechat ležet. Projekt propojuje prevenci, doprovod, práci, bydlení a stabilizaci do jednoho praktického rámce.</p>',
       '<h2>Spolupráce, ne grantové soupeření</h2>',
-      '<p>Hledáme partnery, kteří chtějí táhnout stejným směrem. Nejde nám o výkazově přijatelná partnerství, ale o prostředí, kde partner znamená společný směr, odvahu a odpovědnost.</p>'
+      '<p>Hledáme partnery, kteří chtějí táhnout stejným směrem. Nejde nám o výkazově přijatelná partnerství, ale o prostředí, kde partner znamená společný směr, odvahu a odpovědnost.</p>',
+      '<p><a href="/media">Otevřít veřejnou knihovnu brožur, plakátů a fotografií</a>.</p>'
     ].join('')
   },
   {

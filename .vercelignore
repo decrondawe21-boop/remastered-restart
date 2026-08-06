@@ -1,6 +1,10 @@
 node_modules
 dist
 output/
+.playwright-cli/
+.tmp-doc-render/
+test-results/
+tmp/
 
 .git/
 .env

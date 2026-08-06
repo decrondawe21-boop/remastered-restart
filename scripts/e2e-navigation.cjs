@@ -213,6 +213,12 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   }
   await categoryLink.click();
   await page.waitForURL('**/aktuality/media-a-materialy');
+  await page.getByRole('heading', { name: 'Veřejná knihovna projektu', level: 1 }).waitFor();
+  await page.getByRole('heading', { name: 'Materiály, které vysvětlují systém v souvislostech', level: 2 }).waitFor();
+  const mediaCategoryCards = page.locator('.news-gallery-card');
+  if ((await mediaCategoryCards.count()) < 3) {
+    throw new Error('Media and materials archive should contain at least three related articles.');
+  }
   const articleLink = page.locator('.news-gallery-card .news-read-more').first();
   const articleHref = await articleLink.getAttribute('href');
   if (!articleHref?.startsWith('/aktuality/media-a-materialy/')) {
@@ -221,6 +227,7 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   await articleLink.click();
   await page.waitForURL(`**${articleHref}`);
   await page.locator('.story-detail-hero h1').waitFor();
+  await page.getByRole('heading', { name: 'Související příspěvky', level: 2 }).waitFor();
   const canonicalHref = await page.locator('link[rel="canonical"]').getAttribute('href');
   if (!canonicalHref?.endsWith(articleHref)) {
     throw new Error(`News detail canonical URL mismatch: ${canonicalHref}`);

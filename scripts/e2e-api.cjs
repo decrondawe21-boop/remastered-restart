@@ -15,6 +15,7 @@ if (missing.length > 0) {
 
 const port = String(5100 + Math.floor(Math.random() * 800));
 const baseUrl = `http://127.0.0.1:${port}`;
+const builtInNewsId = 'news-darovane-knihy-a-jeden-nalez';
 const server = spawn(process.execPath, ['server/index.cjs'], {
   cwd: process.cwd(),
   env: { ...process.env, API_PORT: port },
@@ -73,9 +74,10 @@ async function request(path, options = {}) {
   let email = '';
   let commentId = '';
   let replyId = '';
-  let likedNewsId = '';
+  const likedNewsIds = new Set();
   let testNewsId = '';
   let notificationId = '';
+  let builtInNewsWasPresent = true;
   try {
     await waitForServer();
     const seoArticle = await fetch(
@@ -104,6 +106,16 @@ async function request(path, options = {}) {
       !seoArchiveHtml.includes('"@type":"CollectionPage"')
     ) {
       throw new Error(`Dynamic news tag archive failed: status=${seoArchive.status}`);
+    }
+    const newsSitemap = await fetch(`${baseUrl}/api/sitemap/news.xml`);
+    const newsSitemapXml = await newsSitemap.text();
+    if (
+      !newsSitemap.ok ||
+      !newsSitemapXml.includes(
+        '/aktuality/komunita/darovane-knihy-dorazily-a-pribyl-i-jeden-necekany-nalez'
+      )
+    ) {
+      throw new Error(`Built-in news sitemap entry failed: status=${newsSitemap.status}`);
     }
 
     email = `client.${Date.now()}@example.test`;
@@ -271,6 +283,25 @@ async function request(path, options = {}) {
       throw new Error(`News discussion endpoint failed: ${JSON.stringify(discussion.body)}`);
     }
 
+    builtInNewsWasPresent = (await query('SELECT id FROM news WHERE id = ? LIMIT 1', [builtInNewsId])).length > 0;
+    const builtInLiked = await request(`/api/news/${encodeURIComponent(builtInNewsId)}/like`, {
+      method: 'POST',
+      headers: { cookie: loginCookie }
+    });
+    if (!builtInLiked.response.ok || builtInLiked.body.like.newsId !== builtInNewsId || builtInLiked.body.like.likedByMe !== true) {
+      throw new Error(`Built-in news like failed: ${JSON.stringify(builtInLiked.body)}`);
+    }
+    likedNewsIds.add(builtInNewsId);
+
+    const builtInUnliked = await request(`/api/news/${encodeURIComponent(builtInNewsId)}/like`, {
+      method: 'POST',
+      headers: { cookie: loginCookie }
+    });
+    if (!builtInUnliked.response.ok || builtInUnliked.body.like.newsId !== builtInNewsId || builtInUnliked.body.like.likedByMe !== false) {
+      throw new Error(`Built-in news unlike failed: ${JSON.stringify(builtInUnliked.body)}`);
+    }
+    likedNewsIds.delete(builtInNewsId);
+
     const liked = await request(`/api/news/${encodeURIComponent(firstNews.id)}/like`, {
       method: 'POST',
       headers: { cookie: loginCookie }
@@ -278,7 +309,7 @@ async function request(path, options = {}) {
     if (!liked.response.ok || liked.body.like.newsId !== firstNews.id || liked.body.like.likedByMe !== true) {
       throw new Error(`News like failed: ${JSON.stringify(liked.body)}`);
     }
-    likedNewsId = firstNews.id;
+    likedNewsIds.add(firstNews.id);
 
     const comment = await request(`/api/news/${encodeURIComponent(firstNews.id)}/comments`, {
       method: 'POST',
@@ -323,7 +354,7 @@ async function request(path, options = {}) {
     if (email) {
       if (replyId) await query('DELETE FROM news_comments WHERE id = ?', [replyId]).catch(() => undefined);
       if (commentId) await query('DELETE FROM news_comments WHERE id = ?', [commentId]).catch(() => undefined);
-      if (likedNewsId) {
+      for (const likedNewsId of likedNewsIds) {
         await query(
           'DELETE news_likes FROM news_likes JOIN users ON users.id = news_likes.user_id WHERE news_likes.news_id = ? AND users.email = ?',
           [likedNewsId, email]
@@ -336,6 +367,7 @@ async function request(path, options = {}) {
       await query('DELETE FROM project_applications WHERE user_id = (SELECT id FROM users WHERE email = ? LIMIT 1)', [email]).catch(() => undefined);
       await query('DELETE FROM users WHERE email = ?', [email]).catch(() => undefined);
       if (testNewsId) await query('DELETE FROM news WHERE id = ?', [testNewsId]).catch(() => undefined);
+      if (!builtInNewsWasPresent) await query('DELETE FROM news WHERE id = ?', [builtInNewsId]).catch(() => undefined);
       await getPool().end().catch(() => undefined);
     }
   }

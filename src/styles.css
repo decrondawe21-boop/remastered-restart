@@ -2958,6 +2958,223 @@ h3 {
   margin: 0 auto 28px;
 }
 
+.media-materials-overview {
+  display: grid;
+  gap: 18px;
+  margin: 0 0 34px;
+}
+
+.media-materials-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  overflow: hidden;
+  border: 1px solid rgba(205, 160, 70, 0.44);
+  border-radius: 6px;
+  background:
+    linear-gradient(118deg, rgba(3, 34, 25, 0.98), rgba(17, 79, 52, 0.93)),
+    var(--green-dark);
+  color: #fff;
+}
+
+.media-materials-lead > div {
+  align-self: center;
+  padding: clamp(26px, 4vw, 52px);
+}
+
+.media-materials-lead h2 {
+  max-width: 700px;
+  margin: 6px 0 12px;
+  color: #fff;
+  font-size: clamp(1.65rem, 3vw, 2.65rem);
+  line-height: 1.08;
+}
+
+.media-materials-lead p:not(.section-label) {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.media-materials-lead .section-label {
+  color: #e7bd62;
+}
+
+.media-materials-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.media-materials-actions .button.secondary {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.media-materials-lead figure {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 360px;
+  margin: 0;
+  background: #f4f6ee;
+}
+
+.media-materials-lead figure img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.media-materials-lead figcaption {
+  padding: 9px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.media-materials-collections {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.media-materials-collections > a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 98px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--green-dark);
+  text-decoration: none;
+}
+
+.media-materials-collections > a:hover {
+  border-color: var(--gold);
+  background: #fbfcf7;
+}
+
+.media-materials-collections span {
+  display: grid;
+  gap: 3px;
+}
+
+.media-materials-collections small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.news-related-heading {
+  margin: 0 0 16px;
+}
+
+.news-related-heading h2 {
+  margin: 4px 0 0;
+}
+
+.media-materials-news-heading {
+  padding-top: 4px;
+}
+
+.news-resource-links {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
+  gap: 24px;
+  margin-top: 30px;
+  padding: 24px 0;
+  border-block: 1px solid var(--line);
+}
+
+.news-resource-links h2,
+.news-resource-links p {
+  margin: 0;
+}
+
+.news-resource-links > div:last-child {
+  display: grid;
+  gap: 8px;
+}
+
+.news-resource-links a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--green-dark);
+  text-decoration: none;
+}
+
+.news-resource-links a:hover {
+  border-color: var(--gold);
+  background: var(--bg-soft);
+}
+
+.news-resource-links a span {
+  display: grid;
+  gap: 2px;
+}
+
+.news-resource-links a small {
+  color: var(--muted);
+}
+
+.news-related-section {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 1050px) {
+  .media-materials-lead {
+    grid-template-columns: 1fr;
+  }
+
+  .media-materials-lead figure {
+    min-height: 300px;
+  }
+
+  .media-materials-collections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .media-materials-lead > div {
+    padding: 24px 18px;
+  }
+
+  .media-materials-lead figure {
+    min-height: 220px;
+  }
+
+  .media-materials-actions,
+  .media-materials-actions .button {
+    width: 100%;
+  }
+
+  .media-materials-actions .button {
+    justify-content: center;
+  }
+
+  .media-materials-collections,
+  .news-resource-links {
+    grid-template-columns: 1fr;
+  }
+
+  .media-materials-collections > a {
+    min-height: 0;
+  }
+}
+
 .news-gallery-card {
   display: flex;
   flex-direction: column;

@@ -572,6 +572,30 @@ export const partnerTypes = [
 
 export const starterNews = [
   {
+    id: 'field-update-zabradli-u-zakladny-2026-08',
+    slug: 'vedle-zakladny-roste-nove-zabradli-krok-za-krokem',
+    title: 'Vedle základny roste nové zábradlí. Krok za krokem',
+    date: '2026-08-06',
+    tag: 'Stavíme svépomocí',
+    excerpt:
+      'U vstupu vedle základny postupně vzniká dřevěné zábradlí. Od přípravy prostoru přes osazení jednotlivých dílů až po zpevnění a ochranný nátěr.',
+    imageUrl: '/images/news/zabradli-u-zakladny/04-soucasny-stav-zabradli.jpg',
+    body: [
+      '<p>Vedle základny pokračujeme v úpravě vstupního prostoru. Místo, které bylo otevřené a nepřehledné, postupně doplňujeme dřevěným zábradlím. Práce vzniká po částech podle prostoru, dostupného materiálu a toho, co je potřeba průběžně upravit.</p>',
+      '<div class="project-status"><span class="project-status-badge">Stav k 6. srpnu 2026</span><strong>Bezpečnější a jasněji vymezený vstup</strong><p>Zábradlí už tvoří pevnou hranici vedle vstupu. Ještě pokračujeme v kontrole spojů a dokončovacích úpravách.</p></div>',
+      '<h2>Jak práce postupovala</h2>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card"><img src="/images/news/zabradli-u-zakladny/01-priprava-prostoru.jpg" alt="Prostor vedle základny před stavbou zábradlí"><figcaption><strong>1. Příprava prostoru.</strong> Nejprve bylo potřeba uvolnit průchod, srovnat místo a připravit jednotlivé dřevěné díly.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zabradli-u-zakladny/02-prvni-cast-zabradli.jpg" alt="První osazená část dřevěného zábradlí"><figcaption><strong>2. První osazená část.</strong> Základní rám a svislé výplně začaly vymezovat okraj vstupu.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zabradli-u-zakladny/03-zpevneni-a-nater.jpg" alt="Zpevněné dřevěné zábradlí s ochranným nátěrem"><figcaption><strong>3. Zpevnění a nátěr.</strong> Jednotlivé prvky jsme spojili, srovnali a ošetřili tmavým ochranným nátěrem.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zabradli-u-zakladny/04-soucasny-stav-zabradli.jpg" alt="Současný stav zábradlí vedle základny REST ART"><figcaption><strong>4. Současný stav.</strong> Zábradlí už navazuje na vstup a vytváří pevnější a přehlednější oddělení prostoru.</figcaption></figure>',
+      '</div>',
+      '<h2>Co ještě zbývá</h2>',
+      '<ul><li>zkontrolovat a případně dotáhnout všechny spoje,</li><li>dokončit drobné povrchové úpravy,</li><li>uvolnit a uspořádat okolí vstupu,</li><li>sledovat, jak konstrukce obstojí při běžném používání.</li></ul>',
+      '<p><strong>Stavíme postupně a ukazujeme celý průběh.</strong> I menší úprava může výrazně změnit bezpečnost a každodenní fungování místa.</p>'
+    ].join('')
+  },
+  {
     id: 'field-update-paletove-posezeni-2026-08',
     slug: 'makame-dal-paletove-posezeni-vznika-u-nas',
     title: 'Makáme dál: z palet roste vlastní posezení',

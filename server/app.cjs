@@ -81,6 +81,18 @@ const publicSiteUrl = String(process.env.PUBLIC_SITE_URL || 'https://restartinte
 const secondChanceStoryTag = 'Příběhy druhé šance';
 const builtInNewsSitemapRows = [
   {
+    id: 'field-update-zabradli-u-zakladny-2026-08',
+    slug: 'vedle-zakladny-roste-nove-zabradli-krok-za-krokem',
+    title: 'Vedle základny roste nové zábradlí. Krok za krokem',
+    tag: 'Stavíme svépomocí',
+    date: '2026-08-06',
+    imageUrl: '/images/news/zabradli-u-zakladny/04-soucasny-stav-zabradli.jpg',
+    excerpt:
+      'U vstupu vedle základny postupně vzniká dřevěné zábradlí. Od přípravy prostoru přes osazení jednotlivých dílů až po zpevnění a ochranný nátěr.',
+    body:
+      '<p>Vedle základny postupně stavíme dřevěné zábradlí, které jasněji vymezí vstup a zvýší bezpečnost prostoru. Dokumentujeme přípravu místa, osazení jednotlivých částí, zpevnění konstrukce i ochranný nátěr.</p>'
+  },
+  {
     id: 'field-update-paletove-posezeni-2026-08',
     slug: 'makame-dal-paletove-posezeni-vznika-u-nas',
     title: 'Makáme dál: z palet roste vlastní posezení',

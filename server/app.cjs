@@ -81,6 +81,18 @@ const publicSiteUrl = String(process.env.PUBLIC_SITE_URL || 'https://restartinte
 const secondChanceStoryTag = 'Příběhy druhé šance';
 const builtInNewsSitemapRows = [
   {
+    id: 'field-update-puvodni-pozemek-video-2026-08',
+    slug: 'jak-vypadal-pozemek-pred-promenou-video',
+    title: 'Jak vypadal pozemek před proměnou: dochovaný záznam',
+    tag: 'Proměna místa',
+    date: '2026-08-06',
+    imageUrl: '/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg',
+    excerpt:
+      'Dochovaný záznam z května 2026 ukazuje pozemek ještě před většinou dnešních úprav. Úplně první stav zachycený není — tehdy místo připomínalo skládku.',
+    body:
+      '<p>Našli jsme video z 5. května 2026, které ukazuje téměř původní podobu pozemku před většinou dnešních úprav.</p><div class="news-video"><video src="/videos/zahrada-promena/pozemek-pred-promenou.mp4" poster="/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg" controls="controls" preload="metadata" playsinline="playsinline" aria-label="Video téměř původního stavu pozemku před proměnou"></video></div><p><em>Původní soukromá hlasová stopa byla odstraněna a nahrazena nově vytvořenou instrumentální hudbou.</em></p><h2>Ještě to nebyl úplný začátek</h2><p>Úplně první stav jsme nedokumentovali, protože pozemek tehdy připomínal skládku. Jde proto o nejstarší dochovaný záznam po základním úklidu.</p><h2>Proměna krok za krokem</h2><p>Srovnání s dnešní podobou ukazuje práci, pomoc lidí i materiály, které postupně dávají místu nový smysl.</p>'
+  },
+  {
     id: 'field-update-zahrada-zavarovani-a-peceni-2026-08',
     slug: 'ze-zahrady-az-k-lidem-zavarujeme-peceme-a-rozdelujeme-dal',
     title: 'Ze zahrady až k lidem: zavařujeme, pečeme a rozdělujeme dál',
@@ -90,7 +102,7 @@ const builtInNewsSitemapRows = [
     excerpt:
       'Úrodu z našich zahrad zpracováváme tak, aby nic nepřišlo nazmar. Přes 120 sklenic okurek, 50 marmelád a desítky upečených koláčů už pomáhají také lidem kolem projektu a lidem v nouzi.',
     body:
-      '<p>Úrodu z našich zahrad zavařujeme, měníme v marmelády a využíváme při pečení. Dokupujeme jen nezbytné minimum.</p><h2>Od skládky k úrodě</h2><p>Úplně původní stav jsme tehdy nezdokumentovali — pozemek připomínal skládku. Dochovaný záznam z května 2026 ale ukazuje téměř původní podobu místa před většinou dnešních úprav.</p><div class="news-video"><video src="/videos/zahrada-promena/pozemek-pred-promenou.mp4" poster="/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg" controls="controls" preload="metadata" playsinline="playsinline" aria-label="Video téměř původního stavu pozemku před proměnou"></video></div><p><em>Původní soukromá hlasová stopa byla z videa úplně odstraněna a nahrazena jemným instrumentálním podkresem.</em></p><h2>Průběžná bilance</h2><ul><li>přes 120 sklenic okurek, z toho více než 60 rozdaných,</li><li>50 sklenic marmelád, z toho 44 rozdaných,</li><li>36 darovaných koláčů a buchet.</li></ul><p>Zavařeniny a pečivo předáváme lidem zapojeným do projektu, lidem bez domova a dalším lidem v nouzi.</p>'
+      '<p>Úrodu z našich zahrad zavařujeme, měníme v marmelády a využíváme při pečení. Dokupujeme jen nezbytné minimum.</p><h2>Průběžná bilance</h2><ul><li>přes 120 sklenic okurek, z toho více než 60 rozdaných,</li><li>50 sklenic marmelád, z toho 44 rozdaných,</li><li>36 darovaných koláčů a buchet.</li></ul><p>Zavařeniny a pečivo předáváme lidem zapojeným do projektu, lidem bez domova a dalším lidem v nouzi.</p>'
   },
   {
     id: 'field-update-zabradli-u-zakladny-2026-08',

@@ -572,6 +572,26 @@ export const partnerTypes = [
 
 export const starterNews = [
   {
+    id: 'field-update-puvodni-pozemek-video-2026-08',
+    slug: 'jak-vypadal-pozemek-pred-promenou-video',
+    title: 'Jak vypadal pozemek před proměnou: dochovaný záznam',
+    date: '2026-08-06',
+    tag: 'Proměna místa',
+    excerpt:
+      'Dochovaný záznam z května 2026 ukazuje pozemek ještě před většinou dnešních úprav. Úplně první stav zachycený není — tehdy místo připomínalo skládku.',
+    imageUrl: '/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg',
+    body: [
+      '<p><strong>Než se na pozemku začaly naplno rýsovat dnešní zahrady, zázemí a další společné projekty, vypadal úplně jinak.</strong> Našli jsme video z 5. května 2026, které zachycuje téměř původní podobu místa před většinou úprav.</p>',
+      '<div class="project-status"><span class="project-status-badge">Video z 5. května 2026</span><strong>Místo před většinou dnešních změn</strong><p>Čtyřminutová procházka pozemkem připomíná, z jakého stavu jsme vycházeli a kolik práce je za jeho postupnou proměnou.</p></div>',
+      '<div class="news-video"><video src="/videos/zahrada-promena/pozemek-pred-promenou.mp4" poster="/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg" controls="controls" preload="metadata" playsinline="playsinline" aria-label="Video téměř původního stavu pozemku před proměnou"></video></div>',
+      '<p><em>Původní soukromá hlasová stopa byla z videa úplně odstraněna. Záznam nyní doprovází nově vytvořená instrumentální hudba.</em></p>',
+      '<h2>Ještě to nebyl úplný začátek</h2>',
+      '<p>Úplně první podobu místa jsme tehdy nedokumentovali. Pozemek připomínal skládku a nejdřív bylo potřeba řešit základní úklid a zpřístupnění prostoru. Video proto nezachycuje úplnou nulu, ale nejstarší dochovaný stav, ke kterému se dnes můžeme vrátit.</p>',
+      '<h2>Proč tenhle záznam zveřejňujeme</h2>',
+      '<p>Proměna nevznikla jedním velkým krokem. Skládá se z dlouhé řady menších prací, darovaných materiálů, pomoci různých lidí a každodenní péče. Právě srovnání s tímto videem ukazuje, že i místo, které na začátku působí beznadějně, může postupně získat nový smysl.</p>'
+    ].join('')
+  },
+  {
     id: 'field-update-zahrada-zavarovani-a-peceni-2026-08',
     slug: 'ze-zahrady-az-k-lidem-zavarujeme-peceme-a-rozdelujeme-dal',
     title: 'Ze zahrady až k lidem: zavařujeme, pečeme a rozdělujeme dál',
@@ -582,10 +602,6 @@ export const starterNews = [
     imageUrl: '/images/news/zahrada-zavarovani-a-peceni/02-zavarene-sklenice.jpg',
     body: [
       '<p><strong>Tohle je malá ukázka toho, co se urodilo na našich zahradách a co z vlastní úrody dál vzniká.</strong> Zavařujeme, připravujeme marmelády a pečeme buchty i koláče. Využíváme hlavně to, co sami vypěstujeme; dokupujeme jen nezbytné minimum.</p>',
-      '<h2>Od skládky k úrodě</h2>',
-      '<p>Úplně původní stav jsme tehdy nezdokumentovali — pozemek připomínal skládku. Dochovaný záznam z května 2026 ale ukazuje téměř původní podobu místa, ještě před většinou dnešních úprav a před sklizní, kterou teď zpracováváme.</p>',
-      '<div class="news-video"><video src="/videos/zahrada-promena/pozemek-pred-promenou.mp4" poster="/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg" controls="controls" preload="metadata" playsinline="playsinline" aria-label="Video téměř původního stavu pozemku před proměnou"></video></div>',
-      '<p><em>Původní soukromá hlasová stopa byla z videa úplně odstraněna a nahrazena jemným instrumentálním podkresem.</em></p>',
       '<div class="project-status"><span class="project-status-badge">Průběžná bilance k 6. srpnu 2026</span><strong>Úroda nekončí jen u nás</strong><p>Přes 120 sklenic okurek · více než 60 rozdaných<br>50 sklenic marmelád · 44 rozdaných<br>36 darovaných koláčů a buchet</p></div>',
       '<h2>Přes 120 sklenic okurek</h2>',
       '<p>Okurky postupně sklízíme, čistíme, připravujeme a zavařujeme. Počet hotových sklenic už překročil 120. Více než 60 z nich jsme rozdali lidem, kteří se podílejí na projektu, a lidem v nouzi.</p>',

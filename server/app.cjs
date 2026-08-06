@@ -81,6 +81,18 @@ const publicSiteUrl = String(process.env.PUBLIC_SITE_URL || 'https://restartinte
 const secondChanceStoryTag = 'Příběhy druhé šance';
 const builtInNewsSitemapRows = [
   {
+    id: 'field-update-zahrada-zavarovani-a-peceni-2026-08',
+    slug: 'ze-zahrady-az-k-lidem-zavarujeme-peceme-a-rozdelujeme-dal',
+    title: 'Ze zahrady až k lidem: zavařujeme, pečeme a rozdělujeme dál',
+    tag: 'Komunita',
+    date: '2026-08-06',
+    imageUrl: '/images/news/zahrada-zavarovani-a-peceni/02-zavarene-sklenice.jpg',
+    excerpt:
+      'Úrodu z našich zahrad zpracováváme tak, aby nic nepřišlo nazmar. Přes 120 sklenic okurek, 50 marmelád a desítky upečených koláčů už pomáhají také lidem kolem projektu a lidem v nouzi.',
+    body:
+      '<p>Úrodu z našich zahrad zavařujeme, měníme v marmelády a využíváme při pečení. Dokupujeme jen nezbytné minimum.</p><h2>Od skládky k úrodě</h2><p>Úplně původní stav jsme tehdy nezdokumentovali — pozemek připomínal skládku. Dochovaný záznam z května 2026 ale ukazuje téměř původní podobu místa před většinou dnešních úprav.</p><div class="news-video"><video src="/videos/zahrada-promena/pozemek-pred-promenou.mp4" poster="/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg" controls="controls" preload="metadata" playsinline="playsinline" aria-label="Video téměř původního stavu pozemku před proměnou"></video></div><p><em>Původní soukromá hlasová stopa byla z videa úplně odstraněna a nahrazena jemným instrumentálním podkresem.</em></p><h2>Průběžná bilance</h2><ul><li>přes 120 sklenic okurek, z toho více než 60 rozdaných,</li><li>50 sklenic marmelád, z toho 44 rozdaných,</li><li>36 darovaných koláčů a buchet.</li></ul><p>Zavařeniny a pečivo předáváme lidem zapojeným do projektu, lidem bez domova a dalším lidem v nouzi.</p>'
+  },
+  {
     id: 'field-update-zabradli-u-zakladny-2026-08',
     slug: 'vedle-zakladny-roste-nove-zabradli-krok-za-krokem',
     title: 'Vedle základny roste nové zábradlí. Krok za krokem',

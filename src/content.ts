@@ -572,6 +572,44 @@ export const partnerTypes = [
 
 export const starterNews = [
   {
+    id: 'field-update-zahrada-zavarovani-a-peceni-2026-08',
+    slug: 'ze-zahrady-az-k-lidem-zavarujeme-peceme-a-rozdelujeme-dal',
+    title: 'Ze zahrady až k lidem: zavařujeme, pečeme a rozdělujeme dál',
+    date: '2026-08-06',
+    tag: 'Komunita',
+    excerpt:
+      'Úrodu z našich zahrad zpracováváme tak, aby nic nepřišlo nazmar. Přes 120 sklenic okurek, 50 marmelád a desítky upečených koláčů už pomáhají také lidem kolem projektu a lidem v nouzi.',
+    imageUrl: '/images/news/zahrada-zavarovani-a-peceni/02-zavarene-sklenice.jpg',
+    body: [
+      '<p><strong>Tohle je malá ukázka toho, co se urodilo na našich zahradách a co z vlastní úrody dál vzniká.</strong> Zavařujeme, připravujeme marmelády a pečeme buchty i koláče. Využíváme hlavně to, co sami vypěstujeme; dokupujeme jen nezbytné minimum.</p>',
+      '<h2>Od skládky k úrodě</h2>',
+      '<p>Úplně původní stav jsme tehdy nezdokumentovali — pozemek připomínal skládku. Dochovaný záznam z května 2026 ale ukazuje téměř původní podobu místa, ještě před většinou dnešních úprav a před sklizní, kterou teď zpracováváme.</p>',
+      '<div class="news-video"><video src="/videos/zahrada-promena/pozemek-pred-promenou.mp4" poster="/videos/zahrada-promena/pozemek-pred-promenou-poster.jpg" controls="controls" preload="metadata" playsinline="playsinline" aria-label="Video téměř původního stavu pozemku před proměnou"></video></div>',
+      '<p><em>Původní soukromá hlasová stopa byla z videa úplně odstraněna a nahrazena jemným instrumentálním podkresem.</em></p>',
+      '<div class="project-status"><span class="project-status-badge">Průběžná bilance k 6. srpnu 2026</span><strong>Úroda nekončí jen u nás</strong><p>Přes 120 sklenic okurek · více než 60 rozdaných<br>50 sklenic marmelád · 44 rozdaných<br>36 darovaných koláčů a buchet</p></div>',
+      '<h2>Přes 120 sklenic okurek</h2>',
+      '<p>Okurky postupně sklízíme, čistíme, připravujeme a zavařujeme. Počet hotových sklenic už překročil 120. Více než 60 z nich jsme rozdali lidem, kteří se podílejí na projektu, a lidem v nouzi.</p>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card"><img src="/images/news/zahrada-zavarovani-a-peceni/01-priprava-okurek.jpg" alt="Příprava okurek z vlastní zahrady před zavařením"><figcaption><strong>Od úrody ke sklenici.</strong> Okurky čistíme a připravujeme ručně po menších dávkách.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zahrada-zavarovani-a-peceni/02-zavarene-sklenice.jpg" alt="Hotové sklenice domácích zavařenin uložené v lednici"><figcaption><strong>Hotové zásoby.</strong> Sklenice postupně ukládáme a připravujeme také k rozdání.</figcaption></figure>',
+      '</div>',
+      '<h2>Marmelády do balíčků</h2>',
+      '<div class="project-photo-story"><img src="/images/news/zahrada-zavarovani-a-peceni/03-domaci-marmelady.jpg" alt="Sklenice domácích marmelád připravených k dalšímu využití"><div class="project-photo-story-copy"><span>50 sklenic hotovo</span><strong>44 už našlo své příjemce</strong><p>Marmelády jsme přidali do balíčků pro lidi bez domova a rozdali je také lidem, kteří se na projektu podílejí.</p></div></div>',
+      '<h2>Pečeme z toho, co máme</h2>',
+      '<p>Stejný princip platí i při pečení. Ovoce, marmelády a další vlastní suroviny měníme v buchty, koláče a záviny. Dokupujeme jen to, bez čeho se recept neobejde. Už 36 kusů jsme věnovali lidem v nouzi a lidem, kteří nemají stejné možnosti jako ostatní.</p>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card project-gallery-card--wide"><img src="/images/news/zahrada-zavarovani-a-peceni/04-kolac-a-ovoce.jpg" alt="Domácí koláč doplněný ovocem"><figcaption>Ovoce a vlastní zavařeniny využíváme při pečení, aby sklizeň sloužila co nejdéle.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zahrada-zavarovani-a-peceni/05-domaci-zavin.jpg" alt="Domácí závin připravený z dostupných surovin"><figcaption>Domácí závin připravený převážně z toho, co už máme k dispozici.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zahrada-zavarovani-a-peceni/06-kolac-s-marmeladou.jpg" alt="Domácí koláč potřený vlastní marmeládou"><figcaption>Koláč s domácí marmeládou propojuje zavařování s dalším využitím úrody.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zahrada-zavarovani-a-peceni/07-kolac-s-marmeladou-rez.jpg" alt="Řez domácím koláčem s marmeládou"><figcaption>Řez koláčem ukazuje výsledek dalšího z našich průběžných pečení.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zahrada-zavarovani-a-peceni/08-ovocny-kolac.jpg" alt="Upečený ovocný koláč posypaný cukrem"><figcaption>Ovocný koláč před rozdělením na jednotlivé porce.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/zahrada-zavarovani-a-peceni/09-ovocny-kolac-rez.jpg" alt="Rozkrojený ovocný koláč s viditelným ovocem"><figcaption>Po rozkrojení je vidět ovoce, které tvoří podstatnou část náplně.</figcaption></figure>',
+      '<figure class="project-gallery-card project-gallery-card--wide"><img src="/images/news/zahrada-zavarovani-a-peceni/10-cokoladovy-kolac.jpg" alt="Domácí koláč s čokoládovou vrstvou"><figcaption>Další z domácích koláčů, které připravujeme nejen pro sebe, ale také pro druhé.</figcaption></figure>',
+      '</div>',
+      '<p><strong>Nejde jen o čísla sklenic a upečených plechů.</strong> Každá rozdaná zavařenina nebo porce pečiva je konkrétní způsob, jak se podělit o výsledek společné práce a dát vlastní úrodě další smysl.</p>'
+    ].join('')
+  },
+  {
     id: 'field-update-zabradli-u-zakladny-2026-08',
     slug: 'vedle-zakladny-roste-nove-zabradli-krok-za-krokem',
     title: 'Vedle základny roste nové zábradlí. Krok za krokem',

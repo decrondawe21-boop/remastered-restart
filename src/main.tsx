@@ -1602,7 +1602,8 @@ const newsHtmlTags = new Set([
   'SPAN',
   'STRONG',
   'U',
-  'UL'
+  'UL',
+  'VIDEO'
 ]);
 const newsAlignmentClasses = new Set(['align-left', 'align-center', 'align-right', 'align-justify']);
 const newsLayoutClasses = new Set([
@@ -1634,7 +1635,8 @@ const newsHtmlAttrs = new Map([
   ['IMG', new Set(['src', 'alt', 'title', 'loading', 'width', 'height'])],
   ['IFRAME', new Set(['src', 'title', 'allow', 'allowfullscreen', 'loading'])],
   ['P', new Set(['class'])],
-  ['SPAN', new Set(['class'])]
+  ['SPAN', new Set(['class'])],
+  ['VIDEO', new Set(['src', 'poster', 'controls', 'preload', 'playsinline', 'aria-label'])]
 ]);
 
 function isSafeNewsUrl(tagName: string, attrName: string, value: string) {
@@ -1642,6 +1644,7 @@ function isSafeNewsUrl(tagName: string, attrName: string, value: string) {
   if (!trimmed) return false;
   if (attrName === 'href') return /^(https?:|mailto:|tel:|#|\/)/i.test(trimmed);
   if (tagName === 'IMG' && attrName === 'src') return /^(https?:|\/)/i.test(trimmed);
+  if (tagName === 'VIDEO' && (attrName === 'src' || attrName === 'poster')) return /^(https?:|\/)/i.test(trimmed);
   if (tagName === 'IFRAME' && attrName === 'src') {
     try {
       const url = new URL(trimmed, window.location.origin);

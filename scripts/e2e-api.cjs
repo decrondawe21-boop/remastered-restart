@@ -107,13 +107,35 @@ async function request(path, options = {}) {
     ) {
       throw new Error(`Dynamic news tag archive failed: status=${seoArchive.status}`);
     }
+    const seoIndex = await fetch(`${baseUrl}/api/seo/news-page`);
+    const seoIndexHtml = await seoIndex.text();
+    if (
+      !seoIndex.ok ||
+      !seoIndexHtml.includes('<h1>Aktuality</h1>') ||
+      !seoIndexHtml.includes('data-seo-snapshot="news-index"') ||
+      !seoIndexHtml.includes('/aktuality/komunita/darovane-knihy-dorazily-a-pribyl-i-jeden-necekany-nalez') ||
+      !seoIndexHtml.includes('"@type":"CollectionPage"')
+    ) {
+      throw new Error(`Dynamic news index failed: status=${seoIndex.status}`);
+    }
+    const legacyNews = await fetch(`${baseUrl}/api/seo/news-page?publicPath=aktuality-projektu/druhasance`, {
+      redirect: 'manual'
+    });
+    if (
+      legacyNews.status !== 308 ||
+      legacyNews.headers.get('location') !==
+        '/aktuality/aktuality-projektu/ne-kazdy-ma-moznosti-restart-umoznuje-zkusit-to-znovu'
+    ) {
+      throw new Error(`Legacy news redirect failed: status=${legacyNews.status}`);
+    }
     const newsSitemap = await fetch(`${baseUrl}/api/sitemap/news.xml`);
     const newsSitemapXml = await newsSitemap.text();
     if (
       !newsSitemap.ok ||
       !newsSitemapXml.includes(
         '/aktuality/komunita/darovane-knihy-dorazily-a-pribyl-i-jeden-necekany-nalez'
-      )
+      ) ||
+      newsSitemapXml.includes('/aktuality/aktuality-projektu/druhasance')
     ) {
       throw new Error(`Built-in news sitemap entry failed: status=${newsSitemap.status}`);
     }

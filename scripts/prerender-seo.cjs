@@ -1523,14 +1523,9 @@ function renderFileSitemap(entries) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${uniqueEntries(entries)
-  .map(
-    (entry) => `  <url>
+  .map((entry) => `  <url>
     <loc>${escapeXml(entry.loc)}</loc>
-    <lastmod>${entry.lastmod || today}</lastmod>
-    <changefreq>${entry.changefreq || 'monthly'}</changefreq>
-    <priority>${entry.priority || '0.4'}</priority>
-  </url>`
-  )
+  </url>`)
   .join('\n')}
 </urlset>
 `;

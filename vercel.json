@@ -4,6 +4,16 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/aktuality/aktuality-projektu/druhasance",
+      "destination": "/aktuality/aktuality-projektu/ne-kazdy-ma-moznosti-restart-umoznuje-zkusit-to-znovu",
+      "permanent": true
+    },
+    {
+      "source": "/aktuality/media-a-materialy/nove-brozury-restart-integrace-jsou-verejne-ke-stazeni",
+      "destination": "/aktuality/media-a-materialy/brozurynew",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
@@ -102,6 +112,10 @@
     {
       "source": "/sitemap-news.xml",
       "destination": "/api/index?path=sitemap/news.xml"
+    },
+    {
+      "source": "/aktuality",
+      "destination": "/api/index?path=seo/news-page"
     },
     {
       "source": "/aktuality/:path*",

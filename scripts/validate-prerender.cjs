@@ -73,6 +73,16 @@ if (!robots.includes(`Sitemap: ${baseUrl}/sitemap.xml`)) {
 const sitemapIndex = fs.readFileSync(path.join(distDir, 'sitemap.xml'), 'utf8');
 if (!sitemapIndex.includes('<sitemapindex')) failures.push('sitemap.xml: soubor není sitemap index.');
 
+const documentSitemapPath = path.join(distDir, 'sitemap-documents.xml');
+if (!fs.existsSync(documentSitemapPath)) {
+  failures.push('sitemap-documents.xml: soubor chybí.');
+} else {
+  const documentSitemap = fs.readFileSync(documentSitemapPath, 'utf8');
+  if (/<(?:lastmod|changefreq|priority)>/.test(documentSitemap)) {
+    failures.push('sitemap-documents.xml: statické soubory nesmí předstírat datum změny ani používat ignorované priority.');
+  }
+}
+
 const mediaSitemapPath = path.join(distDir, 'sitemap-media.xml');
 if (!fs.existsSync(mediaSitemapPath)) {
   failures.push('sitemap-media.xml: soubor chybí.');

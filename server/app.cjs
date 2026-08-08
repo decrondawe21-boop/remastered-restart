@@ -57,6 +57,15 @@ function sendRedirect(response, location, headers = {}) {
   response.end();
 }
 
+function sendPermanentRedirect(response, location, headers = {}) {
+  response.writeHead(308, {
+    location,
+    'cache-control': 'public, max-age=86400',
+    ...headers
+  });
+  response.end();
+}
+
 function sendPdf(response, statusCode, buffer, fileName) {
   response.writeHead(statusCode, {
     'content-type': 'application/pdf',
@@ -79,6 +88,16 @@ function isTransientDatabaseError(error) {
 
 const publicSiteUrl = String(process.env.PUBLIC_SITE_URL || 'https://restartintegrace.dk-i.cz').replace(/\/$/, '');
 const secondChanceStoryTag = 'Příběhy druhé šance';
+const legacyNewsRedirects = new Map([
+  [
+    '/aktuality/aktuality-projektu/druhasance',
+    '/aktuality/aktuality-projektu/ne-kazdy-ma-moznosti-restart-umoznuje-zkusit-to-znovu'
+  ],
+  [
+    '/aktuality/media-a-materialy/nove-brozury-restart-integrace-jsou-verejne-ke-stazeni',
+    '/aktuality/media-a-materialy/brozurynew'
+  ]
+]);
 const builtInNewsSitemapRows = [
   {
     id: 'field-update-puvodni-pozemek-video-2026-08',
@@ -1239,6 +1258,38 @@ function renderNewsArchiveSnapshot(tag, items) {
   </main>`;
 }
 
+function renderNewsIndexSnapshot(items) {
+  const tagEntries = new Map();
+  for (const item of items) {
+    const tag = item.tag || 'Aktuality projektu';
+    if (!tagEntries.has(tag)) tagEntries.set(tag, `/aktuality/${slugifyPathSegment(tag)}`);
+  }
+  return `<main class="seo-route-snapshot" data-seo-snapshot="news-index">
+    <header>
+      <p class="section-label">Dění v projektu</p>
+      <h1>Aktuality</h1>
+      <p>Novinky, veřejné zprávy a průběžné informace z oficiálního projektu RESTART Integrace.</p>
+    </header>
+    <nav aria-label="Tematické rubriky">
+      ${Array.from(tagEntries, ([tag, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(tag)}</a>`).join('')}
+    </nav>
+    <section>
+      <h2>Nejnovější příspěvky</h2>
+      <ul>
+        ${items
+          .map(
+            (item) =>
+              `<li><a href="${escapeHtml(newsPublicPath(item))}"><strong>${escapeHtml(item.title)}</strong></a> <time datetime="${escapeHtml(
+                item.date
+              )}">${escapeHtml(item.date)}</time><p>${escapeHtml(item.excerpt || stripHtml(item.body).slice(0, 220))}</p></li>`
+          )
+          .join('\n        ')}
+      </ul>
+    </section>
+    <nav aria-label="Související stránky"><a href="/pribehy-druhe-sance">Příběhy druhé šance</a><a href="/media">Média ke stažení</a><a href="/metodika">Metodika</a><a href="/">Úvod</a></nav>
+  </main>`;
+}
+
 function renderNewsArticleSnapshot(item) {
   const safeBody =
     sanitizePublicArticleHtml(item.body) ||
@@ -1352,8 +1403,15 @@ async function newsSeoPage(request, response, url) {
     .replace(/^\/+|\/+$/g, '')
     .replace(/\.{2,}/g, '');
   const scope = url.searchParams.get('scope') === 'stories' ? 'stories' : 'news';
-  if (!suffix) {
-    sendRedirect(response, scope === 'stories' ? '/pribehy-druhe-sance' : '/aktuality');
+  if (!suffix && scope === 'stories') {
+    sendRedirect(response, '/pribehy-druhe-sance');
+    return;
+  }
+
+  const requestedNewsPath = scope === 'news' && suffix ? `/aktuality/${suffix}` : '';
+  const redirectTarget = legacyNewsRedirects.get(requestedNewsPath);
+  if (redirectTarget) {
+    sendPermanentRedirect(response, redirectTarget);
     return;
   }
 
@@ -1368,9 +1426,26 @@ async function newsSeoPage(request, response, url) {
   [...builtInNewsSitemapRows, ...databaseRows]
     .map(publicNewsRow)
     .forEach((item) => itemByPath.set(newsPublicPath(item), item));
-  const items = Array.from(itemByPath.values());
-  const publicPath = scope === 'stories' ? `/pribehy-druhe-sance/${suffix}` : `/aktuality/${suffix}`;
+  const items = Array.from(itemByPath.values())
+    .filter((item) => !legacyNewsRedirects.has(newsPublicPath(item)))
+    .sort((left, right) => String(right.date).localeCompare(String(left.date)));
   const shell = await loadNewsShell(request);
+  if (!suffix) {
+    const newsItems = items.filter((item) => item.tag !== secondChanceStoryTag);
+    sendHtml(
+      response,
+      200,
+      renderNewsHtml(shell, {
+        canonical: `${publicSiteUrl}/aktuality`,
+        title: 'Aktuality',
+        description: 'Novinky, veřejné zprávy a průběžné informace z oficiálního projektu RESTART Integrace.',
+        snapshot: renderNewsIndexSnapshot(newsItems),
+        isArchive: true
+      })
+    );
+    return;
+  }
+  const publicPath = scope === 'stories' ? `/pribehy-druhe-sance/${suffix}` : `/aktuality/${suffix}`;
   const item = itemByPath.get(publicPath);
 
   if (item) {
@@ -1460,7 +1535,9 @@ async function newsSitemap(_request, response) {
 
   const itemByPath = new Map();
   [...builtInNewsSitemapRows, ...rows].map(publicNewsRow).forEach((item) => itemByPath.set(newsPublicPath(item), item));
-  const items = Array.from(itemByPath.values()).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const items = Array.from(itemByPath.values())
+    .filter((item) => !legacyNewsRedirects.has(newsPublicPath(item)))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const tagEntries = new Map();
   for (const item of items) {
     if (item.tag === secondChanceStoryTag) continue;

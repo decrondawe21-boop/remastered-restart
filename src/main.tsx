@@ -73,6 +73,7 @@ import {
   supportPaths
 } from './content';
 import methodologyDocumentsData from './methodologyDocuments.json';
+import GalleryPage from './GalleryPage';
 import {
   getSession,
   addNewsComment,
@@ -148,6 +149,7 @@ import {
 } from './api';
 import './styles.css';
 import './redesign.css';
+import './gallery.css';
 
 type MethodologyDocumentBlock =
   | { type: 'paragraph'; text: string }
@@ -235,6 +237,7 @@ const navItems = [
   { href: '/programy', label: 'Programy' },
   { href: '/metodika', label: 'Metodika' },
   { href: '/aktuality', label: 'Aktuality' },
+  { href: '/galerie', label: 'Galerie' },
   { href: '/zapojeni', label: 'Zapojení' },
   { href: '/povinne-zverejnovani', label: 'Transparentnost' },
   { href: '/kontakt', label: 'Kontakt' },
@@ -247,6 +250,7 @@ const routeLabels: Record<string, string> = {
   '/programy': 'Programy',
   '/metodika': 'Metodika',
   '/aktuality': 'Aktuality',
+  '/galerie': 'Galerie',
   '/pribehy-druhe-sance': 'Příběhy druhé šance',
   '/zapojeni': 'Zapojení',
   '/zapojeni/darovat-obleceni': 'Darovat oblečení',
@@ -277,6 +281,7 @@ const footerNavGroups = [
       { href: '/co-delame', label: 'Co děláme' },
       { href: '/programy', label: 'Programy' },
       { href: '/aktuality', label: 'Aktuality' },
+      { href: '/galerie', label: 'Galerie' },
       { href: '/zapojeni', label: 'Zapojení' },
       { href: '/zapojeni/darovat-obleceni', label: 'Darovat oblečení' },
       { href: '/zapojeni/vybaveni-centra', label: 'Vybavení centra' },
@@ -1323,7 +1328,7 @@ const ToastContext = React.createContext<ToastContextValue | null>(null);
 const adminNavItems: Array<WorkspaceNavItem<AdminSection>> = [
   { id: 'dashboard', label: 'Dashboard', text: 'Statistiky a rychlé akce', icon: LayoutDashboard },
   { id: 'news', label: 'Aktuality', text: 'Publikace a archiv', icon: Newspaper },
-  { id: 'content', label: 'Příspěvky / obsah', text: 'Články, reporty, galerie', icon: FileStack },
+  { id: 'content', label: 'Obsah webu', text: 'Hero, galerie a veřejné sekce', icon: FileStack },
   { id: 'clients', label: 'Klienti', text: 'Seznam, detail, stav', icon: Users },
   { id: 'forms', label: 'Tiskové formuláře', text: 'Šablony a exporty', icon: ClipboardList },
   { id: 'tools', label: 'Tools', text: 'ID, čárové kódy, QR', icon: Wrench },
@@ -5503,6 +5508,14 @@ const coreSearchEntries: SiteSearchEntry[] = [
     searchableText: 'aktuality novinky zprávy projekt terén'
   },
   {
+    id: 'gallery',
+    category: 'Fotodokumentace',
+    title: 'Galerie z praxe',
+    excerpt: 'Fotografie z budování zázemí, společné práce a každodenní proměny projektu RESTART Integrace.',
+    href: '/galerie',
+    searchableText: 'galerie fotografie fotky fotodokumentace zázemí stavba práce proměna restart v obrazech'
+  },
+  {
     id: 'stories',
     category: 'Příběhy',
     title: 'Příběhy druhé šance',
@@ -9353,6 +9366,8 @@ React.useEffect(() => {
         discussion={newsDiscussion}
         activeTagSlug={activeNewsTagSlug}
       />
+    ) : currentPath === '/galerie' ? (
+      <GalleryPage content={homepageContent} />
     ) : currentPath === '/pribehy-druhe-sance' ? (
       <NewsPage
         news={news}
@@ -10425,7 +10440,7 @@ function AdminWorkspace({
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = '';
     if (!file) return;
-    const fileUrl = await uploadImageFromComputer(file, 'homepage-gallery');
+    const fileUrl = await uploadImageFromComputer(file, 'gallery');
     if (fileUrl) setHomepageContentForm((current) => ({ ...current, imageUrl: fileUrl }));
   };
 
@@ -10567,7 +10582,7 @@ function AdminWorkspace({
       try {
         nextItem = await onHomepageContentSaveRequest(nextItem);
         setAdminMessageTone('success');
-        setAdminMessage('Obsah homepage je uložený v databázi.');
+        setAdminMessage('Obsah galerie je uložený v databázi.');
         onNotify('success', 'Obsah uložen', nextItem.title);
       } catch (error) {
         setAdminMessageTone('error');
@@ -12691,7 +12706,7 @@ function AdminWorkspace({
 
         {activeTab === 'content' && (
           <div className="content-admin-workspace">
-            <div className="content-editor-tabs" role="tablist" aria-label="Části homepage">
+            <div className="content-editor-tabs" role="tablist" aria-label="Veřejný obsah webu">
               <button
                 type="button"
                 role="tab"
@@ -12709,7 +12724,7 @@ function AdminWorkspace({
                 className={contentEditorTab === 'gallery' ? 'active' : ''}
                 onClick={() => selectContentEditorTab('gallery')}
               >
-                <ImageIcon size={17} /> Slideshow homepage
+                <ImageIcon size={17} /> Galerie webu
                 <span>{homepageGalleryItems.filter((item) => item.isActive).length}</span>
               </button>
               <button
@@ -12722,8 +12737,8 @@ function AdminWorkspace({
                 <FileStack size={17} /> Další sekce
                 <span>{homepageSectionItems.filter((item) => item.isActive).length}</span>
               </button>
-              <a className="button secondary" href="/" target="_blank" rel="noreferrer">
-                <Eye size={16} /> Náhled webu
+              <a className="button secondary" href={contentEditorTab === 'gallery' ? '/galerie' : '/'} target="_blank" rel="noreferrer">
+                <Eye size={16} /> {contentEditorTab === 'gallery' ? 'Náhled galerie' : 'Náhled webu'}
               </a>
             </div>
 
@@ -12840,9 +12855,9 @@ function AdminWorkspace({
                 <form className="admin-card homepage-content-form" onSubmit={saveHomepageContentItem}>
                   <div className="admin-card-header">
                     <div>
-                      <p className="section-label">Fotogalerie homepage</p>
+                      <p className="section-label">Veřejná fotogalerie</p>
                       <h3>{homepageContentForm.id ? 'Upravit snímek' : 'Nový snímek'}</h3>
-                      <p className="form-help">Tato slideshow je pod úvodním hero a ukazuje reálné fotografie z praxe.</p>
+                      <p className="form-help">Fotografie se zobrazí na samostatné stránce Galerie i ve slideshow na homepage.</p>
                     </div>
                     <button className="button secondary" type="button" onClick={newHomepageGalleryItem}>
                       <Plus size={17} /> Nový snímek
@@ -12854,6 +12869,14 @@ function AdminWorkspace({
                       value={homepageContentForm.title}
                       onChange={(event) => setHomepageContentForm((current) => ({ ...current, title: event.target.value }))}
                       required
+                    />
+                  </label>
+                  <label>
+                    Kategorie nebo místo <small>(volitelné)</small>
+                    <input
+                      value={homepageContentForm.label}
+                      onChange={(event) => setHomepageContentForm((current) => ({ ...current, label: event.target.value }))}
+                      placeholder="Např. Zázemí · stavba svépomocí"
                     />
                   </label>
                   <label>
@@ -12878,7 +12901,7 @@ function AdminWorkspace({
                     <span className="local-image-actions">
                       <label className="button secondary local-image-upload">
                         <Upload size={17} />
-                        {imageUploadBusy === 'homepage-gallery' ? 'Nahrávám…' : 'Nahrát z počítače'}
+                        {imageUploadBusy === 'gallery' ? 'Nahrávám…' : 'Nahrát z počítače'}
                         <input
                           type="file"
                           accept="image/*"
@@ -12917,7 +12940,7 @@ function AdminWorkspace({
                           setHomepageContentForm((current) => ({ ...current, isActive: event.target.checked }))
                         }
                       />
-                      Zobrazit na webu
+                      Zobrazit v galerii
                     </label>
                   </div>
                   <button className="button primary" type="submit">
@@ -12928,8 +12951,8 @@ function AdminWorkspace({
                 <div className="admin-card">
                   <div className="admin-card-header">
                     <div>
-                      <h3>Snímky z praxe</h3>
-                      <p className="form-help">Kliknutím načtete snímek k úpravě. Skryté zůstávají v archivu.</p>
+                      <h3>Fotografie v galerii</h3>
+                      <p className="form-help">Kliknutím načtete fotografii k úpravě. Skryté snímky zůstávají v archivu administrace.</p>
                     </div>
                     <Badge tone="info">{homepageGalleryItems.length} celkem</Badge>
                   </div>

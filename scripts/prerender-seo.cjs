@@ -235,6 +235,16 @@ const routes = [
     changefreq: 'weekly'
   },
   {
+    path: '/galerie',
+    title: 'Galerie z praxe | RESTART Integrace',
+    description:
+      'Fotodokumentace budování zázemí, společné práce a každodenní proměny projektu RESTART Integrace.',
+    keywords:
+      'RESTART Integrace galerie, fotografie z praxe, fotodokumentace, budování zázemí, STREETWISE, práce svépomocí, druhá šance v obrazech',
+    priority: '0.76',
+    changefreq: 'weekly'
+  },
+  {
     path: '/pribehy-druhe-sance',
     title: 'Příběhy druhé šance | RESTART Integrace',
     description:
@@ -414,6 +424,7 @@ function routeLabel(routePath) {
     '/programy/bod-zlomu': 'BOD ZLOMU',
     '/programy/stabilizace': 'STABILIZACE',
     '/aktuality': 'Aktuality',
+    '/galerie': 'Galerie',
     '/zapojeni': 'Zapojení',
     '/zapojeni/darovat-obleceni': 'Darovat oblečení',
     '/zapojeni/vybaveni-centra': 'Vybavení centra',
@@ -770,6 +781,30 @@ const routeSnapshotContent = {
       ['/videa/predstaveni-projektu', 'Video představení projektu'],
       ['/povinne-zverejnovani', 'Veřejné dokumenty'],
       ['/kontakt', 'Mediální kontakt']
+    ]
+  },
+  '/galerie': {
+    eyebrow: 'Fotodokumentace projektu',
+    heading: 'Proměna, která je vidět',
+    lead:
+      'Fotografie zachycují skutečné budování zázemí, společnou práci a konkrétní kroky projektu RESTART Integrace.',
+    sections: [
+      {
+        title: 'Místo, lidé a práce v obrazech',
+        paragraphs: [
+          'Galerie průběžně dokumentuje, jak se z dostupného materiálu, každodenní práce a spolupráce rodí funkční zázemí pro další kroky projektu.'
+        ],
+        items: [
+          'budování a úpravy zázemí svépomocí',
+          'praktická práce a nové využití dostupných věcí',
+          'každodenní péče o místo a komunitu'
+        ]
+      }
+    ],
+    links: [
+      ['/zapojeni', 'Jak se zapojit'],
+      ['/aktuality', 'Aktuality projektu'],
+      ['/kontakt', 'Kontakt']
     ]
   },
   '/webove-gdpr': {
@@ -1602,6 +1637,15 @@ const mediaImageGroups = [
         entry.loc.includes('/images/crops/roses-20260608/') ||
         entry.loc.endsWith('/images/og/restart-integrace-homepage-1200x630.png') ||
         entry.loc.endsWith('/images/og/restart-integrace-og-1200x630.png')
+    )
+  },
+  {
+    path: '/galerie',
+    images: preferredMediaImages.filter(
+      (entry) =>
+        entry.loc.includes('/images/crops/camera-202607/') ||
+        entry.loc.includes('/images/crops/new-photos/') ||
+        entry.loc.includes('/images/crops/roses-20260608/')
     )
   },
   {

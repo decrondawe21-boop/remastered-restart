@@ -13,6 +13,7 @@ Veřejná tvrzení se řídí principem ONLY TRUE: doložené údaje mají uvád
 - [Programy](https://restartintegrace.dk-i.cz/programy): Přehled šesti programových pilířů.
 - [Metodika](https://restartintegrace.dk-i.cz/metodika): Veřejná metodika, životní cyklus klienta a dokumenty ke stažení.
 - [Aktuality](https://restartintegrace.dk-i.cz/aktuality): Zprávy, veřejné novinky a tematické archivy.
+- [Galerie z praxe](https://restartintegrace.dk-i.cz/galerie): Fotodokumentace budování zázemí, společné práce a proměny projektu.
 - [Příběhy druhé šance](https://restartintegrace.dk-i.cz/pribehy-druhe-sance): Příběhy a praktické zkušenosti zveřejněné s respektem k soukromí.
 - [Transparentnost](https://restartintegrace.dk-i.cz/povinne-zverejnovani): Zveřejněné dokumenty, data, výroční výstupy a pravidla transparentnosti.
 

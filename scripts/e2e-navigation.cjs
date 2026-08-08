@@ -45,6 +45,35 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error(`Kontakt link should point to /kontakt, got ${kontaktHref}`);
   }
 
+  const galleryLink = mainNav.getByRole('link', {
+    name: 'Galerie',
+    exact: true
+  });
+  const galleryHref = await galleryLink.getAttribute('href');
+  if (galleryHref !== '/galerie') {
+    throw new Error(`Galerie link should point to /galerie, got ${galleryHref}`);
+  }
+
+  await page.goto(`${baseUrl}/galerie`, { waitUntil: 'networkidle' });
+  await page.locator('.gallery-page h1').waitFor();
+  const galleryCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+  if (!galleryCanonical?.endsWith('/galerie')) {
+    throw new Error(`Gallery canonical URL mismatch: ${galleryCanonical}`);
+  }
+  if ((await page.locator('.gallery-tile').count()) === 0) {
+    throw new Error('Gallery page did not render any photographs.');
+  }
+  await page.locator('.gallery-feature-image').click();
+  const galleryDialog = page.getByRole('dialog');
+  await galleryDialog.waitFor();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Escape');
+  if (await galleryDialog.isVisible()) {
+    throw new Error('Gallery lightbox did not close after pressing Escape.');
+  }
+
+  await page.goto(baseUrl, { waitUntil: 'networkidle' });
+
   await kontaktLink.click();
   await page.waitForURL('**/kontakt');
 

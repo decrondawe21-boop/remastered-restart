@@ -572,6 +572,44 @@ export const partnerTypes = [
 
 export const starterNews = [
   {
+    id: 'field-update-promena-cesty-a-zahrady-2026-08',
+    slug: 'od-hole-cesty-k-pruchodu-pod-ruzemi-promena-mista-v-case',
+    title: 'Od holé cesty k průchodu pod růžemi',
+    date: '2026-08-17',
+    tag: 'Proměna místa',
+    excerpt:
+      'Stejná cesta ve třech etapách ukazuje proměnu lépe než dlouhý popis: nejprve bez oblouků, potom s novou konstrukcí a nakonec pod rozrostlými růžemi. Nové záběry zachycují i další práci na zahradě a společném zázemí.',
+    imageUrl: '/images/crops/camera-202607/20260604_190302.webp',
+    body: [
+      '<p><strong>Některé změny jsou nejlépe vidět až ve chvíli, kdy vedle sebe položíme starší a současné fotografie.</strong> Tahle cesta bývala jen úzkým holým průchodem. Postupně nad ní přibyly oblouky, po nich se začaly pnout růže a dnes vytvářejí živou klenbu.</p>',
+      '<div class="project-status"><span class="project-status-badge">Srovnání k 17. srpnu 2026</span><strong>Jedno místo, mnoho malých kroků</strong><p>Proměna nevznikla najednou. Je výsledkem průběžné práce, péče o rostliny, znovu použitých materiálů a pomoci lidí kolem projektu.</p></div>',
+      '<h2>Jedna cesta, tři etapy</h2>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/01-cesta-bez-oblouku.jpg" alt="Původní holá cesta mezi objekty ještě bez kovových oblouků"><figcaption><strong>1. Cesta bez oblouků.</strong> Prostý průchod mezi objekty, bez konstrukce a bez dnešní zelené klenby.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/02-cesta-s-oblouky.jpg" alt="Cesta po osazení několika kovových oblouků pro popínavé růže"><figcaption><strong>2. Přibyly oblouky.</strong> Konstrukce už vyznačila budoucí podobu cesty, rostliny ale teprve dostávaly prostor k růstu.</figcaption></figure>',
+      '<figure class="project-gallery-card project-gallery-card--wide"><img src="/images/crops/camera-202607/20260604_190302.webp" alt="Stejná cesta pod hustě rozrostlými a kvetoucími růžemi"><figcaption><strong>3. Průchod pod růžemi.</strong> Po čase a pravidelné péči oblouky téměř zmizely pod zelení a květy.</figcaption></figure>',
+      '</div>',
+      '<h2>Proměna pokračuje i kolem</h2>',
+      '<p>Nové fotografie ukazují, že práce nekončí u jedné cesty. Postupně upravujeme jezírko a záhony, skládáme posezení z palet, budujeme dřevěné průchody a hledáme využití pro materiály, které by jinde skončily jako odpad.</p>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card project-gallery-card--wide"><img src="/images/news/promena-mista-srpen-2026/03-aktualni-jezirko-a-zahony.jpg" alt="Aktuální podoba zahrady s malým jezírkem, kameny a vyvýšenými záhony"><figcaption><strong>Jezírko a záhony.</strong> Zahradní kout dostává jasnější tvar a spojuje vodu, kámen, rostliny i drobné prvky vytvořené svépomocí.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/04-posezeni-a-paletovy-stul.jpg" alt="Venkovní posezení a kulatý stůl vytvořený z palet"><figcaption><strong>Místo pro práci i odpočinek.</strong> Palety a darované vybavení se mění v praktické venkovní zázemí.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/05-paletove-posezeni.jpg" alt="Rozpracovaná venkovní sedačka postavená z dřevěných palet"><figcaption><strong>Posezení ve výstavbě.</strong> Konstrukce už stojí, další vrstvy a dokončení vznikají postupně podle dostupného materiálu.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/06-drevena-cesta-a-reuse.jpg" alt="Dřevěná cesta a rozpracované zahradní prvky z opětovně použitých materiálů"><figcaption><strong>Cesta z dostupných věcí.</strong> Dřevo, staré rámy i další zachráněné prvky dostávají novou funkci.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/07-pracovni-zazemi.jpg" alt="Pracovní a užitkové zázemí zahrady během průběžných úprav"><figcaption><strong>Také pracovní fáze patří k příběhu.</strong> Než je výsledek hotový, místo musí sloužit při stavbě, skladování i každodenním provozu.</figcaption></figure>',
+      '</div>',
+      '<h2>Detaily z průběhu</h2>',
+      '<p>Archivní snímky zachycují i mezikroky, které se snadno ztratí: první osazený oblouk, další části konstrukce, drobné opravy zázemí a první zahradní kouty s květinami.</p>',
+      '<div class="project-gallery">',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/08-prvni-oblouk-s-kocourem.jpg" alt="První oblouk nad cestou v časné fázi proměny a procházející kočka"><figcaption>Jeden z prvních oblouků nad ještě téměř holou cestou.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/09-oblouky-a-kocour.jpg" alt="Rozestavěná řada oblouků nad cestou a procházející kočka"><figcaption>Konstrukce se rozšiřovala postupně, oblouk po oblouku.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/10-detail-zazemi.jpg" alt="Detail opraveného okapu a závěsné lucerny na objektu"><figcaption>I nenápadné opravy a drobné prvky pomáhají měnit každodenní podobu zázemí.</figcaption></figure>',
+      '<figure class="project-gallery-card"><img src="/images/news/promena-mista-srpen-2026/11-zahradni-kout-s-ruzemi.jpg" alt="Zahradní kout s kamením, vyvýšenými záhony a růžovými květy"><figcaption>Rostliny postupně zaplňují i další části zahrady a propojují jednotlivé upravené kouty.</figcaption></figure>',
+      '</div>',
+      '<p><strong>Hotový výsledek je vždy jen jeden okamžik.</strong> Pro nás je důležitá i cesta k němu: pravidelná práce, využití toho, co máme, a trpělivost, díky které může i původně zanedbané místo postupně ožít.</p>'
+    ].join('')
+  },
+  {
     id: 'field-update-puvodni-pozemek-video-2026-08',
     slug: 'jak-vypadal-pozemek-pred-promenou-video',
     title: 'Jak vypadal pozemek před proměnou: dochovaný záznam',

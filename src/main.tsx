@@ -2144,6 +2144,36 @@ const heroAutoScrollItems = programSlides.map((slide) => ({
 
 const practicePhotoSlides = [
   {
+    id: 'practice-202608-current-pond',
+    title: 'Zahrada, která dál roste',
+    text: 'Jezírko, kameny a vyvýšené záhony ukazují další etapu společné proměny místa.',
+    imageUrl: '/images/news/promena-mista-srpen-2026/03-aktualni-jezirko-a-zahony.jpg'
+  },
+  {
+    id: 'practice-202608-garden-table',
+    title: 'Místo pro práci i odpočinek',
+    text: 'Palety a darované vybavení získávají novou funkci v každodenním zázemí projektu.',
+    imageUrl: '/images/news/promena-mista-srpen-2026/04-posezeni-a-paletovy-stul.jpg'
+  },
+  {
+    id: 'practice-202608-pallet-seating',
+    title: 'Posezení vzniká svépomocí',
+    text: 'Rozpracovaná sedačka připomíná, že užitečný výsledek se skládá z mnoha pracovních kroků.',
+    imageUrl: '/images/news/promena-mista-srpen-2026/05-paletove-posezeni.jpg'
+  },
+  {
+    id: 'practice-202608-reused-deck',
+    title: 'Druhá šance pro materiály',
+    text: 'Darované dřevo, rámy a další zachráněné prvky se mění v cesty a praktické zahradní části.',
+    imageUrl: '/images/news/promena-mista-srpen-2026/06-drevena-cesta-a-reuse.jpg'
+  },
+  {
+    id: 'practice-202608-work-area',
+    title: 'Zázemí v běžném provozu',
+    text: 'Galerie ukazuje nejen výsledek, ale také pracovní fázi, skladování a každodenní používání prostoru.',
+    imageUrl: '/images/news/promena-mista-srpen-2026/07-pracovni-zazemi.jpg'
+  },
+  {
     id: 'practice-camera-rose-arch',
     title: 'Klenba, která vyrostla',
     text: 'Růže a pevná konstrukce ukazují, co dokáže trpělivá práce v čase.',

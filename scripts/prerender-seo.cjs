@@ -266,6 +266,16 @@ const routes = [
     changefreq: 'monthly'
   },
   {
+    path: '/hledame',
+    title: 'Hledáme kolegy a dobrovolníky | RESTART Integrace',
+    description:
+      'RESTART Integrace hledá sociálního pracovníka, adiktologa, psychologa, komunitního pracovníka a dobrovolníky pro praktickou podporu lidí na cestě ke stabilitě.',
+    keywords:
+      'sociální pracovník, adiktolog, psycholog, komunitní pracovník, dobrovolníci, práce v sociálních službách, RESTART Integrace, odborná spolupráce',
+    priority: '0.82',
+    changefreq: 'monthly'
+  },
+  {
     path: '/zapojeni/darovat-obleceni',
     title: 'Darovat oblečení lidem v nouzi | RESTART Integrace',
     description:
@@ -426,6 +436,7 @@ function routeLabel(routePath) {
     '/aktuality': 'Aktuality',
     '/galerie': 'Galerie',
     '/zapojeni': 'Zapojení',
+    '/hledame': 'Hledáme',
     '/zapojeni/darovat-obleceni': 'Darovat oblečení',
     '/zapojeni/vybaveni-centra': 'Vybavení centra',
     '/zapojeni/sbirka-knih': 'Sbírka knih',
@@ -714,6 +725,34 @@ const routeSnapshotContent = {
       ['/metodika', 'Veřejná metodika'],
       ['/aktuality', 'Aktuality a data'],
       ['/kontakt', 'Vyžádat informace']
+    ]
+  },
+  '/hledame': {
+    eyebrow: 'Přidejte se k nám',
+    heading: 'Hledáme lidi, kteří spojí odbornost s lidskostí',
+    lead:
+      'Rozšiřujeme tým pro praktickou podporu lidí na cestě ke stabilitě. Hledáme odborníky i dobrovolníky, kteří dokážou spolupracovat, držet bezpečné hranice a proměnit pomoc v konkrétní kroky.',
+    sections: [
+      {
+        title: 'Odborné role',
+        items: [
+          'sociální pracovník pro case management, individuální plán a návaznost na služby',
+          'adiktolog pro prevenci relapsu, harm reduction a návaznou odbornou péči',
+          'psycholog pro konzultace, stabilizaci a podporu při zvládání dlouhodobé zátěže',
+          'komunitní pracovník pro každodenní kontakt, aktivity a propojování místní komunity'
+        ]
+      },
+      {
+        title: 'Dobrovolnictví',
+        paragraphs: [
+          'Dobrovolníci se mohou zapojit pravidelně i jednorázově při doučování, doprovázení, administrativě, sbírkách, řemeslných, zahradnických, technických nebo komunitních aktivitách.'
+        ]
+      }
+    ],
+    links: [
+      ['/kontakt', 'Mám zájem o spolupráci'],
+      ['/zapojeni', 'Další možnosti zapojení'],
+      ['/co-delame', 'Jak pracujeme']
     ]
   },
   '/kontakt': {

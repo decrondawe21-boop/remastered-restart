@@ -54,6 +54,25 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
     throw new Error(`Galerie link should point to /galerie, got ${galleryHref}`);
   }
 
+  const recruitmentLink = mainNav.getByRole('link', {
+    name: 'Hledáme',
+    exact: true
+  });
+  const recruitmentHref = await recruitmentLink.getAttribute('href');
+  if (recruitmentHref !== '/hledame') {
+    throw new Error(`Hledáme link should point to /hledame, got ${recruitmentHref}`);
+  }
+
+  await page.goto(`${baseUrl}/hledame`, { waitUntil: 'networkidle' });
+  await page.getByRole('heading', { name: 'Hledáme lidi, kteří spojí odbornost s lidskostí', level: 1 }).waitFor();
+  for (const role of ['Sociální pracovník', 'Adiktolog', 'Psycholog', 'Komunitní pracovník', 'Dobrovolníci']) {
+    await page.getByRole('heading', { name: role, level: 2 }).waitFor();
+  }
+  const recruitmentCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+  if (!recruitmentCanonical?.endsWith('/hledame')) {
+    throw new Error(`Recruitment canonical URL mismatch: ${recruitmentCanonical}`);
+  }
+
   await page.goto(`${baseUrl}/galerie`, { waitUntil: 'networkidle' });
   await page.locator('.gallery-page h1').waitFor();
   const galleryCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');

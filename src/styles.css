@@ -2815,6 +2815,162 @@ h3 {
   padding: 26px;
 }
 
+.recruitment-page {
+  padding-bottom: clamp(48px, 7vw, 88px);
+}
+
+.recruitment-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.recruitment-role-card {
+  min-width: 0;
+  padding: clamp(22px, 3vw, 32px);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--gold);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(47, 125, 73, 0.09), transparent 34%),
+    #fff;
+  box-shadow: 0 14px 34px rgba(26, 51, 36, 0.07);
+}
+
+.recruitment-role-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.recruitment-role-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.recruitment-role-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--green-soft);
+  color: var(--green-dark);
+  place-items: center;
+}
+
+.recruitment-role-index {
+  color: rgba(11, 63, 48, 0.42);
+  font-size: 1.1rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+}
+
+.recruitment-role-card h2 {
+  margin: 0 0 12px;
+}
+
+.recruitment-role-intro {
+  max-width: 76ch;
+  margin-bottom: 24px;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.recruitment-role-detail {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.recruitment-role-detail + .recruitment-role-detail {
+  margin-top: 20px;
+}
+
+.recruitment-role-detail h3 {
+  margin-bottom: 10px;
+  color: var(--green-dark);
+}
+
+.recruitment-role-detail ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.recruitment-role-detail li::marker {
+  color: var(--gold-dark);
+}
+
+.recruitment-role-profile p {
+  max-width: 88ch;
+  margin: 0;
+  color: var(--muted);
+}
+
+.recruitment-process-section {
+  border-top: 1px solid var(--line);
+}
+
+.recruitment-process {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recruitment-process li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.recruitment-process li > strong {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  place-items: center;
+}
+
+.recruitment-process h3 {
+  margin: 1px 0 7px;
+}
+
+.recruitment-process p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.recruitment-contact-band {
+  margin-top: 26px;
+}
+
+@media (max-width: 760px) {
+  .recruitment-role-grid,
+  .recruitment-process {
+    grid-template-columns: 1fr;
+  }
+
+  .recruitment-role-card:last-child {
+    grid-column: auto;
+  }
+
+  .recruitment-role-card,
+  .recruitment-process li {
+    padding: 18px;
+  }
+}
+
 .donate-section {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(320px, 0.56fr);

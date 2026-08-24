@@ -239,6 +239,7 @@ const navItems = [
   { href: '/aktuality', label: 'Aktuality' },
   { href: '/galerie', label: 'Galerie' },
   { href: '/zapojeni', label: 'Zapojení' },
+  { href: '/hledame', label: 'Hledáme' },
   { href: '/povinne-zverejnovani', label: 'Transparentnost' },
   { href: '/kontakt', label: 'Kontakt' },
   { href: '/klient', label: 'Klientská zóna' }
@@ -253,6 +254,7 @@ const routeLabels: Record<string, string> = {
   '/galerie': 'Galerie',
   '/pribehy-druhe-sance': 'Příběhy druhé šance',
   '/zapojeni': 'Zapojení',
+  '/hledame': 'Hledáme',
   '/zapojeni/darovat-obleceni': 'Darovat oblečení',
   '/zapojeni/vybaveni-centra': 'Vybavení centra',
   '/zapojeni/sbirka-knih': 'Sbírka knih',
@@ -283,6 +285,7 @@ const footerNavGroups = [
       { href: '/aktuality', label: 'Aktuality' },
       { href: '/galerie', label: 'Galerie' },
       { href: '/zapojeni', label: 'Zapojení' },
+      { href: '/hledame', label: 'Hledáme' },
       { href: '/zapojeni/darovat-obleceni', label: 'Darovat oblečení' },
       { href: '/zapojeni/vybaveni-centra', label: 'Vybavení centra' },
       { href: '/zapojeni/sbirka-knih', label: 'Sbírka knih' },
@@ -4906,6 +4909,152 @@ function SupportSubnav({ activePath }: { activePath: string }) {
   );
 }
 
+const recruitmentRoles = [
+  {
+    title: 'Sociální pracovník',
+    label: 'Odborná role',
+    icon: UserRound,
+    intro:
+      'Člověk, který propojí sociální práci s konkrétním plánem změny a pomůže klientovi zvládnout kroky, na které nemá zůstat sám.',
+    responsibilities: [
+      'mapování životní situace, case management a tvorba individuálního plánu,',
+      'doprovázení při řešení dokladů, dávek, bydlení, práce a návazných služeb,',
+      'koordinace spolupráce s institucemi a průběžné zachycování pokroku i rizik.'
+    ],
+    profile:
+      'Hledáme odpovídající odbornou kvalifikaci, orientaci v sociálním systému, schopnost vést srozumitelnou dokumentaci a lidský přístup, který zároveň drží bezpečné hranice.'
+  },
+  {
+    title: 'Adiktolog',
+    label: 'Odborná role',
+    icon: ShieldCheck,
+    intro:
+      'Odborník pro práci se závislostním chováním, který dokáže spojit motivaci, prevenci relapsu a bezpečnou návaznost na další péči.',
+    responsibilities: [
+      'orientační zhodnocení situace a nastavení realistických cílů spolupráce,',
+      'prevence relapsu, harm reduction a podpora při udržení denního režimu,',
+      'propojení s léčbou a odbornými službami podle potřeb konkrétního člověka.'
+    ],
+    profile:
+      'Hledáme kvalifikaci odpovídající roli, zkušenost s individuální prací a přístup bez odsuzování. Důležitá je schopnost spolupracovat v mezioborovém týmu.'
+  },
+  {
+    title: 'Psycholog',
+    label: 'Odborná role',
+    icon: MessageCircle,
+    intro:
+      'Psychologickou oporu potřebujeme pro chvíle, kdy samotná praktická pomoc nestačí a je nutné bezpečně pracovat s krizí, vztahy nebo dlouhodobou zátěží.',
+    responsibilities: [
+      'individuální konzultace a základní stabilizace v náročných situacích,',
+      'podpora motivace, sebereflexe, vztahů a zvládání opakujících se vzorců,',
+      'odborný pohled při tvorbě podpůrného plánu se souhlasem klienta.'
+    ],
+    profile:
+      'Hledáme odpovídající odborné vzdělání, respekt k důvěrnosti a citlivou komunikaci. Výhodou je zkušenost s lidmi v krizi, po výkonu trestu nebo se sociální zátěží.'
+  },
+  {
+    title: 'Komunitní pracovník',
+    label: 'Práce v komunitě',
+    icon: Users,
+    intro:
+      'Praktický spojovací článek mezi lidmi, každodenním provozem, místní komunitou a aktivitami, ze kterých vzniká důvěra i pocit sounáležitosti.',
+    responsibilities: [
+      'každodenní kontakt s lidmi a podpora komunitních i praktických aktivit,',
+      'propojování sousedů, dobrovolníků, dárců a místních partnerů,',
+      'včasné zachycení problémů a předání situace správnému členovi týmu.'
+    ],
+    profile:
+      'Hledáme spolehlivého a samostatného člověka, který umí komunikovat s různými lidmi, nebojí se praktické práce a dokáže být přirozenou součástí komunity.'
+  },
+  {
+    title: 'Dobrovolníci',
+    label: 'Dobrovolnictví',
+    icon: Heart,
+    intro:
+      'Dobrovolníci mohou nabídnout čas, zkušenost nebo konkrétní dovednost. Pomoc může být pravidelná i jednorázová a vždy ji předem domluvíme.',
+    responsibilities: [
+      'doučování, doprovázení, administrativa nebo pomoc při sbírkách,',
+      'řemeslné, zahradnické, technické, kulturní či volnočasové aktivity,',
+      'sdílení profesních zkušeností, vedení workshopu nebo praktická výpomoc.'
+    ],
+    profile:
+      'Odborná kvalifikace není podmínkou pro každou dobrovolnickou činnost. Potřebujeme ale spolehlivost, respekt k soukromí, ochotu dodržovat dohodnutá pravidla a přijmout základní zaškolení.'
+  }
+];
+
+function RecruitmentPage() {
+  useNewsSeo({
+    title: 'Hledáme kolegy a dobrovolníky',
+    description:
+      'RESTART Integrace hledá sociálního pracovníka, adiktologa, psychologa, komunitního pracovníka a dobrovolníky pro praktickou podporu lidí na cestě ke stabilitě.',
+    path: '/hledame'
+  });
+
+  return (
+    <>
+      <PageHeader
+        label="Přidejte se k nám"
+        title="Hledáme lidi, kteří spojí odbornost s lidskostí"
+        text="Rozšiřujeme tým pro praktickou podporu lidí na cestě ke stabilitě. Hledáme odborníky i dobrovolníky, kteří dokážou spolupracovat, držet bezpečné hranice a proměnit pomoc v konkrétní kroky."
+      />
+      <section className="content-section recruitment-page" aria-labelledby="recruitment-roles-title">
+        <SectionIntro
+          label="Koho právě hledáme"
+          title="Pět rolí, jeden společný směr"
+          text="Každá role přináší jinou odbornost. Společným základem je respekt k člověku, odpovědnost, otevřená komunikace a ochota pracovat jako součást jednoho týmu."
+        />
+        <h2 className="visually-hidden" id="recruitment-roles-title">Hledané role</h2>
+        <div className="recruitment-role-grid">
+          {recruitmentRoles.map((role, index) => {
+            const Icon = role.icon;
+            return (
+              <article className="recruitment-role-card" key={role.title}>
+                <header>
+                  <span className="recruitment-role-icon" aria-hidden="true"><Icon size={24} /></span>
+                  <span className="recruitment-role-index">{String(index + 1).padStart(2, '0')}</span>
+                </header>
+                <p className="section-label">{role.label}</p>
+                <h2>{role.title}</h2>
+                <p className="recruitment-role-intro">{role.intro}</p>
+                <div className="recruitment-role-detail">
+                  <h3>Co budete dělat</h3>
+                  <ul>
+                    {role.responsibilities.map((responsibility) => <li key={responsibility}>{responsibility}</li>)}
+                  </ul>
+                </div>
+                <div className="recruitment-role-detail recruitment-role-profile">
+                  <h3>Koho hledáme</h3>
+                  <p>{role.profile}</p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+      <section className="muted-section recruitment-process-section">
+        <SectionIntro
+          label="Jak se přidat"
+          title="Začněme krátkou a otevřenou domluvou"
+          text="Forma a rozsah spolupráce se mohou lišit podle role, zkušenosti, dostupnosti a aktuální fáze projektu. U odborných pozic vždy počítáme s kvalifikací odpovídající dané činnosti."
+        />
+        <ol className="recruitment-process">
+          <li><strong>1</strong><div><h3>Napište nám</h3><p>Uveďte, o kterou roli máte zájem, jaké máte zkušenosti a kolik času můžete nabídnout.</p></div></li>
+          <li><strong>2</strong><div><h3>Sejdeme se</h3><p>Probereme očekávání, hranice role, konkrétní potřeby projektu i to, co od spolupráce potřebujete vy.</p></div></li>
+          <li><strong>3</strong><div><h3>Domluvíme zapojení</h3><p>Nastavíme rozsah, odpovědnosti, zaškolení a další podmínky tak, aby spolupráce byla bezpečná a smysluplná.</p></div></li>
+        </ol>
+        <div className="support-contact-band recruitment-contact-band">
+          <div>
+            <p className="section-label">První krok</p>
+            <h2>Vidíte se v některé z rolí?</h2>
+            <p>Napište nám pár vět o sobě. Ozveme se a společně zjistíme, jestli se naše cesty mohou potkat.</p>
+          </div>
+          <a className="button secondary" href="/kontakt">Mám zájem o spolupráci <ArrowRight size={17} /></a>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function SupportHubPage() {
   useNewsSeo({
     title: 'Zapojení a možnosti podpory',
@@ -5560,6 +5709,14 @@ const coreSearchEntries: SiteSearchEntry[] = [
     excerpt: 'Možnosti spolupráce pro zaměstnavatele, obce, instituce, odborníky, dobrovolníky a podporovatele.',
     href: '/zapojeni',
     searchableText: JSON.stringify({ partnerTypes, supportPaths })
+  },
+  {
+    id: 'recruitment',
+    category: 'Zapojení',
+    title: 'Hledáme kolegy a dobrovolníky',
+    excerpt: 'Sociální pracovník, adiktolog, psycholog, komunitní pracovník a dobrovolníci pro RESTART Integrace.',
+    href: '/hledame',
+    searchableText: JSON.stringify(recruitmentRoles)
   },
   {
     id: 'donate',
@@ -9406,6 +9563,8 @@ React.useEffect(() => {
       />
     ) : currentPath === '/zapojeni' ? (
       <SupportHubPage />
+    ) : currentPath === '/hledame' ? (
+      <RecruitmentPage />
     ) : selectedMaterialSupportPage ? (
       <MaterialSupportPage config={selectedMaterialSupportPage} />
     ) : currentPath === '/darovat' ? (

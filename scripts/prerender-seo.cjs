@@ -740,12 +740,21 @@ const routeSnapshotContent = {
           'adiktolog pro prevenci relapsu, harm reduction a návaznou odbornou péči',
           'psycholog pro konzultace, stabilizaci a podporu při zvládání dlouhodobé zátěže',
           'komunitní pracovník pro každodenní kontakt, aktivity a propojování místní komunity'
+        ],
+        images: [
+          ['/images/recruitment/socialni-pracovnik.webp', 'Ilustrace sociální pracovnice podávající ruku člověku na cestě vzhůru.'],
+          ['/images/recruitment/adiktolog.webp', 'Ilustrace adiktologa při podpůrném rozhovoru s klientem.'],
+          ['/images/recruitment/psycholog.webp', 'Ilustrace psycholožky při individuální konzultaci s klientem.'],
+          ['/images/recruitment/komunitni-pracovnik.webp', 'Ilustrace komunitních pracovníků a lidí při společné péči o komunitní prostor.']
         ]
       },
       {
         title: 'Dobrovolnictví',
         paragraphs: [
           'Dobrovolníci se mohou zapojit pravidelně i jednorázově při doučování, doprovázení, administrativě, sbírkách, řemeslných, zahradnických, technických nebo komunitních aktivitách.'
+        ],
+        images: [
+          ['/images/recruitment/dobrovolnik.webp', 'Ilustrace dobrovolníků při doučování, výsadbě a praktické pomoci.']
         ]
       }
     ],
@@ -949,6 +958,16 @@ function renderRouteSnapshot(route) {
       ${
         section.items?.length
           ? `<ul>${section.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+          : ''
+      }
+      ${
+        section.images?.length
+          ? `<div class="seo-route-gallery">${section.images
+              .map(
+                ([src, alt]) =>
+                  `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" width="1054" height="1492" loading="lazy" decoding="async">`
+              )
+              .join('')}</div>`
           : ''
       }
     </section>`
@@ -1662,6 +1681,7 @@ const mediaEntries = uniqueEntries([
   ...collectPublicFiles('images/crops', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/program-pillars', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/methodology', ['.png', '.jpg', '.jpeg', '.webp']),
+  ...collectPublicFiles('images/recruitment', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/statistics', ['.png', '.jpg', '.jpeg', '.webp']),
   ...collectPublicFiles('images/og', ['.png', '.jpg', '.jpeg', '.webp'])
 ]);
@@ -1720,6 +1740,10 @@ const mediaImageGroups = [
     images: preferredMediaImages.filter((entry) =>
       entry.loc.endsWith('/images/og/restart-integrace-zapojeni-1200x630.png')
     )
+  },
+  {
+    path: '/hledame',
+    images: preferredMediaImages.filter((entry) => entry.loc.includes('/images/recruitment/'))
   },
   {
     path: '/media',

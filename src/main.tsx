@@ -4914,6 +4914,11 @@ const recruitmentRoles = [
     title: 'Sociální pracovník',
     label: 'Odborná role',
     icon: UserRound,
+    image: {
+      src: '/images/recruitment/socialni-pracovnik.webp',
+      alt: 'Ilustrace sociální pracovnice podávající ruku člověku na cestě vzhůru.',
+      position: '72% 56%'
+    },
     intro:
       'Člověk, který propojí sociální práci s konkrétním plánem změny a pomůže klientovi zvládnout kroky, na které nemá zůstat sám.',
     responsibilities: [
@@ -4928,6 +4933,11 @@ const recruitmentRoles = [
     title: 'Adiktolog',
     label: 'Odborná role',
     icon: ShieldCheck,
+    image: {
+      src: '/images/recruitment/adiktolog.webp',
+      alt: 'Ilustrace adiktologa při podpůrném rozhovoru s klientem.',
+      position: '76% 61%'
+    },
     intro:
       'Odborník pro práci se závislostním chováním, který dokáže spojit motivaci, prevenci relapsu a bezpečnou návaznost na další péči.',
     responsibilities: [
@@ -4942,6 +4952,11 @@ const recruitmentRoles = [
     title: 'Psycholog',
     label: 'Odborná role',
     icon: MessageCircle,
+    image: {
+      src: '/images/recruitment/psycholog.webp',
+      alt: 'Ilustrace psycholožky při individuální konzultaci s klientem.',
+      position: '76% 58%'
+    },
     intro:
       'Psychologickou oporu potřebujeme pro chvíle, kdy samotná praktická pomoc nestačí a je nutné bezpečně pracovat s krizí, vztahy nebo dlouhodobou zátěží.',
     responsibilities: [
@@ -4956,6 +4971,11 @@ const recruitmentRoles = [
     title: 'Komunitní pracovník',
     label: 'Práce v komunitě',
     icon: Users,
+    image: {
+      src: '/images/recruitment/komunitni-pracovnik.webp',
+      alt: 'Ilustrace komunitních pracovníků a lidí při společné péči o komunitní prostor.',
+      position: '72% 63%'
+    },
     intro:
       'Praktický spojovací článek mezi lidmi, každodenním provozem, místní komunitou a aktivitami, ze kterých vzniká důvěra i pocit sounáležitosti.',
     responsibilities: [
@@ -4970,6 +4990,11 @@ const recruitmentRoles = [
     title: 'Dobrovolníci',
     label: 'Dobrovolnictví',
     icon: Heart,
+    image: {
+      src: '/images/recruitment/dobrovolnik.webp',
+      alt: 'Ilustrace dobrovolníků při doučování, výsadbě a praktické pomoci.',
+      position: '72% 62%'
+    },
     intro:
       'Dobrovolníci mohou nabídnout čas, zkušenost nebo konkrétní dovednost. Pomoc může být pravidelná i jednorázová a vždy ji předem domluvíme.',
     responsibilities: [
@@ -5009,6 +5034,17 @@ function RecruitmentPage() {
             const Icon = role.icon;
             return (
               <article className="recruitment-role-card" key={role.title}>
+                <div className="recruitment-role-media">
+                  <img
+                    src={role.image.src}
+                    alt={role.image.alt}
+                    width="1054"
+                    height="1492"
+                    loading="lazy"
+                    decoding="async"
+                    style={{ objectPosition: role.image.position }}
+                  />
+                </div>
                 <header>
                   <span className="recruitment-role-icon" aria-hidden="true"><Icon size={24} /></span>
                   <span className="recruitment-role-index">{String(index + 1).padStart(2, '0')}</span>

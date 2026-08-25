@@ -68,6 +68,19 @@ const { withPreviewServer } = require('./e2e-preview-server.cjs');
   for (const role of ['Sociální pracovník', 'Adiktolog', 'Psycholog', 'Komunitní pracovník', 'Dobrovolníci']) {
     await page.getByRole('heading', { name: role, level: 2 }).waitFor();
   }
+  const recruitmentImages = page.locator('.recruitment-role-media img');
+  if ((await recruitmentImages.count()) !== 5) {
+    throw new Error('Hledáme page should render one illustration for each role.');
+  }
+  for (let index = 0; index < 5; index += 1) {
+    const image = recruitmentImages.nth(index);
+    if (!(await image.getAttribute('alt'))?.trim()) {
+      throw new Error(`Recruitment image ${index + 1} is missing alternative text.`);
+    }
+    if ((await image.evaluate((element) => element.naturalWidth)) === 0) {
+      throw new Error(`Recruitment image ${index + 1} did not load.`);
+    }
+  }
   const recruitmentCanonical = await page.locator('link[rel="canonical"]').getAttribute('href');
   if (!recruitmentCanonical?.endsWith('/hledame')) {
     throw new Error(`Recruitment canonical URL mismatch: ${recruitmentCanonical}`);

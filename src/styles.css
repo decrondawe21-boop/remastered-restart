@@ -2841,6 +2841,22 @@ h3 {
   grid-column: 1 / -1;
 }
 
+.recruitment-role-media {
+  overflow: hidden;
+  margin: 0 0 20px;
+  aspect-ratio: 8 / 5;
+  border: 1px solid rgba(11, 63, 48, 0.12);
+  border-radius: 6px;
+  background: var(--green-soft);
+}
+
+.recruitment-role-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .recruitment-role-card > header {
   display: flex;
   align-items: center;

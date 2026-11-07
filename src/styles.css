@@ -6415,6 +6415,58 @@ h3 {
   font-size: clamp(1rem, 1.7vw, 1.22rem);
 }
 
+body:has(.transparency-intro)::after {
+  z-index: 0;
+}
+
+.transparency-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+  align-items: center;
+  gap: clamp(20px, 4vw, 58px);
+  padding: clamp(16px, 3.2vw, 44px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(115deg, var(--bg-soft), var(--surface, var(--bg)));
+}
+
+.transparency-intro-figure {
+  width: 100%;
+  max-width: 620px;
+  justify-self: end;
+  margin: 0;
+}
+
+.transparency-intro-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.transparency-intro-figure figcaption {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.transparency-intro-figure figcaption a {
+  color: var(--green-dark);
+  font-size: inherit !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 820px) {
+  .transparency-intro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .transparency-intro-figure {
+    justify-self: start;
+  }
+}
+
 .static-info-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

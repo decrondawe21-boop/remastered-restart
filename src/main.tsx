@@ -6742,10 +6742,23 @@ function TransparencyDocumentsPage({
 
   return (
     <section className="content-section static-info-page">
-      <div className="static-info-head">
-        <p className="section-label">Transparentnost</p>
-        <h1>Povinné zveřejňování</h1>
-        <p>Zveřejňujeme dokumenty pro transparentnost projektových aktivit, financování a veřejných podkladů.</p>
+      <div className="transparency-intro">
+        <div className="static-info-head">
+          <p className="section-label">Transparentnost</p>
+          <h1>Povinné zveřejňování</h1>
+          <p>Zveřejňujeme dokumenty pro transparentnost projektových aktivit, financování a veřejných podkladů.</p>
+        </div>
+        <figure className="transparency-intro-figure">
+          <img
+            src="/images/brand/restart-integrace-vizitky-a-hlavickovy-papir.webp"
+            alt="Zelená a světlá vizitka vedle hlavičkového papíru a pera REST||ART Integrace"
+            width={1440}
+            height={960}
+          />
+          <figcaption>
+            Ukázka vizuální identity. Aktuální kontakty najdete na stránce <a href="/kontakt">Kontakt</a>.
+          </figcaption>
+        </figure>
       </div>
       <VerifiedPrisonStatsNote />
       <PrisonStatisticsSection />

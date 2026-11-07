@@ -967,7 +967,21 @@
   }
 
   .site-footer::before {
-    display: none;
+    --footer-branch-position: left bottom -48px;
+    --footer-branch-glow: radial-gradient(ellipse at 33% 85%, rgba(61, 240, 155, 0.42), rgba(20, 145, 91, 0.20) 38%, transparent 72%);
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset-inline-start: 0;
+    inset-block-end: 0;
+    width: clamp(180px, 22vw, 280px);
+    height: clamp(155px, 16vw, 220px);
+    background:
+      url("/images/brand/footer-emerald-branch.webp") var(--footer-branch-position) / auto 124% no-repeat,
+      var(--footer-branch-glow);
+    mask-image: linear-gradient(to bottom, transparent, #000 52%);
+    opacity: 0.76;
+    pointer-events: none;
   }
 
   .site-footer p,
@@ -1019,6 +1033,15 @@
 }
 
 @media screen and (max-width: 760px) {
+  .site-footer::before {
+    --footer-branch-position: right -19px bottom -37px;
+    --footer-branch-glow: radial-gradient(ellipse 84px 74px at 80% 88%, rgba(61, 240, 155, 0.38), rgba(20, 145, 91, 0.18) 42%, transparent);
+    inset-inline: auto 0;
+    width: 152px;
+    height: 136px;
+    opacity: 0.56;
+  }
+
   :root {
     --page-gutter: 16px;
   }

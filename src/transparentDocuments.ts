@@ -1,6 +1,10 @@
+import type { ApiMediaFile } from './api';
+
 const TRANSPARENCY_DOCUMENT_CATEGORY = 'transparency';
 
-export const seededTransparentDocuments = [
+export type TransparencyDocument = ApiMediaFile & { description?: string };
+
+export const seededTransparentDocuments: TransparencyDocument[] = [
   {
     id: 'fallback-opz-051',
     title: 'REST||ART Podklad ke konzultaci OPZ 051',
@@ -87,15 +91,16 @@ export const seededTransparentDocuments = [
   },
   {
     id: 'rest-art-vyrocni-zprava-2025',
-    title: 'Výroční zpráva REST||ART Integrace',
+    title: 'Výroční zpráva REST||ART Integrace za rok 2025 (předběžná verze)',
+    description: 'Finální verzi vyhotovíme po dokončení účetní uzávěrky.',
     fileName: 'vyrocni-zprava-restart-integrace.pdf',
     fileUrl: '/documents/transparency/vyrocni-zprava-restart-integrace.pdf',
     mimeType: 'application/pdf',
-    fileSize: 4498728,
+    fileSize: 44573746,
     category: TRANSPARENCY_DOCUMENT_CATEGORY,
-    altText: 'Veřejná výroční zpráva projektu REST||ART Integrace',
+    altText: 'Titulní strana předběžné výroční zprávy projektu REST||ART Integrace za rok 2025',
     uploadedBy: null,
-    createdAt: '2026-07-20'
+    createdAt: '2026-11-07'
   },
   {
     id: 'rest-art-gdpr-odvolani-omezeni-souhlasu',
@@ -109,4 +114,4 @@ export const seededTransparentDocuments = [
     uploadedBy: null,
     createdAt: '2026-06-16'
   }
-] as const;
+];

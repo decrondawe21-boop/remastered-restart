@@ -1,75 +1,29 @@
-# RESTART Integrace - production robots.txt
-# Official canonical host: https://restartintegrace.dk-i.cz/
+# RESTART Integrace | https://restartintegrace.dk-i.cz/
 
+# Public pages, images, videos and documents can be crawled.
 User-agent: *
+User-agent: OAI-SearchBot
+User-agent: AdsBot-Google
+User-agent: AdsBot-Google-Mobile
 Allow: /
-Allow: /assets/
-Allow: /images/
-Allow: /videos/
-Allow: /documents/media/
-Allow: /documents/transparency/
+Disallow: /api$
+Disallow: /api?
 Disallow: /api/
 Disallow: /admin
-Disallow: /admin/
 Disallow: /klient
-Disallow: /klient/
+Disallow: /documents/forms/
+Disallow: /documents/releases/
 Disallow: /output/
 Disallow: /tmp/
 Disallow: /*?tab=
+Disallow: /*&tab=
 Disallow: /*?section=
+Disallow: /*&section=
 Disallow: /*?token=
+Disallow: /*&token=
 Disallow: /*?reset=
-
-User-agent: Googlebot
-Allow: /
-Allow: /assets/
-Allow: /images/
-Allow: /videos/
-Allow: /documents/media/
-Allow: /documents/transparency/
-Disallow: /api/
-Disallow: /admin
-Disallow: /admin/
-Disallow: /klient
-Disallow: /klient/
-Disallow: /output/
-Disallow: /tmp/
-
-User-agent: Googlebot-Image
-Allow: /images/
-Allow: /documents/transparency/thumbnails/
-Disallow: /api/
-Disallow: /admin
-Disallow: /klient
-
-User-agent: Googlebot-Video
-Allow: /videos/
-Allow: /images/video/
-Disallow: /api/
-Disallow: /admin
-Disallow: /klient
-
-User-agent: AdsBot-Google
-Allow: /
-Disallow: /api/
-Disallow: /admin
-Disallow: /klient
-
-User-agent: Yandex
-Allow: /
-Disallow: /api/
-Disallow: /admin
-Disallow: /klient
-Disallow: /output/
-Disallow: /tmp/
-Crawl-delay: 2
+Disallow: /*&reset=
+Disallow: /*?resetToken=
+Disallow: /*&resetToken=
 
 Sitemap: https://restartintegrace.dk-i.cz/sitemap.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-pages.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-programs.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-stories.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-news.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-documents.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-media.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-donate.xml
-Sitemap: https://restartintegrace.dk-i.cz/sitemap-videos.xml

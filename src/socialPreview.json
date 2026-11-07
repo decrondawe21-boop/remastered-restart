@@ -1,0 +1,60 @@
+{
+  "default": {
+    "path": "/images/og/restart-integrace-brand-2026-1200x630.jpg",
+    "alt": "Logo REST||ART Integrace a adresa webu",
+    "type": "image/jpeg",
+    "width": 1200,
+    "height": 630
+  },
+  "programs": {
+    "path": "/images/og/restart-integrace-druha-sance-1200x630.jpg",
+    "alt": "Ilustrace člověka na cestě v zelené krajině se sluncem nad obzorem",
+    "type": "image/jpeg",
+    "width": 1200,
+    "height": 630
+  },
+  "support": {
+    "path": "/images/og/restart-integrace-zapojeni-1200x630.png",
+    "alt": "Chcete pomoci? Přehled možností, jak podpořit REST||ART Integrace.",
+    "type": "image/png",
+    "width": 1200,
+    "height": 630
+  },
+  "transparency": {
+    "path": "/images/og/restart-integrace-povinne-zverejnovani-1200x630.png",
+    "alt": "Povinné zveřejňování, veřejné dokumenty a metodiky projektu REST||ART Integrace",
+    "type": "image/png",
+    "width": 1200,
+    "height": 630
+  },
+  "stories": {
+    "path": "/images/og/restart-integrace-pribehy-1200x630.png",
+    "alt": "Příběhy druhé šance. Skutečné příběhy s respektem k člověku.",
+    "type": "image/png",
+    "width": 1200,
+    "height": 630
+  },
+  "jailbreakBelusice": {
+    "path": "/images/og/jailbreak-belusice-1200x630.jpg",
+    "alt": "Plakát programu JAILBREAK pro Věznici Bělušice",
+    "type": "image/jpeg",
+    "width": 1200,
+    "height": 630
+  },
+  "videos": {
+    "/videa/predstaveni-projektu": {
+      "path": "/videos/rest-art-intro-poster.png",
+      "alt": "Náhled videa s představením projektu REST||ART Integrace",
+      "type": "image/png",
+      "width": 1920,
+      "height": 1080
+    },
+    "/videa/logo-reveal": {
+      "path": "/videos/restart-logo-reveal-poster.png",
+      "alt": "Náhled animace loga REST||ART Integrace",
+      "type": "image/png",
+      "width": 1920,
+      "height": 1080
+    }
+  }
+}

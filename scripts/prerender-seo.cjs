@@ -1,17 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const methodologyDocuments = require('../src/methodologyDocuments.json');
+const socialPreview = require('../src/socialPreview.json');
 
 const baseUrl = 'https://restartintegrace.dk-i.cz';
-const ogImage = `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`;
-const routeOgImages = {
-  '/': `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`,
-  '/zapojeni': `${baseUrl}/images/og/restart-integrace-zapojeni-1200x630.png`,
-  '/povinne-zverejnovani': `${baseUrl}/images/og/restart-integrace-povinne-zverejnovani-1200x630.png`,
-  '/aktuality': `${baseUrl}/images/og/restart-integrace-pribehy-1200x630.png`,
-  '/programy/jailbreak': `${baseUrl}/images/og/restart-integrace-homepage-1200x630.png`
-};
-const today = new Date().toISOString().slice(0, 10);
 const officialName = 'RESTART Integrace';
 const styledName = 'REST||ART Integrace';
 const alternateNames = [styledName, 'REST ART Integrace', 'Restart Integrace', 'RESTARTINTEGRACE'];
@@ -135,7 +127,8 @@ const methodologyDocumentRoutes = methodologyDocuments.map((document) => ({
   keywords: document.keywords.join(', '),
   priority: document.id === 'slovnik-pojmu' ? '0.76' : '0.72',
   changefreq: 'monthly',
-  methodologyDocumentId: document.id
+  methodologyDocumentId: document.id,
+  datePublished: document.published
 }));
 
 const videoWatchRoutes = videoAssets.map((video) => ({
@@ -415,11 +408,13 @@ function routeUrl(routePath) {
   return `${baseUrl}${routePath === '/' ? '/' : routePath}`;
 }
 
-function routeOgImage(route) {
-  const video = videoAssets.find((item) => item.id === route.videoId);
-  if (video) return video.thumbnailUrl;
-  if (route.path.startsWith('/zapojeni/')) return routeOgImages['/zapojeni'];
-  return routeOgImages[route.path] || ogImage;
+function routeSocialPreview(routePath) {
+  if (socialPreview.videos[routePath]) return socialPreview.videos[routePath];
+  if (routePath === '/programy' || routePath.startsWith('/programy/')) return socialPreview.programs;
+  if (routePath === '/zapojeni' || routePath.startsWith('/zapojeni/') || routePath === '/darovat') return socialPreview.support;
+  if (routePath === '/povinne-zverejnovani') return socialPreview.transparency;
+  if (routePath === '/pribehy-druhe-sance' || routePath.startsWith('/pribehy-druhe-sance/')) return socialPreview.stories;
+  return socialPreview.default;
 }
 
 function routeLabel(routePath) {
@@ -722,6 +717,7 @@ const routeSnapshotContent = {
       }
     ],
     links: [
+      ['/documents/transparency/vyrocni-zprava-restart-integrace.pdf', 'Výroční zpráva 2025 (předběžná verze, PDF)'],
       ['/metodika', 'Veřejná metodika'],
       ['/aktuality', 'Aktuality a data'],
       ['/kontakt', 'Vyžádat informace']
@@ -1016,7 +1012,6 @@ function articleGraph(route, canonical, image) {
         description: story.description,
         image,
         datePublished: story.datePublished,
-        dateModified: today,
         inLanguage: 'cs-CZ',
         articleSection: 'Příběhy druhé šance',
         author: {
@@ -1041,7 +1036,6 @@ function articleGraph(route, canonical, image) {
         description: methodologyDocument.description,
         image,
         datePublished: methodologyDocument.published,
-        dateModified: today,
         inLanguage: 'cs-CZ',
         articleSection: 'Metodika a veřejné dokumenty',
         keywords: methodologyDocument.keywords,
@@ -1067,7 +1061,6 @@ function articleGraph(route, canonical, image) {
         'Citlivě zpracované anonymizované příběhy lidí, kteří se s podporou projektu RESTART Integrace vracejí do běžného života.',
       image,
       datePublished: '2026-06-24',
-      dateModified: today,
       inLanguage: 'cs-CZ',
       author: {
         '@id': `${baseUrl}/#organization`
@@ -1082,7 +1075,7 @@ function articleGraph(route, canonical, image) {
   ];
 }
 
-function routeSpecificGraph(route, canonical) {
+function routeSpecificGraph(route, canonical, image) {
   const methodologyDocument = methodologyDocuments.find((item) => item.id === route.methodologyDocumentId);
   if (methodologyDocument) {
     const definitions = methodologyDocument.sections.flatMap((section) =>
@@ -1218,9 +1211,8 @@ function routeSpecificGraph(route, canonical) {
       '@id': `${canonical}#article-jailbreak`,
       headline: 'JAILBREAK: návrat po výkonu trestu a druhá šance v praxi',
       description: route.description,
-      image: routeOgImage(route),
+      image,
       datePublished: '2026-06-19',
-      dateModified: today,
       inLanguage: 'cs-CZ',
       author: {
         '@id': `${baseUrl}/#organization`
@@ -1261,7 +1253,8 @@ function deferRenderBlockingCss(html) {
 
 function structuredData(route, canonical) {
   const routeVideos = videoAssets.filter((video) => video.watchPath === route.path);
-  const currentOgImage = routeOgImage(route);
+  const preview = routeSocialPreview(route.path);
+  const currentOgImage = new URL(preview.path, baseUrl).href;
 
   return {
     '@context': 'https://schema.org',
@@ -1273,7 +1266,7 @@ function structuredData(route, canonical) {
         alternateName: alternateNames,
         url: `${baseUrl}/`,
         logo: `${baseUrl}/images/brand/restart-integrace-full-logo.png`,
-        image: currentOgImage,
+        image: new URL(socialPreview.default.path, baseUrl).href,
         description:
           'RESTART Integrace (REST||ART) je oficiální projekt druhých šancí zaměřený na stabilizaci, práci, bydlení a důstojný návrat do společnosti.',
         foundingDate: '2025-05-06',
@@ -1318,15 +1311,14 @@ function structuredData(route, canonical) {
         primaryImageOfPage: {
           '@type': 'ImageObject',
           url: currentOgImage,
-          width: 1200,
-          height: 630
+          width: preview.width,
+          height: preview.height
         },
-        dateModified: today,
         keywords: route.noindex ? undefined : route.keywords || defaultKeywords
       },
       breadcrumbGraph(route),
       ...articleGraph(route, canonical, currentOgImage),
-      ...routeSpecificGraph(route, canonical),
+      ...routeSpecificGraph(route, canonical, currentOgImage),
       ...routeVideos.map((video) => ({
         '@type': 'VideoObject',
         '@id': `${video.contentUrl}#video`,
@@ -1437,8 +1429,10 @@ function renderSupportSnapshot(route) {
 
 function renderRoute(route) {
   const canonical = routeUrl(route.path);
-  const currentOgImage = routeOgImage(route);
+  const preview = routeSocialPreview(route.path);
+  const currentOgImage = escapeHtml(new URL(preview.path, baseUrl).href);
   const currentVideo = videoAssets.find((video) => video.id === route.videoId);
+  const ogType = currentVideo ? 'video.other' : route.datePublished || route.methodologyDocumentId ? 'article' : 'website';
   let html = template;
   html = replaceTag(html, /<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(route.title)}</title>`);
   html = replaceTag(
@@ -1467,7 +1461,7 @@ function renderRoute(route) {
   html = replaceTag(
     html,
     /<meta\s+property="og:type"\s+content="[^"]*"\s*\/>/,
-    `<meta property="og:type" content="${currentVideo ? 'video.other' : 'website'}" />`
+    `<meta property="og:type" content="${ogType}" />`
   );
   html = replaceTag(html, /<meta\s+property="og:title"\s+content="[^"]*"\s*\/>/, `<meta property="og:title" content="${escapeHtml(route.title)}" />`);
   html = replaceTag(
@@ -1482,11 +1476,14 @@ function renderRoute(route) {
     /<meta\s+property="og:image:secure_url"\s+content="[^"]*"\s*\/>/,
     `<meta property="og:image:secure_url" content="${currentOgImage}" />`
   );
-  html = replaceTag(
-    html,
-    /<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/>/,
-    `<meta property="og:image:alt" content="${escapeHtml(route.title)}" />`
-  );
+  for (const key of ['type', 'width', 'height', 'alt']) {
+    const property = `og:image:${key}`;
+    html = replaceTag(
+      html,
+      new RegExp(`<meta\\s+property="${property}"\\s+content="[^"]*"\\s*\\/>`),
+      `<meta property="${property}" content="${escapeHtml(preview[key])}" />`
+    );
+  }
   html = replaceTag(html, /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/>/, `<meta name="twitter:title" content="${escapeHtml(route.title)}" />`);
   html = replaceTag(
     html,
@@ -1497,12 +1494,18 @@ function renderRoute(route) {
   html = replaceTag(
     html,
     /<meta\s+name="twitter:image:alt"\s+content="[^"]*"\s*\/>/,
-    `<meta name="twitter:image:alt" content="${escapeHtml(route.title)}" />`
+    `<meta name="twitter:image:alt" content="${escapeHtml(preview.alt)}" />`
   );
   html = html.replace(
     /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/,
     `<script type="application/ld+json">\n${JSON.stringify(structuredData(route, canonical), null, 6)}\n    </script>`
   );
+  if (route.datePublished) {
+    html = html.replace(
+      '</head>',
+      `    <meta property="article:published_time" content="${escapeHtml(route.datePublished)}" />\n  </head>`
+    );
+  }
   if (currentVideo) {
     html = html.replace(
       '</head>',
@@ -1541,7 +1544,7 @@ for (const route of routes) {
 const sitemapRoutes = routes.filter((route) => !route.noindex);
 const programSitemapRoutes = sitemapRoutes.filter((route) => route.path === '/programy' || route.path.startsWith('/programy/'));
 const storySitemapRoutes = sitemapRoutes.filter(
-  (route) => route.path === '/aktuality' || route.path === '/pribehy-druhe-sance' || route.path.startsWith('/pribehy-druhe-sance/')
+  (route) => route.path === '/pribehy-druhe-sance' || route.path.startsWith('/pribehy-druhe-sance/')
 );
 const donateSitemapRoutes = sitemapRoutes.filter(
   (route) => route.path === '/zapojeni' || route.path.startsWith('/zapojeni/') || route.path === '/darovat'
@@ -1552,6 +1555,7 @@ const methodologySitemapRoutes = sitemapRoutes.filter(
 const videoWatchSitemapRoutes = sitemapRoutes.filter((route) => route.path.startsWith('/videa/'));
 const pageSitemapRoutes = sitemapRoutes.filter(
   (route) =>
+    route.path !== '/aktuality' &&
     !programSitemapRoutes.includes(route) &&
     !storySitemapRoutes.includes(route) &&
     !donateSitemapRoutes.includes(route) &&
@@ -1565,8 +1569,7 @@ function renderRouteSitemap(routeList) {
 ${routeList
   .map(
     (route) => `  <url>
-    <loc>${routeUrl(route.path)}</loc>
-    <lastmod>${today}</lastmod>
+    <loc>${escapeXml(routeUrl(route.path))}</loc>
     <changefreq>${route.changefreq || 'monthly'}</changefreq>
     <priority>${route.priority || '0.5'}</priority>
   </url>`
@@ -1588,14 +1591,10 @@ function collectPublicFiles(relativeDir, extensions, exclude = () => false) {
         continue;
       }
       const ext = path.extname(entry.name).toLowerCase();
-      const publicPath = `/${path.relative(distDir, fullPath).replace(/\\/g, '/')}`;
+      const pathSegments = path.relative(distDir, fullPath).split(path.sep);
+      const publicPath = `/${pathSegments.join('/')}`;
       if (extensions.includes(ext) && !exclude(publicPath)) {
-        output.push({
-          loc: `${baseUrl}${encodeURI(publicPath)}`,
-          lastmod: today,
-          changefreq: 'monthly',
-          priority: '0.45'
-        });
+        output.push({ loc: `${baseUrl}/${pathSegments.map(encodeURIComponent).join('/')}` });
       }
     }
   };
@@ -1666,12 +1665,7 @@ ${group.images
 }
 
 const documentEntries = uniqueEntries([
-  {
-    loc: `${baseUrl}/documents/methodology/metodika-restart-integrace.pdf`,
-    lastmod: today,
-    changefreq: 'monthly',
-    priority: '0.65'
-  },
+  { loc: `${baseUrl}/documents/methodology/metodika-restart-integrace.pdf` },
   ...collectPublicFiles('documents/transparency', ['.pdf']),
   ...collectPublicFiles('documents/media', ['.pdf'])
 ]);
@@ -1694,8 +1688,7 @@ const mediaImageGroups = [
         entry.loc.includes('/images/crops/camera-202607/') ||
         entry.loc.includes('/images/crops/new-photos/') ||
         entry.loc.includes('/images/crops/roses-20260608/') ||
-        entry.loc.endsWith('/images/og/restart-integrace-homepage-1200x630.png') ||
-        entry.loc.endsWith('/images/og/restart-integrace-og-1200x630.png')
+        entry.loc === `${baseUrl}${socialPreview.default.path}`
     )
   },
   {
@@ -1706,6 +1699,10 @@ const mediaImageGroups = [
         entry.loc.includes('/images/crops/new-photos/') ||
         entry.loc.includes('/images/crops/roses-20260608/')
     )
+  },
+  {
+    path: '/programy',
+    images: preferredMediaImages.filter((entry) => entry.loc === `${baseUrl}${socialPreview.programs.path}`)
   },
   {
     path: '/programy/streetwise',
@@ -1726,20 +1723,16 @@ const mediaImageGroups = [
     images: preferredMediaImages.filter(
       (entry) =>
         entry.loc.includes('/images/statistics/') ||
-        entry.loc.endsWith('/images/og/restart-integrace-povinne-zverejnovani-1200x630.png')
+        entry.loc === `${baseUrl}${socialPreview.transparency.path}`
     )
   },
   {
     path: '/pribehy-druhe-sance',
-    images: preferredMediaImages.filter((entry) =>
-      entry.loc.endsWith('/images/og/restart-integrace-pribehy-1200x630.png')
-    )
+    images: preferredMediaImages.filter((entry) => entry.loc === `${baseUrl}${socialPreview.stories.path}`)
   },
   {
     path: '/zapojeni',
-    images: preferredMediaImages.filter((entry) =>
-      entry.loc.endsWith('/images/og/restart-integrace-zapojeni-1200x630.png')
-    )
+    images: preferredMediaImages.filter((entry) => entry.loc === `${baseUrl}${socialPreview.support.path}`)
   },
   {
     path: '/hledame',
@@ -1784,39 +1777,30 @@ const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>${baseUrl}/sitemap-pages.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-programs.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-stories.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-news.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-documents.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-methodology.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-media.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-donate.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${baseUrl}/sitemap-videos.xml</loc>
-    <lastmod>${today}</lastmod>
   </sitemap>
 </sitemapindex>
 `;

@@ -73,6 +73,8 @@ import {
   supportPaths
 } from './content';
 import methodologyDocumentsData from './methodologyDocuments.json';
+import socialPreview from './socialPreview.json';
+import type { TransparencyDocument } from './transparentDocuments';
 import GalleryPage from './GalleryPage';
 import {
   getSession,
@@ -828,7 +830,7 @@ const childhoodBackgroundOptions = [
 ];
 const childhoodBackgroundLabel = (value?: string | null) =>
   childhoodBackgroundOptions.find((item) => item.value === value)?.label ?? childhoodBackgroundOptions[0].label;
-const loadSeededTransparentDocuments = () => import('./transparentDocuments').then((module) => module.seededTransparentDocuments as unknown as MediaFile[]);
+const loadSeededTransparentDocuments = () => import('./transparentDocuments').then((module) => module.seededTransparentDocuments);
 const PrintableForm = React.lazy(() => import('./PrintableForm'));
 
 type PublicMediaAsset = {
@@ -3422,6 +3424,93 @@ function NewsDiscussionPanel({
   );
 }
 
+type SocialPreview = {
+  path: string;
+  alt: string;
+  type?: string;
+  width?: number;
+  height?: number;
+};
+
+function createMetaUpdater() {
+  const changes: Array<{ element: HTMLMetaElement; created: boolean; previous: string | null }> = [];
+  const setMeta = (attribute: 'name' | 'property', key: string, content?: string) => {
+    const existing = document.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
+    if (!existing && content === undefined) return;
+
+    const element = existing ?? document.createElement('meta');
+    changes.push({ element, created: !existing, previous: element.getAttribute('content') });
+    if (!existing) {
+      element.setAttribute(attribute, key);
+      document.head.appendChild(element);
+    }
+    if (content === undefined) element.removeAttribute('content');
+    else element.content = content;
+  };
+  const restoreMeta = () => {
+    for (const { element, created, previous } of changes) {
+      if (created) element.remove();
+      else if (previous === null) element.removeAttribute('content');
+      else element.content = previous;
+    }
+  };
+  return { setMeta, restoreMeta };
+}
+
+function setSocialMetadata(
+  setMeta: ReturnType<typeof createMetaUpdater>['setMeta'],
+  title: string,
+  description: string,
+  absoluteUrl: string,
+  type: 'website' | 'article' | 'video.other',
+  preview: SocialPreview
+) {
+  const imageUrl = new URL(preview.path, window.location.origin).href;
+  setMeta('name', 'description', description);
+  setMeta('property', 'og:title', title);
+  setMeta('property', 'og:description', description);
+  setMeta('property', 'og:url', absoluteUrl);
+  setMeta('property', 'og:type', type);
+  setMeta('property', 'og:image', imageUrl);
+  setMeta('property', 'og:image:secure_url', imageUrl.startsWith('https:') ? imageUrl : undefined);
+  setMeta('property', 'og:image:type', preview.type);
+  setMeta('property', 'og:image:width', preview.width?.toString());
+  setMeta('property', 'og:image:height', preview.height?.toString());
+  setMeta('property', 'og:image:alt', preview.alt);
+  setMeta('name', 'twitter:card', 'summary_large_image');
+  setMeta('name', 'twitter:title', title);
+  setMeta('name', 'twitter:description', description);
+  setMeta('name', 'twitter:image', imageUrl);
+  setMeta('name', 'twitter:image:alt', preview.alt);
+}
+
+const storyPreviewPrefix = '/pribehy-druhe-sance';
+const socialImageTypes: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  gif: 'image/gif'
+};
+
+function newsSocialPreview(path: string, item?: NewsItem): SocialPreview {
+  if (item?.id === 'jailbreak-plakat-belusice-2026-11') return socialPreview.jailbreakBelusice;
+  if (item?.imageUrl && /^(https?:\/\/|\/)/i.test(item.imageUrl)) {
+    try {
+      const url = new URL(item.imageUrl, window.location.origin);
+      const extension = url.pathname.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] ?? '';
+      if (!['svg', 'avif', 'ico', 'bmp', 'tif', 'tiff'].includes(extension)) {
+        return { path: url.href, alt: item.title, type: socialImageTypes[extension] };
+      }
+    } catch {
+      // A malformed CMS image URL falls back to the section preview.
+    }
+  }
+  if (path === storyPreviewPrefix || path.startsWith(`${storyPreviewPrefix}/`)) return socialPreview.stories;
+  if (path === '/zapojeni' || path.startsWith('/zapojeni/') || path === '/darovat') return socialPreview.support;
+  return socialPreview.default;
+}
+
 function useNewsSeo({ title, description, path, item }: { title: string; description: string; path: string; item?: NewsItem }) {
   React.useEffect(() => {
     const absoluteUrl = `${window.location.origin}${path}`;
@@ -3436,23 +3525,10 @@ function useNewsSeo({ title, description, path, item }: { title: string; descrip
     canonical.href = absoluteUrl;
     document.title = `${title} | RESTART Integrace`;
 
-    const changedMeta: Array<{ element: HTMLMetaElement; created: boolean; previous: string | null }> = [];
-    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
-      const meta = document.querySelector<HTMLMetaElement>(selector) ?? document.createElement('meta');
-      const created = !meta.parentNode;
-      changedMeta.push({ element: meta, created, previous: meta.getAttribute('content') });
-      if (created) {
-        meta.setAttribute(attribute, key);
-        document.head.appendChild(meta);
-      }
-      meta.content = content;
-    };
-
-    setMeta('meta[name="description"]', 'name', 'description', description);
-    setMeta('meta[property="og:title"]', 'property', 'og:title', title);
-    setMeta('meta[property="og:description"]', 'property', 'og:description', description);
-    setMeta('meta[property="og:url"]', 'property', 'og:url', absoluteUrl);
-    setMeta('meta[property="og:type"]', 'property', 'og:type', item ? 'article' : 'website');
+    const { setMeta, restoreMeta } = createMetaUpdater();
+    const preview = newsSocialPreview(path, item);
+    setSocialMetadata(setMeta, title, description, absoluteUrl, item ? 'article' : 'website', preview);
+    if (item) setMeta('property', 'article:published_time', item.date);
 
     const schemaId = 'news-structured-data';
     document.getElementById(schemaId)?.remove();
@@ -3468,7 +3544,7 @@ function useNewsSeo({ title, description, path, item }: { title: string; descrip
         datePublished: item.date,
         dateModified: item.date,
         mainEntityOfPage: absoluteUrl,
-        image: item.imageUrl ? [new URL(item.imageUrl, window.location.origin).href] : undefined,
+        image: [new URL(preview.path, window.location.origin).href],
         publisher: { '@type': 'Organization', name: 'RESTART Integrace', url: window.location.origin }
       });
       document.head.appendChild(schema);
@@ -3479,10 +3555,7 @@ function useNewsSeo({ title, description, path, item }: { title: string; descrip
       document.title = previousTitle;
       if (canonicalWasCreated) canonical.remove();
       else if (previousCanonical) canonical.href = previousCanonical;
-      changedMeta.forEach(({ element, created, previous }) => {
-        if (created) element.remove();
-        else if (previous !== null) element.content = previous;
-      });
+      restoreMeta();
     };
   }, [description, item, path, title]);
 }
@@ -3823,26 +3896,15 @@ function useVideoWatchSeo(video: VideoWatchPageData) {
     }
     canonical.href = absoluteUrl;
 
-    const changedMeta: Array<{ element: HTMLMetaElement; created: boolean; previous: string | null }> = [];
-    const setMeta = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
-      const meta = document.querySelector<HTMLMetaElement>(selector) ?? document.createElement('meta');
-      const created = !meta.parentNode;
-      changedMeta.push({ element: meta, created, previous: meta.getAttribute('content') });
-      if (created) {
-        meta.setAttribute(attribute, key);
-        document.head.appendChild(meta);
-      }
-      meta.content = content;
-    };
-
-    setMeta('meta[name="description"]', 'name', 'description', video.description);
-    setMeta('meta[property="og:title"]', 'property', 'og:title', video.title);
-    setMeta('meta[property="og:description"]', 'property', 'og:description', video.description);
-    setMeta('meta[property="og:url"]', 'property', 'og:url', absoluteUrl);
-    setMeta('meta[property="og:type"]', 'property', 'og:type', 'video.other');
-    setMeta('meta[property="og:image"]', 'property', 'og:image', absoluteThumbnailUrl);
-    setMeta('meta[property="og:video"]', 'property', 'og:video', absoluteVideoUrl);
-    setMeta('meta[property="og:video:type"]', 'property', 'og:video:type', 'video/mp4');
+    const { setMeta, restoreMeta } = createMetaUpdater();
+    const videoPreviews: Record<string, SocialPreview> = socialPreview.videos;
+    const preview = videoPreviews[video.path] ?? { path: video.thumbnailUrl, alt: video.title };
+    setSocialMetadata(setMeta, video.title, video.description, absoluteUrl, 'video.other', preview);
+    setMeta('property', 'og:video', absoluteVideoUrl);
+    setMeta('property', 'og:video:secure_url', absoluteVideoUrl.startsWith('https:') ? absoluteVideoUrl : undefined);
+    setMeta('property', 'og:video:type', 'video/mp4');
+    setMeta('property', 'og:video:width', video.width.toString());
+    setMeta('property', 'og:video:height', video.height.toString());
 
     const schema = document.createElement('script');
     schema.id = 'video-watch-structured-data';
@@ -3878,10 +3940,7 @@ function useVideoWatchSeo(video: VideoWatchPageData) {
       document.title = previousTitle;
       if (canonicalCreated) canonical.remove();
       else if (previousCanonical) canonical.href = previousCanonical;
-      changedMeta.forEach(({ element, created, previous }) => {
-        if (created) element.remove();
-        else if (previous !== null) element.content = previous;
-      });
+      restoreMeta();
       schema.remove();
     };
   }, [video]);
@@ -6676,7 +6735,7 @@ function TransparencyDocumentsPage({
   documents,
   jailbreakBackgroundStats
 }: {
-  documents: MediaFile[];
+  documents: TransparencyDocument[];
   jailbreakBackgroundStats: ApiJailbreakBackgroundStats | null;
 }) {
   const sorted = documents.slice().sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
@@ -6725,6 +6784,7 @@ function TransparencyDocumentsPage({
                 </span>
                 <div className="document-card-copy">
                   <strong>{documentTitle}</strong>
+                  {document.description && <small>{document.description}</small>}
                   <small>
                     {new Date(document.createdAt).toLocaleDateString('cs-CZ')} · {readableBytes(document.fileSize)}
                   </small>
@@ -9137,7 +9197,7 @@ function App() {
   const [managedUsers, setManagedUsers] = React.useState<ManagedUser[]>([]);
   const [projectApplications, setProjectApplications] = React.useState<ProjectApplication[]>([]);
   const [mediaFiles, setMediaFiles] = React.useState<MediaFile[]>([]);
-  const [publicMediaFiles, setPublicMediaFiles] = React.useState<MediaFile[]>([]);
+  const [publicMediaFiles, setPublicMediaFiles] = React.useState<TransparencyDocument[]>([]);
   const [jailbreakBackgroundStats, setJailbreakBackgroundStats] = React.useState<ApiJailbreakBackgroundStats | null>(null);
   const [clientDocuments, setClientDocuments] = React.useState<ClientDocument[]>([]);
   const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
@@ -9189,7 +9249,7 @@ function App() {
     return runWhenIdle(() => {
       Promise.allSettled([loadSeededTransparentDocuments(), listPublicMedia(TRANSPARENCY_DOCUMENT_CATEGORY), getJailbreakBackgroundStats()]).then(
         ([fallbackResult, mediaResult, statsResult]) => {
-          const mergeDocuments = (items: MediaFile[]) => {
+          const mergeDocuments = (items: TransparencyDocument[]) => {
             setPublicMediaFiles((current) => {
               const fallbackIds = new Set(current.map((item) => item.fileUrl));
               const merged = [...current];

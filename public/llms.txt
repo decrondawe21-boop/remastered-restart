@@ -1,10 +1,10 @@
 # REST||ART Integrace
 
-> REST||ART Integrace je český vznikající systém pracovní a sociální reintegrace, který propojuje praktickou zkušenost, odpovědné zaměstnavatele, veřejné instituce a odbornou podporu.
+> REST||ART Integrace je český projekt pracovní a sociální reintegrace. Rozvíjí praktickou podporu v oblasti práce, bydlení a stabilizace života.
 
-Veřejný obsah je v češtině. Projekt pracuje s lidmi po výkonu trestu a dalšími lidmi ohroženými sociálním vyloučením. Nejde o omlouvání minulosti, ale o spojení osobní odpovědnosti s reálnou příležitostí ke změně.
+Veřejný obsah je v češtině. Projekt se zaměřuje na lidi po výkonu trestu a další lidi ohrožené sociálním vyloučením. Propojuje osobní odpovědnost s konkrétní podporou při návratu do běžného života.
 
-Veřejná tvrzení se řídí principem ONLY TRUE: doložené údaje mají uvádět ověřitelný zdroj; zkušenost, návrh a pracovní hypotéza mají být jednoznačně označeny. Soukromé klientské a administrační části nejsou veřejnými zdroji.
+Projekt uplatňuje zásadu ONLY TRUE. Doložené údaje uvádí s ověřitelným zdrojem a odděluje je od zkušeností, návrhů a pracovních hypotéz. Přehled odkazuje na veřejný obsah projektu.
 
 ## Základní informace
 
@@ -16,18 +16,20 @@ Veřejná tvrzení se řídí principem ONLY TRUE: doložené údaje mají uvád
 - [Galerie z praxe](https://restartintegrace.dk-i.cz/galerie): Fotodokumentace budování zázemí, společné práce a proměny projektu.
 - [Příběhy druhé šance](https://restartintegrace.dk-i.cz/pribehy-druhe-sance): Příběhy a praktické zkušenosti zveřejněné s respektem k soukromí.
 - [Transparentnost](https://restartintegrace.dk-i.cz/povinne-zverejnovani): Zveřejněné dokumenty, data, výroční výstupy a pravidla transparentnosti.
+- [Média](https://restartintegrace.dk-i.cz/media): Veřejné podklady, vizuály a videa o projektu.
 
 ## Programy
 
 - [JAILBREAK](https://restartintegrace.dk-i.cz/programy/jailbreak): Příprava ve výkonu trestu a návazná podpora při návratu do společnosti.
 - [RESET](https://restartintegrace.dk-i.cz/programy/reset): Obnova režimu, zdravých návyků a základní životní stability.
 - [REWORK](https://restartintegrace.dk-i.cz/programy/rework): Pracovní integrace, kvalifikace a dlouhodobé uplatnění.
-- [STREETWISE](https://restartintegrace.dk-i.cz/programy/streetwise): Praktické dovednosti, orientace v běžném životě a krizová podpora.
-- [BOD ZLOMU](https://restartintegrace.dk-i.cz/programy/bod-zlomu): Prevence, motivace a vytvoření rozhodujícího bodu změny.
+- [STREETWISE](https://restartintegrace.dk-i.cz/programy/streetwise): Nízkoprahová podpora pro lidi bez stabilního bydlení a pomoc při stabilizaci.
+- [BOD ZLOMU](https://restartintegrace.dk-i.cz/programy/bod-zlomu): Podpora mladých lidí po ústavní péči při přechodu do samostatného života.
 - [STABILIZACE](https://restartintegrace.dk-i.cz/programy/stabilizace): Dlouhodobá podpora, mentoring a prevence relapsu.
 
-## Veřejná metodická dokumentace
+## Veřejné dokumenty
 
+- [Výroční zpráva 2025](https://restartintegrace.dk-i.cz/documents/transparency/vyrocni-zprava-restart-integrace.pdf): Předběžná verze v PDF. Finální verze vznikne po účetní uzávěrce.
 - [Manifest](https://restartintegrace.dk-i.cz/metodika/manifest): Důvody vzniku, hodnoty a veřejný závazek projektu.
 - [Charta](https://restartintegrace.dk-i.cz/metodika/charta): Základní principy, odpovědnost a rámec spolupráce.
 - [Slovník pojmů](https://restartintegrace.dk-i.cz/metodika/slovnik-pojmu): Jednotné významy odborných a projektových pojmů.
@@ -36,6 +38,7 @@ Veřejná tvrzení se řídí principem ONLY TRUE: doložené údaje mají uvád
 ## Podpora a kontakt
 
 - [Možnosti zapojení](https://restartintegrace.dk-i.cz/zapojeni): Rozcestník materiální, knižní, finanční a partnerské podpory.
+- [Hledáme kolegy a dobrovolníky](https://restartintegrace.dk-i.cz/hledame): Otevřené možnosti zapojení do týmu projektu.
 - [Darování oblečení](https://restartintegrace.dk-i.cz/zapojeni/darovat-obleceni): Praktická pomoc lidem bez prostředků na základní potřeby.
 - [Vybavení komunitního centra](https://restartintegrace.dk-i.cz/zapojeni/vybaveni-centra): Nabídky nábytku a vybavení pro centrum a kanceláře.
 - [Sbírka knih](https://restartintegrace.dk-i.cz/zapojeni/sbirka-knih): Knihy pro mentoring, komunitní centrum a nápravná zařízení.
@@ -48,7 +51,10 @@ Veřejná tvrzení se řídí principem ONLY TRUE: doložené údaje mají uvád
 - [Stránky a sekce](https://restartintegrace.dk-i.cz/sitemap-pages.xml): Hlavní veřejné stránky.
 - [Programy](https://restartintegrace.dk-i.cz/sitemap-programs.xml): Veřejné stránky programů.
 - [Aktuality](https://restartintegrace.dk-i.cz/sitemap-news.xml): Články a tematické archivy aktualit.
+- [Příběhy druhé šance](https://restartintegrace.dk-i.cz/sitemap-stories.xml): Veřejné stránky příběhů.
 - [Dokumenty](https://restartintegrace.dk-i.cz/sitemap-documents.xml): Veřejné metodické a transparentní dokumenty.
+- [Metodika](https://restartintegrace.dk-i.cz/sitemap-methodology.xml): Veřejné stránky metodiky projektu.
 - [Média](https://restartintegrace.dk-i.cz/sitemap-media.xml): Veřejné mediální soubory a jejich stránky.
+- [Zapojení a podpora](https://restartintegrace.dk-i.cz/sitemap-donate.xml): Veřejné stránky o možnostech pomoci projektu.
 - [Videa](https://restartintegrace.dk-i.cz/sitemap-videos.xml): Samostatné stránky pro sledování videí.
-- [Pravidla pro roboty](https://restartintegrace.dk-i.cz/robots.txt): Povolené veřejné a vyloučené soukromé části webu.
+- [Pravidla pro roboty](https://restartintegrace.dk-i.cz/robots.txt): Pravidla pro procházení webu.

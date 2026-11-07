@@ -5,6 +5,8 @@ const path = require('node:path');
 const nodemailer = require('nodemailer');
 const { OAuth2Client } = require('google-auth-library');
 const { PDFBool, PDFDocument, PDFName } = require('pdf-lib');
+const staticNews = require('../src/staticNews.json');
+const socialPreview = require('../src/socialPreview.json');
 const {
   clearOAuthStateCookie,
   clearSessionCookie,
@@ -99,6 +101,7 @@ const legacyNewsRedirects = new Map([
   ]
 ]);
 const builtInNewsSitemapRows = [
+  ...staticNews.map((item) => ({ ...item, body: item.body.join('') })),
   {
     id: 'field-update-puvodni-pozemek-video-2026-08',
     slug: 'jak-vypadal-pozemek-pred-promenou-video',
@@ -1162,7 +1165,7 @@ let newsShellCache = { origin: '', html: '', expiresAt: 0 };
 
 function fallbackNewsShell() {
   return `<!doctype html>
-<html lang="cs">
+<html lang="cs" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -1170,6 +1173,7 @@ function fallbackNewsShell() {
     <meta name="description" content="Aktuality a veřejné informace projektu RESTART Integrace." />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="${publicSiteUrl}/aktuality" />
+    <link rel="describedby" href="/llms.txt" />
   </head>
   <body>
     <div id="root"></div>
@@ -1217,7 +1221,8 @@ async function loadNewsShell(request) {
 }
 
 function replaceHtmlMeta(html, pattern, replacement) {
-  return pattern.test(html) ? html.replace(pattern, replacement) : html;
+  if (pattern.test(html)) return html.replace(pattern, () => replacement);
+  return replacement ? html.replace('</head>', () => `  ${replacement}\n  </head>`) : html;
 }
 
 function renderNewsArchiveSnapshot(tag, items) {
@@ -1313,8 +1318,30 @@ function renderNewsArticleSnapshot(item) {
   </main>`;
 }
 
+function newsSocialPreview(canonical, item) {
+  if (item?.id === 'jailbreak-plakat-belusice-2026-11') return socialPreview.jailbreakBelusice;
+
+  const imageUrl = publicAbsoluteUrl(item?.imageUrl);
+  if (imageUrl) {
+    const extension = path.extname(new URL(imageUrl).pathname).toLowerCase();
+    const type = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.webp': 'image/webp',
+      '.gif': 'image/gif'
+    }[extension];
+    return { path: imageUrl, alt: item.title, type };
+  }
+
+  return item?.tag === secondChanceStoryTag || new URL(canonical).pathname === '/pribehy-druhe-sance'
+    ? socialPreview.stories
+    : socialPreview.default;
+}
+
 function renderNewsHtml(shell, { canonical, title, description, snapshot, item, isArchive }) {
-  const articleImage = publicAbsoluteUrl(item?.imageUrl);
+  const preview = newsSocialPreview(canonical, item);
+  const imageUrl = publicAbsoluteUrl(preview.path);
   const graph = {
     '@context': 'https://schema.org',
     '@type': isArchive ? 'CollectionPage' : 'NewsArticle',
@@ -1323,7 +1350,7 @@ function renderNewsHtml(shell, { canonical, title, description, snapshot, item, 
     description,
     url: canonical,
     inLanguage: 'cs-CZ',
-    image: articleImage || undefined,
+    image: imageUrl,
     datePublished: item?.date || undefined,
     dateModified: item?.date || undefined,
     articleSection: item?.tag || undefined,
@@ -1346,47 +1373,32 @@ function renderNewsHtml(shell, { canonical, title, description, snapshot, item, 
     /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/,
     `<link rel="canonical" href="${escapeHtml(canonical)}" />`
   );
-  html = replaceHtmlMeta(
-    html,
-    /<meta\s+property="og:type"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:type" content="${isArchive ? 'website' : 'article'}" />`
-  );
-  html = replaceHtmlMeta(
-    html,
-    /<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:title" content="${escapeHtml(title)}" />`
-  );
-  html = replaceHtmlMeta(
-    html,
-    /<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:description" content="${escapeHtml(description)}" />`
-  );
-  html = replaceHtmlMeta(
-    html,
-    /<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/,
-    `<meta property="og:url" content="${escapeHtml(canonical)}" />`
-  );
-  html = replaceHtmlMeta(
-    html,
-    /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/,
-    `<meta name="twitter:title" content="${escapeHtml(title)}" />`
-  );
-  html = replaceHtmlMeta(
-    html,
-    /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/,
-    `<meta name="twitter:description" content="${escapeHtml(description)}" />`
-  );
-  if (articleImage) {
-    html = replaceHtmlMeta(
-      html,
-      /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/,
-      `<meta property="og:image" content="${escapeHtml(articleImage)}" />`
-    );
-    html = replaceHtmlMeta(
-      html,
-      /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/,
-      `<meta name="twitter:image" content="${escapeHtml(articleImage)}" />`
-    );
+  const socialMetadata = {
+    'og:locale': 'cs_CZ',
+    'og:site_name': 'RESTART Integrace',
+    'og:type': isArchive ? 'website' : 'article',
+    'og:title': title,
+    'og:description': description,
+    'og:url': canonical,
+    'og:image': imageUrl,
+    'og:image:secure_url': imageUrl.startsWith('https:') ? imageUrl : '',
+    'og:image:type': preview.type,
+    'og:image:width': preview.width,
+    'og:image:height': preview.height,
+    'og:image:alt': preview.alt,
+    'article:section': item?.tag,
+    'article:published_time': item?.date,
+    'twitter:card': 'summary_large_image',
+    'twitter:title': title,
+    'twitter:description': description,
+    'twitter:image': imageUrl,
+    'twitter:image:alt': preview.alt
+  };
+  for (const [name, content] of Object.entries(socialMetadata)) {
+    const attribute = name.startsWith('twitter:') ? 'name' : 'property';
+    const pattern = new RegExp(`<meta\\s+${attribute}="${name}"\\s+content="[^"]*"\\s*\\/?>`);
+    const tag = content ? `<meta ${attribute}="${name}" content="${escapeHtml(content)}" />` : '';
+    html = replaceHtmlMeta(html, pattern, tag);
   }
   const structuredDataTag = `<script type="application/ld+json">${JSON.stringify(graph).replace(
     /</g,
@@ -1395,7 +1407,7 @@ function renderNewsHtml(shell, { canonical, title, description, snapshot, item, 
   html = /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/.test(html)
     ? html.replace(/<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/, structuredDataTag)
     : html.replace('</head>', `    ${structuredDataTag}\n  </head>`);
-  return html.replace(/<div id="root">[\s\S]*?<\/div>\s*<\/body>/, `<div id="root">${snapshot}</div>\n  </body>`);
+  return html.replace(/<div id="root">[\s\S]*?<\/div>\s*<\/body>/, () => `<div id="root">${snapshot}</div>\n  </body>`);
 }
 
 async function newsSeoPage(request, response, url) {
@@ -1511,7 +1523,9 @@ async function newsSitemap(_request, response) {
   let rows = [];
   try {
     rows = await query(
-      `SELECT id, title, slug, tag, DATE_FORMAT(published_at, '%Y-%m-%d') AS date
+      `SELECT id, title, slug, tag, image_url,
+              DATE_FORMAT(published_at, '%Y-%m-%d') AS date,
+              DATE_FORMAT(GREATEST(published_at, updated_at), '%Y-%m-%d') AS lastmod
        FROM news
        WHERE status = 'published'
        ORDER BY published_at DESC, created_at DESC
@@ -1542,23 +1556,29 @@ async function newsSitemap(_request, response) {
   for (const item of items) {
     if (item.tag === secondChanceStoryTag) continue;
     const path = `/aktuality/${slugifyPathSegment(item.tag || 'Aktuality projektu')}`;
-    const previousDate = tagEntries.get(path);
-    if (!previousDate || item.date > previousDate) tagEntries.set(path, item.date);
+    const lastmod = item.lastmod || item.date || '';
+    if (!tagEntries.has(path) || lastmod > tagEntries.get(path)) tagEntries.set(path, lastmod);
   }
+  const latestUpdate = Array.from(tagEntries.values()).sort().at(-1);
   const urls = [
-    { path: '/aktuality', date: items[0]?.date || new Date().toISOString().slice(0, 10) },
-    ...Array.from(tagEntries, ([path, date]) => ({ path, date })),
-    ...items.map((item) => ({ path: newsPublicPath(item), date: item.date }))
+    { path: '/aktuality', lastmod: latestUpdate },
+    ...Array.from(tagEntries, ([path, lastmod]) => ({ path, lastmod })),
+    ...items.map((item) => ({
+      path: newsPublicPath(item),
+      lastmod: item.lastmod || item.date,
+      image: publicAbsoluteUrl(item.imageUrl)
+    }))
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls
   .map(
     (entry) => `  <url>
-    <loc>${escapeXml(`${publicSiteUrl}${entry.path}`)}</loc>
-    <lastmod>${escapeXml(entry.date)}</lastmod>
-    <changefreq>${entry.path === '/aktuality' ? 'daily' : 'weekly'}</changefreq>
-    <priority>${entry.path === '/aktuality' ? '0.8' : '0.7'}</priority>
+    <loc>${escapeXml(`${publicSiteUrl}${entry.path}`)}</loc>${
+      entry.lastmod ? `\n    <lastmod>${escapeXml(entry.lastmod)}</lastmod>` : ''
+    }${
+      entry.image ? `\n    <image:image><image:loc>${escapeXml(entry.image)}</image:loc></image:image>` : ''
+    }
   </url>`
   )
   .join('\n')}

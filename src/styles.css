@@ -1632,6 +1632,22 @@ h3 {
   color: #ffffff;
 }
 
+.streetwise-contact-card {
+  grid-template-rows: auto auto 1fr;
+  align-content: stretch;
+}
+
+.streetwise-contact-logo {
+  display: block;
+  width: min(100%, 268px);
+  height: auto;
+  aspect-ratio: 2 / 1;
+  align-self: center;
+  justify-self: center;
+  object-fit: cover;
+  object-position: center 66%;
+}
+
 .streetwise-photo {
   position: relative;
   overflow: hidden;

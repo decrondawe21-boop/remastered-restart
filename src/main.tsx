@@ -4077,11 +4077,20 @@ function HomePage({
             {streetwiseSection.ctaLabel || 'STREETWISE'} <ArrowRight size={18} />
           </a>
         </article>
-        <article className="streetwise-card">
+        <article className="streetwise-card streetwise-contact-card">
           <strong>První kontakt</strong>
           <p>
             Nízkoprahové místo, kam člověk může přijít bez dlouhého vysvětlování a začít řešit další krok.
           </p>
+          <img
+            className="streetwise-contact-logo"
+            src="/images/brand/restart-integrace-streetwise-lockup.webp"
+            alt="Logo REST||ART Integrace"
+            width={960}
+            height={640}
+            loading="lazy"
+            decoding="async"
+          />
         </article>
         <article className="streetwise-card">
           <strong>Zázemí a střecha</strong>

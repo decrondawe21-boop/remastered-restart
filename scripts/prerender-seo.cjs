@@ -2,8 +2,19 @@ const fs = require('node:fs');
 const path = require('node:path');
 const methodologyDocuments = require('../src/methodologyDocuments.json');
 const socialPreview = require('../src/socialPreview.json');
+const staticNews = require('../src/staticNews.json');
 
 const baseUrl = 'https://restartintegrace.dk-i.cz';
+const staticNewsLinks = staticNews.map(({ tag, slug, title }) => {
+  const category = tag
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\|\|/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return [`/aktuality/${category}/${slug}`, title];
+});
 const officialName = 'RESTART Integrace';
 const styledName = 'REST||ART Integrace';
 const alternateNames = [styledName, 'REST ART Integrace', 'Restart Integrace', 'RESTARTINTEGRACE'];
@@ -616,6 +627,7 @@ const routeSnapshotContent = {
       }
     ],
     links: [
+      ...staticNewsLinks,
       ['/pribehy-druhe-sance', 'Příběhy druhé šance'],
       ['/povinne-zverejnovani', 'Data a transparentnost'],
       ['/media', 'Média']

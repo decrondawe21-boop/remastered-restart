@@ -969,6 +969,8 @@
     --footer-branch-overhang: clamp(620px, 94vh, 1020px);
     --footer-branch-shift: 42%;
     --footer-branch-root: 96px;
+    --footer-branch-size: clamp(750px, 108vh, 1120px);
+    --footer-branch-ink: 0.56;
     position: absolute;
     z-index: 2;
     inset: calc(-1 * var(--footer-branch-overhang)) 0 0;
@@ -977,17 +979,43 @@
     pointer-events: none;
   }
 
-  .footer-branch::before {
+  .footer-branch::before,
+  .footer-branch::after {
     content: "";
+  }
+
+  .footer-branch::before,
+  .footer-branch-rear,
+  .footer-branch::after {
     position: absolute;
     inset-inline-end: 0;
     inset-block-start: var(--footer-branch-overhang);
-    block-size: clamp(750px, 108vh, 1120px);
+    block-size: var(--footer-branch-size);
     aspect-ratio: 416 / 512;
-    background: url("/images/brand/footer-emerald-branch.webp") center / contain no-repeat;
-    transform: translate(var(--footer-branch-shift), calc(var(--footer-branch-root) - 93%)) scaleX(-1) rotate(16deg);
+    background: url("/images/brand/footer-emerald-branch-full.webp") center / contain no-repeat;
+    transform: translate(
+      calc(var(--footer-branch-shift) + var(--footer-layer-shift, 0%)),
+      calc(var(--footer-branch-root) - 93% + var(--footer-layer-rise, 0px))
+    ) scaleX(-1) rotate(var(--footer-layer-angle, 16deg));
     transform-origin: 55% 96%;
-    opacity: 0.36;
+  }
+
+  .footer-branch::before {
+    --footer-layer-shift: -8%;
+    --footer-layer-rise: -16px;
+    --footer-layer-angle: 26deg;
+    opacity: calc(var(--footer-branch-ink) * 0.3);
+  }
+
+  .footer-branch-rear {
+    --footer-layer-shift: 8%;
+    --footer-layer-rise: 28px;
+    --footer-layer-angle: 8deg;
+    opacity: calc(var(--footer-branch-ink) * 0.21);
+  }
+
+  .footer-branch::after {
+    opacity: var(--footer-branch-ink);
   }
 
   .site-footer > :not(.footer-branch) {
@@ -1028,11 +1056,8 @@
 @media screen and (max-width: 1050px) {
   .footer-branch {
     --footer-branch-overhang: clamp(420px, 70vh, 610px);
-  }
-
-  .footer-branch::before {
-    block-size: clamp(530px, 70vw, 760px);
-    opacity: 0.27;
+    --footer-branch-size: clamp(530px, 70vw, 760px);
+    --footer-branch-ink: 0.37;
   }
 }
 
@@ -1063,11 +1088,8 @@
     --footer-branch-overhang: clamp(320px, 54vh, 425px);
     --footer-branch-shift: 47%;
     --footer-branch-root: 74px;
-  }
-
-  .footer-branch::before {
-    block-size: clamp(420px, 105vw, 520px);
-    opacity: 0.24;
+    --footer-branch-size: clamp(420px, 105vw, 520px);
+    --footer-branch-ink: 0.31;
   }
 
   :root {

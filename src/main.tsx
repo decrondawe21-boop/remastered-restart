@@ -9865,7 +9865,9 @@ React.useEffect(() => {
       <AppModal modal={modal} onClose={() => setModal(null)} />
       <CookieConsent forceOpen={cookieSettingsOpen} inline={Boolean(selectedVideo)} onClose={() => setCookieSettingsOpen(false)} />
       <footer className="site-footer">
-        <div className="footer-branch" aria-hidden="true" />
+        <div className="footer-branch" aria-hidden="true">
+          <span className="footer-branch-rear" />
+        </div>
         <div className="footer-brand-block">
           <p>REST||ART Integrace</p>
           <span>Druhá šance v praxi. Mentoring, práce, bydlení, stabilizace.</span>

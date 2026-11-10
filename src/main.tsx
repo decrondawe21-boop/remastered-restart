@@ -74,6 +74,7 @@ import {
 } from './content';
 import methodologyDocumentsData from './methodologyDocuments.json';
 import newsBrandMedia from './newsBrandMedia.json';
+import projectTeaser from './projectTeaser.json';
 import socialPreview from './socialPreview.json';
 import type { TransparencyDocument } from './transparentDocuments';
 import GalleryPage from './GalleryPage';
@@ -196,11 +197,13 @@ type VideoWatchPageData = {
   thumbnailUrl: string;
   uploadDate: string;
   duration: string;
+  durationSeconds: number;
   width: number;
   height: number;
 };
 
 const videoWatchPages: VideoWatchPageData[] = [
+  projectTeaser,
   {
     id: 'predstaveni-projektu',
     path: '/videa/predstaveni-projektu',
@@ -214,6 +217,7 @@ const videoWatchPages: VideoWatchPageData[] = [
     thumbnailUrl: '/videos/rest-art-intro-poster.png',
     uploadDate: '2026-06-23T00:00:00+02:00',
     duration: 'PT15S',
+    durationSeconds: 15,
     width: 1280,
     height: 720
   },
@@ -230,6 +234,7 @@ const videoWatchPages: VideoWatchPageData[] = [
     thumbnailUrl: '/videos/restart-logo-reveal-poster.png',
     uploadDate: '2026-06-23T00:00:00+02:00',
     duration: 'PT6S',
+    durationSeconds: 6,
     width: 1920,
     height: 1080
   }
@@ -3958,7 +3963,12 @@ function useVideoWatchSeo(video: VideoWatchPageData) {
 
 function VideoWatchPage({ video }: { video: VideoWatchPageData }) {
   useVideoWatchSeo(video);
-  const durationSeconds = video.duration === 'PT15S' ? '15 sekund' : '6 sekund';
+  const durationLabel = new Intl.NumberFormat('cs-CZ', {
+    style: 'unit',
+    unit: 'second',
+    unitDisplay: 'long'
+  }).format(video.durationSeconds);
+  const publicationDate = new Date(video.uploadDate).toLocaleDateString('cs-CZ', { timeZone: 'Europe/Prague' });
 
   return (
     <section className="content-section video-watch-page">
@@ -3972,6 +3982,7 @@ function VideoWatchPage({ video }: { video: VideoWatchPageData }) {
       <video
         className="video-watch-player"
         controls
+        playsInline
         preload="metadata"
         poster={video.thumbnailUrl}
         width={video.width}
@@ -3990,8 +4001,8 @@ function VideoWatchPage({ video }: { video: VideoWatchPageData }) {
         <div className="video-watch-description">
           <p>{video.description}</p>
           <dl aria-label="Informace o videu">
-            <div><dt>Délka</dt><dd>{durationSeconds}</dd></div>
-            <div><dt>Publikováno</dt><dd><time dateTime={video.uploadDate}>23. 6. 2026</time></dd></div>
+            <div><dt>Délka</dt><dd>{durationLabel}</dd></div>
+            <div><dt>Publikováno</dt><dd><time dateTime={video.uploadDate}>{publicationDate}</time></dd></div>
           </dl>
         </div>
         <a className="button secondary" href="/">
@@ -4223,9 +4234,14 @@ function HomePage({
             Stručné představení projektu druhých šancí: proč vzniká, komu pomáhá a jak se do něj mohou zapojit lidé,
             firmy, instituce i podporovatelé.
           </p>
-          <a className="button secondary" href="/videa/predstaveni-projektu">
-            Otevřít stránku videa <ArrowRight size={18} />
-          </a>
+          <div className="inline-actions">
+            <a className="button secondary" href="/videa/predstaveni-projektu">
+              Otevřít stránku videa <ArrowRight size={18} />
+            </a>
+            <a className="button primary" href={projectTeaser.path}>
+              Přehrát novou upoutávku <ArrowRight size={18} />
+            </a>
+          </div>
         </div>
         <figure className="project-video-frame">
           <LazyVideo
@@ -6075,6 +6091,11 @@ function MediaKitPage({ page, assets }: { page: (typeof staticPages)[string]; as
         <p className="section-label">{page.label}</p>
         <h1>{page.title}</h1>
         <p>{page.lead}</p>
+        <div className="inline-actions">
+          <a className="button secondary" href={projectTeaser.path}>
+            <Video size={18} /> Přehrát upoutávku projektu
+          </a>
+        </div>
       </div>
       <div className="static-info-grid">
         {page.sections.map((section) => (

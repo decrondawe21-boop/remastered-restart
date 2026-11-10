@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const methodologyDocuments = require('../src/methodologyDocuments.json');
 const newsBrandMedia = require('../src/newsBrandMedia.json');
+const projectTeaser = require('../src/projectTeaser.json');
 const socialPreview = require('../src/socialPreview.json');
 const staticNews = require('../src/staticNews.json');
 
@@ -72,6 +73,20 @@ a{color:inherit}
 @media(max-width:760px){.site-header{padding:12px 18px}.brand img{width:174px}.desktop-nav{display:none}.menu-button{display:inline-flex}.hero{padding:18px}.hero-banner{min-height:520px;border-radius:22px}.hero-banner-overlay{padding:28px}.hero-banner-overlay h1{font-size:clamp(2.6rem,16vw,4.5rem)}}
 `.trim();
 const videoAssets = [
+  {
+    id: projectTeaser.id,
+    watchPath: projectTeaser.path,
+    name: projectTeaser.title,
+    description: projectTeaser.description,
+    thumbnailUrl: `${baseUrl}${projectTeaser.thumbnailUrl}`,
+    contentUrl: `${baseUrl}${projectTeaser.contentUrl}`,
+    uploadDate: projectTeaser.uploadDate,
+    duration: projectTeaser.duration,
+    durationSeconds: projectTeaser.durationSeconds,
+    width: projectTeaser.width,
+    height: projectTeaser.height,
+    familyFriendly: true
+  },
   {
     id: 'predstaveni-projektu',
     watchPath: '/videa/predstaveni-projektu',
@@ -150,7 +165,9 @@ const videoWatchRoutes = videoAssets.map((video) => ({
   keywords:
     video.id === 'predstaveni-projektu'
       ? 'RESTART Integrace video, představení projektu, druhá šance, sociální reintegrace, návrat do života'
-      : 'REST ART Integrace logo reveal, RESTART Integrace video, vizuální identita, projekt druhých šancí',
+      : video.id === 'logo-reveal'
+        ? 'REST ART Integrace logo reveal, RESTART Integrace video, vizuální identita, projekt druhých šancí'
+        : 'RESTART Integrace, upoutávka projektu, každý si zaslouží druhou šanci',
   priority: '0.72',
   changefreq: 'monthly',
   videoId: video.id
@@ -566,6 +583,7 @@ const routeSnapshotContent = {
       ['/co-delame', 'Jak systém funguje'],
       ['/programy', 'Programy podpory'],
       ['/metodika', 'Veřejná metodika'],
+      [projectTeaser.path, 'Upoutávka projektu'],
       ['/zapojeni', 'Možnosti zapojení']
     ]
   },
@@ -836,6 +854,7 @@ const routeSnapshotContent = {
     ],
     links: [
       ['/videa/predstaveni-projektu', 'Video představení projektu'],
+      [projectTeaser.path, 'Upoutávka projektu'],
       ['/povinne-zverejnovani', 'Veřejné dokumenty'],
       ['/kontakt', 'Mediální kontakt']
     ]
@@ -1406,7 +1425,7 @@ function renderVideoWatchSnapshot(video) {
       <h1>${escapeHtml(video.name)}</h1>
       <p>${escapeHtml(video.description)}</p>
     </header>
-    <video controls preload="metadata" poster="${escapeHtml(video.thumbnailUrl)}" width="${video.width}" height="${
+    <video controls playsinline preload="metadata" poster="${escapeHtml(video.thumbnailUrl)}" width="${video.width}" height="${
       video.height
     }" aria-label="${escapeHtml(video.name)}">
       <source src="${escapeHtml(video.contentUrl)}" type="video/mp4" />

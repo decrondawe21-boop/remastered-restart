@@ -42,6 +42,13 @@
     "height": 630
   },
   "videos": {
+    "/videa/upoutavka": {
+      "path": "/videos/restart-well-poster.jpg",
+      "alt": "Kamenná studna s tyrkysovou hladinou v lese",
+      "type": "image/jpeg",
+      "width": 1280,
+      "height": 720
+    },
     "/videa/predstaveni-projektu": {
       "path": "/videos/rest-art-intro-poster.png",
       "alt": "Náhled videa s představením projektu REST||ART Integrace",

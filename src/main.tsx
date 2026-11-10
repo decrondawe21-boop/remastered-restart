@@ -73,6 +73,7 @@ import {
   supportPaths
 } from './content';
 import methodologyDocumentsData from './methodologyDocuments.json';
+import newsBrandMedia from './newsBrandMedia.json';
 import socialPreview from './socialPreview.json';
 import type { TransparencyDocument } from './transparentDocuments';
 import GalleryPage from './GalleryPage';
@@ -3432,6 +3433,13 @@ type SocialPreview = {
   height?: number;
 };
 
+const newsCampaignCovers: Record<string, SocialPreview> = newsBrandMedia.campaignCovers;
+
+function newsCampaignCover(item: NewsItem) {
+  const campaign = newsCampaignCovers[item.id];
+  return campaign && campaign.path === item.imageUrl ? campaign : undefined;
+}
+
 function createMetaUpdater() {
   const changes: Array<{ element: HTMLMetaElement; created: boolean; previous: string | null }> = [];
   const setMeta = (attribute: 'name' | 'property', key: string, content?: string) => {
@@ -3495,6 +3503,8 @@ const socialImageTypes: Record<string, string> = {
 
 function newsSocialPreview(path: string, item?: NewsItem): SocialPreview {
   if (item?.id === 'jailbreak-plakat-belusice-2026-11') return socialPreview.jailbreakBelusice;
+  const campaign = item && newsCampaignCover(item);
+  if (campaign) return campaign;
   if (item?.imageUrl && /^(https?:\/\/|\/)/i.test(item.imageUrl)) {
     try {
       const url = new URL(item.imageUrl, window.location.origin);
@@ -4569,6 +4579,8 @@ function NewsDetailPage({
   const isStory = isSecondChanceStory(item);
   const backHref = isStory ? '/pribehy-druhe-sance' : newsTagPath(newsTagLabel(item));
   const backLabel = isStory ? 'Zpět na příběhy' : `Zpět: ${newsTagLabel(item)}`;
+  const campaign = newsCampaignCover(item);
+  const tree = newsBrandMedia.tree;
   useNewsSeo({ title: item.title, description: item.excerpt, path: newsPath(item), item });
   
   return (
@@ -4589,9 +4601,16 @@ function NewsDetailPage({
           <h1>{item.title}</h1>
           <p>{item.excerpt}</p>
           {item.imageUrl && (
-            <div className="news-detail-image">
-              <img src={item.imageUrl} alt={item.title} loading="lazy" />
-            </div>
+            <figure className={campaign ? 'news-detail-image news-campaign-cover' : 'news-detail-image'}>
+              <img
+                src={item.imageUrl}
+                alt={campaign?.alt ?? item.title}
+                width={campaign?.width}
+                height={campaign?.height}
+                loading="lazy"
+              />
+              {campaign && <figcaption>{newsBrandMedia.campaignCaption}</figcaption>}
+            </figure>
           )}
         </div>
       </section>
@@ -4600,6 +4619,15 @@ function NewsDetailPage({
           <article className="news-body" dangerouslySetInnerHTML={{ __html: cleanNewsHtml(item.body, item.title) }} />
         ) : (
           <p>{item.excerpt}</p>
+        )}
+        {item.id === tree.articleId && (
+          <figure className="news-tree-figure">
+            <img src={tree.path} alt={tree.alt} width={tree.width} height={tree.height} loading="lazy" />
+            <figcaption>
+              <strong>{tree.title}</strong>
+              <span>{tree.caption}</span>
+            </figcaption>
+          </figure>
         )}
         {item.tag === mediaMaterialsTag ? (
           <aside className="news-resource-links" aria-labelledby="news-resource-links-title">
@@ -4800,6 +4828,13 @@ function NewsPage({
               </a>
             ))}
           </nav>
+        )}
+        {!storiesOnly && !activeTagSlug && (
+          <div className="news-brand-banners">
+            {newsBrandMedia.banners.map((banner) => (
+              <img key={banner.path} src={banner.path} alt={banner.alt} width={1024} height={1024} loading="lazy" />
+            ))}
+          </div>
         )}
         {secondChanceStories.length > 0 && !storiesOnly && (
           <aside className="story-rubric-callout" aria-label="Rubrika Příběhy druhé šance">
@@ -9808,6 +9843,7 @@ React.useEffect(() => {
       <AppModal modal={modal} onClose={() => setModal(null)} />
       <CookieConsent forceOpen={cookieSettingsOpen} inline={Boolean(selectedVideo)} onClose={() => setCookieSettingsOpen(false)} />
       <footer className="site-footer">
+        <div className="footer-branch" aria-hidden="true" />
         <div className="footer-brand-block">
           <p>REST||ART Integrace</p>
           <span>Druhá šance v praxi. Mentoring, práce, bydlení, stabilizace.</span>

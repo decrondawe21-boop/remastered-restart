@@ -12,6 +12,7 @@ import {
   UsersRound
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import newsBrandMedia from './newsBrandMedia.json';
 import staticNews from './staticNews.json';
 
 export interface Program {
@@ -1006,6 +1007,7 @@ export const starterNews = [
     id: 'news-meeting-support',
     title: '28.05.2026 - 10:00 schůzka',
     date: '2026-05-28',
+    imageUrl: newsBrandMedia.campaignCovers['news-meeting-support'].path,
     excerpt:
       'Jednání o podporu projektu, na kterém závisí další rozvoj programů REST||ART Integrace a jejich praktického zázemí.'
   },
@@ -1013,6 +1015,7 @@ export const starterNews = [
     id: 'news-people-on-edge',
     title: 'Lidé na okraji společnosti',
     date: '2026-05-13',
+    imageUrl: newsBrandMedia.campaignCovers['news-people-on-edge'].path,
     excerpt:
       'Nabízíme konkrétní cestu těm, kteří stojí mimo systém: bezpečný první kontakt, mentoring, práci a návaznou stabilizaci.'
   }

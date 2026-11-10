@@ -1,0 +1,38 @@
+{
+  "banners": [
+    {
+      "path": "/images/news/brand-materials/lesni-banner.webp",
+      "alt": "Nápis REST||ART Integrace vyřezaný do kmene v lese"
+    },
+    {
+      "path": "/images/news/brand-materials/listovy-banner.webp",
+      "alt": "Nápis REST||ART Integrace mezi listy na světlém pozadí"
+    }
+  ],
+  "campaignCovers": {
+    "news-people-on-edge": {
+      "path": "/images/news/brand-materials/novy-zacatek.webp",
+      "alt": "Ilustrační vizuál kampaně Nový začátek má smysl",
+      "type": "image/webp",
+      "width": 980,
+      "height": 700
+    },
+    "news-meeting-support": {
+      "path": "/images/news/brand-materials/podpora-projektu.webp",
+      "alt": "Ilustrační vizuál kampaně s dvojicí lidí při práci na zahradě",
+      "type": "image/webp",
+      "width": 980,
+      "height": 700
+    }
+  },
+  "campaignCaption": "Ilustrační vizuál kampaně REST||ART Integrace.",
+  "tree": {
+    "articleId": "7d5463f2-6cd7-4ab9-a20a-efb4e5359d33",
+    "path": "/images/news/brand-materials/strom-a-most.webp",
+    "alt": "Zelenozlatý strom s propletenými větvemi a symbolem mostu",
+    "width": 309,
+    "height": 730,
+    "title": "Strom a most",
+    "caption": "Detail koncepční ilustrace. Propojené větve a most připomínají, že návrat do běžného života vyžaduje navazující podporu."
+  }
+}

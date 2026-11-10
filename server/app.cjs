@@ -5,6 +5,7 @@ const path = require('node:path');
 const nodemailer = require('nodemailer');
 const { OAuth2Client } = require('google-auth-library');
 const { PDFBool, PDFDocument, PDFName } = require('pdf-lib');
+const newsBrandMedia = require('../src/newsBrandMedia.json');
 const staticNews = require('../src/staticNews.json');
 const socialPreview = require('../src/socialPreview.json');
 const {
@@ -383,7 +384,7 @@ function publicNewsRow(row) {
   return {
     ...rest,
     slug: slugifyPathSegment(row.slug || row.title || row.id),
-    imageUrl: row.imageUrl || imageUrlFromDatabase || ''
+    imageUrl: row.imageUrl || imageUrlFromDatabase || newsBrandMedia.campaignCovers[row.id]?.path || ''
   };
 }
 
@@ -1300,6 +1301,11 @@ function renderNewsArticleSnapshot(item) {
     sanitizePublicArticleHtml(item.body) ||
     `<p>${escapeHtml(item.excerpt || 'Veřejná aktualita projektu RESTART Integrace.')}</p>`;
   const safeImage = publicAbsoluteUrl(item.imageUrl);
+  const campaign = newsCampaignCover(item);
+  const imageMarkup = safeImage
+    ? `<img src="${escapeHtml(safeImage)}" alt="${escapeHtml(campaign?.alt ?? item.title)}" loading="eager" />`
+    : '';
+  const tree = newsBrandMedia.tree;
   return `<main class="seo-route-snapshot" data-seo-snapshot="news-article">
     <article>
       <header>
@@ -1307,19 +1313,31 @@ function renderNewsArticleSnapshot(item) {
         <h1>${escapeHtml(item.title)}</h1>
         <p><time datetime="${escapeHtml(item.date)}">${escapeHtml(item.date)}</time></p>
         <p>${escapeHtml(item.excerpt || stripHtml(item.body).slice(0, 260))}</p>
-        ${safeImage ? `<img src="${escapeHtml(safeImage)}" alt="${escapeHtml(item.title)}" loading="eager" />` : ''}
+        ${campaign
+          ? `<figure>${imageMarkup}<figcaption>${escapeHtml(newsBrandMedia.campaignCaption)}</figcaption></figure>`
+          : imageMarkup}
       </header>
       <section>
         <h2>Podrobnosti</h2>
         ${safeBody}
+        ${item.id === tree.articleId
+          ? `<figure class="news-tree-figure"><img src="${escapeHtml(tree.path)}" alt="${escapeHtml(tree.alt)}" width="${tree.width}" height="${tree.height}" loading="lazy" /><figcaption><strong>${escapeHtml(tree.title)}</strong><span>${escapeHtml(tree.caption)}</span></figcaption></figure>`
+          : ''}
       </section>
     </article>
     <nav aria-label="Související stránky"><a href="/aktuality/${escapeHtml(slugifyPathSegment(item.tag || 'Aktuality projektu'))}">Další příspěvky v rubrice</a><a href="/aktuality">Všechny aktuality</a><a href="/media">Média ke stažení</a><a href="/kontakt">Kontakt</a></nav>
   </main>`;
 }
 
+function newsCampaignCover(item) {
+  const campaign = newsBrandMedia.campaignCovers[item?.id];
+  return campaign && campaign.path === item.imageUrl ? campaign : undefined;
+}
+
 function newsSocialPreview(canonical, item) {
   if (item?.id === 'jailbreak-plakat-belusice-2026-11') return socialPreview.jailbreakBelusice;
+  const campaign = newsCampaignCover(item);
+  if (campaign) return campaign;
 
   const imageUrl = publicAbsoluteUrl(item?.imageUrl);
   if (imageUrl) {

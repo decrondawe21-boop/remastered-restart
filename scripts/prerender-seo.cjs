@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const methodologyDocuments = require('../src/methodologyDocuments.json');
+const newsBrandMedia = require('../src/newsBrandMedia.json');
 const socialPreview = require('../src/socialPreview.json');
 const staticNews = require('../src/staticNews.json');
 
@@ -958,6 +959,9 @@ function renderRouteSnapshot(route) {
       <h1>${escapeHtml(content.heading)}</h1>
       <p>${escapeHtml(content.lead)}</p>
     </header>
+    ${route.path === '/aktuality' ? `<div class="news-brand-banners">${newsBrandMedia.banners
+      .map((banner) => `<img src="${escapeHtml(banner.path)}" alt="${escapeHtml(banner.alt)}" width="1024" height="1024" loading="lazy" />`)
+      .join('')}</div>` : ''}
     ${content.sections
       .map(
         (section) => `<section>

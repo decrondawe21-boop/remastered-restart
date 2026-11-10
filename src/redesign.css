@@ -995,23 +995,26 @@
     background: url("/images/brand/footer-emerald-branch-full.webp") center / contain no-repeat;
     transform: translate(
       calc(var(--footer-branch-shift) + var(--footer-layer-shift, 0%)),
-      calc(var(--footer-branch-root) - 93% + var(--footer-layer-rise, 0px))
-    ) scaleX(-1) rotate(var(--footer-layer-angle, 16deg));
+      calc(var(--footer-branch-root) - 93% + var(--footer-layer-rise, 0%))
+    ) scaleX(-1) rotate(var(--footer-layer-angle, 16deg)) scale(var(--footer-layer-scale, 1));
     transform-origin: 55% 96%;
   }
 
   .footer-branch::before {
     --footer-layer-shift: -8%;
-    --footer-layer-rise: -16px;
+    --footer-layer-rise: -12%;
     --footer-layer-angle: 26deg;
-    opacity: calc(var(--footer-branch-ink) * 0.3);
+    --footer-layer-scale: 0.66;
+    mask-image: radial-gradient(ellipse 22% 29% at 63% 54%, #000 22%, transparent);
+    opacity: calc(var(--footer-branch-ink) * 0.36);
   }
 
   .footer-branch-rear {
-    --footer-layer-shift: 8%;
-    --footer-layer-rise: 28px;
-    --footer-layer-angle: 8deg;
-    opacity: calc(var(--footer-branch-ink) * 0.21);
+    --footer-layer-rise: -32%;
+    --footer-layer-angle: 22deg;
+    --footer-layer-scale: 0.52;
+    mask-image: radial-gradient(ellipse 18% 27% at 46% 47%, #000 22%, transparent);
+    opacity: calc(var(--footer-branch-ink) * 0.24);
   }
 
   .footer-branch::after {

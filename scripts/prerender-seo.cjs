@@ -3,6 +3,7 @@ const path = require('node:path');
 const methodologyDocuments = require('../src/methodologyDocuments.json');
 const newsBrandMedia = require('../src/newsBrandMedia.json');
 const projectTeaser = require('../src/projectTeaser.json');
+const publicContact = require('../src/publicContact.json');
 const socialPreview = require('../src/socialPreview.json');
 const staticNews = require('../src/staticNews.json');
 
@@ -800,8 +801,8 @@ const routeSnapshotContent = {
       {
         title: 'Kontaktní údaje',
         items: [
-          'E-mail: restart@dk-i.cz',
-          'Telefon: +420 778 564 279',
+          `E-mail: ${publicContact.email}`,
+          `Telefon: ${publicContact.phoneDisplay}`,
           'Adresa: Počerady 33, 440 01 Výškov-Louny',
           'Provozovatel: David Kozák International, s.r.o., IČ 23143614'
         ],
@@ -1305,8 +1306,8 @@ function structuredData(route, canonical) {
         description:
           'RESTART Integrace (REST||ART) je oficiální projekt druhých šancí zaměřený na stabilizaci, práci, bydlení a důstojný návrat do společnosti.',
         foundingDate: '2025-05-06',
-        email: 'restart@dk-i.cz',
-        telephone: '+420778564279',
+        email: publicContact.email,
+        telephone: publicContact.phone,
         address: {
           '@type': 'PostalAddress',
           streetAddress: 'Počerady 33',

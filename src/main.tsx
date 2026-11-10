@@ -75,6 +75,7 @@ import {
 import methodologyDocumentsData from './methodologyDocuments.json';
 import newsBrandMedia from './newsBrandMedia.json';
 import projectTeaser from './projectTeaser.json';
+import publicContact from './publicContact.json';
 import socialPreview from './socialPreview.json';
 import type { TransparencyDocument } from './transparentDocuments';
 import GalleryPage from './GalleryPage';
@@ -330,7 +331,7 @@ const staticPages: Record<string, { label: string; title: string; lead: string; 
     lead: 'Základní informace pro novináře, partnery a veřejnou komunikaci projektu.',
     sections: [
       { title: 'O projektu', text: 'REST||ART Integrace je neziskový projekt druhých šancí zaměřený na mentoring, práci, bydlení, stabilizaci a návrat lidí zpět do života.' },
-      { title: 'Kontakt pro média', text: 'Pro mediální dotazy použijte kontaktní formulář nebo e-mail restartintegrace@dk-i.cz.' }
+      { title: 'Kontakt pro média', text: `Pro mediální dotazy použijte kontaktní formulář nebo e-mail ${publicContact.email}.` }
     ]
   },
   '/zasady-ochrany-osobnich-udaju': {
@@ -7018,7 +7019,7 @@ function ContactPage({
     const subject = encodeURIComponent(`Kontakt z webu REST||ART Integrace - ${name}`);
     const body = encodeURIComponent(`Jméno: ${name}\nKontakt: ${contact}\n\nZpráva:\n${message}`);
     onNotify('success', 'Zpráva je připravená', 'Otevře se e-mailový klient s předvyplněnou zprávou.');
-    window.location.href = `mailto:restartintegrace@dk-i.cz?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${publicContact.email}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -7037,10 +7038,10 @@ function ContactPage({
             </div>
           ))}
           <div className="contact-actions">
-            <a className="button primary" href="mailto:restartintegrace@dk-i.cz">
+            <a className="button primary" href={`mailto:${publicContact.email}`}>
               <Mail size={18} /> Poslat e-mail
             </a>
-            <a className="button secondary" href="tel:+420778564279">
+            <a className="button secondary" href={`tel:${publicContact.phone}`}>
               <Phone size={18} /> Zavolat
             </a>
           </div>
@@ -8748,7 +8749,7 @@ function ClientProfile({
       ].join('\n')
     );
     onNotify('success', 'Žádost je připravená', 'Otevře se e-mail pro pracovníka REST||ART Integrace.');
-    window.location.href = `mailto:restartintegrace@dk-i.cz?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${publicContact.email}?subject=${subject}&body=${body}`;
   };
 
   const currentClientNav = visibleClientNavItems.find((item) => item.id === activeSection) ?? visibleClientNavItems[0];

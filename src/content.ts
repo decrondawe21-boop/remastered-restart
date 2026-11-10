@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import newsBrandMedia from './newsBrandMedia.json';
+import publicContact from './publicContact.json';
 import staticNews from './staticNews.json';
 
 export interface Program {
@@ -221,7 +222,7 @@ export const programs: Program[] = [
     ],
     contactBox: {
       title: 'Kontaktní zázemí programu',
-      lines: ['David Kozák International s.r.o.', 'Drážďanská 517/52, 400 07 Ústí nad Labem', 'restart@dk-i.cz']
+      lines: ['David Kozák International s.r.o.', 'Drážďanská 517/52, 400 07 Ústí nad Labem', publicContact.email]
     }
   },
   {
@@ -265,7 +266,7 @@ export const programs: Program[] = [
     ],
     contactBox: {
       title: 'Kontakt pro program RESET',
-      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+      lines: ['REST||ART Integrace', publicContact.phoneDisplay, publicContact.email]
     }
   },
   {
@@ -309,7 +310,7 @@ export const programs: Program[] = [
     ],
     contactBox: {
       title: 'Kontakt pro program REWORK',
-      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+      lines: ['REST||ART Integrace', publicContact.phoneDisplay, publicContact.email]
     }
   },
   {
@@ -354,7 +355,7 @@ export const programs: Program[] = [
     ],
     contactBox: {
       title: 'Kontakt pro program STREETWISE',
-      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+      lines: ['REST||ART Integrace', publicContact.phoneDisplay, publicContact.email]
     },
     image: {
       src: '/images/crops/streetwise/streetwise-bouda-stavba.webp',
@@ -402,7 +403,7 @@ export const programs: Program[] = [
     ],
     contactBox: {
       title: 'Kontakt pro program BOD ZLOMU',
-      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+      lines: ['REST||ART Integrace', publicContact.phoneDisplay, publicContact.email]
     }
   },
   {
@@ -446,7 +447,7 @@ export const programs: Program[] = [
     ],
     contactBox: {
       title: 'Kontakt pro stabilizační podporu',
-      lines: ['REST||ART Integrace', '+420 778 564 279', 'restart@dk-i.cz']
+      lines: ['REST||ART Integrace', publicContact.phoneDisplay, publicContact.email]
     }
   }
 ];
@@ -560,8 +561,8 @@ export const principles = [
 ];
 
 export const contacts = [
-  { label: 'E-mail', value: 'restartintegrace@dk-i.cz', href: 'mailto:restartintegrace@dk-i.cz' },
-  { label: 'Telefon', value: '+420 778 564 279', href: 'tel:+420778564279' },
+  { label: 'E-mail', value: publicContact.email, href: `mailto:${publicContact.email}` },
+  { label: 'Telefon', value: publicContact.phoneDisplay, href: `tel:${publicContact.phone}` },
   { label: 'Adresa', value: 'Drážďanská 517/52, 400 07 Ústí nad Labem' }
 ];
 

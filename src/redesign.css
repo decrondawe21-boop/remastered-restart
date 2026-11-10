@@ -966,7 +966,9 @@
   }
 
   .footer-branch {
-    --footer-branch-overhang: clamp(450px, 60vh, 640px);
+    --footer-branch-overhang: clamp(620px, 94vh, 1020px);
+    --footer-branch-shift: 42%;
+    --footer-branch-root: 96px;
     position: absolute;
     z-index: 2;
     inset: calc(-1 * var(--footer-branch-overhang)) 0 0;
@@ -980,12 +982,12 @@
     position: absolute;
     inset-inline-end: 0;
     inset-block-start: var(--footer-branch-overhang);
-    block-size: clamp(740px, 95vh, 1000px);
+    block-size: clamp(750px, 108vh, 1120px);
     aspect-ratio: 416 / 512;
     background: url("/images/brand/footer-emerald-branch.webp") center / contain no-repeat;
-    transform: translate(85%, calc(46px - 90%)) scaleX(-1) rotate(54deg);
+    transform: translate(var(--footer-branch-shift), calc(var(--footer-branch-root) - 93%)) scaleX(-1) rotate(16deg);
     transform-origin: 55% 96%;
-    opacity: 0.38;
+    opacity: 0.36;
   }
 
   .site-footer > :not(.footer-branch) {
@@ -1025,12 +1027,12 @@
 
 @media screen and (max-width: 1050px) {
   .footer-branch {
-    --footer-branch-overhang: clamp(290px, 46vh, 440px);
+    --footer-branch-overhang: clamp(420px, 70vh, 610px);
   }
 
   .footer-branch::before {
-    block-size: clamp(500px, 72vw, 660px);
-    opacity: 0.3;
+    block-size: clamp(530px, 70vw, 760px);
+    opacity: 0.27;
   }
 }
 
@@ -1055,6 +1057,17 @@
 @media screen and (max-width: 760px) {
   .site-footer {
     margin-block-start: clamp(52px, 18vw, 100px);
+  }
+
+  .footer-branch {
+    --footer-branch-overhang: clamp(320px, 54vh, 425px);
+    --footer-branch-shift: 47%;
+    --footer-branch-root: 74px;
+  }
+
+  .footer-branch::before {
+    block-size: clamp(420px, 105vw, 520px);
+    opacity: 0.24;
   }
 
   :root {
